@@ -8,12 +8,16 @@ sap.ui.define([
 	"sap/ui/dt/Util",
 	"sap/ui/dt/OverlayRegistry",
 	"sap/ui/fl/Utils",
+	"sap/ui/fl/write/api/ChangesWriteAPI",
+	"sap/ui/fl/write/api/PersistenceWriteAPI",
 	"sap/ui/thirdparty/jquery"
 ],
 function (
 	DtUtil,
 	OverlayRegistry,
 	FlexUtils,
+	ChangesWriteAPI,
+	PersistenceWriteAPI,
 	jQuery
 ) {
 	"use strict";
@@ -26,7 +30,7 @@ function (
 	 * @author SAP SE
 	 * @experimental Since 1.58
 	 * @since 1.58
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @private
 	 * @ui5-restricted
 	*/
@@ -82,7 +86,6 @@ function (
 						throw DtUtil.createError("service.ControllerExtension#add", "codeRef has to end with 'js'");
 					}
 
-					var oFlexController = oRta._getFlexController();
 					var oView = sap.ui.getCore().byId(sViewId);
 					var oAppComponent = FlexUtils.getAppComponentForControl(oView);
 					var sControllerName = oView.getControllerName && oView.getControllerName() || oView.getController() && oView.getController().getMetadata().getName();
@@ -100,8 +103,8 @@ function (
 						scenario: oFlexSettings.scenario
 					};
 
-					var oPreparedChange = oFlexController.createBaseChange(oChangeSpecificData, oAppComponent);
-					oFlexController.addPreparedChange(oPreparedChange, oAppComponent);
+					var oPreparedChange = ChangesWriteAPI.create(oChangeSpecificData, oAppComponent);
+					PersistenceWriteAPI.add(oPreparedChange, oAppComponent);
 					return oPreparedChange.getDefinition();
 				},
 

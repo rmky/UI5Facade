@@ -86,6 +86,7 @@ function(
 	 *</ul>
 	 * Additionally, you can also change the location of the navigation arrows.
 	 * By setting <code>arrowsPlacement</code> to <code>sap.m.CarouselArrowsPlacement.PageIndicator</code>, the arrows will be located at the bottom by the paging indicator.
+	 * Note: When the content is of type <code>sap.m.Image</code> add "Image" text at the end of the <code>"alt"</code> description in order to provide accessibility info for the UI element.
 	 * <h3>Usage</h3>
 	 * <h4> When to use</h4>
 	 * <ul>
@@ -106,7 +107,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -578,7 +579,7 @@ function(
 		}
 
 		if (iNextSlide > 0) {
-			this._changePage(iNextSlide);
+			this._changePage(iPreviousSlide, iNextSlide);
 		}
 	};
 
@@ -640,19 +641,27 @@ function(
 	Carousel.prototype._moveToPage = function(iIndex) {
 		this._oMobifyCarousel.changeAnimation('sapMCrslNoTransition');
 		this._oMobifyCarousel.move(iIndex);
-		this._changePage(iIndex);
+		this._changePage(undefined, iIndex);
 	};
 
 	/**
 	 * Private method which adjusts the Hud visibility and fires a page change
 	 * event when the active page changes
 	 *
+	 * @param {int} [iOldPageIndex] Optional index of the old page. If not specified, the current active page index will be taken.
 	 * @param {int} iNewPageIndex index of new page in 'pages' aggregation.
 	 * @private
 	 */
-	Carousel.prototype._changePage = function(iNewPageIndex) {
+	Carousel.prototype._changePage = function(iOldPageIndex, iNewPageIndex) {
 		this._adjustHUDVisibility(iNewPageIndex);
 		var sOldActivePageId = this.getActivePage();
+
+		// If setActivePage is called through API, getActivePage will return the wrong page.
+		// In this case iOldPageIndex must be passed.
+		if (iOldPageIndex) {
+			sOldActivePageId = this.getPages()[iOldPageIndex - 1].getId();
+		}
+
 		var sNewActivePageId = this.getPages()[iNewPageIndex - 1].getId();
 
 		this.setAssociation("activePage", sNewActivePageId, true);
@@ -1043,7 +1052,7 @@ function(
 			lastActivePageNumber = this._lastActivePageNumber + 1;
 
 			this._oMobifyCarousel.move(lastActivePageNumber);
-			this._changePage(lastActivePageNumber);
+			this._changePage(undefined, lastActivePageNumber);
 		}
 	};
 

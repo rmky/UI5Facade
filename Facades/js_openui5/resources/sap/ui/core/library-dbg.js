@@ -14,7 +14,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.core",
-		version: "1.67.1",
+		version: "1.68.1",
 		designtime: "sap/ui/core/designtime/library.designtime",
 		types: [
 
@@ -148,7 +148,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	 * @namespace
 	 * @alias sap.ui.core
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @public
 	 */
 	var thisLib = sap.ui.core;
@@ -1404,7 +1404,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	/**
 	 * Sort order of a column.
 	 *
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @enum {string}
 	 * @public
 	 * @since 1.61.0

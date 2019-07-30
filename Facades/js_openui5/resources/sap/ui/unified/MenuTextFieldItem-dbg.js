@@ -45,7 +45,7 @@ sap.ui.define([
 	 * @extends sap.ui.unified.MenuItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @since 1.21.0
 	 *
 	 * @constructor
@@ -159,23 +159,16 @@ sap.ui.define([
 
 		if (bHovered && oMenu.checkEnabled(this)) {
 			oMenu.closeSubmenu(false, true);
-			/* TODO remove after 1.62 version */
-			if (Device.browser.msie) {
-				setTimeout(function () {
-					var fnMethod = function () {
-						this.$("tf").focus();
-					}.bind(this);
-					if (typeof fnMethod === "string" || fnMethod instanceof String) {
-						fnMethod = this[fnMethod];
-					}
-					fnMethod.apply(this, []);
-				}.bind(this), 0);
-			} else {
-				this.$("tf").focus();
-			}
 		}
 	};
 
+	MenuTextFieldItem.prototype.focus = function(oMenu){
+		if (this.getEnabled() && this.getVisible()) {
+			this.$("tf").focus();
+		} else {
+			oMenu.focus();
+		}
+	};
 
 	MenuTextFieldItem.prototype.onAfterRendering = function(){
 		this._adaptSizes();

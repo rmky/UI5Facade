@@ -42,7 +42,7 @@ sap.ui.define([
 	 * @class A simple ContextMenu.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @experimental
@@ -514,7 +514,7 @@ sap.ui.define([
 		 * @return {float} the height of a popover arrow
 		 */
 		_getArrowHeight: function (bCompact) {
-			if (sap.ui.Device.browser.internet_explorer || sap.ui.Device.browser.edge) {
+			if (sap.ui.Device.browser.msie || sap.ui.Device.browser.edge) {
 				return bCompact ? 0.5 : 0.5;
 			}
 			return bCompact ? 0.5625 : 0.5625;

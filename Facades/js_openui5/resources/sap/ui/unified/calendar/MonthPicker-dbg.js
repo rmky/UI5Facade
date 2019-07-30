@@ -36,7 +36,7 @@ sap.ui.define([
 	 * renders a MonthPicker with ItemNavigation
 	 * This is used inside the calendar. Not for stand alone usage
 	 * @extends sap.ui.core.Control
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -404,7 +404,7 @@ sap.ui.define([
 		this._oItemNavigation.setRootDomRef(oRootDomRef);
 		this._oItemNavigation.setItemDomRefs(aDomRefs);
 		this._oItemNavigation.setCycling(bCycling);
-		this._oItemNavigation.setColumns(iColumns, !bCycling);
+		this._oItemNavigation.setColumns(iColumns, true);
 		var iIndex = this.getMonth() - this.getStartMonth();
 		this._oItemNavigation.setFocusedIndex(iIndex);
 		this._oItemNavigation.setPageSize(aDomRefs.length); // to make sure that pageup/down goes out of month
@@ -493,6 +493,8 @@ sap.ui.define([
 				if (iMonth < 12 - iMonths) {
 					iMonth = iMonth + iMonths;
 					_updateMonths.call(this, iMonth, true);
+				} else if (iMonths === 12) {
+					this.firePageChange({ offset: 1 });
 				}
 				break;
 
@@ -500,6 +502,8 @@ sap.ui.define([
 				if (iMonth > iMonths) {
 					iMonth = iMonth - iMonths;
 					_updateMonths.call(this, iMonth, true);
+				} else if (iMonths === 12) {
+					this.firePageChange({ offset: -1 });
 				}
 				break;
 
@@ -594,7 +598,7 @@ sap.ui.define([
 	function _updateMonths(iMonth, bFireEvent){
 
 		var aMonths = this._oItemNavigation.getItemDomRefs();
-		if (aMonths.legth > 11) {
+		if (aMonths.length > 11) {
 			return;
 		}
 

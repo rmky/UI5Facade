@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.67.1"
+      "version": "1.68.1"
     },
     "title": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
     "description": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
@@ -22,17 +22,17 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.67",
+      "minUI5Version": "1.68",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.67.1"
+          "minVersion": "1.68.1"
         },
         "sap.ui.layout": {
-          "minVersion": "1.67.1",
+          "minVersion": "1.68.1",
           "lazy": true
         },
         "sap.ui.unified": {
-          "minVersion": "1.67.1",
+          "minVersion": "1.68.1",
           "lazy": true
         }
       }

@@ -27,7 +27,7 @@ function(
 	 * @class Utility functionality to work with elements, e.g. iterate through aggregations, find parents, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @private
 	 * @static
@@ -138,7 +138,7 @@ function(
 	 *
 	 */
 	ElementUtil.findAllSiblingsInContainer = function(oElement, oContainer) {
-		var oParent = oElement.getParent();
+		var oParent = oElement && oElement.getParent();
 		if (!oParent) {
 			return [];
 		}

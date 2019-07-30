@@ -573,6 +573,62 @@
 			]
 		},
 		{
+			"name": "apply/api/ControlPersonalizationApplyAPI-dbg.js",
+			"module": "sap/ui/fl/apply/api/ControlPersonalizationApplyAPI.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/fl/ControlPersonalizationAPI.js"
+			]
+		},
+		{
+			"name": "apply/api/ControlPersonalizationApplyAPI.js",
+			"module": "sap/ui/fl/apply/api/ControlPersonalizationApplyAPI.js",
+			"required": [
+				"sap/ui/fl/ControlPersonalizationAPI.js"
+			]
+		},
+		{
+			"name": "apply/api/ControlVariantApplyAPI-dbg.js",
+			"module": "sap/ui/fl/apply/api/ControlVariantApplyAPI.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/fl/ControlPersonalizationAPI.js"
+			]
+		},
+		{
+			"name": "apply/api/ControlVariantApplyAPI.js",
+			"module": "sap/ui/fl/apply/api/ControlVariantApplyAPI.js",
+			"required": [
+				"sap/ui/fl/ControlPersonalizationAPI.js"
+			]
+		},
+		{
+			"name": "apply/api/SmartVariantManagementApplyAPI-dbg.js",
+			"module": "sap/ui/fl/apply/api/SmartVariantManagementApplyAPI.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/fl/ChangePersistenceFactory.js",
+				"sap/ui/fl/DefaultVariant.js",
+				"sap/ui/fl/StandardVariant.js",
+				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/registry/Settings.js"
+			]
+		},
+		{
+			"name": "apply/api/SmartVariantManagementApplyAPI.js",
+			"module": "sap/ui/fl/apply/api/SmartVariantManagementApplyAPI.js",
+			"required": [
+				"sap/ui/fl/ChangePersistenceFactory.js",
+				"sap/ui/fl/DefaultVariant.js",
+				"sap/ui/fl/StandardVariant.js",
+				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/registry/Settings.js"
+			]
+		},
+		{
+			"name": "apply/internal/.keep"
+		},
+		{
 			"name": "changeHandler/AddXML-dbg.js",
 			"module": "sap/ui/fl/changeHandler/AddXML.js",
 			"isDebug": true,
@@ -1325,6 +1381,9 @@
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/Variant.js",
 				"sap/ui/fl/XmlPreprocessorImpl.js",
+				"sap/ui/fl/apply/api/ControlPersonalizationApplyAPI.js",
+				"sap/ui/fl/apply/api/ControlVariantApplyAPI.js",
+				"sap/ui/fl/apply/api/SmartVariantManagementApplyAPI.js",
 				"sap/ui/fl/changeHandler/AddXML.js",
 				"sap/ui/fl/changeHandler/Base.js",
 				"sap/ui/fl/changeHandler/BaseRename.js",
@@ -1361,8 +1420,6 @@
 				"sap/ui/fl/designtime/variants/VariantManagement.designtime.js",
 				"sap/ui/fl/fieldExt/Access.js",
 				"sap/ui/fl/library.support.js",
-				"sap/ui/fl/read/api/ControlPersonalizationReadAPI.js",
-				"sap/ui/fl/read/api/ControlVariantReadAPI.js",
 				"sap/ui/fl/registry/ChangeHandlerRegistration.js",
 				"sap/ui/fl/registry/ChangeRegistry.js",
 				"sap/ui/fl/registry/ChangeRegistryItem.js",
@@ -1400,7 +1457,11 @@
 				"sap/ui/fl/variants/VariantManagement.js",
 				"sap/ui/fl/variants/VariantModel.js",
 				"sap/ui/fl/variants/util/VariantUtil.js",
-				"sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js"
+				"sap/ui/fl/write/ChangesController.js",
+				"sap/ui/fl/write/api/ChangesWriteAPI.js",
+				"sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js",
+				"sap/ui/fl/write/api/PersistenceWriteAPI.js",
+				"sap/ui/fl/write/api/SmartVariantManagementWriteAPI.js"
 			]
 		},
 		{
@@ -1538,6 +1599,9 @@
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/Variant.js",
 				"sap/ui/fl/XmlPreprocessorImpl.js",
+				"sap/ui/fl/apply/api/ControlPersonalizationApplyAPI.js",
+				"sap/ui/fl/apply/api/ControlVariantApplyAPI.js",
+				"sap/ui/fl/apply/api/SmartVariantManagementApplyAPI.js",
 				"sap/ui/fl/changeHandler/AddXML.js",
 				"sap/ui/fl/changeHandler/Base.js",
 				"sap/ui/fl/changeHandler/BaseRename.js",
@@ -1574,8 +1638,6 @@
 				"sap/ui/fl/designtime/variants/VariantManagement.designtime.js",
 				"sap/ui/fl/fieldExt/Access.js",
 				"sap/ui/fl/library.support.js",
-				"sap/ui/fl/read/api/ControlPersonalizationReadAPI.js",
-				"sap/ui/fl/read/api/ControlVariantReadAPI.js",
 				"sap/ui/fl/registry/ChangeHandlerRegistration.js",
 				"sap/ui/fl/registry/ChangeRegistry.js",
 				"sap/ui/fl/registry/ChangeRegistryItem.js",
@@ -1613,7 +1675,11 @@
 				"sap/ui/fl/variants/VariantManagement.js",
 				"sap/ui/fl/variants/VariantModel.js",
 				"sap/ui/fl/variants/util/VariantUtil.js",
-				"sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js"
+				"sap/ui/fl/write/ChangesController.js",
+				"sap/ui/fl/write/api/ChangesWriteAPI.js",
+				"sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js",
+				"sap/ui/fl/write/api/PersistenceWriteAPI.js",
+				"sap/ui/fl/write/api/SmartVariantManagementWriteAPI.js"
 			]
 		},
 		{
@@ -1730,6 +1796,9 @@
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/Variant.js",
 				"sap/ui/fl/XmlPreprocessorImpl.js",
+				"sap/ui/fl/apply/api/ControlPersonalizationApplyAPI.js",
+				"sap/ui/fl/apply/api/ControlVariantApplyAPI.js",
+				"sap/ui/fl/apply/api/SmartVariantManagementApplyAPI.js",
 				"sap/ui/fl/changeHandler/AddXML.js",
 				"sap/ui/fl/changeHandler/Base.js",
 				"sap/ui/fl/changeHandler/BaseRename.js",
@@ -1760,8 +1829,6 @@
 				"sap/ui/fl/fieldExt/Access.js",
 				"sap/ui/fl/library.js",
 				"sap/ui/fl/manifest.json",
-				"sap/ui/fl/read/api/ControlPersonalizationReadAPI.js",
-				"sap/ui/fl/read/api/ControlVariantReadAPI.js",
 				"sap/ui/fl/registry/ChangeHandlerRegistration.js",
 				"sap/ui/fl/registry/ChangeRegistry.js",
 				"sap/ui/fl/registry/ChangeRegistryItem.js",
@@ -1776,7 +1843,11 @@
 				"sap/ui/fl/variants/VariantManagement.js",
 				"sap/ui/fl/variants/VariantModel.js",
 				"sap/ui/fl/variants/util/VariantUtil.js",
-				"sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js"
+				"sap/ui/fl/write/ChangesController.js",
+				"sap/ui/fl/write/api/ChangesWriteAPI.js",
+				"sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js",
+				"sap/ui/fl/write/api/PersistenceWriteAPI.js",
+				"sap/ui/fl/write/api/SmartVariantManagementWriteAPI.js"
 			]
 		},
 		{
@@ -1895,6 +1966,9 @@
 				"sap/ui/fl/Utils.js",
 				"sap/ui/fl/Variant.js",
 				"sap/ui/fl/XmlPreprocessorImpl.js",
+				"sap/ui/fl/apply/api/ControlPersonalizationApplyAPI.js",
+				"sap/ui/fl/apply/api/ControlVariantApplyAPI.js",
+				"sap/ui/fl/apply/api/SmartVariantManagementApplyAPI.js",
 				"sap/ui/fl/changeHandler/AddXML.js",
 				"sap/ui/fl/changeHandler/Base.js",
 				"sap/ui/fl/changeHandler/BaseRename.js",
@@ -1925,8 +1999,6 @@
 				"sap/ui/fl/fieldExt/Access.js",
 				"sap/ui/fl/library.js",
 				"sap/ui/fl/manifest.json",
-				"sap/ui/fl/read/api/ControlPersonalizationReadAPI.js",
-				"sap/ui/fl/read/api/ControlVariantReadAPI.js",
 				"sap/ui/fl/registry/ChangeHandlerRegistration.js",
 				"sap/ui/fl/registry/ChangeRegistry.js",
 				"sap/ui/fl/registry/ChangeRegistryItem.js",
@@ -1941,7 +2013,11 @@
 				"sap/ui/fl/variants/VariantManagement.js",
 				"sap/ui/fl/variants/VariantModel.js",
 				"sap/ui/fl/variants/util/VariantUtil.js",
-				"sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js"
+				"sap/ui/fl/write/ChangesController.js",
+				"sap/ui/fl/write/api/ChangesWriteAPI.js",
+				"sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js",
+				"sap/ui/fl/write/api/PersistenceWriteAPI.js",
+				"sap/ui/fl/write/api/SmartVariantManagementWriteAPI.js"
 			]
 		},
 		{
@@ -2252,39 +2328,6 @@
 			"module": "sap/ui/fl/messagebundle_zh_TW.properties",
 			"locale": "zh_TW",
 			"raw": "messagebundle.properties"
-		},
-		{
-			"name": "read/api/ControlPersonalizationReadAPI-dbg.js",
-			"module": "sap/ui/fl/read/api/ControlPersonalizationReadAPI.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/fl/ControlPersonalizationAPI.js"
-			]
-		},
-		{
-			"name": "read/api/ControlPersonalizationReadAPI.js",
-			"module": "sap/ui/fl/read/api/ControlPersonalizationReadAPI.js",
-			"required": [
-				"sap/ui/fl/ControlPersonalizationAPI.js"
-			]
-		},
-		{
-			"name": "read/api/ControlVariantReadAPI-dbg.js",
-			"module": "sap/ui/fl/read/api/ControlVariantReadAPI.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/fl/ControlPersonalizationAPI.js"
-			]
-		},
-		{
-			"name": "read/api/ControlVariantReadAPI.js",
-			"module": "sap/ui/fl/read/api/ControlVariantReadAPI.js",
-			"required": [
-				"sap/ui/fl/ControlPersonalizationAPI.js"
-			]
-		},
-		{
-			"name": "read/internal/.keep"
 		},
 		{
 			"name": "registry/ChangeHandlerRegistration-dbg.js",
@@ -3141,6 +3184,50 @@
 			]
 		},
 		{
+			"name": "write/ChangesController-dbg.js",
+			"module": "sap/ui/fl/write/ChangesController.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/fl/FlexControllerFactory.js",
+				"sap/ui/fl/Utils.js"
+			]
+		},
+		{
+			"name": "write/ChangesController.js",
+			"module": "sap/ui/fl/write/ChangesController.js",
+			"required": [
+				"sap/ui/fl/FlexControllerFactory.js",
+				"sap/ui/fl/Utils.js"
+			]
+		},
+		{
+			"name": "write/api/ChangesWriteAPI-dbg.js",
+			"module": "sap/ui/fl/write/api/ChangesWriteAPI.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/util/includes.js",
+				"sap/ui/core/Component.js",
+				"sap/ui/core/Element.js",
+				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/descriptorRelated/api/DescriptorChangeFactory.js",
+				"sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js",
+				"sap/ui/fl/write/ChangesController.js"
+			]
+		},
+		{
+			"name": "write/api/ChangesWriteAPI.js",
+			"module": "sap/ui/fl/write/api/ChangesWriteAPI.js",
+			"required": [
+				"sap/base/util/includes.js",
+				"sap/ui/core/Component.js",
+				"sap/ui/core/Element.js",
+				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/descriptorRelated/api/DescriptorChangeFactory.js",
+				"sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js",
+				"sap/ui/fl/write/ChangesController.js"
+			]
+		},
+		{
 			"name": "write/api/ControlPersonalizationWriteAPI-dbg.js",
 			"module": "sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js",
 			"isDebug": true,
@@ -3153,6 +3240,52 @@
 			"module": "sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js",
 			"required": [
 				"sap/ui/fl/ControlPersonalizationAPI.js"
+			]
+		},
+		{
+			"name": "write/api/PersistenceWriteAPI-dbg.js",
+			"module": "sap/ui/fl/write/api/PersistenceWriteAPI.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/util/includes.js",
+				"sap/ui/core/util/reflection/JsControlTreeModifier.js",
+				"sap/ui/fl/Cache.js",
+				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js",
+				"sap/ui/fl/write/ChangesController.js"
+			]
+		},
+		{
+			"name": "write/api/PersistenceWriteAPI.js",
+			"module": "sap/ui/fl/write/api/PersistenceWriteAPI.js",
+			"required": [
+				"sap/base/util/includes.js",
+				"sap/ui/core/util/reflection/JsControlTreeModifier.js",
+				"sap/ui/fl/Cache.js",
+				"sap/ui/fl/Utils.js",
+				"sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js",
+				"sap/ui/fl/write/ChangesController.js"
+			]
+		},
+		{
+			"name": "write/api/SmartVariantManagementWriteAPI-dbg.js",
+			"module": "sap/ui/fl/write/api/SmartVariantManagementWriteAPI.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/fl/ChangePersistenceFactory.js",
+				"sap/ui/fl/DefaultVariant.js",
+				"sap/ui/fl/StandardVariant.js",
+				"sap/ui/fl/apply/api/SmartVariantManagementApplyAPI.js"
+			]
+		},
+		{
+			"name": "write/api/SmartVariantManagementWriteAPI.js",
+			"module": "sap/ui/fl/write/api/SmartVariantManagementWriteAPI.js",
+			"required": [
+				"sap/ui/fl/ChangePersistenceFactory.js",
+				"sap/ui/fl/DefaultVariant.js",
+				"sap/ui/fl/StandardVariant.js",
+				"sap/ui/fl/apply/api/SmartVariantManagementApplyAPI.js"
 			]
 		},
 		{

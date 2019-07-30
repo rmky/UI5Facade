@@ -56,7 +56,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -183,64 +183,6 @@ sap.ui.define([
 			// prevent default or else the icon may get focused
 			oEvent.preventDefault();
 		}
-	};
-
-	/**
-	 * Sets the selection status of the token.
-	 *
-	 * @param {boolean} bSelected Indicates if the token is selected.
-	 * @return {sap.m.Token} this instance for method chaining
-	 * @public
-	 */
-	Token.prototype.setSelected = function(bSelected) {
-		var sId, aDescribedBy, iDescribedByIndex;
-
-		if (this.getSelected() === bSelected) {
-			return this;
-		}
-
-		var $this = this.$();
-
-		if ($this && this.getDomRef()) {
-			$this.toggleClass("sapMTokenSelected", bSelected);
-
-			sId = InvisibleText.getStaticId("sap.m", "TOKEN_ARIA_SELECTED");
-			aDescribedBy = $this.attr("aria-describedby").split(" ");
-			iDescribedByIndex = aDescribedBy.indexOf(sId);
-
-			if (bSelected && iDescribedByIndex === -1) {
-				aDescribedBy.push(sId);
-			} else {
-				aDescribedBy.splice(iDescribedByIndex, 1);
-			}
-
-			$this.attr("aria-describedby", aDescribedBy.join(" "));
-		}
-
-		this.setProperty("selected", bSelected, true);
-
-		return this;
-	};
-
-	/**
-	 * Sets the editable status of the token.
-	 *
-	 * @param {boolean} bEditable Indicates if the token is editable.
-	 * @return {sap.m.Token} this instance for method chaining
-	 * @public
-	 */
-	Token.prototype.setEditable = function(bEditable) {
-		var oParent = this.getParent();
-
-		this.setProperty("editable", bEditable, true);
-
-		this.$().toggleClass("sapMTokenReadOnly", !bEditable);
-
-		if (oParent instanceof Tokenizer) {
-			oParent.invalidate();
-		}
-
-		return this;
 	};
 
 	/**

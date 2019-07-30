@@ -28,7 +28,7 @@ sap.ui.define([
 	 * Utilities for sap.ui.dt library
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @private
 	 * @static
@@ -343,8 +343,8 @@ sap.ui.define([
 	 * Checks if the passed designTime instance's status is syncing.
 	 * Returns a promise resolving to the return value of the passed function, when the passed designTime instances's status changes to synced.
 	 *
-	 * @param {function} fnOriginal function for which value needs to be returned
 	 * @param {sap.ui.dt.DesignTime} oDtInstance designTime instance
+	 * @param {function} fnOriginal function for which value needs to be returned
 	 * @returns {Promise} Returns a Promise.resolve() to the passed function's return value or a Promise.reject() when designTime fails to sync
 	 */
 	Util.waitForSynced = function(oDtInstance, fnOriginal) {

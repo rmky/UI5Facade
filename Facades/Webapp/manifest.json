@@ -91,5 +91,8 @@
 				}
 			}
 		}
+	},
+	"exface": {
+		"useCombinedViewControllers": "[#use_combined_viewcontrollers#]"
 	}
 }

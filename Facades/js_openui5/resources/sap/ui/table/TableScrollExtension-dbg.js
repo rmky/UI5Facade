@@ -411,11 +411,11 @@ sap.ui.define([
 							oVSb.scrollTop = iNewScrollTop;
 							oVSb._scrollTop = oVSb.scrollTop;
 
-							if (iNewScrollTop === iVerticalScrollRange && iNewScrollTop !== oVSb.scrollTop) {
-								log("VerticalScrollingHelper#updateScrollPosition: (async) Adjusted from "
-									+ internal(oTable).nVerticalScrollPosition + " to " + oVSb.scrollTop, oTable);
-								internal(oTable).nVerticalScrollPosition = oVSb.scrollTop;
-							}
+							//if (iNewScrollTop === iVerticalScrollRange && iNewScrollTop !== oVSb.scrollTop) {
+							//	log("VerticalScrollingHelper#updateScrollPosition: (async) Adjusted from "
+							//		+ internal(oTable).nVerticalScrollPosition + " to " + oVSb.scrollTop, oTable);
+							//	internal(oTable).nVerticalScrollPosition = oVSb.scrollTop;
+							//}
 
 							VerticalScrollingHelper.updateFirstVisibleRow(oTable);
 						});
@@ -1368,7 +1368,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles scrolling.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableScrollExtension

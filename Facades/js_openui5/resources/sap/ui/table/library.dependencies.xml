@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.ui.table">
-  <module name="sap/ui/table/AnalyticalColumn.js" size="13008" compressedSize="4979">
+  <module name="sap/ui/table/AnalyticalColumn.js" size="13054" compressedSize="5018">
     <description>Provides control sap.ui.table.AnalyticalColumn.</description>
     <requires>
       <module name="sap/ui/core/Element.js"/>
@@ -182,7 +182,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/Table.js" size="149254" compressedSize="55323">
+  <module name="sap/ui/table/Table.js" size="149064" compressedSize="55188">
     <description>Provides control sap.ui.table.Table.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -290,7 +290,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/TableKeyboardExtension.js" size="20206" compressedSize="7905">
+  <module name="sap/ui/table/TableKeyboardExtension.js" size="20453" compressedSize="7937">
     <description>Provides helper sap.ui.table.TableKeyboardExtension.</description>
     <requires>
       <module name="sap/ui/Device.js"/>
@@ -314,7 +314,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/TablePersoController.js" size="13443" compressedSize="6514">
+  <module name="sap/ui/table/TablePersoController.js" size="13446" compressedSize="6517">
     <description>Provides TablePersoController</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -339,7 +339,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/TableRenderer.js" size="40622" compressedSize="23679">
+  <module name="sap/ui/table/TableRenderer.js" size="40623" compressedSize="23680">
     <description>Provides default renderer for control sap.ui.table.Table</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -355,14 +355,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/table/TableRendererUtils.js" size="6890" compressedSize="1481">
-    <description>Provides helper sap.ui.table.TableRendererUtils.</description>
-    <requires>
-      <module name="sap/ui/core/Control.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/table/TableScrollExtension.js" size="81590" compressedSize="27145">
+  <module name="sap/ui/table/TableScrollExtension.js" size="81600" compressedSize="26952">
     <description>Provides helper sap.ui.table.TableScrollExtension.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -460,7 +453,7 @@
   </module>
   <module name="sap/ui/table/designtime/messagebundle.properties" size="143">
   </module>
-  <module name="sap/ui/table/library-h2-preload.js" size="12514">
+  <module name="sap/ui/table/library-h2-preload.js" size="12449">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/assert.js"/>
@@ -555,7 +548,6 @@
       <module name="sap/ui/table/TablePersoController.js"/>
       <module name="sap/ui/table/TablePointerExtension.js"/>
       <module name="sap/ui/table/TableRenderer.js"/>
-      <module name="sap/ui/table/TableRendererUtils.js"/>
       <module name="sap/ui/table/TableScrollExtension.js"/>
       <module name="sap/ui/table/TableSyncExtension.js"/>
       <module name="sap/ui/table/TableUtils.js"/>
@@ -572,7 +564,7 @@
       <module name="sap/ui/table/rules/TableHelper.support.js"/>
     </includes>
   </module>
-  <module name="sap/ui/table/library-preload.js" size="322408">
+  <module name="sap/ui/table/library-preload.js" size="320788">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/assert.js"/>
@@ -663,7 +655,6 @@
       <module name="sap/ui/table/TablePersoController.js"/>
       <module name="sap/ui/table/TablePointerExtension.js"/>
       <module name="sap/ui/table/TableRenderer.js"/>
-      <module name="sap/ui/table/TableRendererUtils.js"/>
       <module name="sap/ui/table/TableScrollExtension.js"/>
       <module name="sap/ui/table/TableSyncExtension.js"/>
       <module name="sap/ui/table/TableUtils.js"/>
@@ -770,7 +761,6 @@
       <module name="sap/ui/table/TablePersoController.js"/>
       <module name="sap/ui/table/TablePointerExtension.js"/>
       <module name="sap/ui/table/TableRenderer.js"/>
-      <module name="sap/ui/table/TableRendererUtils.js"/>
       <module name="sap/ui/table/TableScrollExtension.js"/>
       <module name="sap/ui/table/TableSyncExtension.js"/>
       <module name="sap/ui/table/TableUtils.js"/>

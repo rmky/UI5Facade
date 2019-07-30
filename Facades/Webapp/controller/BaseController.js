@@ -65,13 +65,13 @@ sap.ui.define([
 		 */
 		_loadView : function(sViewName, fnCallback, oXHRSettings) {
 			var sViewId = this.getViewId(sViewName);
-			var oController = this;
+			var oController = this;			
 			
 			// Load view and controller with a custom async AJAX if running on UI server. 
 			// Reasons:
 			// 1) By default, views and controllers are loaded with sync requests (not compatible with CacheAPI)
 			// 2) Loading a single viewcontroller is faster, than the view and the controller separately
-			if (! sap.ui.getCore().byId(sViewId)) {
+			if (oController.getOwnerComponent().getManifest()['exface']['useCombinedViewControllers'] === true && ! sap.ui.getCore().byId(sViewId)) {
 				if (oXHRSettings) {
 					var oCallbacks = {
 						success: oXHRSettings.success,
@@ -100,11 +100,12 @@ sap.ui.define([
 							oCallbacks.error();
 						}
 						
+						oController.getOwnerComponent().getManifestEntry("/exface/useCombinedViewControllers");
+						
 						if (navigator.onLine === false) {
 							oController.getRouter().getTargets().display("offline");
 						} else {
 							oController.getOwnerComponent().showAjaxErrorDialog(jqXHR);
-							//fnCallback();
 						}
 					}
 				}

@@ -5,18 +5,18 @@
  */
 sap.ui.define([
 	"sap/ui/base/ManagedObject",
-	"sap/ui/fl/ChangePersistenceFactory",
 	"sap/ui/fl/Utils",
 	"sap/ui/rta/command/Settings",
 	"sap/ui/rta/command/CompositeCommand",
-	"sap/ui/rta/ControlTreeModifier"
+	"sap/ui/rta/ControlTreeModifier",
+	"sap/ui/fl/write/api/PersistenceWriteAPI"
 ], function(
 	ManagedObject,
-	ChangePersistenceFactory,
 	FlUtils,
 	Settings,
 	CompositeCommand,
-	ControlTreeModifier
+	ControlTreeModifier,
+	PersistenceWriteAPI
 ) {
 	"use strict";
 
@@ -26,7 +26,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -68,14 +68,13 @@ sap.ui.define([
 		oStack._aPersistedChanges = aFileNames;
 		var mComposite = {};
 		if (aFileNames && aFileNames.length > 0) {
-			var oChangePersistence = ChangePersistenceFactory.getChangePersistenceForControl(oControl);
 			var oComponent = FlUtils.getComponentForControl(oControl);
 			var sAppName = sap.ui.fl.Utils.getAppDescriptor(oComponent)["sap.app"].id;
 			var mPropertyBag = {
 				oComponent : oComponent,
 				appName : sAppName
 			};
-			return oChangePersistence.getChangesForComponent(mPropertyBag)
+			return PersistenceWriteAPI.getUIChanges(Object.assign({}, mPropertyBag, {invalidateCache: false, managedObject: oControl}))
 			.then(function(aChanges) {
 				var mChanges = {};
 				aChanges.forEach(function(oChange) {

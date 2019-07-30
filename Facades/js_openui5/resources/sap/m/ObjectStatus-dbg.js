@@ -43,7 +43,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IFormContent
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -153,46 +153,6 @@ sap.ui.define([
 		this._oImageControl = ImageHelper.getImageControl(sImgId, this._oImageControl, this, mProperties);
 
 		return this._oImageControl;
-	};
-
-	/**
-	 * Sets the title.
-	 * The default value is empty/undefined.
-	 * @public
-	 * @param {string} sTitle New value for property title
-	 * @returns {sap.m.ObjectStatus} this to allow method chaining
-	 */
-	ObjectStatus.prototype.setTitle = function (sTitle) {
-		var $Title = this.$().children(".sapMObjStatusTitle"),
-			bShouldSuppressInvalidate = !!$Title.length && !!this.validateProperty("title", sTitle).trim();
-
-		this.setProperty("title", sTitle, bShouldSuppressInvalidate);
-
-		if (bShouldSuppressInvalidate) {
-			$Title.text(this.getTitle() + ":");
-		}
-
-		return this;
-	};
-
-	/**
-	 * Sets the text.
-	 * The default value is empty/undefined.
-	 * @public
-	 * @param {string} sText New value for property text
-	 * @returns {sap.m.ObjectStatus} this to allow method chaining
-	 */
-	ObjectStatus.prototype.setText = function (sText) {
-		var $Text = this.$().children(".sapMObjStatusText"),
-			bShouldSuppressInvalidate = !!$Text.length && !!this.validateProperty("text", sText).trim();
-
-		this.setProperty("text", sText, bShouldSuppressInvalidate);
-
-		if (bShouldSuppressInvalidate) {
-			$Text.text(this.getText());
-		}
-
-		return this;
 	};
 
 	/**

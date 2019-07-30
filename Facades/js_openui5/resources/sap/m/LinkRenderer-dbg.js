@@ -18,6 +18,7 @@
 	 * @namespace
 	 */
 	var LinkRenderer = {
+			apiVersion: 2
 	};
 
 
@@ -40,12 +41,11 @@
 			bEnabled = oControl.getEnabled();
 
 		// Link is rendered as a "<a>" element
-		oRm.write("<a");
-		oRm.writeControlData(oControl);
+		oRm.openStart("a", oControl);
 
-		oRm.addClass("sapMLnk");
+		oRm.class("sapMLnk");
 		if (oControl.getSubtle()) {
-			oRm.addClass("sapMLnkSubtle");
+			oRm.class("sapMLnkSubtle");
 
 			//Add aria-describedby for the SUBTLE announcement
 			if (oAccAttributes.describedby) {
@@ -56,7 +56,7 @@
 		}
 
 		if (oControl.getEmphasized()) {
-			oRm.addClass("sapMLnkEmphasized");
+			oRm.class("sapMLnkEmphasized");
 
 			//Add aria-describedby for the EMPHASIZED announcement
 			if (oAccAttributes.describedby) {
@@ -67,48 +67,47 @@
 		}
 
 		if (!bEnabled) {
-			oRm.addClass("sapMLnkDsbl");
-			oRm.writeAttribute("disabled", "true");
+			oRm.class("sapMLnkDsbl");
+			oRm.attr("disabled", "true");
 		} else {
-			oRm.writeAttribute("tabindex", oControl._getTabindex());
+			oRm.attr("tabindex", oControl._getTabindex());
 		}
 
 		if (oControl.getWrapping()) {
-			oRm.addClass("sapMLnkWrapping");
+			oRm.class("sapMLnkWrapping");
 		}
 
 		if (oControl.getTooltip_AsString()) {
-			oRm.writeAttributeEscaped("title", oControl.getTooltip_AsString());
+			oRm.attr("title", oControl.getTooltip_AsString());
 		}
 
 		/* set href only if link is enabled - BCP incident 1570020625 */
 		if (bIsValid && bEnabled) {
-			oRm.writeAttributeEscaped("href", sHref);
+			oRm.attr("href", sHref);
 		}
 
 		if (oControl.getTarget()) {
-			oRm.writeAttributeEscaped("target", oControl.getTarget());
+			oRm.attr("target", oControl.getTarget());
 		}
 
 		if (oControl.getWidth()) {
-			oRm.addStyle("width", oControl.getWidth());
+			oRm.style("width", oControl.getWidth());
 		} else {
-			oRm.addClass("sapMLnkMaxWidth");
+			oRm.class("sapMLnkMaxWidth");
 		}
 
 		if (sTextAlign) {
-			oRm.addStyle("text-align", sTextAlign);
+			oRm.style("text-align", sTextAlign);
 		}
 
 		// check if textDirection property is not set to default "Inherit" and add "dir" attribute
 		if (sTextDir !== TextDirection.Inherit) {
-			oRm.writeAttribute("dir", sTextDir.toLowerCase());
+			oRm.attr("dir", sTextDir.toLowerCase());
 		}
 
-		oRm.writeAccessibilityState(oControl, oAccAttributes);
-		oRm.writeClasses();
-		oRm.writeStyles();
-		oRm.write(">"); // opening <a> tag
+		oRm.accessibilityState(oControl, oAccAttributes);
+		// opening <a> tag
+		oRm.openEnd();
 
 		if (this.writeText) {
 			this.writeText(oRm, oControl);
@@ -116,7 +115,7 @@
 			this.renderText(oRm, oControl);
 		}
 
-		oRm.write("</a>");
+		oRm.close("a");
 	};
 
 	/**
@@ -126,7 +125,7 @@
 	 * @param {sap.m.Link} oControl An object representation of the control that should be rendered.
 	 */
 	LinkRenderer.renderText = function(oRm, oControl) {
-		oRm.writeEscaped(oControl.getText());
+		oRm.text(oControl.getText());
 	};
 
 	return LinkRenderer;

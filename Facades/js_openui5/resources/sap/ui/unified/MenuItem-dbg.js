@@ -23,7 +23,7 @@ sap.ui.define(['sap/ui/core/IconPool', './MenuItemBase', './library'],
 	 * @extends sap.ui.unified.MenuItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @since 1.21.0
 	 *
 	 * @constructor
@@ -60,7 +60,11 @@ sap.ui.define(['sap/ui/core/IconPool', './MenuItemBase', './library'],
 	MenuItem.prototype.render = function(oRenderManager, oItem, oMenu, oInfo){
 		var rm = oRenderManager;
 		var oSubMenu = oItem.getSubmenu();
-		rm.write("<li ");
+		rm.write("<li");
+
+		if (oItem.getVisible() && oItem.getEnabled()) {
+			rm.writeAttribute("tabindex", "0");
+		}
 
 		var sClass = "sapUiMnuItm";
 		if (oInfo.iItemNo == 1) {
@@ -129,6 +133,14 @@ sap.ui.define(['sap/ui/core/IconPool', './MenuItemBase', './library'],
 
 	MenuItem.prototype.hover = function(bHovered, oMenu){
 		this.$().toggleClass("sapUiMnuItmHov", bHovered);
+	};
+
+	MenuItem.prototype.focus = function(oMenu){
+		if (this.getEnabled() && this.getVisible()) {
+			this.$().focus();
+		} else {
+			oMenu.focus();
+		}
 	};
 
 	return MenuItem;

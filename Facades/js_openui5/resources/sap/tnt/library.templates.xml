@@ -286,7 +286,7 @@
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
 	dragDropConfig: [], // sap.ui.core.dnd.DragDropBase, since 1.56
-	header: undefined, // sap.tnt.ToolHeader
+	header: undefined, // sap.tnt.IToolHeader
 	sideContent: undefined, // sap.tnt.SideNavigation
 	mainContents: [], // sap.ui.core.Control
 	validateFieldGroup: [function (oEvent) {
@@ -307,7 +307,7 @@
 		<tooltip></tooltip> <!-- sap.ui.core.TooltipBase -->
 		<dependents></dependents> <!-- sap.ui.core.Element, since 1.19 -->
 		<dragDropConfig></dragDropConfig> <!-- sap.ui.core.dnd.DragDropBase, since 1.56 -->
-		<header></header> <!-- sap.tnt.ToolHeader -->
+		<header></header> <!-- sap.tnt.IToolHeader -->
 		<sideContent></sideContent> <!-- sap.tnt.SideNavigation -->
 		<mainContents></mainContents> <!-- sap.ui.core.Control -->
 </ToolPage>

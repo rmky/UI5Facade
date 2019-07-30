@@ -659,7 +659,7 @@ sap.ui.define([
 	*
 	 * @private
 	 */
-	 Requestor.prototype.getOrCreateBatchQueue = function (sGroupId) {
+	Requestor.prototype.getOrCreateBatchQueue = function (sGroupId) {
 		var aChangeSet,
 			aRequests = this.mBatchQueue[sGroupId];
 
@@ -673,9 +673,9 @@ sap.ui.define([
 			}
 		}
 		return aRequests;
-	 };
+	};
 
-	 /**
+	/**
 	 * Returns the resource path relative to the service URL, including function arguments.
 	 *
 	 * @param {string} sPath
@@ -1003,7 +1003,15 @@ sap.ui.define([
 	 * @private
 	 */
 	Requestor.prototype.reportUnboundMessagesAsJSON = function (sResourcePath, sMessages) {
-		this.oModelInterface.reportUnboundMessages(sResourcePath, JSON.parse(sMessages || null));
+		var aMessages = JSON.parse(sMessages || null);
+
+		if (aMessages) {
+			aMessages.forEach(function (oMessage) {
+				oMessage.technicalDetails = {originalMessage : Object.assign({}, oMessage)};
+			});
+		}
+
+		this.oModelInterface.reportUnboundMessages(sResourcePath, aMessages);
 	};
 
 	/**

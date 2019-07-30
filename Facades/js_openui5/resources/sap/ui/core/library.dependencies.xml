@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.ui.core">
-  <module name="jquery-sap.js" size="121415" compressedSize="120898" excludeFromAllInOne="true" requiresTopLevelScope="true" exposedGlobals="oError">
+  <module name="jquery-sap.js" size="121414" compressedSize="120897" excludeFromAllInOne="true" requiresTopLevelScope="true" exposedGlobals="oError">
     <includes>
       <module name="sap/ui/thirdparty/es6-promise.js"/>
       <module name="jquery.sap.encoder.js"/>
@@ -184,7 +184,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="jquery.sap.script.js" size="18308" compressedSize="3039">
+  <module name="jquery.sap.script.js" size="18492" compressedSize="3038">
     <description>Provides miscellaneous utility functions that might be useful for any script</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -316,7 +316,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </includes>
   </module>
-  <module name="sap-ui-core-nojQuery.js" size="667771" compressedSize="665325" excludeFromAllInOne="true" requiresTopLevelScope="true" exposedGlobals="oError">
+  <module name="sap-ui-core-nojQuery.js" size="669433" compressedSize="666981" excludeFromAllInOne="true" requiresTopLevelScope="true" exposedGlobals="oError">
     <includes>
       <module name="sap/ui/thirdparty/es6-promise.js"/>
       <module name="jquery.sap.global.js"/>
@@ -461,7 +461,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </includes>
   </module>
-  <module name="sap-ui-core.js" size="767400" compressedSize="764958" excludeFromAllInOne="true" requiresTopLevelScope="true" exposedGlobals="oError">
+  <module name="sap-ui-core.js" size="769062" compressedSize="766614" excludeFromAllInOne="true" requiresTopLevelScope="true" exposedGlobals="oError">
     <includes>
       <module name="sap/ui/thirdparty/es6-promise.js"/>
       <module name="jquery.sap.global.js"/>
@@ -785,9 +785,10 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/base/util/UriParameters.js" size="2868" compressedSize="815">
-    <description>IMPORTANT: This is a private module, its API must not be used and is subject to change. Code other than the OpenUI5 libraries must not introduce dependencies to this module.</description>
+  <module name="sap/base/util/UriParameters.js" size="9888" compressedSize="1491">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
+      <module name="sap/base/Log.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
@@ -1077,7 +1078,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/base/Object.js" size="10341" compressedSize="1023">
+  <module name="sap/ui/base/Object.js" size="10606" compressedSize="1023">
     <description>Provides class sap.ui.base.Object</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -1117,7 +1118,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/BlockLayerUtils.js" size="11830" compressedSize="4116">
+  <module name="sap/ui/core/BlockLayerUtils.js" size="11886" compressedSize="4159">
     <description>Provides utility class sap.ui.core.BlockLayerUtils</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -1157,7 +1158,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/Component.js" size="132197" compressedSize="31137">
+  <module name="sap/ui/core/Component.js" size="133700" compressedSize="31815">
     <description>Provides base class sap.ui.core.Component for all components</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -1239,7 +1240,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/Configuration.js" size="79039" compressedSize="22514">
+  <module name="sap/ui/core/Configuration.js" size="79015" compressedSize="22490">
     <description>Provides class sap.ui.core.Configuration</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -1372,7 +1373,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/Element.js" size="61561" compressedSize="12433">
+  <module name="sap/ui/core/Element.js" size="62311" compressedSize="12565">
     <description>Provides the base class for all controls and UI elements.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -1383,6 +1384,7 @@
       <module name="sap/ui/base/ManagedObjectRegistry.js"/>
       <module name="sap/ui/base/Object.js"/>
       <module name="sap/ui/core/ElementMetadata.js"/>
+      <module name="sap/ui/core/RenderManager.js"/>
       <module name="sap/ui/events/F6Navigation.js"/>
       <module name="sap/ui/performance/trace/Interaction.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
@@ -1688,7 +1690,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/RenderManager.js" size="78794" compressedSize="17642">
+  <module name="sap/ui/core/RenderManager.js" size="78988" compressedSize="17649">
     <description>Provides the render manager sap.ui.core.RenderManager</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -2323,7 +2325,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/library-h2-preload.js" size="98384" dynamicDependencies="true">
+  <module name="sap/ui/core/library-h2-preload.js" size="98940" dynamicDependencies="true">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/base/Log.js"/>
@@ -2997,7 +2999,7 @@
       <module name="sap/ui/util/XMLHelper.js"/>
     </includes>
   </module>
-  <module name="sap/ui/core/library-preload.js" size="1664308" dynamicDependencies="true">
+  <module name="sap/ui/core/library-preload.js" size="1665769" dynamicDependencies="true">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/base/Log.js"/>
@@ -4000,7 +4002,7 @@
   </module>
   <module name="sap/ui/core/messagebundle_ca.properties" size="18243">
   </module>
-  <module name="sap/ui/core/messagebundle_cs.properties" size="18961">
+  <module name="sap/ui/core/messagebundle_cs.properties" size="18939">
   </module>
   <module name="sap/ui/core/messagebundle_da.properties" size="17376">
   </module>
@@ -4239,7 +4241,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/mvc/XMLView.js" size="33136" compressedSize="8705">
+  <module name="sap/ui/core/mvc/XMLView.js" size="32415" compressedSize="8484">
     <description>Provides control sap.ui.core.mvc.XMLView.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -4334,7 +4336,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/routing/Route.js" size="21813" compressedSize="3811">
+  <module name="sap/ui/core/routing/Route.js" size="23595" compressedSize="3811">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -4348,7 +4350,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/routing/Router.js" size="44258" compressedSize="8804">
+  <module name="sap/ui/core/routing/Router.js" size="46040" compressedSize="8804">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -4421,7 +4423,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/routing/async/Route.js" size="5127" compressedSize="1877">
+  <module name="sap/ui/core/routing/async/Route.js" size="5766" compressedSize="2024">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -4430,7 +4432,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/routing/async/Target.js" size="10305" compressedSize="3639">
+  <module name="sap/ui/core/routing/async/Target.js" size="10683" compressedSize="3678">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -4456,7 +4458,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/routing/sync/Route.js" size="3221" compressedSize="1181">
+  <module name="sap/ui/core/routing/sync/Route.js" size="4203" compressedSize="1531">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -4627,7 +4629,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/core/support/ToolsAPI.js" size="12891" compressedSize="4959" excludeFromAllInOne="true">
+  <module name="sap/ui/core/support/ToolsAPI.js" size="12281" compressedSize="4767" excludeFromAllInOne="true">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/LoaderExtensions.js"/>
@@ -5854,7 +5856,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/TreeBindingAdapter.js" size="59367" compressedSize="18346">
+  <module name="sap/ui/model/TreeBindingAdapter.js" size="59804" compressedSize="18411">
     <description>Provides class sap.ui.model.odata.TreeBindingAdapter</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -5895,7 +5897,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/analytics/AnalyticalBinding.js" size="220240" compressedSize="65666">
+  <module name="sap/ui/model/analytics/AnalyticalBinding.js" size="220268" compressedSize="65669">
     <description>Provides class sap.ui.model.odata.ODataListBinding</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -5969,7 +5971,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/base/ManagedObjectModel.js" size="32345" compressedSize="10718">
+  <module name="sap/ui/model/base/ManagedObjectModel.js" size="32361" compressedSize="10726">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -6034,7 +6036,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/json/JSONModel.js" size="14575" compressedSize="4103">
+  <module name="sap/ui/model/json/JSONModel.js" size="14579" compressedSize="4103">
     <description>Provides the JSON object based model implementation</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -6199,7 +6201,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/ODataMessageParser.js" size="33296" compressedSize="9355">
+  <module name="sap/ui/model/odata/ODataMessageParser.js" size="33558" compressedSize="9367">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -6352,7 +6354,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/_AnnotationHelperBasics.js" size="16199" compressedSize="4413">
+  <module name="sap/ui/model/odata/_AnnotationHelperBasics.js" size="16393" compressedSize="4483">
     <description>Provides basic internal functions for sap.ui.model.odata.AnnotationHelper</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -6439,7 +6441,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/type/DateTimeBase.js" size="8398" compressedSize="2523">
+  <module name="sap/ui/model/odata/type/DateTimeBase.js" size="8496" compressedSize="2569">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -6589,7 +6591,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/type/String.js" size="8847" compressedSize="2312">
+  <module name="sap/ui/model/odata/type/String.js" size="9504" compressedSize="2552">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -6671,7 +6673,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/v2/ODataListBinding.js" size="48692" compressedSize="19334">
+  <module name="sap/ui/model/odata/v2/ODataListBinding.js" size="48938" compressedSize="19361">
     <description>Provides class sap.ui.model.odata.v2.ODataListBinding</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -6694,7 +6696,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/v2/ODataModel.js" size="250361" compressedSize="67711">
+  <module name="sap/ui/model/odata/v2/ODataModel.js" size="250419" compressedSize="67721">
     <description>Provides class sap.ui.model.odata.v2.ODataModel</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -6772,7 +6774,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/v4/ODataBinding.js" size="34281" compressedSize="8821">
+  <module name="sap/ui/model/odata/v4/ODataBinding.js" size="34540" compressedSize="8901">
     <description>Provides mixin sap.ui.model.odata.v4.ODataBinding for classes extending sap.ui.model.Binding</description>
     <requires>
       <module name="sap/ui/base/SyncPromise.js"/>
@@ -6800,7 +6802,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/v4/ODataListBinding.js" size="86770" compressedSize="22341">
+  <module name="sap/ui/model/odata/v4/ODataListBinding.js" size="87076" compressedSize="22417">
     <description>Provides class sap.ui.model.odata.v4.ODataListBinding</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -6825,7 +6827,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/v4/ODataMetaModel.js" size="115167" compressedSize="24856">
+  <module name="sap/ui/model/odata/v4/ODataMetaModel.js" size="115194" compressedSize="25008">
     <description>Provides class sap.ui.model.odata.v4.ODataMetaModel</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -6840,8 +6842,22 @@
       <module name="sap/ui/model/MetaModel.js"/>
       <module name="sap/ui/model/PropertyBinding.js"/>
       <module name="sap/ui/model/odata/OperationMode.js"/>
+      <module name="sap/ui/model/odata/type/Boolean.js"/>
+      <module name="sap/ui/model/odata/type/Byte.js"/>
+      <module name="sap/ui/model/odata/type/Date.js"/>
+      <module name="sap/ui/model/odata/type/DateTimeOffset.js"/>
+      <module name="sap/ui/model/odata/type/Decimal.js"/>
+      <module name="sap/ui/model/odata/type/Double.js"/>
+      <module name="sap/ui/model/odata/type/Guid.js"/>
+      <module name="sap/ui/model/odata/type/Int16.js"/>
+      <module name="sap/ui/model/odata/type/Int32.js"/>
       <module name="sap/ui/model/odata/type/Int64.js"/>
       <module name="sap/ui/model/odata/type/Raw.js"/>
+      <module name="sap/ui/model/odata/type/SByte.js"/>
+      <module name="sap/ui/model/odata/type/Single.js"/>
+      <module name="sap/ui/model/odata/type/Stream.js"/>
+      <module name="sap/ui/model/odata/type/String.js"/>
+      <module name="sap/ui/model/odata/type/TimeOfDay.js"/>
       <module name="sap/ui/model/odata/v4/ValueListType.js"/>
       <module name="sap/ui/model/odata/v4/lib/_Helper.js"/>
       <module name="sap/ui/thirdparty/URI.js"/>
@@ -6849,7 +6865,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/v4/ODataModel.js" size="67085" compressedSize="12996">
+  <module name="sap/ui/model/odata/v4/ODataModel.js" size="67488" compressedSize="13215">
     <description>Provides class sap.ui.model.odata.v4.ODataModel</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -6876,7 +6892,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/v4/ODataParentBinding.js" size="39650" compressedSize="11355">
+  <module name="sap/ui/model/odata/v4/ODataParentBinding.js" size="39634" compressedSize="11286">
     <description>with dependent bindings</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -6888,7 +6904,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/v4/ODataPropertyBinding.js" size="25122" compressedSize="6665">
+  <module name="sap/ui/model/odata/v4/ODataPropertyBinding.js" size="25505" compressedSize="6668">
     <description>Provides class sap.ui.model.odata.v4.ODataPropertyBinding</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -6925,7 +6941,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/v4/_AnnotationHelperExpression.js" size="28504" compressedSize="7937">
+  <module name="sap/ui/model/odata/v4/_AnnotationHelperExpression.js" size="28605" compressedSize="8007">
     <description>helper module for sap.ui.model.odata.v4.AnnotationHelper.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -6956,7 +6972,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/v4/lib/_Batch.js" size="14807" compressedSize="3009">
+  <module name="sap/ui/model/odata/v4/lib/_Batch.js" size="15046" compressedSize="3049">
     <description>Provides class sap.ui.model.odata.v4.lib._Batch</description>
     <requires>
       <module name="jquery.sap.script.js"/>
@@ -6993,7 +7009,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/v4/lib/_MetadataConverter.js" size="29831" compressedSize="10016">
+  <module name="sap/ui/model/odata/v4/lib/_MetadataConverter.js" size="29762" compressedSize="10016">
     <description>Provides class sap.ui.model.odata.v4.lib._MetadataConverter</description>
     <requires>
       <module name="sap/ui/model/odata/v4/lib/_Helper.js"/>
@@ -7012,13 +7028,13 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/v4/lib/_Parser.js" size="25094" compressedSize="7367">
+  <module name="sap/ui/model/odata/v4/lib/_Parser.js" size="25095" compressedSize="7367">
     <description>Provides class sap.ui.model.odata.v4.lib._Parser</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/v4/lib/_Requestor.js" size="52591" compressedSize="13019">
+  <module name="sap/ui/model/odata/v4/lib/_Requestor.js" size="52773" compressedSize="13116">
     <description>Provides class sap.ui.model.odata.v4.lib._Requestor</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -7053,7 +7069,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/model/odata/v4/lib/_V4MetadataConverter.js" size="17651" compressedSize="8802">
+  <module name="sap/ui/model/odata/v4/lib/_V4MetadataConverter.js" size="17645" compressedSize="8802">
     <description>Provides class sap.ui.model.odata.v4.lib._V4MetadataConverter</description>
     <requires>
       <module name="sap/ui/model/odata/v4/lib/_Helper.js"/>
@@ -7260,7 +7276,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/performance/BeaconRequest.js" size="2657" compressedSize="1217">
+  <module name="sap/ui/performance/BeaconRequest.js" size="2633" compressedSize="1199">
     <description>global Blob</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -7283,7 +7299,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/performance/trace/FESR.js" size="10503" compressedSize="3213">
+  <module name="sap/ui/performance/trace/FESR.js" size="11153" compressedSize="3359">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/Version.js"/>
@@ -7734,10 +7750,12 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/test/gherkin/opa5TestHarness.js" size="7781" compressedSize="3370" excludeFromAllInOne="true">
+  <module name="sap/ui/test/gherkin/opa5TestHarness.js" size="8531" compressedSize="3876" excludeFromAllInOne="true">
     <description>put qunit-coverage last so library files don't get measured</description>
     <requires>
       <module name="jquery.sap.global.js"/>
+      <module name="sap/base/Log.js"/>
+      <module name="sap/base/util/ObjectPath.js"/>
       <module name="sap/ui/qunit/qunit-coverage.js"/>
       <module name="sap/ui/qunit/qunit-css.js"/>
       <module name="sap/ui/qunit/qunit-junit.js"/>
@@ -7752,7 +7770,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/test/gherkin/qUnitTestHarness.js" size="3742" compressedSize="1480" excludeFromAllInOne="true">
+  <module name="sap/ui/test/gherkin/qUnitTestHarness.js" size="3764" compressedSize="1500" excludeFromAllInOne="true">
     <description>so that it doesn't appear in the code coverage list, knowing that the user will need to load it)</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -7783,7 +7801,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/test/launchers/iFrameLauncher.js" size="12999" compressedSize="4575" excludeFromAllInOne="true">
+  <module name="sap/ui/test/launchers/iFrameLauncher.js" size="13220" compressedSize="4674" excludeFromAllInOne="true">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -8113,7 +8131,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/test/starter/_utils.js" size="7336" compressedSize="2915" excludeFromAllInOne="true">
+  <module name="sap/ui/test/starter/_utils.js" size="7338" compressedSize="2917" excludeFromAllInOne="true">
     <description>global sap</description>
     <requires>
       <module name="sap/base/util/merge.js"/>
@@ -8186,7 +8204,7 @@
   </module>
   <module name="sap/ui/thirdparty/iscroll.js" size="33879" compressedSize="20577" excludeFromAllInOne="true" raw="true">
   </module>
-  <module name="sap/ui/thirdparty/jquery-mobile-custom.js" size="70373" compressedSize="18803" raw="true">
+  <module name="sap/ui/thirdparty/jquery-mobile-custom.js" size="70395" compressedSize="18819" raw="true">
     <requires>
       <module name="sap/ui/thirdparty/jquery.js"/>
     </requires>

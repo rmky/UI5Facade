@@ -3,6 +3,7 @@ namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Interfaces\Widgets\iShowData;
 use exface\Core\Widgets\KPI;
+use exface\Core\CommonLogic\Constants\Colors;
 
 /**
  * Generates sap.m.NumericContent controls for KPI widgets
@@ -217,6 +218,40 @@ JS;
     protected function buildJsLabelWrapper($element_constructor)
     {
         return $this->getWidget()->getHideCaption() === true ? $element_constructor : parent::buildJsLabelWrapper($element_constructor);
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5Display::getColorScaleSemanticColorMap()
+     */
+    protected function getColorScaleSemanticColorMap() : array
+    {
+        $semCols = [];
+        foreach (Colors::getSemanticColors() as $semCol) {
+            switch ($semCol) {
+                case Colors::SEMANTIC_ERROR: $ui5Color = 'Error'; break;
+                case Colors::SEMANTIC_WARNING: $ui5Color = 'Critical'; break;
+                case Colors::SEMANTIC_OK: $ui5Color = 'Good'; break;
+                case Colors::SEMANTIC_INFO: $ui5Color = 'Neutral'; break;
+            }
+            $semCols[$semCol] = $ui5Color;
+        }
+        return $semCols;
+    }
+    
+    protected function buildJsColorSetter(string $colorValueJs, bool $isSemanticColor) : string
+    {
+        if ($isSemanticColor) {
+            return "sap.ui.getCore().byId('{$this->getId()}').setValueColor({$colorValueJs});";
+        } else {
+            // TODO
+            return <<<JS
+            
+        console.warn('Cannot set color "' + {$colorValueJs} + '" - only UI5 semantic colors currently supported!');
+        
+JS;
+        }
     }
 }
 ?>

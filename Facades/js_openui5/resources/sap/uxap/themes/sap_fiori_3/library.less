@@ -57,6 +57,11 @@ Common compact/cozy
 
 			&:extend(.sapUxAPAnchorBarFiori3Height);
 
+			&.sapMBtnText .sapMBtnIcon.sapMBtnIconRight {
+				padding-right: 0px;
+				padding-left: 0px;
+			}
+
 			.sapMBtnContent,
 			.sapMBtnIcon {
 				color: @sapUiContentLabelColor;
@@ -841,11 +846,6 @@ html[dir=rtl] .sapUxAPObjectPageLayout,
 /* Fiori 3 theme                                  */
 /* ============================================== */
 
-.sapUxAPObjectPageSubSection {
-	padding: 1rem 0;
-	box-sizing: border-box;
-}
-
 .sapUxAPObjectPageSubSectionHeaderTitle {
 	font-size: @sapMFontHeader5Size;
 	color: @sapUiGroupTitleTextColor;
@@ -860,4 +860,5 @@ html[dir=rtl] .sapUxAPObjectPageLayout,
 	outline: 1px dotted @sapUiContentFocusColor;
 	outline-offset: -1px;
 }
+
 /* END "ObjectPageSubSection.less" */

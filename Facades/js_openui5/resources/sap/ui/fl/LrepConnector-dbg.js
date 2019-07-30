@@ -30,7 +30,7 @@ sap.ui.define([
 	 * @private
 	 * @sap-restricted
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 */
 	var LrepConnector = function(mParameters) {
 		this._initClientParam();
@@ -323,42 +323,41 @@ sap.ui.define([
 				});
 			}
 
+			function prepareErrorAndReject(fnReject, oXhr, sStatus, sErrorThrown) {
+				// Fetching XSRF Token failed
+				var oError = new Error(sErrorThrown);
+				oError.status = "error";
+				oError.code = oXhr.statusCode().status;
+				oError.messages = this._getMessagesFromXHR(oXhr);
+				fnReject(oError);
+			}
+
 			function fetchTokenAndHandleRequest(oResponse, sStatus, oXhr) {
 				this._sXsrfToken = oXhr.getResponseHeader("X-CSRF-Token");
 				mOptions.headers = mOptions.headers || {};
 				mOptions.headers["X-CSRF-Token"] = this._sXsrfToken;
 
 				// Re-send request after fetching token
-				jQuery.ajax(sUri, mOptions).done(handleValidRequest).fail(function(oXhr, sStatus, sErrorThrown) {
-					var oError = new Error(sErrorThrown);
-					oError.status = "error";
-					oError.code = oXhr.statusCode().status;
-					oError.messages = this._getMessagesFromXHR(oXhr);
-					reject(oError);
-				}.bind(this));
+				jQuery.ajax(sUri, mOptions)
+					.done(handleValidRequest)
+					.fail(prepareErrorAndReject.bind(this, reject));
 			}
 
-			function refetchTokenAndRequestAgainOrHandleInvalidRequest(oXhr) {
+			function refetchTokenAndRequestAgainOrHandleInvalidRequest(fnResolve, fnReject, oXhr, sStatus, sErrorThrown) {
 				if (oXhr.status === 403) {
 					// Token seems to be invalid, refetch and then resend
-					jQuery.ajax(sFetchXsrfTokenUrl, mFetchXsrfTokenOptions).done(fetchTokenAndHandleRequest).fail(function() {
+					jQuery.ajax(sFetchXsrfTokenUrl, mFetchXsrfTokenOptions).done(fetchTokenAndHandleRequest.bind(this)).fail(function() {
 						// Fetching XSRF Token failed
-						reject({
+						fnReject({
 							status: "error"
 						});
 					});
 				} else if (mOptions && mOptions.type === "DELETE" && oXhr.status === 404) {
 						// Do not reject, if a file was not found during deletion
 						// (can be the case if another user already triggered a restore meanwhile)
-					resolve();
+					fnResolve();
 				} else {
-					var result;
-					result = {
-						status: "error",
-						code: oXhr.statusCode().status,
-						messages: this._getMessagesFromXHR(oXhr)
-					};
-					reject(result);
+					prepareErrorAndReject.call(this, fnReject, oXhr, sStatus, sErrorThrown);
 				}
 			}
 
@@ -374,17 +373,14 @@ sap.ui.define([
 
 			if (bRequestCSRFToken) {
 				// Fetch XSRF Token
-				jQuery.ajax(sFetchXsrfTokenUrl, mFetchXsrfTokenOptions).done(fetchTokenAndHandleRequest.bind(this)).fail(function(oXhr) {
-					// Fetching XSRF Token failed
-					reject({
-						status: "error",
-						code: oXhr.statusCode().status,
-						messages: this._getMessagesFromXHR(oXhr)
-					});
-				}.bind(this));
+				jQuery.ajax(sFetchXsrfTokenUrl, mFetchXsrfTokenOptions)
+					.done(fetchTokenAndHandleRequest.bind(this))
+					.fail(prepareErrorAndReject.bind(this, reject));
 			} else {
 				// Send normal request
-				jQuery.ajax(sUri, mOptions).done(handleValidRequest.bind(this)).fail(refetchTokenAndRequestAgainOrHandleInvalidRequest.bind(this));
+				jQuery.ajax(sUri, mOptions)
+					.done(handleValidRequest.bind(this))
+					.fail(refetchTokenAndRequestAgainOrHandleInvalidRequest.bind(this, resolve, reject));
 			}
 		}.bind(this));
 	};
@@ -583,7 +579,7 @@ sap.ui.define([
 			if (oError.code === 404) {
 				LrepConnector._bServiceAvailability = false;
 			}
-				//In case of failure, resolve promise without value. Error handle is done in Settings class
+			//In case of failure, resolve promise without value. Error handle is done in Settings class
 			return Promise.resolve();
 		});
 	};

@@ -87,7 +87,7 @@ function(
 		 * @implements sap.ui.core.IFormContent
 		 *
 		 * @author SAP SE
-		 * @version 1.67.1
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @public
@@ -700,14 +700,15 @@ function(
 		Select.prototype._handleAriaActiveDescendant = function(vItem) {
 			var oDomRef = this.getDomRef(),
 				oItemDomRef = vItem && vItem.getDomRef(),
-				sActivedescendant = "aria-activedescendant";
+				sActivedescendant = "aria-activedescendant",
+				bIconOnly = this.getType() === SelectType.IconOnly;
 
 			if (!oDomRef) {
 				return;
 			}
 
 			// the aria-activedescendant attribute is set when the item is rendered
-			if (oItemDomRef && this.isOpen()) {
+			if (oItemDomRef && this.isOpen() && !bIconOnly) {
 				oDomRef.setAttribute(sActivedescendant, vItem.getId());
 			} else {
 				oDomRef.removeAttribute(sActivedescendant);
@@ -767,7 +768,8 @@ function(
 		Select.prototype.onAfterOpen = function(oControlEvent) {
 			var oDomRef = this.getFocusDomRef(),
 				oItem = null,
-				$oLabel = this.$("label");
+				$oLabel = this.$("label"),
+				bIconOnly = this.getType() === SelectType.IconOnly;
 
 			if (!oDomRef) {
 				return;
@@ -788,7 +790,9 @@ function(
 
 				// note: the "aria-activedescendant" attribute is set
 				// when the currently active descendant is visible and in view
-				oDomRef.setAttribute("aria-activedescendant", oItem.getId());
+				if (!bIconOnly) {
+					oDomRef.setAttribute("aria-activedescendant", oItem.getId());
+				}
 				this.scrollToItem(oItem);
 			}
 		};
@@ -799,7 +803,8 @@ function(
 		 */
 		Select.prototype.onBeforeClose = function(oControlEvent) {
 			var oDomRef = this.getFocusDomRef(),
-				CSS_CLASS = this.getRenderer().CSS_CLASS;
+				CSS_CLASS = this.getRenderer().CSS_CLASS,
+				bIconOnly = this.getType() === SelectType.IconOnly;
 
 			if (oDomRef) {
 
@@ -807,7 +812,9 @@ function(
 				oDomRef.removeAttribute("aria-controls");
 
 				// the "aria-activedescendant" attribute is removed when the currently active descendant is not visible
-				oDomRef.removeAttribute("aria-activedescendant");
+				if (!bIconOnly) {
+					oDomRef.removeAttribute("aria-activedescendant");
+				}
 
 				// if the focus is back to the input after closing the picker,
 				// the value state message should be reopened
@@ -2775,7 +2782,7 @@ function(
 		 * @returns {Object} The <code>sap.m.Select</code> accessibility information
 		 */
 		Select.prototype.getAccessibilityInfo = function() {
-			var bIconOnly = this.getType() === "IconOnly",
+			var bIconOnly = this.getType() === SelectType.IconOnly,
 				oInfo = {
 					role: this.getRenderer().getAriaRole(this),
 					focusable: this.getEnabled(),

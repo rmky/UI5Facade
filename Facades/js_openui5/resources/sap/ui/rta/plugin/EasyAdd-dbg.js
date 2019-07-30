@@ -25,7 +25,7 @@ sap.ui.define([
 	 * @class The EasyAdd Plugin adds an Icon to an Overlay, which allows to trigger add operations directly
 	 * @extends sap.ui.rta.plugin.additionalElements.AdditionalElementsPlugin
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @since 1.48
@@ -119,19 +119,20 @@ sap.ui.define([
 	 * @override
 	 */
 	EasyAdd.prototype._isEditable = function(oOverlay) {
-		var bIsEditable = AdditionalElementsPlugin.prototype._isEditable.apply(this, arguments);
-		if (oOverlay._oAddButton) {
-			var bIsLayout = oOverlay.hasStyleClass("sapUiRtaPersAddTop");
-			var sOverlayIsSibling = bIsLayout ? "asChild" : "asSibling";
-			oOverlay._oAddButton.setEnabled(bIsEditable[sOverlayIsSibling]);
-			if (bIsLayout) {
-				var oLayout = oOverlay.getElement();
-				oLayout.attachEventOnce("onAfterRenderingDOMReady", function() {
-					oLayout.$("sectionsContainer").addClass("sapUiRtaPaddingTop");
-				});
+		return AdditionalElementsPlugin.prototype._isEditable.apply(this, arguments).then(function(bIsEditable) {
+			if (oOverlay._oAddButton) {
+				var bIsLayout = oOverlay.hasStyleClass("sapUiRtaPersAddTop");
+				var sOverlayIsSibling = bIsLayout ? "asChild" : "asSibling";
+				oOverlay._oAddButton.setEnabled(bIsEditable[sOverlayIsSibling]);
+				if (bIsLayout) {
+					var oLayout = oOverlay.getElement();
+					oLayout.attachEventOnce("onAfterRenderingDOMReady", function() {
+						oLayout.$("sectionsContainer").addClass("sapUiRtaPaddingTop");
+					});
+				}
 			}
-		}
-		return bIsEditable;
+			return bIsEditable;
+		});
 	};
 
 	/**

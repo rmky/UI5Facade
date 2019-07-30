@@ -18,8 +18,7 @@ sap.ui.define(["sap/ui/core/library"],
 	 */
 	var ObjectAttributeRenderer = {
 		MAX_LINES: {
-			SINGLE_LINE: 1,
-			MULTI_LINE: 2
+			SINGLE_LINE: 1
 		}
 	};
 
@@ -110,7 +109,7 @@ sap.ui.define(["sap/ui/core/library"],
 
 		if (oAttrAggregation && oParent) {
 			if ((oParent instanceof sap.m.ObjectHeader) && !oOA.getParent().getResponsive()) {
-				oOA._setControlWrapping(oAttrAggregation, true, ObjectAttributeRenderer.MAX_LINES.MULTI_LINE);
+				oOA._setControlWrapping(oAttrAggregation, true);
 			} else {
 				oOA._setControlWrapping(oAttrAggregation, false, ObjectAttributeRenderer.MAX_LINES.SINGLE_LINE);
 			}

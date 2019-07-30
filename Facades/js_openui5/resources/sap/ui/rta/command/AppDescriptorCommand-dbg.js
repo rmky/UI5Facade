@@ -21,7 +21,7 @@ sap.ui.define([
 	 * @extends sap.ui.rta.command.BaseCommand
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @private
@@ -81,7 +81,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Create the change for the app descriptor and add it to the ChangePersistence.
+	 * Create the change for the app descriptor and adds it to the Flex Persistence.
 	 * @return {Promise} Returns Promise resolving after change has been created and stored
 	 */
 	AppDescriptorCommand.prototype.createAndStoreChange = function() {

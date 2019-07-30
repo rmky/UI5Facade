@@ -1247,6 +1247,7 @@
 				"sap/ui/dt/OverlayRegistry.js",
 				"sap/ui/dt/OverlayUtil.js",
 				"sap/ui/dt/Plugin.js",
+				"sap/ui/dt/Util.js",
 				"sap/ui/dt/plugin/ElementMover.js",
 				"sap/ui/events/KeyCodes.js"
 			]
@@ -1258,6 +1259,7 @@
 				"sap/ui/dt/OverlayRegistry.js",
 				"sap/ui/dt/OverlayUtil.js",
 				"sap/ui/dt/Plugin.js",
+				"sap/ui/dt/Util.js",
 				"sap/ui/dt/plugin/ElementMover.js",
 				"sap/ui/events/KeyCodes.js"
 			]
@@ -1298,7 +1300,8 @@
 				"sap/ui/base/Object.js",
 				"sap/ui/dt/DOMUtil.js",
 				"sap/ui/dt/ElementUtil.js",
-				"sap/ui/dt/OverlayUtil.js"
+				"sap/ui/dt/OverlayUtil.js",
+				"sap/ui/dt/Util.js"
 			]
 		},
 		{
@@ -1309,7 +1312,8 @@
 				"sap/ui/base/Object.js",
 				"sap/ui/dt/DOMUtil.js",
 				"sap/ui/dt/ElementUtil.js",
-				"sap/ui/dt/OverlayUtil.js"
+				"sap/ui/dt/OverlayUtil.js",
+				"sap/ui/dt/Util.js"
 			]
 		},
 		{

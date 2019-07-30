@@ -31,7 +31,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.67.1
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @public
@@ -52,7 +52,7 @@ sap.ui.define([
 					/**
 					 * The control to appear in the header area.
 					 */
-					header: {type: 'sap.tnt.ToolHeader', multiple: false},
+					header: {type: 'sap.tnt.IToolHeader', multiple: false},
 					/**
 					 * The side menu of the layout.
 					 */

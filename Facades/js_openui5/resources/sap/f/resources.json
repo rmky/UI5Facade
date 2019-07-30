@@ -121,6 +121,7 @@
 				"sap/f/DynamicPageTitle.js",
 				"sap/f/library.js",
 				"sap/m/ScrollBar.js",
+				"sap/m/library.js",
 				"sap/ui/Device.js",
 				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/core/Configuration.js",
@@ -145,6 +146,7 @@
 				"sap/f/DynamicPageTitle.js",
 				"sap/f/library.js",
 				"sap/m/ScrollBar.js",
+				"sap/m/library.js",
 				"sap/ui/Device.js",
 				"sap/ui/base/ManagedObjectObserver.js",
 				"sap/ui/core/Configuration.js",
@@ -575,17 +577,11 @@
 		{
 			"name": "ShellBarRenderer-dbg.js",
 			"module": "sap/f/ShellBarRenderer.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/core/Renderer.js"
-			]
+			"isDebug": true
 		},
 		{
 			"name": "ShellBarRenderer.js",
-			"module": "sap/f/ShellBarRenderer.js",
-			"required": [
-				"sap/ui/core/Renderer.js"
-			]
+			"module": "sap/f/ShellBarRenderer.js"
 		},
 		{
 			"name": "cards/ActionEnablement-dbg.js",
@@ -1456,6 +1452,50 @@
 			"raw": "designtime/messagebundle.properties"
 		},
 		{
+			"name": "dnd/GridDragOver-dbg.js",
+			"module": "sap/f/dnd/GridDragOver.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/base/Object.js",
+				"sap/ui/thirdparty/jquery.js"
+			]
+		},
+		{
+			"name": "dnd/GridDragOver.js",
+			"module": "sap/f/dnd/GridDragOver.js",
+			"required": [
+				"sap/ui/base/Object.js",
+				"sap/ui/thirdparty/jquery.js"
+			]
+		},
+		{
+			"name": "dnd/GridDropInfo-dbg.js",
+			"module": "sap/f/dnd/GridDropInfo.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/Log.js",
+				"sap/f/dnd/GridDragOver.js",
+				"sap/ui/Device.js",
+				"sap/ui/core/dnd/DropInfo.js",
+				"sap/ui/core/library.js"
+			]
+		},
+		{
+			"name": "dnd/GridDropInfo.control",
+			"designtime": true
+		},
+		{
+			"name": "dnd/GridDropInfo.js",
+			"module": "sap/f/dnd/GridDropInfo.js",
+			"required": [
+				"sap/base/Log.js",
+				"sap/f/dnd/GridDragOver.js",
+				"sap/ui/Device.js",
+				"sap/ui/core/dnd/DropInfo.js",
+				"sap/ui/core/library.js"
+			]
+		},
+		{
 			"name": "flexibility/DynamicPageTitle.flexibility-dbg.js",
 			"module": "sap/f/flexibility/DynamicPageTitle.flexibility.js",
 			"isDebug": true,
@@ -1564,6 +1604,7 @@
 				"sap/ui/core/VerticalAlign.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
 				"sap/ui/core/delegate/ScrollEnablement.js",
+				"sap/ui/core/dnd/DropInfo.js",
 				"sap/ui/core/library.js",
 				"sap/ui/core/routing/History.js",
 				"sap/ui/core/routing/Router.js",
@@ -1642,6 +1683,8 @@
 				"sap/f/designtime/SemanticPage.create.fragment.xml",
 				"sap/f/designtime/SemanticPage.designtime.js",
 				"sap/f/designtime/library.designtime.js",
+				"sap/f/dnd/GridDragOver.js",
+				"sap/f/dnd/GridDropInfo.js",
 				"sap/f/flexibility/DynamicPageTitle.flexibility.js",
 				"sap/f/library.support.js",
 				"sap/f/routing/Router.js",
@@ -1773,6 +1816,7 @@
 				"sap/ui/core/VerticalAlign.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
 				"sap/ui/core/delegate/ScrollEnablement.js",
+				"sap/ui/core/dnd/DropInfo.js",
 				"sap/ui/core/library.js",
 				"sap/ui/core/routing/History.js",
 				"sap/ui/core/routing/Router.js",
@@ -1851,6 +1895,8 @@
 				"sap/f/designtime/SemanticPage.create.fragment.xml",
 				"sap/f/designtime/SemanticPage.designtime.js",
 				"sap/f/designtime/library.designtime.js",
+				"sap/f/dnd/GridDragOver.js",
+				"sap/f/dnd/GridDropInfo.js",
 				"sap/f/flexibility/DynamicPageTitle.flexibility.js",
 				"sap/f/library.support.js",
 				"sap/f/routing/Router.js",
@@ -1985,6 +2031,7 @@
 				"sap/ui/core/VerticalAlign.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
 				"sap/ui/core/delegate/ScrollEnablement.js",
+				"sap/ui/core/dnd/DropInfo.js",
 				"sap/ui/core/library.js",
 				"sap/ui/core/routing/History.js",
 				"sap/ui/core/routing/Router.js",
@@ -2051,6 +2098,8 @@
 				"sap/f/cards/TableContent.js",
 				"sap/f/cards/TimelineContent.js",
 				"sap/f/changeHandler/MoveDynamicPageTitleActions.js",
+				"sap/f/dnd/GridDragOver.js",
+				"sap/f/dnd/GridDropInfo.js",
 				"sap/f/flexibility/DynamicPageTitle.flexibility.js",
 				"sap/f/library.js",
 				"sap/f/manifest.json",
@@ -2185,6 +2234,7 @@
 				"sap/ui/core/VerticalAlign.js",
 				"sap/ui/core/delegate/ItemNavigation.js",
 				"sap/ui/core/delegate/ScrollEnablement.js",
+				"sap/ui/core/dnd/DropInfo.js",
 				"sap/ui/core/library-preload.json",
 				"sap/ui/core/library.js",
 				"sap/ui/core/routing/History.js",
@@ -2253,6 +2303,8 @@
 				"sap/f/cards/TableContent.js",
 				"sap/f/cards/TimelineContent.js",
 				"sap/f/changeHandler/MoveDynamicPageTitleActions.js",
+				"sap/f/dnd/GridDragOver.js",
+				"sap/f/dnd/GridDropInfo.js",
 				"sap/f/flexibility/DynamicPageTitle.flexibility.js",
 				"sap/f/library.js",
 				"sap/f/manifest.json",
@@ -3614,6 +3666,11 @@
 		},
 		{
 			"name": "themes/base/GridContainer.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "themes/base/GridDragAndDrop.less",
 			"designtime": true,
 			"theme": "base"
 		},

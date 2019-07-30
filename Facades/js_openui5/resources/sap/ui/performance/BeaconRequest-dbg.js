@@ -31,7 +31,15 @@ sap.ui.define(["sap/base/Log"], function (Log) {
 		this._nMaxBufferLength = option.maxBufferLength || 10;
 		this._aBuffer = [];
 		this._sUrl = option.url;
-		this.attachSendOnUnload();
+
+		/**
+		 * Send data if the browser has been closed
+		 */
+		document.addEventListener("visibilitychange", function () {
+			if (document.visibilityState === "hidden") {
+				this.send();
+			}
+		}.bind(this));
 	};
 
 	/**
@@ -77,15 +85,6 @@ sap.ui.define(["sap/base/Log"], function (Log) {
 		});
 		window.navigator.sendBeacon(this._sUrl, oBeaconDataToSend);
 		this.clear();
-	};
-
-	/**
-	 * Send data if the browser has been closed
-	 */
-	BeaconRequest.prototype.attachSendOnUnload = function() {
-		window.addEventListener("unload", function (e) {
-			this.send();
-		}.bind(this));
 	};
 
 	/**

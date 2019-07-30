@@ -8579,6 +8579,7 @@
 	rememberSelections: false, // boolean, since 1.18
 	contentHeight: undefined, // sap.ui.core.CSSSize
 	showClearButton: false, // boolean, since 1.58
+	confirmButtonText: undefined, // string, since 1.68
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -8618,6 +8619,7 @@
 	rememberSelections="false"
 	contentHeight=""
 	showClearButton="false"
+	confirmButtonText=""
 	validateFieldGroup=""
 	confirm=""
 	search=""
@@ -9730,6 +9732,7 @@
 	rememberSelections: false, // boolean, since 1.18
 	contentHeight: undefined, // sap.ui.core.CSSSize
 	showClearButton: false, // boolean, since 1.58
+	confirmButtonText: undefined, // string, since 1.68
 	tooltip: undefined, // sap.ui.core.TooltipBase
 	customData: [], // sap.ui.core.CustomData
 	dependents: [], // sap.ui.core.Element, since 1.19
@@ -9770,6 +9773,7 @@
 	rememberSelections="false"
 	contentHeight=""
 	showClearButton="false"
+	confirmButtonText=""
 	validateFieldGroup=""
 	confirm=""
 	search=""

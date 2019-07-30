@@ -30,7 +30,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.FakeLrepConnector
 	 * @experimental Since 1.27.0
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 */
 	function FakeLrepConnector(sInitialComponentJsonPath) {
 		this.sInitialComponentJsonPath = sInitialComponentJsonPath;

@@ -9,6 +9,7 @@ sap.ui.define([
 	"./library",
 	"sap/ui/core/Control",
 	"sap/m/ScrollBar",
+	"sap/m/library",
 	"sap/ui/base/ManagedObjectObserver",
 	"sap/ui/core/ResizeHandler",
 	"sap/ui/core/Configuration",
@@ -24,6 +25,7 @@ sap.ui.define([
 	library,
 	Control,
 	ScrollBar,
+	mLibrary,
 	ManagedObjectObserver,
 	ResizeHandler,
 	Configuration,
@@ -37,6 +39,9 @@ sap.ui.define([
 	coreLibrary
 ) {
 	"use strict";
+
+	// shortcut for sap.m.PageBackgroundDesign
+	var PageBackgroundDesign = mLibrary.PageBackgroundDesign;
 
 	/**
 	 * Constructor for a new <code>DynamicPage</code>.
@@ -101,7 +106,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -152,6 +157,13 @@ sap.ui.define([
 				 * Determines whether the footer is visible.
 				 */
 				showFooter: {type: "boolean", group: "Behavior", defaultValue: false},
+
+				/**
+				 * Determines the background color of <code>DynamicPage</code>.
+				 *
+				 * @since 1.68
+				 */
+				backgroundDesign : {type: "sap.m.PageBackgroundDesign", group: "Appearance", defaultValue: PageBackgroundDesign.Standard},
 
 				/**
 				 * Optimizes <code>DynamicPage</code> responsiveness on small screens and behavior

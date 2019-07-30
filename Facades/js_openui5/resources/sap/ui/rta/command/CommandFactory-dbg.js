@@ -218,10 +218,30 @@ function(
 		return oAction;
 	}
 
+	function adjustAddODataPropertyCommand(mSettings) {
+		mSettings.element = sap.ui.getCore().byId(getTemplateElementId(mSettings.element));
+		evaluateResult(mSettings.element);
+		mSettings.parentId = getTemplateElementId(mSettings.parentId);
+		evaluateResult(mSettings.parentId);
+	}
+
 	function configureRevealCommand(oElement, mSettings, oDesignTimeMetadata) {
 		var oRevealedElement = mSettings.element;
 		var oAction = oDesignTimeMetadata.getAction("reveal", oRevealedElement);
 		return oAction;
+	}
+
+	function adjustRevealCommand(mSettings) {
+		mSettings.element = sap.ui.getCore().byId(getTemplateElementId(mSettings.element));
+		evaluateResult(mSettings.element);
+		if (mSettings.revealedElementId) {
+			mSettings.revealedElementId = getTemplateElementId(mSettings.revealedElementId);
+			evaluateResult(mSettings.revealedElementId);
+		}
+		if (mSettings.directParent) {
+			mSettings.directParent = sap.ui.getCore().byId(getTemplateElementId(mSettings.directParent));
+			evaluateResult(mSettings.directParent);
+		}
 	}
 
 	function configureCustomAddCommand(oElement, mSettings, oDesignTimeMetadata) {
@@ -274,11 +294,13 @@ function(
 		},
 		addODataProperty : {
 			clazz : 'sap.ui.rta.command.AddODataProperty',
-			configure : configureAddODataPropertyCommand
+			configure : configureAddODataPropertyCommand,
+			adjustForBinding : adjustAddODataPropertyCommand
 		},
 		reveal : {
 			clazz : 'sap.ui.rta.command.Reveal',
-			configure : configureRevealCommand
+			configure : configureRevealCommand,
+			adjustForBinding : adjustRevealCommand
 		},
 		customAdd : {
 			clazz : 'sap.ui.rta.command.CustomAdd',
@@ -400,7 +422,7 @@ function(
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @private

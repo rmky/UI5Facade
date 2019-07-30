@@ -23,7 +23,7 @@ sap.ui.define(['sap/ui/core/Element', './library'],
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @since 1.21.0
 	 *
 	 * @constructor
@@ -118,6 +118,8 @@ sap.ui.define(['sap/ui/core/Element', './library'],
 	MenuItemBase.prototype.hover = function(bHovered, oMenu){
 		this.$("txt").attr("style", bHovered ? "white-space:nowrap;display:inline-block;padding:1px;color:red;" : "white-space:nowrap;display:inline-block;padding:1px;color:black;");
 	};
+
+	MenuItemBase.prototype.focus = function() {};
 
 	/**
 	 * Event handler which is called whenever the submenu of the item is opened or closed.

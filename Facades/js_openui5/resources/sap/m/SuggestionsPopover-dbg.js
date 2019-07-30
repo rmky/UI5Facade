@@ -89,7 +89,7 @@ sap.ui.define([
 	 * @alias sap.m.SuggestionsPopover
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 */
 	var SuggestionsPopover = EventProvider.extend("sap.m.SuggestionsPopover", /** @lends sap.m.SuggestionsPopover.prototype */ {
 
@@ -412,7 +412,7 @@ sap.ui.define([
 			(new Popover(oInput.getId() + "-popup", {
 				showArrow: false,
 				showHeader: true,
-				placement: PlacementType.Vertical,
+				placement: PlacementType.VerticalPreferredBottom,
 				initialFocus: oInput,
 				horizontalScrolling: true
 			}))

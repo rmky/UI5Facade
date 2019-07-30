@@ -73,9 +73,14 @@ class UI5View implements UI5ViewInterface
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ViewInterface::getPath()
      */
-    public function getPath() : string
+    public function getPath(bool $relativeToAppRoot = false) : string
     {
-        return $this->webapp::convertNameToPath($this->getName(), '.view.js');
+        if ($relativeToAppRoot === true) {
+            $name = StringDataType::substringAfter($this->getName(), $this->getController()->getWebapp()->getComponentName() . '.');
+        } else {
+            $name = $this->getName();
+        }
+        return $this->webapp::convertNameToPath($name, '.view.js');
     }
 
     /**

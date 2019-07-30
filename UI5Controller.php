@@ -369,9 +369,14 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::getPath()
      */
-    public function getPath() : string
+    public function getPath(bool $relativeToAppRoot = false) : string
     {
-        return $this->webapp::convertNameToPath($this->getName(), '.controller.js');
+        if ($relativeToAppRoot === true) {
+            $name = StringDataType::substringAfter($this->getName(), $this->getWebapp()->getComponentName() . '.');
+        } else {
+            $name = $this->getName();
+        }
+        return $this->webapp::convertNameToPath($name, '.controller.js');
     }
     
     /**

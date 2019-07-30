@@ -7,7 +7,6 @@
 sap.ui.define([
 	"sap/ui/thirdparty/jquery",
 	"sap/ui/fl/Utils",
-	"sap/ui/fl/FlexControllerFactory",
 	"sap/ui/fl/registry/Settings",
 	"sap/ui/dt/OverlayUtil",
 	"sap/ui/dt/DOMUtil",
@@ -19,7 +18,6 @@ sap.ui.define([
 function(
 	jQuery,
 	FlexUtils,
-	FlexControllerFactory,
 	Settings,
 	OverlayUtil,
 	DOMUtil,
@@ -36,7 +34,7 @@ function(
 	 * @class Utility functionality to work with controls, e.g. iterate through aggregations, find parents, etc.
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @private
 	 * @static
@@ -511,17 +509,6 @@ function(
 	};
 
 	/**
-	 * Returns the FlexController of the App Component where the App Descriptor changes are saved
-	 *
-	 * @param {sap.ui.base.ManagedObject} oControl control or app component for which the flex controller should be instantiated
-	 * @returns {sap.ui.fl.FlexController} Returns FlexController Instance of Component for App Descriptor changes
-	 */
-	Utils.getAppDescriptorFlexController = function(oControl) {
-		var oAppDescriptorComponent = FlexUtils.getAppDescriptorComponentObjectForControl(oControl);
-		return FlexControllerFactory.create(oAppDescriptorComponent.name, oAppDescriptorComponent.version);
-	};
-
-	/**
 	 * Merging helper (pool analog of lodash.mergeWith) which allows custom function
 	 * for resolving merging conflicts.
 	 *
@@ -679,6 +666,22 @@ function(
 			return true;
 		}
 		return false;
+	};
+
+	/**
+	 * Checks if every passed control is available and not currently being destroyed
+	 * If that is the case a callback function is called and the result returned.
+	 *
+	 * @param {sap.ui.core.Control[]} aControls - array of controls that should be available
+	 * @param {function} fnCallback - function that will be called and the result returned
+	 * @returns {any|undefined} Returns the result of the function or undefined
+	 */
+	Utils.doIfAllControlsAreAvailable = function(aControls, fnCallback) {
+		if (aControls.every(function(oControl) {
+			return oControl && !oControl._bIsBeingDestroyed;
+		})) {
+			return fnCallback();
+		}
 	};
 
 	return Utils;

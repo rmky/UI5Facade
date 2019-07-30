@@ -121,7 +121,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/BarInPageEnabler.js" size="7104" compressedSize="2535">
+  <module name="sap/m/BarInPageEnabler.js" size="6995" compressedSize="2449">
     <description>Provides helper sap.m.BarInPageEnabler</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -157,7 +157,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/BreadcrumbsRenderer.js" size="2121" compressedSize="1145">
+  <module name="sap/m/BreadcrumbsRenderer.js" size="2019" compressedSize="1045">
     <description>Provides default renderer for control sap.m.Breadcrumbs</description>
     <requires>
       <module name="sap/m/Text.js"/>
@@ -195,7 +195,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/Button.js" size="18644" compressedSize="6371">
+  <module name="sap/m/Button.js" size="19324" compressedSize="6664">
     <description>Provides control sap.m.Button.</description>
     <requires>
       <module name="sap/m/ButtonRenderer.js"/>
@@ -205,12 +205,13 @@
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/EnabledPropagator.js"/>
       <module name="sap/ui/core/IconPool.js"/>
+      <module name="sap/ui/core/LabelEnablement.js"/>
       <module name="sap/ui/core/library.js"/>
       <module name="sap/ui/events/KeyCodes.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/ButtonRenderer.js" size="7986" compressedSize="3201">
+  <module name="sap/m/ButtonRenderer.js" size="7961" compressedSize="3180">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/security/encodeXML.js"/>
@@ -222,7 +223,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/Carousel.js" size="41356" compressedSize="14975">
+  <module name="sap/m/Carousel.js" size="41955" compressedSize="15037">
     <description>Provides control sap.m.Carousel.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -262,7 +263,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/CheckBox.js" size="17694" compressedSize="6050">
+  <module name="sap/m/CheckBox.js" size="16694" compressedSize="5346">
     <description>Provides control sap.m.CheckBox.</description>
     <requires>
       <module name="sap/m/CheckBoxRenderer.js"/>
@@ -279,7 +280,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/CheckBoxRenderer.js" size="4441" compressedSize="2220">
+  <module name="sap/m/CheckBoxRenderer.js" size="4240" compressedSize="2020">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/Device.js"/>
@@ -347,7 +348,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/ColumnHeaderPopover.js" size="9845" compressedSize="5269">
+  <module name="sap/m/ColumnHeaderPopover.js" size="11652" compressedSize="6011">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/m/Button.js"/>
@@ -385,7 +386,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/ColumnListItemRenderer.js" size="9716" compressedSize="4693">
+  <module name="sap/m/ColumnListItemRenderer.js" size="9641" compressedSize="4619">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -427,7 +428,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/ComboBox.js" size="70398" compressedSize="25105">
+  <module name="sap/m/ComboBox.js" size="72152" compressedSize="25991">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/assert.js"/>
@@ -441,6 +442,7 @@
       <module name="sap/m/Toolbar.js"/>
       <module name="sap/m/library.js"/>
       <module name="sap/ui/Device.js"/>
+      <module name="sap/ui/base/ManagedObjectObserver.js"/>
       <module name="sap/ui/core/Core.js"/>
       <module name="sap/ui/core/Item.js"/>
       <module name="sap/ui/dom/containsOrEquals.js"/>
@@ -448,7 +450,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/ComboBoxBase.js" size="49366" compressedSize="16634">
+  <module name="sap/m/ComboBoxBase.js" size="49598" compressedSize="16702">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -563,7 +565,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/DatePicker.js" size="44009" compressedSize="17674">
+  <module name="sap/m/DatePicker.js" size="44303" compressedSize="17865">
     <description>Provides control sap.m.DatePicker.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -582,8 +584,10 @@
       <module name="sap/ui/core/date/UniversalDate.js"/>
       <module name="sap/ui/core/library.js"/>
       <module name="sap/ui/dom/jquery/cursorPos.js"/>
-      <module name="sap/ui/unified/Calendar.js" conditional="true"/>
-      <module name="sap/ui/unified/DateRange.js" conditional="true"/>
+      <module name="sap/ui/unified/Calendar.js"/>
+      <module name="sap/ui/unified/DateRange.js"/>
+      <module name="sap/ui/unified/calendar/CustomMonthPicker.js"/>
+      <module name="sap/ui/unified/calendar/CustomYearPicker.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
@@ -703,7 +707,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/Dialog.js" size="69853" compressedSize="25665">
+  <module name="sap/m/Dialog.js" size="70314" compressedSize="25749">
     <description>Provides control sap.m.Dialog.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -1241,7 +1245,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/IconTabHeader.js" size="52913" compressedSize="24113">
+  <module name="sap/m/IconTabHeader.js" size="53821" compressedSize="24609">
     <description>Provides control sap.m.IconTabHeader.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -1282,7 +1286,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/Image.js" size="25682" compressedSize="8595">
+  <module name="sap/m/Image.js" size="25932" compressedSize="8651">
     <description>Provides control sap.m.Image.</description>
     <requires>
       <module name="sap/base/security/encodeCSS.js"/>
@@ -1322,7 +1326,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/Input.js" size="80191" compressedSize="31050">
+  <module name="sap/m/Input.js" size="80634" compressedSize="31397">
     <description>Provides control sap.m.Input.</description>
     <requires>
       <module name="sap/base/assert.js"/>
@@ -1392,7 +1396,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/InputListItemRenderer.js" size="2019" compressedSize="885">
+  <module name="sap/m/InputListItemRenderer.js" size="1748" compressedSize="777">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/m/ListItemBaseRenderer.js"/>
@@ -1482,7 +1486,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/Link.js" size="16803" compressedSize="5955">
+  <module name="sap/m/Link.js" size="12628" compressedSize="3783">
     <description>Provides control sap.m.Link.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -1499,7 +1503,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/LinkRenderer.js" size="3724" compressedSize="1673">
+  <module name="sap/m/LinkRenderer.js" size="3557" compressedSize="1513">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/core/Renderer.js"/>
@@ -1516,7 +1520,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/ListBase.js" size="73597" compressedSize="30390">
+  <module name="sap/m/ListBase.js" size="73820" compressedSize="30457">
     <description>Provides control sap.m.ListBase.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -1549,7 +1553,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/ListItemBase.js" size="34983" compressedSize="16470">
+  <module name="sap/m/ListItemBase.js" size="35019" compressedSize="16495">
     <description>Provides control sap.m.ListItemBase.</description>
     <requires>
       <module name="sap/base/strings/capitalize.js"/>
@@ -1630,7 +1634,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/Menu.js" size="27526" compressedSize="12209">
+  <module name="sap/m/Menu.js" size="28012" compressedSize="12403">
     <description>Provides control sap.m.Menu.</description>
     <requires>
       <module name="sap/m/Button.js"/>
@@ -1642,7 +1646,6 @@
       <module name="sap/m/library.js"/>
       <module name="sap/ui/Device.js"/>
       <module name="sap/ui/core/Control.js"/>
-      <module name="sap/ui/core/CustomData.js"/>
       <module name="sap/ui/core/EnabledPropagator.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="sap/ui/unified/Menu.js"/>
@@ -1673,7 +1676,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/MenuItem.js" size="6640" compressedSize="2961">
+  <module name="sap/m/MenuItem.js" size="6950" compressedSize="3163">
     <description>Provides control sap.m.MenuItem.</description>
     <requires>
       <module name="sap/m/library.js"/>
@@ -1752,7 +1755,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/MessagePage.js" size="13134" compressedSize="5573">
+  <module name="sap/m/MessagePage.js" size="12745" compressedSize="5375">
     <description>Provides control sap.m.MessagePage.</description>
     <requires>
       <module name="sap/m/Bar.js"/>
@@ -1771,7 +1774,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/MessagePageRenderer.js" size="3076" compressedSize="1567">
+  <module name="sap/m/MessagePageRenderer.js" size="2950" compressedSize="1466">
     <description>Provides default renderer for control sap.m.MessagePage</description>
     <requires>
       <module name="sap/ui/core/library.js"/>
@@ -1890,7 +1893,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/MultiComboBox.js" size="95217" compressedSize="39016">
+  <module name="sap/m/MultiComboBox.js" size="95617" compressedSize="39100">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -1949,7 +1952,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/MultiInput.js" size="51368" compressedSize="22083">
+  <module name="sap/m/MultiInput.js" size="50083" compressedSize="21182">
     <description>Provides control sap.m.MultiInput.</description>
     <requires>
       <module name="sap/m/Bar.js"/>
@@ -1998,7 +2001,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/NavContainerRenderer.js" size="1944" compressedSize="844">
+  <module name="sap/m/NavContainerRenderer.js" size="1830" compressedSize="750">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
@@ -2104,7 +2107,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/ObjectAttribute.js" size="8639" compressedSize="3265">
+  <module name="sap/m/ObjectAttribute.js" size="8592" compressedSize="3242">
     <description>Provides control sap.m.ObjectAttribute.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -2117,7 +2120,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/ObjectAttributeRenderer.js" size="3713" compressedSize="1955">
+  <module name="sap/m/ObjectAttributeRenderer.js" size="3649" compressedSize="1919">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/core/library.js"/>
@@ -2226,7 +2229,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/ObjectNumber.js" size="6100" compressedSize="2017">
+  <module name="sap/m/ObjectNumber.js" size="4152" compressedSize="1368">
     <description>Provides control sap.m.ObjectNumber.</description>
     <requires>
       <module name="sap/m/ObjectNumberRenderer.js"/>
@@ -2237,7 +2240,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/ObjectNumberRenderer.js" size="2887" compressedSize="1551">
+  <module name="sap/m/ObjectNumberRenderer.js" size="2867" compressedSize="1425">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/core/Renderer.js"/>
@@ -2245,7 +2248,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/ObjectStatus.js" size="9139" compressedSize="3387">
+  <module name="sap/m/ObjectStatus.js" size="7999" compressedSize="2966">
     <description>Provides control sap.m.ObjectStatus.</description>
     <requires>
       <module name="sap/m/ObjectStatusRenderer.js"/>
@@ -2258,7 +2261,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/ObjectStatusRenderer.js" size="4481" compressedSize="2361">
+  <module name="sap/m/ObjectStatusRenderer.js" size="3956" compressedSize="1937">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/core/IndicationColorSupport.js"/>
@@ -2593,7 +2596,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/PDFViewer.js" size="21075" compressedSize="8008">
+  <module name="sap/m/PDFViewer.js" size="21270" compressedSize="8008">
     <description>Provides control sap.m.PDFViewer.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -2631,7 +2634,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/Page.js" size="24828" compressedSize="9109">
+  <module name="sap/m/Page.js" size="24918" compressedSize="9178">
     <description>Provides control sap.m.Page.</description>
     <requires>
       <module name="sap/m/Bar.js"/>
@@ -2675,7 +2678,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/PagingButtonRenderer.js" size="738" compressedSize="449">
+  <module name="sap/m/PagingButtonRenderer.js" size="706" compressedSize="420">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
@@ -2852,7 +2855,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/ProgressIndicator.js" size="8909" compressedSize="3623">
+  <module name="sap/m/ProgressIndicator.js" size="8235" compressedSize="3256">
     <description>Provides control sap.m.ProgressIndicator.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -2864,14 +2867,14 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/ProgressIndicatorRenderer.js" size="3904" compressedSize="1949">
+  <module name="sap/m/ProgressIndicatorRenderer.js" size="3653" compressedSize="1726">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/core/library.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/PullToRefresh.js" size="10284" compressedSize="4987">
+  <module name="sap/m/PullToRefresh.js" size="9998" compressedSize="4840">
     <description>Provides control sap.m.PullToRefresh.</description>
     <requires>
       <module name="jquery.sap.global.js"/>
@@ -2885,14 +2888,14 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/PullToRefreshRenderer.js" size="2577" compressedSize="1347">
+  <module name="sap/m/PullToRefreshRenderer.js" size="2557" compressedSize="1325">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/core/IconPool.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/QuickView.js" size="13815" compressedSize="5594">
+  <module name="sap/m/QuickView.js" size="14044" compressedSize="5635">
     <description>Provides control sap.m.QuickView.</description>
     <requires>
       <module name="sap/m/Bar.js"/>
@@ -2957,7 +2960,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/QuickViewPage.js" size="18636" compressedSize="7567">
+  <module name="sap/m/QuickViewPage.js" size="18962" compressedSize="7722">
     <description>Provides control sap.m.QuickViewPage</description>
     <requires>
       <module name="sap/base/security/encodeURL.js"/>
@@ -3209,7 +3212,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/Select.js" size="82051" compressedSize="28724">
+  <module name="sap/m/Select.js" size="82300" compressedSize="28834">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/m/Bar.js"/>
@@ -3237,7 +3240,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/SelectDialog.js" size="39678" compressedSize="12835">
+  <module name="sap/m/SelectDialog.js" size="40860" compressedSize="13180">
     <description>Provides control sap.m.SelectDialog.</description>
     <requires>
       <module name="sap/m/Bar.js"/>
@@ -3406,7 +3409,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/SinglePlanningCalendar.js" size="35389" compressedSize="14128">
+  <module name="sap/m/SinglePlanningCalendar.js" size="35475" compressedSize="14177">
     <description>Provides control sap.m.SinglePlanningCalendar.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -3438,7 +3441,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/SinglePlanningCalendarGrid.js" size="76469" compressedSize="30041">
+  <module name="sap/m/SinglePlanningCalendarGrid.js" size="77794" compressedSize="30486">
     <description>Provides control sap.m.SinglePlanningCalendarGrid.</description>
     <requires>
       <module name="sap/m/SinglePlanningCalendarGridRenderer.js"/>
@@ -3463,7 +3466,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/SinglePlanningCalendarGridRenderer.js" size="26955" compressedSize="13600">
+  <module name="sap/m/SinglePlanningCalendarGridRenderer.js" size="26791" compressedSize="13478">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/core/InvisibleText.js"/>
@@ -3516,7 +3519,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/SlideTile.js" size="20458" compressedSize="9813">
+  <module name="sap/m/SlideTile.js" size="20250" compressedSize="9645">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/m/GenericTile.js"/>
@@ -3614,7 +3617,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/SliderTooltipRenderer.js" size="1969" compressedSize="1002">
+  <module name="sap/m/SliderTooltipRenderer.js" size="2081" compressedSize="1069">
     <description>Provides the default renderer for control sap.m.SliderTooltip</description>
     <requires>
       <module name="sap/ui/core/Renderer.js"/>
@@ -3768,7 +3771,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/StepInput.js" size="53073" compressedSize="18564">
+  <module name="sap/m/StepInput.js" size="52592" compressedSize="18411">
     <description>Provides control sap.m.StepInput.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -3826,7 +3829,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/SuggestionsPopover.js" size="37042" compressedSize="16370">
+  <module name="sap/m/SuggestionsPopover.js" size="37057" compressedSize="16385">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/security/encodeXML.js"/>
@@ -3925,7 +3928,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/TabStrip.js" size="46167" compressedSize="17436">
+  <module name="sap/m/TabStrip.js" size="46441" compressedSize="17515">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -3973,7 +3976,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/Table.js" size="29465" compressedSize="12605">
+  <module name="sap/m/Table.js" size="29493" compressedSize="12621">
     <description>Provides control sap.m.Table.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -4046,7 +4049,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/TableSelectDialog.js" size="39086" compressedSize="13204">
+  <module name="sap/m/TableSelectDialog.js" size="39750" compressedSize="13490">
     <description>Provides control sap.m.TableSelectDialog.</description>
     <requires>
       <module name="sap/m/Bar.js"/>
@@ -4085,9 +4088,10 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/TextArea.js" size="22286" compressedSize="8636">
+  <module name="sap/m/TextArea.js" size="22318" compressedSize="8653">
     <description>Provides control sap.m.TextArea.</description>
     <requires>
+      <module name="sap/base/security/encodeXML.js"/>
       <module name="sap/m/InputBase.js"/>
       <module name="sap/m/Text.js"/>
       <module name="sap/m/TextAreaRenderer.js"/>
@@ -4210,7 +4214,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/TimePickerSlider.js" size="43913" compressedSize="18091">
+  <module name="sap/m/TimePickerSlider.js" size="43952" compressedSize="18114">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/m/Button.js"/>
@@ -4229,7 +4233,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/TimePickerSliders.js" size="34698" compressedSize="13330">
+  <module name="sap/m/TimePickerSliders.js" size="34674" compressedSize="13313">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/m/TimePickerSlider.js"/>
@@ -4298,7 +4302,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/Token.js" size="10083" compressedSize="3709">
+  <module name="sap/m/Token.js" size="8675" compressedSize="3121">
     <description>Provides control sap.m.Token.</description>
     <requires>
       <module name="sap/m/TokenRenderer.js"/>
@@ -4314,7 +4318,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/TokenRenderer.js" size="2882" compressedSize="1220">
+  <module name="sap/m/TokenRenderer.js" size="2876" compressedSize="1179">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/core/InvisibleText.js"/>
@@ -4322,7 +4326,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/Tokenizer.js" size="45940" compressedSize="18512">
+  <module name="sap/m/Tokenizer.js" size="45603" compressedSize="18264">
     <description>Provides control sap.m.Tokenizer.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -4340,7 +4344,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/TokenizerRenderer.js" size="3949" compressedSize="1837">
+  <module name="sap/m/TokenizerRenderer.js" size="3715" compressedSize="1725">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/Device.js"/>
@@ -4348,7 +4352,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/Toolbar.js" size="16661" compressedSize="5494">
+  <module name="sap/m/Toolbar.js" size="16188" compressedSize="5255">
     <description>Provides control sap.m.Toolbar.</description>
     <requires>
       <module name="sap/m/BarInPageEnabler.js"/>
@@ -4371,7 +4375,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/ToolbarRenderer.js" size="2276" compressedSize="940">
+  <module name="sap/m/ToolbarRenderer.js" size="2186" compressedSize="891">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/m/BarInPageEnabler.js"/>
@@ -4387,7 +4391,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/ToolbarSeparatorRenderer.js" size="629" compressedSize="396">
+  <module name="sap/m/ToolbarSeparatorRenderer.js" size="610" compressedSize="374">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
@@ -4402,7 +4406,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/ToolbarSpacerRenderer.js" size="817" compressedSize="470">
+  <module name="sap/m/ToolbarSpacerRenderer.js" size="771" compressedSize="429">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
@@ -4449,7 +4453,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/UploadCollection.js" size="121100" compressedSize="51644">
+  <module name="sap/m/UploadCollection.js" size="120996" compressedSize="51580">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -4557,7 +4561,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/ViewSettingsDialog.js" size="109618" compressedSize="44343">
+  <module name="sap/m/ViewSettingsDialog.js" size="109998" compressedSize="44627">
     <description>Provides control sap.m.ViewSettingsDialog.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -4714,7 +4718,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/changeHandler/CombineButtons.js" size="10593" compressedSize="3847">
+  <module name="sap/m/changeHandler/CombineButtons.js" size="11953" compressedSize="4238">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/uid.js"/>
@@ -4823,7 +4827,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/designtime/Column.designtime.js" size="536" compressedSize="413">
+  <module name="sap/m/designtime/Column.designtime.js" size="559" compressedSize="426">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/dt/ElementUtil.js"/>
@@ -5587,7 +5591,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/designtime/library-preload.designtime.js" size="28582">
+  <module name="sap/m/designtime/library-preload.designtime.js" size="28595">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/m/library.js"/>
@@ -5930,7 +5934,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/library-h2-preload.js" size="128893">
+  <module name="sap/m/library-h2-preload.js" size="129122">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/base/Log.js"/>
@@ -6087,6 +6091,8 @@
       <module name="sap/ui/unified/MenuItem.js"/>
       <module name="sap/ui/unified/calendar/CalendarDate.js"/>
       <module name="sap/ui/unified/calendar/CalendarUtils.js"/>
+      <module name="sap/ui/unified/calendar/CustomMonthPicker.js"/>
+      <module name="sap/ui/unified/calendar/CustomYearPicker.js"/>
       <module name="sap/ui/unified/calendar/DatesRow.js"/>
       <module name="sap/ui/unified/library.js"/>
       <module name="sap/ui/util/Mobile.js"/>
@@ -6735,7 +6741,7 @@
       <module name="sap/m/upload/Uploader.js"/>
     </includes>
   </module>
-  <module name="sap/m/library-preload.js" size="2276989">
+  <module name="sap/m/library-preload.js" size="2274433">
     <requires>
       <module name="jquery.sap.global.js"/>
       <module name="sap/base/Log.js"/>
@@ -6888,6 +6894,8 @@
       <module name="sap/ui/unified/MenuItem.js"/>
       <module name="sap/ui/unified/calendar/CalendarDate.js"/>
       <module name="sap/ui/unified/calendar/CalendarUtils.js"/>
+      <module name="sap/ui/unified/calendar/CustomMonthPicker.js"/>
+      <module name="sap/ui/unified/calendar/CustomYearPicker.js"/>
       <module name="sap/ui/unified/calendar/DatesRow.js"/>
       <module name="sap/ui/unified/library.js"/>
       <module name="sap/ui/util/Mobile.js"/>
@@ -7528,6 +7536,8 @@
       <module name="sap/ui/unified/MenuItem.js"/>
       <module name="sap/ui/unified/calendar/CalendarDate.js"/>
       <module name="sap/ui/unified/calendar/CalendarUtils.js"/>
+      <module name="sap/ui/unified/calendar/CustomMonthPicker.js"/>
+      <module name="sap/ui/unified/calendar/CustomYearPicker.js"/>
       <module name="sap/ui/unified/calendar/DatesRow.js"/>
       <module name="sap/ui/unified/library.js"/>
       <module name="sap/ui/util/Mobile.js"/>
@@ -8105,89 +8115,89 @@
   </module>
   <module name="sap/m/manifest.json" size="12887">
   </module>
-  <module name="sap/m/messagebundle.properties" size="59418">
+  <module name="sap/m/messagebundle.properties" size="59524">
   </module>
-  <module name="sap/m/messagebundle_ar.properties" size="89583">
+  <module name="sap/m/messagebundle_ar.properties" size="89799">
   </module>
-  <module name="sap/m/messagebundle_bg.properties" size="103062">
+  <module name="sap/m/messagebundle_bg.properties" size="103382">
   </module>
-  <module name="sap/m/messagebundle_ca.properties" size="60632">
+  <module name="sap/m/messagebundle_ca.properties" size="60757">
   </module>
-  <module name="sap/m/messagebundle_cs.properties" size="63258">
+  <module name="sap/m/messagebundle_cs.properties" size="63345">
   </module>
-  <module name="sap/m/messagebundle_da.properties" size="59120">
+  <module name="sap/m/messagebundle_da.properties" size="59237">
   </module>
-  <module name="sap/m/messagebundle_de.properties" size="60291">
+  <module name="sap/m/messagebundle_de.properties" size="60406">
   </module>
-  <module name="sap/m/messagebundle_el.properties" size="102447">
+  <module name="sap/m/messagebundle_el.properties" size="102674">
   </module>
-  <module name="sap/m/messagebundle_en.properties" size="57737">
+  <module name="sap/m/messagebundle_en.properties" size="57840">
   </module>
-  <module name="sap/m/messagebundle_en_US_sappsd.properties" size="116027">
+  <module name="sap/m/messagebundle_en_US_sappsd.properties" size="116308">
   </module>
-  <module name="sap/m/messagebundle_en_US_saptrc.properties" size="71238">
+  <module name="sap/m/messagebundle_en_US_saptrc.properties" size="71364">
   </module>
-  <module name="sap/m/messagebundle_es.properties" size="60367">
+  <module name="sap/m/messagebundle_es.properties" size="60487">
   </module>
-  <module name="sap/m/messagebundle_et.properties" size="60034">
+  <module name="sap/m/messagebundle_et.properties" size="60127">
   </module>
-  <module name="sap/m/messagebundle_fi.properties" size="61717">
+  <module name="sap/m/messagebundle_fi.properties" size="61822">
   </module>
-  <module name="sap/m/messagebundle_fr.properties" size="61648">
+  <module name="sap/m/messagebundle_fr.properties" size="61765">
   </module>
-  <module name="sap/m/messagebundle_hi.properties" size="95794">
+  <module name="sap/m/messagebundle_hi.properties" size="95992">
   </module>
-  <module name="sap/m/messagebundle_hr.properties" size="59988">
+  <module name="sap/m/messagebundle_hr.properties" size="60098">
   </module>
-  <module name="sap/m/messagebundle_hu.properties" size="65283">
+  <module name="sap/m/messagebundle_hu.properties" size="65433">
   </module>
-  <module name="sap/m/messagebundle_it.properties" size="59841">
+  <module name="sap/m/messagebundle_it.properties" size="60063">
   </module>
-  <module name="sap/m/messagebundle_iw.properties" size="82760">
+  <module name="sap/m/messagebundle_iw.properties" size="82921">
   </module>
-  <module name="sap/m/messagebundle_ja.properties" size="72955">
+  <module name="sap/m/messagebundle_ja.properties" size="73096">
   </module>
-  <module name="sap/m/messagebundle_kk.properties" size="97937">
+  <module name="sap/m/messagebundle_kk.properties" size="98152">
   </module>
-  <module name="sap/m/messagebundle_ko.properties" size="68655">
+  <module name="sap/m/messagebundle_ko.properties" size="68786">
   </module>
-  <module name="sap/m/messagebundle_lt.properties" size="63295">
+  <module name="sap/m/messagebundle_lt.properties" size="63420">
   </module>
-  <module name="sap/m/messagebundle_lv.properties" size="64193">
+  <module name="sap/m/messagebundle_lv.properties" size="64311">
   </module>
-  <module name="sap/m/messagebundle_ms.properties" size="58911">
+  <module name="sap/m/messagebundle_ms.properties" size="59010">
   </module>
-  <module name="sap/m/messagebundle_nl.properties" size="59129">
+  <module name="sap/m/messagebundle_nl.properties" size="59240">
   </module>
-  <module name="sap/m/messagebundle_no.properties" size="58778">
+  <module name="sap/m/messagebundle_no.properties" size="58887">
   </module>
-  <module name="sap/m/messagebundle_pl.properties" size="62635">
+  <module name="sap/m/messagebundle_pl.properties" size="62754">
   </module>
-  <module name="sap/m/messagebundle_pt.properties" size="60974">
+  <module name="sap/m/messagebundle_pt.properties" size="61109">
   </module>
-  <module name="sap/m/messagebundle_ro.properties" size="61864">
+  <module name="sap/m/messagebundle_ro.properties" size="61972">
   </module>
-  <module name="sap/m/messagebundle_ru.properties" size="101820">
+  <module name="sap/m/messagebundle_ru.properties" size="102084">
   </module>
-  <module name="sap/m/messagebundle_sh.properties" size="60126">
+  <module name="sap/m/messagebundle_sh.properties" size="60239">
   </module>
-  <module name="sap/m/messagebundle_sk.properties" size="63565">
+  <module name="sap/m/messagebundle_sk.properties" size="63681">
   </module>
-  <module name="sap/m/messagebundle_sl.properties" size="60418">
+  <module name="sap/m/messagebundle_sl.properties" size="60524">
   </module>
-  <module name="sap/m/messagebundle_sv.properties" size="59765">
+  <module name="sap/m/messagebundle_sv.properties" size="59879">
   </module>
-  <module name="sap/m/messagebundle_th.properties" size="97061">
+  <module name="sap/m/messagebundle_th.properties" size="97256">
   </module>
-  <module name="sap/m/messagebundle_tr.properties" size="63345">
+  <module name="sap/m/messagebundle_tr.properties" size="63462">
   </module>
-  <module name="sap/m/messagebundle_uk.properties" size="100321">
+  <module name="sap/m/messagebundle_uk.properties" size="100585">
   </module>
-  <module name="sap/m/messagebundle_vi.properties" size="73068">
+  <module name="sap/m/messagebundle_vi.properties" size="73233">
   </module>
-  <module name="sap/m/messagebundle_zh_CN.properties" size="64554">
+  <module name="sap/m/messagebundle_zh_CN.properties" size="64677">
   </module>
-  <module name="sap/m/messagebundle_zh_TW.properties" size="64545">
+  <module name="sap/m/messagebundle_zh_TW.properties" size="64662">
   </module>
   <module name="sap/m/routing/RouteMatchedHandler.js" size="7756" compressedSize="2336">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
@@ -8804,7 +8814,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/upload/UploadSetItem.js" size="25709" compressedSize="15729">
+  <module name="sap/m/upload/UploadSetItem.js" size="26127" compressedSize="15777">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -8835,7 +8845,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/m/upload/Uploader.js" size="6359" compressedSize="2451">
+  <module name="sap/m/upload/Uploader.js" size="7618" compressedSize="2914">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>

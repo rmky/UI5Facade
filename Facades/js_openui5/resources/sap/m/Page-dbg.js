@@ -83,7 +83,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 * @mixes sap.ui.core.ContextMenuSupport
 		 * @author SAP SE
-		 * @version 1.67.1
+		 * @version 1.68.1
 		 *
 		 * @public
 		 * @alias sap.m.Page
@@ -712,6 +712,9 @@ function(
 		Page.prototype.setCustomHeader = function(oHeader) {
 
 			this.setAggregation("customHeader", oHeader);
+
+			this.toggleStyleClass("sapFShellBar-CTX", oHeader && oHeader.isA("sap.f.ShellBar"));
+
 			/*
 			 * Runs Fiori 2.0 adaptation for the header
 			 */

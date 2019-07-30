@@ -29,12 +29,7 @@ class UI5DialogHeader extends UI5Container
                     
     protected function buildJsObjectStatus(iHaveValue $widget)
     {
-        if ($widget->isHidden()){
-            return '';
-        }
-        
         $element = new UI5ObjectStatus($widget, $this->getFacade());
-        
         return $element->buildJsConstructor();
     }
         

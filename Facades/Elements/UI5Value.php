@@ -283,7 +283,17 @@ JS;
     {
         return 'text';
     }
-    
+
+    /**
+     * Returns the widget property, that is used for the value binding (i.e. "value" for value-widgets).
+     * 
+     * NOTE: this is different from buildJsValueBindingPropertyName()! While the latter returns the name
+     * of the UI5 control property for the main value, this method returns the name of the widget property,
+     * that is used in this binding. I.e. for a simple Value widget (sap.m.Text), the widget property `value`
+     * is bound to the control property `text`.
+     * 
+     * @return string
+     */
     protected function getValueBindingWidgetPropertyName() : string
     {
         return 'value';

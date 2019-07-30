@@ -46,7 +46,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -536,6 +536,16 @@ sap.ui.define([
 			// stop the propagation it is handled by the control
 			oEvent.stopPropagation();
 		}
+	};
+
+	/**
+	 * Handles the keydown event for SPACE on which we have to prevent the browser scrolling.
+	 *
+	 * @param {jQuery.Event} oEvent The event object.
+	 * @private
+	 */
+	Image.prototype.onsapspace = function(oEvent) {
+		oEvent.preventDefault();
 	};
 
 	/**

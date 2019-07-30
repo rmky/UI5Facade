@@ -4,9 +4,9 @@
  * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.predefine('sap/ui/dt/library',["sap/ui/base/ManagedObjectMetadata","sap/ui/dt/SelectionMode","sap/ui/core/library"],function(M){"use strict";sap.ui.getCore().initLibrary({name:"sap.ui.dt",version:"1.67.1",dependencies:["sap.ui.core"],types:["sap.ui.dt.SelectionMode"],interfaces:[],controls:[],elements:[]});M.setDesignTimeDefaultMapping({"not-adaptable":"sap/ui/dt/designtime/notAdaptable.designtime","not-removable":"sap/ui/dt/designtime/notRemovable.designtime"});return sap.ui.dt;},true);
+sap.ui.predefine('sap/ui/dt/library',["sap/ui/base/ManagedObjectMetadata","sap/ui/dt/SelectionMode","sap/ui/core/library"],function(M){"use strict";sap.ui.getCore().initLibrary({name:"sap.ui.dt",version:"1.68.1",dependencies:["sap.ui.core"],types:["sap.ui.dt.SelectionMode"],interfaces:[],controls:[],elements:[]});M.setDesignTimeDefaultMapping({"not-adaptable":"sap/ui/dt/designtime/notAdaptable.designtime","not-removable":"sap/ui/dt/designtime/notRemovable.designtime"});return sap.ui.dt;},true);
 sap.ui.require.preload({
-	"sap/ui/dt/manifest.json":'{"_version":"1.9.0","sap.app":{"id":"sap.ui.dt","type":"library","embeds":[],"applicationVersion":{"version":"1.67.1"},"title":"SAP UI library: sap.ui.dt (by SAP, Author)","description":"SAP UI library: sap.ui.dt (by SAP, Author)","ach":"CA-UI5-FL-RTA","resources":"resources.json","offline":true},"sap.ui":{"technology":"UI5","supportedThemes":["base","sap_hcb"]},"sap.ui5":{"dependencies":{"minUI5Version":"1.67","libs":{"sap.ui.core":{"minVersion":"1.67.1"}}},"library":{"i18n":false,"content":{"controls":[],"elements":[],"types":["sap.ui.dt.SelectionMode"],"interfaces":[]}}}}'
+	"sap/ui/dt/manifest.json":'{"_version":"1.9.0","sap.app":{"id":"sap.ui.dt","type":"library","embeds":[],"applicationVersion":{"version":"1.68.1"},"title":"SAP UI library: sap.ui.dt (by SAP, Author)","description":"SAP UI library: sap.ui.dt (by SAP, Author)","ach":"CA-UI5-FL-RTA","resources":"resources.json","offline":true},"sap.ui":{"technology":"UI5","supportedThemes":["base","sap_hcb"]},"sap.ui5":{"dependencies":{"minUI5Version":"1.68","libs":{"sap.ui.core":{"minVersion":"1.68.1"}}},"library":{"i18n":false,"content":{"controls":[],"elements":[],"types":["sap.ui.dt.SelectionMode"],"interfaces":[]}}}}'
 },"sap/ui/dt/library-h2-preload"
 );
 sap.ui.loader.config({depCacheUI5:{
@@ -43,9 +43,9 @@ sap.ui.loader.config({depCacheUI5:{
 "sap/ui/dt/library.js":["sap/ui/base/ManagedObjectMetadata.js","sap/ui/core/library.js","sap/ui/dt/SelectionMode.js"],
 "sap/ui/dt/plugin/ContextMenu.js":["sap/base/assert.js","sap/ui/Device.js","sap/ui/dt/ContextMenuControl.js","sap/ui/dt/OverlayRegistry.js","sap/ui/dt/Plugin.js","sap/ui/dt/Util.js","sap/ui/events/KeyCodes.js","sap/ui/thirdparty/jquery.js"],
 "sap/ui/dt/plugin/ControlDragDrop.js":["sap/ui/dt/plugin/DragDrop.js","sap/ui/dt/plugin/ElementMover.js"],
-"sap/ui/dt/plugin/CutPaste.js":["sap/ui/dt/OverlayRegistry.js","sap/ui/dt/OverlayUtil.js","sap/ui/dt/Plugin.js","sap/ui/dt/plugin/ElementMover.js","sap/ui/events/KeyCodes.js"],
+"sap/ui/dt/plugin/CutPaste.js":["sap/ui/dt/OverlayRegistry.js","sap/ui/dt/OverlayUtil.js","sap/ui/dt/Plugin.js","sap/ui/dt/Util.js","sap/ui/dt/plugin/ElementMover.js","sap/ui/events/KeyCodes.js"],
 "sap/ui/dt/plugin/DragDrop.js":["sap/ui/base/Object.js","sap/ui/dt/DOMUtil.js","sap/ui/dt/OverlayRegistry.js","sap/ui/dt/OverlayUtil.js","sap/ui/dt/Plugin.js","sap/ui/qunit/QUnitUtils.js","sap/ui/thirdparty/jquery.js"],
-"sap/ui/dt/plugin/ElementMover.js":["sap/ui/base/ManagedObject.js","sap/ui/base/Object.js","sap/ui/dt/DOMUtil.js","sap/ui/dt/ElementUtil.js","sap/ui/dt/OverlayUtil.js"],
+"sap/ui/dt/plugin/ElementMover.js":["sap/ui/base/ManagedObject.js","sap/ui/base/Object.js","sap/ui/dt/DOMUtil.js","sap/ui/dt/ElementUtil.js","sap/ui/dt/OverlayUtil.js","sap/ui/dt/Util.js"],
 "sap/ui/dt/plugin/MouseSelection.js":["sap/ui/dt/Plugin.js"],
 "sap/ui/dt/plugin/TabHandling.js":["sap/ui/dom/jquery/Selectors.js","sap/ui/dt/Overlay.js","sap/ui/dt/OverlayRegistry.js","sap/ui/dt/Plugin.js","sap/ui/thirdparty/jquery.js"],
 "sap/ui/dt/plugin/ToolHooks.js":["sap/ui/dt/Plugin.js"],

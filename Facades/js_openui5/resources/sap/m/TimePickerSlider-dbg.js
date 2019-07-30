@@ -27,7 +27,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.67.1
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @private
@@ -1245,7 +1245,9 @@ sap.ui.define([
 			this._stopAnimation();
 			this._startDrag(iPageY);
 
-			oEvent.preventDefault();
+			if (!Device.system.desktop) {
+				oEvent.preventDefault();
+			}
 			this._mousedown = true;
 		};
 

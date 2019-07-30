@@ -25,6 +25,7 @@ use exface\Core\Events\Widget\OnPrefillChangePropertyEvent;
 use exface\Core\Exceptions\Facades\FacadeLogicError;
 use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
 use exface\Core\Interfaces\Exceptions\ExceptionInterface;
+use exface\Core\Exceptions\Facades\FacadeRoutingError;
 
 class Webapp implements WorkbenchDependantInterface
 {
@@ -228,6 +229,8 @@ class Webapp implements WorkbenchDependantInterface
         $json['sap.app']['applicationVersion']['version'] = $placeholders['current_version'];
         $json['sap.ui5']['dependencies']['minUI5Version'] = $placeholders['ui5_min_version'];
         
+        $json['exface']['useCombinedViewControllers'] = $placeholders['use_combined_viewcontrollers'];
+        
         if ($this->isPWA() === true) {
             $json["short_name"] = $this->getName();
             $json["name"] = $this->getTitle();
@@ -331,7 +334,11 @@ class Webapp implements WorkbenchDependantInterface
     public function getRootPage() : UiPageInterface
     {
         if ($this->rootPage === null) {
-            $this->rootPage = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $this->appId);
+            try {
+                $this->rootPage = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $this->appId);
+            } catch (\Throwable $e) {
+                throw new FacadeRoutingError('Root page for UI5 app "' . $this->appId . '" not found!', null, $e);
+            }
         }
         return $this->rootPage;
     }

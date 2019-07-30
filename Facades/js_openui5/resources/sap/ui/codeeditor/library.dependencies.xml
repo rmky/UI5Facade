@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.ui.codeeditor">
-  <module name="sap/ui/codeeditor/CodeEditor.js" size="17413" compressedSize="6578">
+  <module name="sap/ui/codeeditor/CodeEditor.js" size="17541" compressedSize="6650">
     <requires>
       <module name="sap/ui/Device.js"/>
       <module name="sap/ui/codeeditor/js/ace/ace.js"/>
@@ -35,7 +35,7 @@
       <module name="sap/ui/codeeditor/CodeEditor.js"/>
     </includes>
   </module>
-  <module name="sap/ui/codeeditor/library-preload.js" size="7817">
+  <module name="sap/ui/codeeditor/library-preload.js" size="7889">
     <requires>
       <module name="sap/ui/Device.js"/>
       <module name="sap/ui/codeeditor/js/ace/ace.js"/>

@@ -169,8 +169,8 @@ JS;
 JS;
         }
         
-        if ($toolbarConstructor !== null) {
-            $toolbar = 'toolbar: ' . $this->getFacade()->getElement($this->getWidget()->getToolbarMain())->buildJsConstructor();
+        if ($toolbarConstructor !== null && $toolbarConstructor !== '') {
+            $toolbar = 'toolbar: ' . $toolbarConstructor;
         }
         
         return <<<JS

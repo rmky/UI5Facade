@@ -22,7 +22,7 @@ sap.ui.define(['sap/base/Log', 'sap/ui/commons/library', 'sap/ui/core/Element', 
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public

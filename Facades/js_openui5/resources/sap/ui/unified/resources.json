@@ -245,11 +245,10 @@
 				"sap/ui/core/format/DateFormat.js",
 				"sap/ui/dom/containsOrEquals.js",
 				"sap/ui/thirdparty/jquery.js",
-				"sap/ui/unified/Calendar.js",
 				"sap/ui/unified/CalendarMonthIntervalRenderer.js",
-				"sap/ui/unified/CalendarRenderer.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/calendar/CustomYearPicker.js",
 				"sap/ui/unified/calendar/Header.js",
 				"sap/ui/unified/calendar/MonthsRow.js",
 				"sap/ui/unified/calendar/YearPicker.js"
@@ -274,11 +273,10 @@
 				"sap/ui/core/format/DateFormat.js",
 				"sap/ui/dom/containsOrEquals.js",
 				"sap/ui/thirdparty/jquery.js",
-				"sap/ui/unified/Calendar.js",
 				"sap/ui/unified/CalendarMonthIntervalRenderer.js",
-				"sap/ui/unified/CalendarRenderer.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/calendar/CustomYearPicker.js",
 				"sap/ui/unified/calendar/Header.js",
 				"sap/ui/unified/calendar/MonthsRow.js",
 				"sap/ui/unified/calendar/YearPicker.js"
@@ -298,15 +296,11 @@
 			"module": "sap/ui/unified/CalendarOneMonthInterval.js",
 			"isDebug": true,
 			"required": [
-				"sap/ui/core/Renderer.js",
-				"sap/ui/dom/containsOrEquals.js",
 				"sap/ui/unified/Calendar.js",
 				"sap/ui/unified/CalendarDateInterval.js",
-				"sap/ui/unified/CalendarDateIntervalRenderer.js",
-				"sap/ui/unified/CalendarOneMonthIntervalRenderer.js",
-				"sap/ui/unified/CalendarRenderer.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/calendar/CustomMonthPicker.js",
 				"sap/ui/unified/calendar/OneMonthDatesRow.js",
 				"sap/ui/unified/library.js"
 			]
@@ -315,15 +309,11 @@
 			"name": "CalendarOneMonthInterval.js",
 			"module": "sap/ui/unified/CalendarOneMonthInterval.js",
 			"required": [
-				"sap/ui/core/Renderer.js",
-				"sap/ui/dom/containsOrEquals.js",
 				"sap/ui/unified/Calendar.js",
 				"sap/ui/unified/CalendarDateInterval.js",
-				"sap/ui/unified/CalendarDateIntervalRenderer.js",
-				"sap/ui/unified/CalendarOneMonthIntervalRenderer.js",
-				"sap/ui/unified/CalendarRenderer.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/calendar/CustomMonthPicker.js",
 				"sap/ui/unified/calendar/OneMonthDatesRow.js",
 				"sap/ui/unified/library.js"
 			]
@@ -1282,6 +1272,58 @@
 				"sap/ui/core/date/UniversalDate.js",
 				"sap/ui/thirdparty/jquery.js",
 				"sap/ui/unified/calendar/CalendarDate.js"
+			]
+		},
+		{
+			"name": "calendar/CustomMonthPicker-dbg.js",
+			"module": "sap/ui/unified/calendar/CustomMonthPicker.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/core/Renderer.js",
+				"sap/ui/dom/containsOrEquals.js",
+				"sap/ui/thirdparty/jquery.js",
+				"sap/ui/unified/Calendar.js",
+				"sap/ui/unified/CalendarRenderer.js",
+				"sap/ui/unified/DateRange.js",
+				"sap/ui/unified/calendar/Header.js"
+			]
+		},
+		{
+			"name": "calendar/CustomMonthPicker.js",
+			"module": "sap/ui/unified/calendar/CustomMonthPicker.js",
+			"required": [
+				"sap/ui/core/Renderer.js",
+				"sap/ui/dom/containsOrEquals.js",
+				"sap/ui/thirdparty/jquery.js",
+				"sap/ui/unified/Calendar.js",
+				"sap/ui/unified/CalendarRenderer.js",
+				"sap/ui/unified/DateRange.js",
+				"sap/ui/unified/calendar/Header.js"
+			]
+		},
+		{
+			"name": "calendar/CustomYearPicker-dbg.js",
+			"module": "sap/ui/unified/calendar/CustomYearPicker.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/core/Renderer.js",
+				"sap/ui/thirdparty/jquery.js",
+				"sap/ui/unified/Calendar.js",
+				"sap/ui/unified/CalendarRenderer.js",
+				"sap/ui/unified/DateRange.js",
+				"sap/ui/unified/calendar/Header.js"
+			]
+		},
+		{
+			"name": "calendar/CustomYearPicker.js",
+			"module": "sap/ui/unified/calendar/CustomYearPicker.js",
+			"required": [
+				"sap/ui/core/Renderer.js",
+				"sap/ui/thirdparty/jquery.js",
+				"sap/ui/unified/Calendar.js",
+				"sap/ui/unified/CalendarRenderer.js",
+				"sap/ui/unified/DateRange.js",
+				"sap/ui/unified/calendar/Header.js"
 			]
 		},
 		{
@@ -2259,6 +2301,8 @@
 				"sap/ui/unified/SplitContainerRenderer.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/calendar/CustomMonthPicker.js",
+				"sap/ui/unified/calendar/CustomYearPicker.js",
 				"sap/ui/unified/calendar/DatesRow.js",
 				"sap/ui/unified/calendar/DatesRowRenderer.js",
 				"sap/ui/unified/calendar/Header.js",
@@ -2392,6 +2436,8 @@
 				"sap/ui/unified/SplitContainerRenderer.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/calendar/CustomMonthPicker.js",
+				"sap/ui/unified/calendar/CustomYearPicker.js",
 				"sap/ui/unified/calendar/DatesRow.js",
 				"sap/ui/unified/calendar/DatesRowRenderer.js",
 				"sap/ui/unified/calendar/Header.js",
@@ -2525,6 +2571,8 @@
 				"sap/ui/unified/SplitContainerRenderer.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/calendar/CustomMonthPicker.js",
+				"sap/ui/unified/calendar/CustomYearPicker.js",
 				"sap/ui/unified/calendar/DatesRow.js",
 				"sap/ui/unified/calendar/DatesRowRenderer.js",
 				"sap/ui/unified/calendar/Header.js",
@@ -2650,6 +2698,8 @@
 				"sap/ui/unified/SplitContainerRenderer.js",
 				"sap/ui/unified/calendar/CalendarDate.js",
 				"sap/ui/unified/calendar/CalendarUtils.js",
+				"sap/ui/unified/calendar/CustomMonthPicker.js",
+				"sap/ui/unified/calendar/CustomYearPicker.js",
 				"sap/ui/unified/calendar/DatesRow.js",
 				"sap/ui/unified/calendar/DatesRowRenderer.js",
 				"sap/ui/unified/calendar/Header.js",

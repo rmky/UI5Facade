@@ -11,6 +11,10 @@
 			"name": ".theming"
 		},
 		{
+			"name": "IToolHeader.interface",
+			"designtime": true
+		},
+		{
 			"name": "InfoLabel-dbg.js",
 			"module": "sap/tnt/InfoLabel.js",
 			"isDebug": true,

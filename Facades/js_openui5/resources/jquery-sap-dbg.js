@@ -224,7 +224,7 @@ q.sap.extend=function(){var c=arguments,f=false;if(typeof arguments[0]==="boolea
 			 * http://jquery.org/license
 			 */
 var g,n,o,t=arguments[0]||{},i=1,l=arguments.length;if(typeof t!=="object"&&typeof t!=="function"){t={};}for(;i<l;i++){o=arguments[i];for(n in o){g=o[n];if(t===g){continue;}t[n]=g;}}return t;}};
-q.sap.getUriParameters=function getUriParameters(s){s=s?s:window.location.href;return new U(s);};
+q.sap.getUriParameters=function getUriParameters(s){return U.fromURL(s||window.location.href);};
 q.sap.delayedCall=function delayedCall(D,o,c,p){return setTimeout(function(){if(q.type(c)=="string"){c=o[c];}c.apply(o,p||[]);},D);};
 q.sap.clearDelayedCall=function clearDelayedCall(D){clearTimeout(D);return this;};
 q.sap.intervalCall=function intervalCall(i,o,c,p){return setInterval(function(){if(q.type(c)=="string"){c=o[c];}c.apply(o,p||[]);},i);};

@@ -12,7 +12,11 @@ sap.ui.define(["sap/m/Text"], function (Text) {
 	 * Breadcrumbs renderer.
 	 * @namespace
 	 */
-	var BreadcrumbsRenderer = {};
+	var BreadcrumbsRenderer = {
+		apiVersion: 2
+	};
+
+	var oResource = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 
 	/**
 	 * Renders the HTML for the given control, using the provided {@link sap.ui.core.RenderManager}.
@@ -24,13 +28,12 @@ sap.ui.define(["sap/m/Text"], function (Text) {
 		var aControls = oControl._getControlsForBreadcrumbTrail(),
 			oSelect = oControl._getSelect();
 
-		oRm.write("<ul");
-		oRm.writeControlData(oControl);
-		oRm.addClass("sapMBreadcrumbs");
-		oRm.writeClasses();
-		oRm.writeAttribute("role", "navigation");
-		oRm.writeAttributeEscaped("aria-label", BreadcrumbsRenderer._getResourceBundleText("BREADCRUMB_LABEL"));
-		oRm.write(">");
+		oRm.openStart("nav", oControl);
+		oRm.class("sapMBreadcrumbs");
+		oRm.attr("aria-label", BreadcrumbsRenderer._getResourceBundleText("BREADCRUMB_LABEL"));
+		oRm.openEnd();
+		oRm.openStart("ol");
+		oRm.openEnd();
 
 		if (oSelect.getVisible()) {
 			this._renderControlInListItem(oRm, oSelect, false, "sapMBreadcrumbsSelectItem");
@@ -40,28 +43,24 @@ sap.ui.define(["sap/m/Text"], function (Text) {
 			this._renderControlInListItem(oRm, oChildControl, oChildControl instanceof Text);
 		}, this);
 
-		oRm.write("</ul>");
+		oRm.close("ol");
+		oRm.close("nav");
 	};
 
 	BreadcrumbsRenderer._renderControlInListItem = function (oRm, oControl, bSkipSeparator, sAdditionalItemClass) {
-		oRm.write("<li");
-		oRm.writeAttribute("role", "presentation");
-		oRm.addClass("sapMBreadcrumbsItem");
-		oRm.addClass(sAdditionalItemClass);
-		oRm.writeClasses();
-		oRm.write(">");
+		oRm.openStart("li");
+		oRm.class("sapMBreadcrumbsItem");
+		oRm.class(sAdditionalItemClass);
+		oRm.openEnd();
 		oRm.renderControl(oControl);
 		if (!bSkipSeparator) {
-			oRm.write("<span");
-			oRm.addClass("sapMBreadcrumbsSeparator");
-			oRm.writeClasses();
-			oRm.write(">/</span>");
+			oRm.openStart("span").class("sapMBreadcrumbsSeparator").openEnd().text("/").close("span");
 		}
-		oRm.write("</li>");
+		oRm.close("li");
 	};
 
 	BreadcrumbsRenderer._getResourceBundleText = function (sText) {
-		return sap.ui.getCore().getLibraryResourceBundle("sap.m").getText(sText);
+		return oResource.getText(sText);
 	};
 
 	return BreadcrumbsRenderer;

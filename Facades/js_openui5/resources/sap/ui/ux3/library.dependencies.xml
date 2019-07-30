@@ -465,7 +465,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/ux3/Shell.js" size="94348" compressedSize="44207">
+  <module name="sap/ui/ux3/Shell.js" size="94529" compressedSize="44305">
     <description>Provides control sap.ui.ux3.Shell.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -742,7 +742,7 @@
       <module name="sap/ui/ux3/ToolPopupRenderer.js"/>
     </includes>
   </module>
-  <module name="sap/ui/ux3/library-preload.js" size="310607">
+  <module name="sap/ui/ux3/library-preload.js" size="310705">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/assert.js"/>

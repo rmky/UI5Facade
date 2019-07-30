@@ -10,13 +10,15 @@ sap.ui.define([
 	"sap/ui/base/ManagedObject",
 	"sap/ui/dt/ElementUtil",
 	"sap/ui/dt/DOMUtil",
-	"sap/ui/dt/OverlayUtil"
+	"sap/ui/dt/OverlayUtil",
+	"sap/ui/dt/Util"
 ], function(
 	BaseObject,
 	ManagedObject,
 	ElementUtil,
 	DOMUtil,
-	OverlayUtil
+	OverlayUtil,
+	DtUtil
 ) {
 	"use strict";
 
@@ -30,7 +32,7 @@ sap.ui.define([
 	 * @class The ElementMover enables movement of UI5 elements based on aggregation types, which can be used by drag and
 	 *        drop or cut and paste behavior.
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -47,7 +49,11 @@ sap.ui.define([
 					defaultValue : ["sap.ui.core.Element"]
 				}
 			},
-			associations : {}
+			associations : {},
+			events: {
+				/** Event fired when the requested valid target zones are activated */
+				validTargetZonesActivated : {}
+			}
 		}
 	});
 
@@ -72,11 +78,12 @@ sap.ui.define([
 	};
 
 	/**
-	 * @param {sap.ui.dt.Overlay} oOverlay overlay instance
+	 * @param {sap.ui.dt.Overlay} oOverlay - overlay instance
+	 * @return {promise} Resolved promise with true value
 	 * @protected
 	 */
 	ElementMover.prototype.checkMovable = function() {
-		return true;
+		return Promise.resolve(true);
 	};
 
 	/**
@@ -112,19 +119,31 @@ sap.ui.define([
 	 * @private
 	 */
 	ElementMover.prototype.activateAllValidTargetZones = function(oDesignTime, sAdditionalStyleClass) {
-		this._iterateAllAggregations(oDesignTime, this._activateValidTargetZone.bind(this), sAdditionalStyleClass);
+		return this._iterateAllAggregations(oDesignTime, this._activateValidTargetZone.bind(this), sAdditionalStyleClass, true)
+			.then(function() {
+				this.fireValidTargetZonesActivated();
+			}.bind(this));
 	};
 
 	/**
 	 * @private
 	 */
 	ElementMover.prototype._activateValidTargetZone = function(oAggregationOverlay, sAdditionalStyleClass) {
-		if (this.checkTargetZone(oAggregationOverlay)) {
-			oAggregationOverlay.setTargetZone(true);
-			if (sAdditionalStyleClass) {
-				oAggregationOverlay.addStyleClass(sAdditionalStyleClass);
-			}
-		}
+		return this.checkTargetZone(oAggregationOverlay)
+			.then(function(bValidTargetZone) {
+				if (bValidTargetZone) {
+					oAggregationOverlay.setTargetZone(true);
+					if (sAdditionalStyleClass) {
+						oAggregationOverlay.addStyleClass(sAdditionalStyleClass);
+					}
+				}
+			})
+			.catch(function(oError) {
+				throw DtUtil.createError(
+					"ElementMover#_activateValidTargetZone",
+					"An error occured during activation of valid target zones: " + oError
+				);
+			});
 	};
 
 	/**
@@ -139,19 +158,20 @@ sap.ui.define([
 		if ((bOverlayNotInDom && !bGeometryVisible)
 			|| !bOverlayNotInDom && !DOMUtil.isVisible(oAggregationOverlay.getDomRef())
 			|| !(oAggregationOverlay.getElement().getVisible && oAggregationOverlay.getElement().getVisible())) {
-			return false;
+			return Promise.resolve(false);
 		}
 		var oParentElement = oAggregationOverlay.getElement();
 		// an aggregation can still have visible = true even if it has been removed from its parent
 		if (!oParentElement.getParent()) {
-			return false;
+			return Promise.resolve(false);
 		}
 		var oMovedElement = oMovedOverlay.getElement();
 		var sAggregationName = oAggregationOverlay.getAggregationName();
 
 		if (ElementUtil.isValidForAggregation(oParentElement, sAggregationName, oMovedElement)) {
-			return true;
+			return Promise.resolve(true);
 		}
+		return Promise.resolve(false);
 	};
 
 	/**
@@ -168,7 +188,10 @@ sap.ui.define([
 	 * @private
 	 */
 	ElementMover.prototype.activateTargetZonesFor = function(oOverlay, sAdditionalStyleClass) {
-		this._iterateOverlayAggregations(oOverlay, this._activateValidTargetZone.bind(this), sAdditionalStyleClass);
+		return this._iterateOverlayAggregations(oOverlay, this._activateValidTargetZone.bind(this), sAdditionalStyleClass, true)
+			.then(function() {
+				this.fireValidTargetZonesActivated();
+			}.bind(this));
 	};
 
 	/**
@@ -188,21 +211,29 @@ sap.ui.define([
 	/**
 	 * @private
 	 */
-	ElementMover.prototype._iterateAllAggregations = function(oDesignTime, fnStep, sAdditionalStyleClass) {
+	ElementMover.prototype._iterateAllAggregations = function(oDesignTime, fnStep, sAdditionalStyleClass, bAsync) {
 		var aOverlays = oDesignTime.getElementOverlays();
-		aOverlays.forEach(function(oOverlay) {
-			this._iterateOverlayAggregations(oOverlay, fnStep, sAdditionalStyleClass);
+		// if bAsync true the return value of fnStep should return promises
+		var aResultPromises = aOverlays.map(function(oOverlay) {
+			return this._iterateOverlayAggregations(oOverlay, fnStep, sAdditionalStyleClass, bAsync);
 		}, this);
+		if (bAsync) {
+			return Promise.all(aResultPromises);
+		}
 	};
 
 	/**
 	 * @private
 	 */
-	ElementMover.prototype._iterateOverlayAggregations = function(oOverlay, fnStep, sAdditionalStyleClass) {
+	ElementMover.prototype._iterateOverlayAggregations = function(oOverlay, fnStep, sAdditionalStyleClass, bAsync) {
 		var aAggregationOverlays = oOverlay.getAggregationOverlays();
-		aAggregationOverlays.forEach(function(oAggregationOverlay) {
-			fnStep(oAggregationOverlay, sAdditionalStyleClass);
+		// if bAsync true the return value of fnStep should return promises
+		var aResultPromises = aAggregationOverlays.map(function(oAggregationOverlay) {
+			return fnStep(oAggregationOverlay, sAdditionalStyleClass);
 		});
+		if (bAsync) {
+			return Promise.all(aResultPromises);
+		}
 	};
 
 	/**

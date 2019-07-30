@@ -36,7 +36,7 @@ sap.ui.define([
 	 * Implementation to access OData metadata
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @public
 	 * @alias sap.ui.model.odata.ODataMetadata

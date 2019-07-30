@@ -25,7 +25,7 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.ui.fl.descriptorRelated
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @private
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
@@ -35,7 +35,7 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.ui.fl.descriptorRelated.api
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @private
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
@@ -50,7 +50,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorChange
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @private
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
@@ -185,7 +185,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorChangeFactory
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @private
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */

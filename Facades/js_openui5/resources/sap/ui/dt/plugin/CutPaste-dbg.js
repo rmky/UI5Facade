@@ -8,12 +8,14 @@ sap.ui.define([
 	"sap/ui/dt/Plugin",
 	"sap/ui/dt/plugin/ElementMover",
 	"sap/ui/dt/OverlayUtil",
+	"sap/ui/dt/Util",
 	"sap/ui/dt/OverlayRegistry",
 	"sap/ui/events/KeyCodes"
 ], function(
 	Plugin,
 	ElementMover,
 	OverlayUtil,
+	DtUtil,
 	OverlayRegistry,
 	KeyCodes
 ) {
@@ -29,7 +31,7 @@ sap.ui.define([
 	 * @class The CutPaste enables Cut & Paste functionality for the overlays based on aggregation types
 	 * @extends sap.ui.dt.Plugin
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -63,18 +65,26 @@ sap.ui.define([
 	 */
 	CutPaste.prototype.registerElementOverlay = function(oOverlay) {
 		var oElement = oOverlay.getElement();
-		//Register key down so that ESC is possible on all overlays
-		oOverlay.attachBrowserEvent("keydown", this._onKeyDown, this);
-		if (
-			this.getElementMover().isMovableType(oElement)
-			&& this.getElementMover().checkMovable(oOverlay)
-		) {
-			oOverlay.setMovable(true);
-		}
-
-		if (this.getElementMover().getMovedOverlay()) {
-			this.getElementMover().activateTargetZonesFor(this.getElementMover().getMovedOverlay());
-		}
+		this.getElementMover().checkMovable(oOverlay)
+			.then(function(bMovable) {
+				//Register key down so that ESC is possible on all overlays
+				oOverlay.attachBrowserEvent("keydown", this._onKeyDown, this);
+				if (
+					this.getElementMover().isMovableType(oElement)
+					&& bMovable
+				) {
+					oOverlay.setMovable(true);
+				}
+				if (this.getElementMover().getMovedOverlay()) {
+					this.getElementMover().activateTargetZonesFor(this.getElementMover().getMovedOverlay());
+				}
+			}.bind(this))
+			.catch(function(oError) {
+				throw DtUtil.createError(
+					"CutPaste#registerElementOverlay",
+					"An error occured during checkMovable: " + oError
+				);
+			});
 	};
 
 	/**
@@ -141,9 +151,12 @@ sap.ui.define([
 			this.getElementMover().setMovedOverlay(oOverlay);
 			oOverlay.addStyleClass("sapUiDtOverlayCutted");
 
-			this.getElementMover().activateAllValidTargetZones(this.getDesignTime());
-			oOverlay.focus();
+			return this.getElementMover().activateAllValidTargetZones(this.getDesignTime())
+				.then(function() {
+					oOverlay.focus();
+				});
 		}
+		return Promise.resolve(undefined);
 	};
 
 	/**

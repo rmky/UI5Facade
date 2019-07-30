@@ -17,19 +17,21 @@ sap.ui.define(["sap/ui/core/library", "sap/m/library"],
 	 * @namespace
 	 * @name sap.tnt
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 * @public
 	 */
 
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.tnt",
-		version: "1.67.1",
+		version: "1.68.1",
 		dependencies : ["sap.ui.core", "sap.m"],
 		types: [
 			"sap.tnt.RenderMode"
 		],
-		interfaces: [],
+		interfaces: [
+			"sap.tnt.IToolHeader"
+		],
 		controls: [
 			"sap.tnt.NavigationList",
 			"sap.tnt.ToolHeaderUtilitySeparator",
@@ -63,6 +65,16 @@ sap.ui.define(["sap/ui/core/library", "sap/m/library"],
 		 */
 		Loose: "Loose"
 	};
+
+	/**
+	 * Interface for controls suitable for the <code>header</code> aggregation of {@link sap.tnt.ToolPage}.
+	 *
+	 * @since 1.68
+	 * @name sap.tnt.IToolHeader
+	 * @public
+	 * @interface
+	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
+	 */
 
 	return sap.tnt;
 

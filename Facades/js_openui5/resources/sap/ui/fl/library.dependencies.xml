@@ -23,7 +23,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/ChangePersistence.js" size="56769" compressedSize="19987">
+  <module name="sap/ui/fl/ChangePersistence.js" size="57088" compressedSize="20077">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/isEmptyObject.js"/>
@@ -55,7 +55,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/ControlPersonalizationAPI.js" size="17424" compressedSize="6229">
+  <module name="sap/ui/fl/ControlPersonalizationAPI.js" size="17665" compressedSize="6354">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/includes.js"/>
@@ -141,7 +141,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/FlexController.js" size="58045" compressedSize="19646">
+  <module name="sap/ui/fl/FlexController.js" size="58049" compressedSize="19646">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/core/Component.js"/>
@@ -177,7 +177,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/LrepConnector.js" size="31874" compressedSize="10469">
+  <module name="sap/ui/fl/LrepConnector.js" size="31830" compressedSize="10332">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/merge.js"/>
@@ -269,6 +269,31 @@
       <module name="sap/ui/fl/ChangePersistenceFactory.js"/>
       <module name="sap/ui/fl/FlexControllerFactory.js"/>
       <module name="sap/ui/fl/Utils.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/api/ControlPersonalizationApplyAPI.js" size="1570" compressedSize="328">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/fl/ControlPersonalizationAPI.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/api/ControlVariantApplyAPI.js" size="2835" compressedSize="501">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/fl/ControlPersonalizationAPI.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/api/SmartVariantManagementApplyAPI.js" size="6835" compressedSize="1687">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/fl/ChangePersistenceFactory.js"/>
+      <module name="sap/ui/fl/DefaultVariant.js"/>
+      <module name="sap/ui/fl/StandardVariant.js"/>
+      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/registry/Settings.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
@@ -567,7 +592,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/library-h2-preload.js" size="18913">
+  <module name="sap/ui/fl/library-h2-preload.js" size="20038">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/security/encodeURLParameters.js"/>
@@ -700,6 +725,9 @@
       <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/Variant.js"/>
       <module name="sap/ui/fl/XmlPreprocessorImpl.js"/>
+      <module name="sap/ui/fl/apply/api/ControlPersonalizationApplyAPI.js"/>
+      <module name="sap/ui/fl/apply/api/ControlVariantApplyAPI.js"/>
+      <module name="sap/ui/fl/apply/api/SmartVariantManagementApplyAPI.js"/>
       <module name="sap/ui/fl/changeHandler/AddXML.js"/>
       <module name="sap/ui/fl/changeHandler/Base.js"/>
       <module name="sap/ui/fl/changeHandler/BaseRename.js"/>
@@ -736,8 +764,6 @@
       <module name="sap/ui/fl/designtime/variants/VariantManagement.designtime.js"/>
       <module name="sap/ui/fl/fieldExt/Access.js"/>
       <module name="sap/ui/fl/library.support.js"/>
-      <module name="sap/ui/fl/read/api/ControlPersonalizationReadAPI.js"/>
-      <module name="sap/ui/fl/read/api/ControlVariantReadAPI.js"/>
       <module name="sap/ui/fl/registry/ChangeHandlerRegistration.js"/>
       <module name="sap/ui/fl/registry/ChangeRegistry.js"/>
       <module name="sap/ui/fl/registry/ChangeRegistryItem.js"/>
@@ -775,10 +801,14 @@
       <module name="sap/ui/fl/variants/VariantManagement.js"/>
       <module name="sap/ui/fl/variants/VariantModel.js"/>
       <module name="sap/ui/fl/variants/util/VariantUtil.js"/>
+      <module name="sap/ui/fl/write/ChangesController.js"/>
+      <module name="sap/ui/fl/write/api/ChangesWriteAPI.js"/>
       <module name="sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js"/>
+      <module name="sap/ui/fl/write/api/PersistenceWriteAPI.js"/>
+      <module name="sap/ui/fl/write/api/SmartVariantManagementWriteAPI.js"/>
     </includes>
   </module>
-  <module name="sap/ui/fl/library-preload.js" size="273223">
+  <module name="sap/ui/fl/library-preload.js" size="280125">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/security/encodeURLParameters.js"/>
@@ -886,6 +916,9 @@
       <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/Variant.js"/>
       <module name="sap/ui/fl/XmlPreprocessorImpl.js"/>
+      <module name="sap/ui/fl/apply/api/ControlPersonalizationApplyAPI.js"/>
+      <module name="sap/ui/fl/apply/api/ControlVariantApplyAPI.js"/>
+      <module name="sap/ui/fl/apply/api/SmartVariantManagementApplyAPI.js"/>
       <module name="sap/ui/fl/changeHandler/AddXML.js"/>
       <module name="sap/ui/fl/changeHandler/Base.js"/>
       <module name="sap/ui/fl/changeHandler/BaseRename.js"/>
@@ -916,8 +949,6 @@
       <module name="sap/ui/fl/fieldExt/Access.js"/>
       <module name="sap/ui/fl/library.js"/>
       <module name="sap/ui/fl/manifest.json"/>
-      <module name="sap/ui/fl/read/api/ControlPersonalizationReadAPI.js"/>
-      <module name="sap/ui/fl/read/api/ControlVariantReadAPI.js"/>
       <module name="sap/ui/fl/registry/ChangeHandlerRegistration.js"/>
       <module name="sap/ui/fl/registry/ChangeRegistry.js"/>
       <module name="sap/ui/fl/registry/ChangeRegistryItem.js"/>
@@ -932,7 +963,11 @@
       <module name="sap/ui/fl/variants/VariantManagement.js"/>
       <module name="sap/ui/fl/variants/VariantModel.js"/>
       <module name="sap/ui/fl/variants/util/VariantUtil.js"/>
+      <module name="sap/ui/fl/write/ChangesController.js"/>
+      <module name="sap/ui/fl/write/api/ChangesWriteAPI.js"/>
       <module name="sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js"/>
+      <module name="sap/ui/fl/write/api/PersistenceWriteAPI.js"/>
+      <module name="sap/ui/fl/write/api/SmartVariantManagementWriteAPI.js"/>
     </includes>
   </module>
   <module name="sap/ui/fl/library-preload.json" size="0">
@@ -1045,6 +1080,9 @@
       <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/Variant.js"/>
       <module name="sap/ui/fl/XmlPreprocessorImpl.js"/>
+      <module name="sap/ui/fl/apply/api/ControlPersonalizationApplyAPI.js"/>
+      <module name="sap/ui/fl/apply/api/ControlVariantApplyAPI.js"/>
+      <module name="sap/ui/fl/apply/api/SmartVariantManagementApplyAPI.js"/>
       <module name="sap/ui/fl/changeHandler/AddXML.js"/>
       <module name="sap/ui/fl/changeHandler/Base.js"/>
       <module name="sap/ui/fl/changeHandler/BaseRename.js"/>
@@ -1075,8 +1113,6 @@
       <module name="sap/ui/fl/fieldExt/Access.js"/>
       <module name="sap/ui/fl/library.js"/>
       <module name="sap/ui/fl/manifest.json"/>
-      <module name="sap/ui/fl/read/api/ControlPersonalizationReadAPI.js"/>
-      <module name="sap/ui/fl/read/api/ControlVariantReadAPI.js"/>
       <module name="sap/ui/fl/registry/ChangeHandlerRegistration.js"/>
       <module name="sap/ui/fl/registry/ChangeRegistry.js"/>
       <module name="sap/ui/fl/registry/ChangeRegistryItem.js"/>
@@ -1091,7 +1127,11 @@
       <module name="sap/ui/fl/variants/VariantManagement.js"/>
       <module name="sap/ui/fl/variants/VariantModel.js"/>
       <module name="sap/ui/fl/variants/util/VariantUtil.js"/>
+      <module name="sap/ui/fl/write/ChangesController.js"/>
+      <module name="sap/ui/fl/write/api/ChangesWriteAPI.js"/>
       <module name="sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js"/>
+      <module name="sap/ui/fl/write/api/PersistenceWriteAPI.js"/>
+      <module name="sap/ui/fl/write/api/SmartVariantManagementWriteAPI.js"/>
     </includes>
   </module>
   <module name="sap/ui/fl/library-preload.support.js" size="4162">
@@ -1213,20 +1253,6 @@
   </module>
   <module name="sap/ui/fl/messagebundle_zh_TW.properties" size="6504">
   </module>
-  <module name="sap/ui/fl/read/api/ControlPersonalizationReadAPI.js" size="1564" compressedSize="328">
-    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="sap/ui/fl/ControlPersonalizationAPI.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/fl/read/api/ControlVariantReadAPI.js" size="2825" compressedSize="501">
-    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="sap/ui/fl/ControlPersonalizationAPI.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
   <module name="sap/ui/fl/registry/ChangeHandlerRegistration.js" size="2711" compressedSize="1625">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
@@ -1235,7 +1261,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/registry/ChangeRegistry.js" size="20837" compressedSize="7841">
+  <module name="sap/ui/fl/registry/ChangeRegistry.js" size="21165" compressedSize="7914">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/fl/Utils.js"/>
@@ -1613,7 +1639,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/variants/VariantModel.js" size="43281" compressedSize="17761">
+  <module name="sap/ui/fl/variants/VariantModel.js" size="43425" compressedSize="17845">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/ObjectPath.js"/>
@@ -1644,10 +1670,53 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
+  <module name="sap/ui/fl/write/ChangesController.js" size="1241" compressedSize="511">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/fl/FlexControllerFactory.js"/>
+      <module name="sap/ui/fl/Utils.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/api/ChangesWriteAPI.js" size="6561" compressedSize="1539">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/includes.js"/>
+      <module name="sap/ui/core/Component.js"/>
+      <module name="sap/ui/core/Element.js"/>
+      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/descriptorRelated/api/DescriptorChangeFactory.js"/>
+      <module name="sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js"/>
+      <module name="sap/ui/fl/write/ChangesController.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
   <module name="sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js" size="3964" compressedSize="482">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/fl/ControlPersonalizationAPI.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/api/PersistenceWriteAPI.js" size="9071" compressedSize="2062">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/includes.js"/>
+      <module name="sap/ui/core/util/reflection/JsControlTreeModifier.js"/>
+      <module name="sap/ui/fl/Cache.js"/>
+      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js"/>
+      <module name="sap/ui/fl/write/ChangesController.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/api/SmartVariantManagementWriteAPI.js" size="5849" compressedSize="1386">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/fl/ChangePersistenceFactory.js"/>
+      <module name="sap/ui/fl/DefaultVariant.js"/>
+      <module name="sap/ui/fl/StandardVariant.js"/>
+      <module name="sap/ui/fl/apply/api/SmartVariantManagementApplyAPI.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>

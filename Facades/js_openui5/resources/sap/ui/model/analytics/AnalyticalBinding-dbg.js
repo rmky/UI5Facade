@@ -2314,7 +2314,8 @@ sap.ui.define([
 			}
 
 			if (!that.bNoPaging) {
-				oAnalyticalQueryRequest.setResultPageBoundaries(iEffectiveStartIndex + 1, iLength);
+				oAnalyticalQueryRequest.setResultPageBoundaries(iEffectiveStartIndex + 1,
+					iEffectiveStartIndex + iLength);
 			}
 
 			return {

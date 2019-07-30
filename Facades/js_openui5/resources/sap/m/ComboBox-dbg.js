@@ -14,6 +14,7 @@ sap.ui.define([
 	'sap/ui/core/Item',
 	'./StandardListItem',
 	'./ComboBoxRenderer',
+	'sap/ui/base/ManagedObjectObserver',
 	"sap/ui/dom/containsOrEquals",
 	"sap/ui/events/KeyCodes",
 	"./Toolbar",
@@ -31,6 +32,7 @@ sap.ui.define([
 		Item,
 		StandardListItem,
 		ComboBoxRenderer,
+		ManagedObjectObserver,
 		containsOrEquals,
 		KeyCodes,
 		Toolbar,
@@ -83,7 +85,7 @@ sap.ui.define([
 		 * </ul>
 		 *
 		 * @author SAP SE
-		 * @version 1.67.1
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @extends sap.m.ComboBoxBase
@@ -688,6 +690,8 @@ sap.ui.define([
 			// holds reference to the last focused GroupHeaderListItem if such exists
 			this._oLastFocusedListItem = null;
 			this._bIsLastFocusedItemHeader = null;
+
+			this._oItemObserver = new ManagedObjectObserver(this._forwardItemProperties.bind(this));
 		};
 
 		/**
@@ -764,6 +768,11 @@ sap.ui.define([
 				}
 				this._oSuggestionPopover.destroy();
 				this._oSuggestionPopover = null;
+			}
+
+			if (this._oItemObserver) {
+				this._oItemObserver.disconnect();
+				this._oItemObserver = null;
 			}
 		};
 
@@ -1027,6 +1036,7 @@ sap.ui.define([
 				mParam = this.getChangeEventParams(),
 				bSelectedItemChanged = (oItem !== this.getSelectedItem());
 
+			this.updateDomValue(oItem.getText());
 			this.setSelection(oItem);
 			this.fireSelectionChange({
 				selectedItem: this.getSelectedItem()
@@ -1847,7 +1857,39 @@ sap.ui.define([
 			oListItem.setTooltip(oItem.getTooltip());
 			oItem.data(oRenderer.CSS_CLASS_COMBOBOXBASE + "ListItem", oListItem);
 
+			oItem.getCustomData().forEach(function(oCustomData){
+				oListItem.addCustomData(oCustomData.clone());
+			});
+
+			this._oItemObserver.observe(oItem, {properties: ["text", "additionalText", "enabled", "tooltip"]});
+
 			return oListItem;
+		};
+
+		ComboBox.prototype._forwardItemProperties = function(oPropertyInfo) {
+			var oItem = oPropertyInfo.object,
+				oListItem = oItem.data(this.getRenderer().CSS_CLASS_COMBOBOXBASE + "ListItem"),
+				oDirectMapping = {
+					text: "title",
+					enabled: "visible",
+					tooltip: "tooltip"
+				},
+				sAdditionalText,
+				sProperty,
+				sSetter;
+
+
+			if (Object.keys(oDirectMapping).indexOf(oPropertyInfo.name) > -1) {
+				sProperty =  oDirectMapping[oPropertyInfo.name];
+				sSetter = "set" + sProperty.charAt(0).toUpperCase() + sProperty.slice(1);
+
+				oListItem[sSetter](oPropertyInfo.current);
+			}
+
+			if (oPropertyInfo.name === "additionalText") {
+				sAdditionalText = this.getShowSecondaryValues() ? oPropertyInfo.current : "";
+				oListItem.setInfo(sAdditionalText);
+			}
 		};
 
 		/**
@@ -1948,6 +1990,21 @@ sap.ui.define([
 		};
 
 		/**
+		 * Removes all the controls in the aggregation named <code>items</code>.
+		 * Additionally unregisters them from the hosting UIArea and clears the selection.
+		 *
+		 * @returns {sap.ui.core.Item[]} An array of the removed items (might be empty).
+		 * @public
+		 */
+		ComboBox.prototype.removeAllItems = function () {
+			var aItems = ComboBoxBase.prototype.removeAllItems.apply(this, arguments);
+
+			this._fillList();
+
+			return aItems;
+		};
+
+		/**
 		 * Clones the <code>sap.m.ComboBox</code> control.
 		 *
 		 * @param {string} sIdSuffix Suffix to be added to the ids of the new control and its internal objects.
@@ -2023,6 +2080,7 @@ sap.ui.define([
 					}, this);
 				}
 			}
+
 			this.synchronizeSelection();
 
 			return oPicker;

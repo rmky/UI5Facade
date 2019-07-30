@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.ui.integration">
-  <module name="sap-ui-integration.js" size="4808" compressedSize="2053" raw="true">
+  <module name="sap-ui-integration.js" size="4933" compressedSize="2134" raw="true">
   </module>
   <module name="sap/ui/integration/host/HostConfiguration.js" size="4023" compressedSize="1734">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
@@ -64,7 +64,7 @@
       <module name="sap/ui/integration/widgets/Card.js"/>
     </includes>
   </module>
-  <module name="sap/ui/integration/library-preload.js" size="29591">
+  <module name="sap/ui/integration/library-preload.js" size="29841">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/f/CardRenderer.js"/>
@@ -250,7 +250,16 @@
   </module>
   <module name="sap/ui/integration/messagebundle_zh_TW.properties" size="127">
   </module>
-  <module name="sap/ui/integration/sap-ui-integration-config.js" size="379" compressedSize="240" raw="true">
+  <module name="sap/ui/integration/sap-ui-integration-config.js" size="524" compressedSize="380" raw="true">
+  </module>
+  <module name="sap/ui/integration/sap-ui-integration-define-nojQuery.js" size="429" compressedSize="342">
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+    <includes>
+      <module name="sap/ui/thirdparty/jquery.js"/>
+      <module name="sap/ui/thirdparty/ui/jquery/jquery-ui-position.js"/>
+    </includes>
   </module>
   <module name="sap/ui/integration/services/Data.js" size="1866" compressedSize="388">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
@@ -272,7 +281,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/integration/util/CardManifest.js" size="10676" compressedSize="3232">
+  <module name="sap/ui/integration/util/CardManifest.js" size="10700" compressedSize="3261">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -296,7 +305,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/integration/widgets/Card.js" size="37997" compressedSize="10028">
+  <module name="sap/ui/integration/widgets/Card.js" size="22783" compressedSize="10028">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>

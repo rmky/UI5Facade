@@ -107,7 +107,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -177,7 +177,12 @@ function(
 			 * <b>Note:</b>When used with oData, only the loaded selections will be cleared.
 			 * @since 1.58
 			 */
-			showClearButton : {type : "boolean", group : "Behavior", defaultValue : false}
+			showClearButton : {type : "boolean", group : "Behavior", defaultValue : false},
+			/**
+			 * Overwrites the default text for the confirmation button.
+			 * @since 1.68
+			 */
+			confirmButtonText: {type : "string", group : "Appearance"}
 		},
 		defaultAggregation : "items",
 		aggregations : {
@@ -623,6 +628,20 @@ function(
 	};
 
 	/**
+	 * Sets the text of the confirmation button.
+	 * @override
+	 * @public
+	 * @param {string} sText The text for the confirm button
+	 * @returns {sap.m.SelectDialog} <code>this</code> pointer for chaining
+	 */
+	SelectDialog.prototype.setConfirmButtonText = function (sText) {
+		this.setProperty("confirmButtonText", sText, true);
+		this._oOkButton && this._oOkButton.setText(sText || this._oRb.getText("SELECT_CONFIRM_BUTTON"));
+
+		return this;
+	};
+
+	/**
 	 * Set the internal List's no data text property
 	 * @override
 	 * @public
@@ -766,6 +785,24 @@ function(
 		} else {
 			return null;
 		}
+	};
+
+	/**
+	 * Clears the selections in the <code>sap.m.SelectDialog</code> and its internally used <code>sap.m.List</code> control.
+	 *
+	 * Use this method whenever the application logic expects changes in the model providing data for
+	 * the SelectDialog that will modify the position of the items, or will change the set with completely new items.
+	 *
+	 * @public
+	 * @since 1.68
+	 * @returns {sap.m.SelectDialog} <code>this</code> to allow method chaining.
+	 */
+	SelectDialog.prototype.clearSelection = function () {
+		this._removeSelection();
+		this._updateSelectionIndicator();
+		this._oDialog.focus();
+
+		return this;
 	};
 
 	/* =========================================================== */
@@ -976,7 +1013,7 @@ function(
 
 		if (!this._oOkButton) {
 			this._oOkButton = new Button(this.getId() + "-ok", {
-				text: this._oRb.getText("MSGBOX_OK"),
+				text: this.getConfirmButtonText() || this._oRb.getText("SELECT_CONFIRM_BUTTON"),
 				press: function () {
 					// attach the reset function to afterClose to hide the dialog changes from the end user
 					that._oDialog.attachAfterClose(fnOKAfterClose);
@@ -1016,11 +1053,7 @@ function(
 		if (!this._oClearButton) {
 			this._oClearButton = new Button(this.getId() + "-clear", {
 				text: this._oRb.getText("SELECTDIALOG_CLEARBUTTON"),
-				press: function() {
-					this._removeSelection();
-					this._updateSelectionIndicator();
-					this._oDialog.focus();
-				}.bind(this)
+				press: this.clearSelection.bind(this)
 			});
 		}
 		return this._oClearButton;

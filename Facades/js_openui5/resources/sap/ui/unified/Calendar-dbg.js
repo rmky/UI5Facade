@@ -67,7 +67,7 @@ sap.ui.define([
 	 * Basic Calendar.
 	 * This calendar is used for DatePickers
 	 * @extends sap.ui.core.Control
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -377,6 +377,7 @@ sap.ui.define([
 	Calendar.prototype._initilizeMonthPicker = function() {
 		var oMonthPicker = new MonthPicker(this.getId() + "--MP");
 		oMonthPicker.attachEvent("select", this._selectMonth, this);
+		oMonthPicker.attachEvent("pageChange", _handleMonthPickerPageChange, this);
 		oMonthPicker._bNoThemeChange = true;
 		this.setAggregation("monthPicker",oMonthPicker);
 	};
@@ -408,6 +409,18 @@ sap.ui.define([
 
 		return this;
 	};
+
+	function _handleMonthPickerPageChange(oEvent) {
+		var iOffset = oEvent.getParameter("offset");
+
+		if (iOffset > 0) {
+			this._handleNext(oEvent);
+		}
+
+		if (iOffset < 0) {
+			this._handlePrevious(oEvent);
+		}
+	}
 
 	Calendar.prototype._handleDateHovered = function(oEvent) {
 		var aMonths = this.getAggregation("month"),
@@ -632,7 +645,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Displays a date in the calendar but don't set the focus.
+	 * Displays a date in the calendar but doesn't set the focus.
 	 *
 	 * @param {Object} oDate
 	 *         JavaScript date object for focused date.

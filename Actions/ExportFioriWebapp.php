@@ -1,9 +1,7 @@
 <?php
 namespace exface\UI5Facade\Actions;
 
-use exface\Core\Actions\DownloadZippedFolder;
 use exface\Core\Interfaces\Tasks\TaskInterface;
-use exface\Core\CommonLogic\ArchiveManager;
 use exface\UI5Facade\UI5FacadeApp;
 use exface\Core\Interfaces\Model\UiPageInterface;
 use exface\Core\Factories\UiPageFactory;
@@ -12,19 +10,31 @@ use exface\Core\Interfaces\AppInterface;
 use exface\Core\DataTypes\StringDataType;
 use exface\UI5Facade\Webapp;
 use exface\UI5Facade\Facades\UI5Facade;
-use exface\Core\CommonLogic\Selectors\FacadeSelector;
+use exface\Core\CommonLogic\Constants\Icons;
 use exface\Core\Factories\FacadeFactory;
 use exface\Core\Interfaces\Selectors\AliasSelectorInterface;
 use exface\Core\Exceptions\RuntimeException;
+use exface\Core\Exceptions\Facades\FacadeRuntimeError;
+use exface\Core\Interfaces\WidgetInterface;
+use exface\Core\Interfaces\Widgets\iTriggerAction;
+use exface\Core\Interfaces\DataSources\DataTransactionInterface;
+use exface\Core\CommonLogic\AbstractAction;
+use exface\Core\Interfaces\Tasks\ResultInterface;
+use exface\Core\Factories\ResultFactory;
+use exface\Core\Factories\DataSheetFactory;
+use exface\Core\DataTypes\DateTimeDataType;
+use exface\Core\Interfaces\Actions\iModifyData;
+use exface\Core\Interfaces\Actions\iShowWidget;
 
 /**
+ * Generates the code for a selected Fiori Webapp project.
  * 
  * @author Andrej Kabachnik
  * 
  * @method UI5FacadeApp getApp()
  *
  */
-class ExportFioriWebapp extends DownloadZippedFolder
+class ExportFioriWebapp extends AbstractAction implements iModifyData
 {
     private $facadeSelectorString = 'exface\\UI5Facade\\Facades\\UI5Facade';
     
@@ -33,14 +43,17 @@ class ExportFioriWebapp extends DownloadZippedFolder
         parent::init();
         $this->setInputRowsMin(1);
         $this->setInputRowsMax(1);
+        $this->setInputObjectAlias('exface.UI5Facade.FIORI_WEBAPP');
+        $this->setIcon(Icons::HDD_O);
     }
     
-    protected function createZip(TaskInterface $task) : ArchiveManager
+    protected function perform(TaskInterface $task, DataTransactionInterface $transaction) : ResultInterface
     {
         // Export app
         $input = $this->getInputDataSheet($task);
         $columns = $input->getColumns();
         $columns->addFromExpression('root_page_alias');
+        $columns->addFromExpression('export_folder');
         $columns->addFromExpression('current_version');
         $columns->addFromExpression('ui5_min_version');
         $columns->addFromExpression('ui5_source');
@@ -52,6 +65,7 @@ class ExportFioriWebapp extends DownloadZippedFolder
         $columns->addFromExpression('app_shortTitle');
         $columns->addFromExpression('app_info');
         $columns->addFromExpression('app_description');
+        $columns->addFromExpression('MODIFIED_ON');
         
         if (! $input->isFresh()) {
             $input->addFilterFromColumnValues($input->getUidColumn());
@@ -61,60 +75,78 @@ class ExportFioriWebapp extends DownloadZippedFolder
         $row = $input->getRows()[0];
         $row['component_path'] = str_replace('.', '/', $row['app_id']);
         $row['assets_path'] = './';
-        $rootPage = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $row['root_page_alias']);
+        $row['use_combined_viewcontrollers'] = 'false';
         
+        $rootPage = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $row['root_page_alias']);
         $facade = FacadeFactory::createFromString($this->facadeSelectorString, $this->getWorkbench());
+        
+        $facade->getConfig()->setOption('DEFAULT_SERVER_ADAPTER_CLASS', $facade->getConfig('WEBAPP_EXPORT.SERVER_ADAPTER_CLASS'));
+        
         $webappFolder = $this->exportWebapp($rootPage, $facade, $row);
         
-        // Create ZIP for download
-        $defaultPath = $this->getZipPathAbsolute();
-        $zipFolder = pathinfo($defaultPath, PATHINFO_DIRNAME);
-        $this->setZipPath($zipFolder . DIRECTORY_SEPARATOR . $row['app_id'] . '_v' . $row['app_id'] . '_' . date('YmdHis') . '.zip');
-        $zip = new ArchiveManager($this->getWorkbench(), $this->getZipPathAbsolute());
-        $zip->addFolder($webappFolder);
+        // Update build-timestamp
+        $updSheet = DataSheetFactory::createFromObject($input->getMetaObject());
+        $updSheet->addRow([
+            $input->getMetaObject()->getUidAttributeAlias() => $row[$input->getUidColumn()->getName()],
+            'current_version_date' => DateTimeDataType::now(),
+            'MODIFIED_ON' => $row['MODIFIED_ON']
+        ]);
+        // Do not pass the transaction to the update to force autocommit
+        $updSheet->dataUpdate(false);
         
-        $zip->close();
-        return $zip;
+        return ResultFactory::createMessageResult($task, 'Exported to ' . $webappFolder);
+    }
+    
+    protected function getExportPath(array $appData) : string
+    {
+        $path = $appData['export_folder'];
+        $path = StringDataType::replacePlaceholders($path, $appData, true);
+        $fm = $this->getWorkbench()->filemanager();
+        if ($fm::pathIsAbsolute($path) === false) {
+            $path = $fm::pathJoin([$fm->getPathToBaseFolder(), $path]);
+        }
+        
+        return $path;
     }
     
     protected function exportWebapp(UiPageInterface $rootPage, UI5Facade $facade, array $appDataRow) : string
     {
-        $appPath = $this->getApp()->getExportFolderAbsolutePath() . DIRECTORY_SEPARATOR . $rootPage->getAliasWithNamespace();
-        $exportPath =  $appPath . DIRECTORY_SEPARATOR . 'WebContent';
-        if (! file_exists($exportPath)) {
-            Filemanager::pathConstruct($exportPath);
+        $appPath = $this->getExportPath($appDataRow);
+        $webcontentPath = $appPath . DIRECTORY_SEPARATOR . 'WebContent';
+        if (! file_exists($webcontentPath)) {
+            Filemanager::pathConstruct($webcontentPath);
         } else {
-            $this->getWorkbench()->filemanager()->emptyDir($exportPath);
+            $this->getWorkbench()->filemanager()->emptyDir($webcontentPath);
         }
         
-        $exportPath = $exportPath . DIRECTORY_SEPARATOR;
+        $webcontentPath = $webcontentPath . DIRECTORY_SEPARATOR;
         /* @var $webapp \exface\UI5Facade\Webapp */ 
         $webapp = $facade->initWebapp($appDataRow['app_id'], $appDataRow);
         
-        if (! file_exists($exportPath . 'view')) {
-            Filemanager::pathConstruct($exportPath . 'view');
+        if (! file_exists($webcontentPath . 'view')) {
+            Filemanager::pathConstruct($webcontentPath . 'view');
         }
-        if (! file_exists($exportPath . 'controller')) {
-            Filemanager::pathConstruct($exportPath . 'controller');
+        if (! file_exists($webcontentPath . 'controller')) {
+            Filemanager::pathConstruct($webcontentPath . 'controller');
         }
-        if (! file_exists($exportPath . 'libs')) {
-            Filemanager::pathConstruct($exportPath . 'libs');
+        if (! file_exists($webcontentPath . 'libs')) {
+            Filemanager::pathConstruct($webcontentPath . 'libs');
         }
         
         $this
-            ->exportFile($webapp, 'manifest.json', $exportPath)
-            ->exportFile($webapp, 'index.html', $exportPath)
-            ->exportFile($webapp, 'Component.js', $exportPath)
-            ->exportTranslations($rootPage->getApp(), $webapp, $exportPath)
-            ->exportStaticViews($webapp, $exportPath)
-            ->exportPages($webapp, $exportPath);
+            ->exportFile($webapp, 'manifest.json', $webcontentPath)
+            ->exportFile($webapp, 'index.html', $webcontentPath)
+            ->exportFile($webapp, 'Component.js', $webcontentPath)
+            ->exportTranslations($rootPage->getApp(), $webapp, $webcontentPath)
+            ->exportStaticViews($webapp, $webcontentPath)
+            ->exportPages($webapp, $webcontentPath);
         
         return $appPath;
     }
     
     protected function exportTranslations(AppInterface $app, Webapp $webapp, string $exportFolder) : ExportFioriWebapp
     {
-        $defaultLang = $app->getDefaultLanguageCode();
+        $defaultLang = $app->getLanguageDefault();
         $i18nFolder = $exportFolder . 'i18n' . DIRECTORY_SEPARATOR;
         if (! file_exists($i18nFolder)) {
             Filemanager::pathConstruct($i18nFolder);
@@ -128,13 +160,20 @@ class ExportFioriWebapp extends DownloadZippedFolder
         return $this;
     }
     
+    /**
+     * 
+     * @param Webapp $webapp
+     * @param string $exportFolder
+     * @return ExportFioriWebapp
+     */
     protected function exportStaticViews(Webapp $webapp, string $exportFolder) : ExportFioriWebapp
     {
-        $this->exportFile($webapp, 'view/App.view.js', $exportFolder);
-        $this->exportFile($webapp, 'view/NotFound.view.js', $exportFolder);
-        $this->exportFile($webapp, 'controller/BaseController.js', $exportFolder);
-        $this->exportFile($webapp, 'controller/App.controller.js', $exportFolder);
-        $this->exportFile($webapp, 'controller/NotFound.controller.js', $exportFolder);
+        foreach ($webapp->getBaseViews() as $route) {
+            $this->exportFile($webapp, $route, $exportFolder);
+        }
+        foreach ($webapp->getBaseControllers() as $route) {
+            $this->exportFile($webapp, $route, $exportFolder);
+        }
         return $this;
     }
     
@@ -144,21 +183,72 @@ class ExportFioriWebapp extends DownloadZippedFolder
         return $this;
     }
     
-    protected function exportPage(Webapp $webapp, UiPageInterface $page, string $exportFolder) : ExportFioriWebapp
+    protected function exportPage(Webapp $webapp, UiPageInterface $page, string $exportFolder, int $linkDepth = 5) : ExportFioriWebapp
     {     
-        // IMPORTANT: generate the view first to allow it to add controller methods!
-        $view = $webapp->get('view/' . $page->getAliasWithNamespace() . '.view.js');
-        $view = $this->escapeUnicode($view);
-        $controller = $webapp->get('controller/' . $page->getAliasWithNamespace() . '.controller.js');
-        $controller = $this->escapeUnicode($controller);
+        try {
+            $widget = $page->getWidgetRoot();
+            $this->exportWidget($webapp, $widget, $exportFolder, $linkDepth);
+        } catch (\Throwable $e) {
+            throw new FacadeRuntimeError('Cannot export view for page "' . $page->getAliasWithNamespace() . '": ' . $e->getMessage());
+        }
+        
+        return $this;
+    }
+    
+    protected function exportWidget(Webapp $webapp, WidgetInterface $widget, string $exportFolder, int $linkDepth) : ExportFioriWebapp
+    {
+        try {
+            //$widget = $webapp->handlePrefill($widget, $task);
+            // IMPORTANT: generate the view first to allow it to add controller methods!
+            $view = $webapp->getViewForWidget($widget);
+            $controller = $view->getController();
+            $viewJs = $view->buildJsView();
+            $viewJs = $this->escapeUnicode($viewJs);
+            $controllerJs = $controller->buildJsController();
+            //$controllerJs = $this->escapeUnicode($controllerJs);
+        } catch (\Throwable $e) {
+            throw new FacadeRuntimeError('Cannot export view for widget "' . $widget->getId() . '" in page "' . $widget->getPage()->getAliasWithNamespace() . '": ' . $e->getMessage());
+        }
         
         // Copy external includes and replace their paths in the controller
-        $controller = $this->exportExternalLibs($controller, $exportFolder . DIRECTORY_SEPARATOR . 'libs');
+        $controllerJs = $this->exportExternalLibs($controllerJs, $exportFolder . DIRECTORY_SEPARATOR . 'libs');
         
         // Save view and controller as files
-        file_put_contents($this->buildPathToPageAsset($page, $exportFolder, 'view') . $page->getAlias() . '.view.js', $view);
-        file_put_contents($this->buildPathToPageAsset($page, $exportFolder, 'controller') . $page->getAlias() . '.controller.js', $controller);
+        $controllerFile = rtrim($exportFolder, "\\/") . DIRECTORY_SEPARATOR . $controller->getPath(true);
+        $controllerDir = pathinfo($controllerFile, PATHINFO_DIRNAME);
+        if (! is_dir($controllerDir)) {
+            Filemanager::pathConstruct($controllerDir);
+        }
+        
+        $viewFile = rtrim($exportFolder, "\\/") . DIRECTORY_SEPARATOR . $view->getPath(true);
+        $viewDir = pathinfo($viewFile, PATHINFO_DIRNAME);
+        if (! is_dir($viewDir)) {
+            Filemanager::pathConstruct($viewDir);
+        }
+        
+        file_put_contents($viewFile, $viewJs);
+        file_put_contents($controllerFile, $controllerJs);
+        
+        if ($linkDepth > 0) {
+            foreach ($this->findLinkedViewWidgets($widget) as $dialog) {
+                $this->exportWidget($webapp, $dialog, $exportFolder, ($linkDepth-1));
+            }
+        }
+        
         return $this;
+    }
+    
+    protected function findLinkedViewWidgets(WidgetInterface $widget) : array
+    {
+        $results = [];
+        foreach ($widget->getChildren() as $child) {
+            if ($child instanceof iTriggerAction && $child->hasAction() && $child->getAction() instanceof iShowWidget) {
+                $results[] = $child->getAction()->getWidget();
+            } else {
+                $results = array_merge($results, $this->findLinkedViewWidgets($child));
+            }
+        }
+        return $results;
     }
     
     protected function exportExternalLibs(string $controllerJs, string $libsFolder) : string

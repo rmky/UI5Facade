@@ -22,6 +22,10 @@ sap.ui.define([
 	"sap/ui/core/Popup",
 	"./InstanceManager",
 	// jQuery Plugin "cursorPos"
+	"sap/ui/unified/Calendar",
+	"sap/ui/unified/DateRange",
+	"sap/ui/unified/calendar/CustomMonthPicker",
+	"sap/ui/unified/calendar/CustomYearPicker",
 	"sap/ui/dom/jquery/cursorPos"
 ],
 	function(
@@ -39,7 +43,11 @@ sap.ui.define([
 		Log,
 		IconPool,
 		Popup,
-		InstanceManager
+		InstanceManager,
+		Calendar,
+		DateRange,
+		CustomMonthPicker,
+		CustomYearPicker
 	) {
 	"use strict";
 
@@ -51,12 +59,6 @@ sap.ui.define([
 	var CalendarType = coreLibrary.CalendarType;
 
 	var oResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m");
-
-	// lazy dependency to sap/ui/unified/Calendar
-	var Calendar;
-
-	// lazy dependency to sap/ui/unified/DateRange
-	var DateRange;
 
 	/**
 	 * Constructor for a new <code>DatePicker</code>.
@@ -135,7 +137,7 @@ sap.ui.define([
 	 * the close event), or select Cancel.
 	 *
 	 * @extends sap.m.DateTimeField
-	 * @version 1.67.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -1070,18 +1072,6 @@ sap.ui.define([
 		);
 	}
 
-	/*
-	 * helper to resolve lazy dependencies
-	 * TODO: should act asynchronously
-	 */
-	function resolveDependenciesToUnified() {
-		if ( !Calendar || !DateRange ) {
-			sap.ui.getCore().loadLibrary("sap.ui.unified");
-			Calendar = sap.ui.requireSync("sap/ui/unified/Calendar");
-			DateRange = sap.ui.requireSync("sap/ui/unified/DateRange");
-		}
-	}
-
 	/**
 	 * Creates a DateRange with the first and the last visible days in the calendar popup.
 	 * @param {sap.ui.unified.Calendar} oCalendar the calendar whose DatesRange is wanted
@@ -1090,8 +1080,6 @@ sap.ui.define([
 	 */
 	DatePicker.prototype._getVisibleDatesRange = function (oCalendar) {
 		var aVisibleDays = oCalendar._getVisibleDays();
-
-		resolveDependenciesToUnified();
 
 		// Convert to local JavaScript Date
 		return new DateRange({
@@ -1103,9 +1091,27 @@ sap.ui.define([
 	// to be overwritten by DateTimePicker
 	DatePicker.prototype._createPopupContent = function(){
 
+		var aPatternSymbolTypes = this._getFormatter(true)
+			.aFormatArray
+			.map(function(oPatternSymbolSettings) {
+				return oPatternSymbolSettings.type;
+			}),
+			bDay = aPatternSymbolTypes.indexOf("day") >= 0 ? true : false,
+			bMonth = aPatternSymbolTypes.indexOf("month") >= 0 ? true : false,
+			bYear =  aPatternSymbolTypes.indexOf("year") >= 0 ? true : false,
+			CalendarConstructor;
+
 		if (!this._oCalendar) {
-			resolveDependenciesToUnified();
-			this._oCalendar = new Calendar(this.getId() + "-cal", {
+
+			if (bDay && bMonth && bYear) {
+				CalendarConstructor = Calendar;
+			} else if (bMonth && bYear) {
+				CalendarConstructor = CustomMonthPicker;
+			} else if (bYear) {
+				CalendarConstructor = CustomYearPicker;
+			}
+
+			this._oCalendar = new CalendarConstructor(this.getId() + "-cal", {
 				intervalSelection: this._bIntervalSelection,
 				minDate: this.getMinDate(),
 				maxDate: this.getMaxDate(),
@@ -1116,8 +1122,10 @@ sap.ui.define([
 						});
 					}.bind(this)
 				});
+
 			this._oDateRange = new DateRange();
 			this._oCalendar.addSelectedDate(this._oDateRange);
+
 			if (this.$().closest(".sapUiSizeCompact").length > 0) {
 				this._oCalendar.addStyleClass("sapUiSizeCompact");
 			}
@@ -1133,7 +1141,6 @@ sap.ui.define([
 				this._oPopup.setContent(this._oCalendar);
 			}
 		}
-
 	};
 
 	DatePicker.prototype._fillDateRange = function(){

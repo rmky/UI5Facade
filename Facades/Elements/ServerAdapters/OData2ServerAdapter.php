@@ -16,6 +16,7 @@ use exface\Core\Actions\ReadData;
 use exface\Core\Actions\ReadPrefill;
 use exface\UrlDataConnector\Actions\CallOData2Operation;
 use exface\Core\Actions\DeleteObject;
+use exface\Core\Widgets\DataTable;
 
 /**
  * 
@@ -58,7 +59,7 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
             case $action instanceof CallOData2Operation:
                 return $this->buildJsCallFunctionImport($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             case $action instanceof DeleteObject:
-                // todo
+                // todo 
             default:
                 throw new FacadeLogicError('TODO');
         }
@@ -72,6 +73,12 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
         $object = $widget->getMetaObject();
         
         $localFilters = json_encode($this->getAttributeAliasesForLocalFilters($object));
+        //$quickSearchAttr = $widget->getAttributesForQuickSearch()->getAlias();
+        if ($widget instanceof DataTable) {
+            foreach ($widget->getAttributesForQuickSearch() as $attr) {
+                $quickSearchAttr[] = $attr->getAlias();
+            }
+        }
         
         return <<<JS
 
@@ -300,10 +307,12 @@ JS;
     protected function buildJsDataCreate(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
         // TODO
+        return '';
     }
     
     protected function buildJsCallFunctionImport(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
         // TODO
+        return '';
     }
 }

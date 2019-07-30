@@ -80,7 +80,7 @@ JS;
                     if (Array.isArray(response.rows) && response.rows.length === 1) {
                         {$oModelJs}.setData(response.rows[0]);
                     }
-                    {$this->buildJsBusyIconHide()}
+                    {$this->getElement()->buildJsBusyIconHide()}
                     {$onModelLoadedJs}
                 },
                 error: function(jqXHR, textStatus, errorThrown){

@@ -16,7 +16,7 @@ use exface\Core\Actions\ReadData;
 use exface\Core\Actions\ReadPrefill;
 use exface\UrlDataConnector\Actions\CallOData2Operation;
 use exface\Core\Actions\DeleteObject;
-use exface\Core\Widgets\DataTable;
+use exface\Core\Interfaces\Widgets\iHaveQuickSearch;
 
 /**
  * 
@@ -26,13 +26,17 @@ use exface\Core\Widgets\DataTable;
  * 
  * - Local filtering will not yield expected results if pagination is enabled. However,
  * this seems to be also true for th OData2JsonUrlBuilder. Perhaps, it would be better
- * to disable pagination as soon as at leas on filter is detected, that cannot be applied
+ * to disable pagination as soon as at least one filter is detected, that cannot be applied
  * remotely.
  * 
  * - $inlinecount=allpages is allways used, not only if it is explicitly enabled in the
  * data adress property `odata_$inlinecount` (this property has no effect here!). This is
  * due to the fact, that the "read+1" pagination would significantly increase the complexity
  * of the adapter logic.
+ * 
+ * - for now QuickSearch must only include filters that are filtered locally as there seems to be an issue
+ * with the way the URL parameters are build using "substringof()". Either the oData Service needs to support
+ * the substring() function or there is another problem, the issue needs some more digging into
  *
  */
 class OData2ServerAdapter implements UI5ServerAdapterInterface
@@ -71,13 +75,14 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
     {
         $widget = $this->getElement()->getWidget();
         $object = $widget->getMetaObject();
+        $quickSearchFilters = [];
         
         $localFilters = json_encode($this->getAttributeAliasesForLocalFilters($object));
-        //$quickSearchAttr = $widget->getAttributesForQuickSearch()->getAlias();
-        if ($widget instanceof DataTable) {
+        if ($widget instanceof iHaveQuickSearch) {
             foreach ($widget->getAttributesForQuickSearch() as $attr) {
-                $quickSearchAttr[] = $attr->getAlias();
+                $quickSearchFilters[] = $attr->getAlias();
             }
+            $quickSearchFilters = json_encode($quickSearchFilters);
         }
         
         return <<<JS
@@ -86,7 +91,13 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
                 
                 var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});  
                 var oDataReadParams = {};
+                var oDataReadFiltersSearch = [];
+                var oDataReadFiltersQuickSearch = [];
                 var oDataReadFilters = [];
+                var oDataReadFiltersArray = [];
+                var oQuickSearchFilters = {$quickSearchFilters};
+                var oLocalFilters = {$localFilters};
+                console.log({$quickSearchFilters})
                 
                 // Pagination
                 if ({$oParamsJs}.hasOwnProperty('length') === true) {
@@ -99,7 +110,7 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
 
                 // Filters
                 if ({$oParamsJs}.data && {$oParamsJs}.data.filters && {$oParamsJs}.data.filters.conditions) {
-                    var conditions = {$oParamsJs}.data.filters.conditions;               
+                    var conditions = {$oParamsJs}.data.filters.conditions               
                     for (var i = 0; i < conditions.length; i++) {
                         switch (conditions[i].comparator) {
                             case '=':
@@ -135,12 +146,48 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
                                 operator: oOperator,
                                 value1: conditions[i].value
                             });
-                            oDataReadFilters.push(filter);
+                            oDataReadFiltersSearch.push(filter);                            
                         }
-                                                
+                        if ({$oParamsJs}.q != "") {
+                            if (oQuickSearchFilters.length != 0) {
+                                if (oQuickSearchFilters.includes(conditions[i].expression) && !oLocalFilters.includes(conditions[i].expression)) {
+                                    var filterQuickSearchItem = new sap.ui.model.Filter({
+                                        path: conditions[i].expression,
+                                        operator: "Contains",
+                                        value1: {$oParamsJs}.q
+                                    });
+                                    oDataReadFiltersQuickSearch.push(filterQuickSearchItem);
+                                }
+                            } 
+                        }                        
                     }
                 }
-                console.log({$localFilters});               
+                
+                if (oDataReadFiltersSearch.length !== 0) {
+                    var tempFilter = new sap.ui.model.Filter({filters: oDataReadFiltersSearch, and: false})
+                    var test = tempFilter instanceof sap.ui.model.Filter;
+                    console.log('Test1: ', test);
+                    oDataReadFiltersArray.push(tempFilter);
+                }
+                if (oDataReadFiltersQuickSearch.length !== 0) {
+                    var tempFilter2 = new sap.ui.model.Filter({filters: oDataReadFiltersQuickSearch, and: false})
+                    var test2 = tempFilter2 instanceof sap.ui.model.Filter;
+                    console.log('Test2: ', test2);
+                    oDataReadFiltersArray.push(tempFilter2);
+                }
+                if (oDataReadFiltersArray.length !== 0) {
+                    var test3 = oDataReadFiltersArray.every (filter => filter instanceof sap.ui.model.Filter)
+                    console.log('Test3: ', test3);
+                    var combinedFilter = new sap.ui.model.Filter({
+                        filters: oDataReadFiltersArray,
+                        and: true
+                    })
+                    oDataReadFilters.push(combinedFilter)
+                    //console.log('Test3: ', oDataReadFilters);
+                }
+
+                console.log({$localFilters});
+                console.log(oDataReadFilters);               
                 console.log("oDataParams: ", oDataReadParams);
                 oDataModel.read('/{$object->getDataAddress()}', {
                     urlParameters: oDataReadParams,
@@ -150,10 +197,27 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
                         var resultRows = oData.results;
                         
                         //Local Filtering
-                        if ({$oParamsJs}.data && {$oParamsJs}.data.filters && {$oParamsJs}.data.filters.conditions) {
-                            var oLocalFilters = {$localFilters};
+                        if ({$oParamsJs}.data && {$oParamsJs}.data.filters && {$oParamsJs}.data.filters.conditions) {                            
                             if (oLocalFilters.length !== 0) {
                                 var conditions = {$oParamsJs}.data.filters.conditions;
+                                
+                                //QuickSearchFilter Local
+                                if ({$oParamsJs}.q != "") {
+                                    var quickSearchVal = {$oParamsJs}.q.toString().toLowerCase();
+                                    resultRows = resultRows.filter(row => {
+                                            var filtered = false;
+                                            for (var i = 0; i < oQuickSearchFilters.length; i++) {
+                                                if (oLocalFilters.includes(oQuickSearchFilters[i]) && row[oQuickSearchFilters[i]].toString().toLowerCase().includes(quickSearchVal)) {
+                                                    filtered = true;
+                                                }
+                                                if (!oLocalFilters.includes(oQuickSearchFilters[i])) {
+                                                    filtered = true;
+                                                }
+                                            }
+                                            return filtered;
+                                    });
+                                }
+                                
                                 for (var i = 0; i < oLocalFilters.length; i++) {
                                     var filterAttr = oLocalFilters[i];
                                     var cond = {};
@@ -162,7 +226,9 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
                                             cond = conditions[j];
                                         }
                                     }
-                                    if (cond.value === undefined || cond.value === null || cond.value === '') continue;
+                                    if (cond.value === undefined || cond.value === null || cond.value === '') {
+                                        continue;
+                                    }
                                     switch (cond.comparator) {
                                         case '==':
                                             resultRows = resultRows.filter(row => {
@@ -188,7 +254,7 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
                                                 if (row[cond.expression] === undefined) return false;
                                                 return row[cond.expression].toString().toLowerCase().includes(val);
                                             });
-                                    }
+                                    }                                    
                                 }
                             }
                         }

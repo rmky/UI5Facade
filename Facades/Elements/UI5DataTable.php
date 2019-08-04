@@ -723,14 +723,19 @@ JS;
             });
 
 JS;
+            $setFooterRows = <<<JS
+
+            if (footerRows){
+				oTable.setFixedBottomRowCount(parseInt(footerRows));
+			}
+
+JS;
         }
         
         return $this->buildJsDataLoaderOnLoadedViaTrait($oModelJs) . <<<JS
 
 			var footerRows = {$oModelJs}.getProperty("/footerRows");
-            if (footerRows){
-				oTable.setFixedBottomRowCount(parseInt(footerRows));
-			}
+            {$setFooterRows}
 
             {$paginator->buildJsSetTotal($oModelJs . '.getProperty("/recordsFiltered")', 'oController')};
             {$paginator->buildJsRefresh('oController')};  

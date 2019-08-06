@@ -75,19 +75,22 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
     {
         $widget = $this->getElement()->getWidget();
         $object = $widget->getMetaObject();
-        $quickSearchFilters = [];
         
         $localFilters = json_encode($this->getAttributeAliasesForLocalFilters($object));
+        $quickSearchFilters = [];
         if ($widget instanceof iHaveQuickSearch) {
+            
             foreach ($widget->getAttributesForQuickSearch() as $attr) {
                 $quickSearchFilters[] = $attr->getAlias();
             }
-            $quickSearchFilters = json_encode($quickSearchFilters);
+            if (count($quickSearchFilters) !== 0) {
+                $quickSearchFilters = json_encode($quickSearchFilters);
+            }          
         }
         
         return <<<JS
 
-                console.log({$oParamsJs});
+                console.log('oParams:', {$oParamsJs});
                 
                 var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});  
                 var oDataReadParams = {};
@@ -97,7 +100,7 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
                 var oDataReadFiltersArray = [];
                 var oQuickSearchFilters = {$quickSearchFilters};
                 var oLocalFilters = {$localFilters};
-                console.log({$quickSearchFilters})
+                console.log('QuickSearch: ', oQuickSearchFilters[0])
                 
                 // Pagination
                 if ({$oParamsJs}.hasOwnProperty('length') === true) {
@@ -148,8 +151,8 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
                             });
                             oDataReadFiltersSearch.push(filter);                            
                         }
-                        if ({$oParamsJs}.q != "") {
-                            if (oQuickSearchFilters.length != 0) {
+                        if ({$oParamsJs}.q !== undefined && {$oParamsJs}.q !== "" ) {
+                            if (oQuickSearchFilters[0] !== undefined) {
                                 if (oQuickSearchFilters.includes(conditions[i].expression) && !oLocalFilters.includes(conditions[i].expression)) {
                                     var filterQuickSearchItem = new sap.ui.model.Filter({
                                         path: conditions[i].expression,
@@ -202,7 +205,7 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
                                 var conditions = {$oParamsJs}.data.filters.conditions;
                                 
                                 //QuickSearchFilter Local
-                                if ({$oParamsJs}.q != "") {
+                                if ({$oParamsJs}.q !== undefined && {$oParamsJs}.q !== "" && oQuickSearchFilters[0] !== undefined) {
                                     var quickSearchVal = {$oParamsJs}.q.toString().toLowerCase();
                                     resultRows = resultRows.filter(row => {
                                             var filtered = false;

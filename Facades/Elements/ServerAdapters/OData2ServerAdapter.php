@@ -17,6 +17,8 @@ use exface\Core\Actions\ReadPrefill;
 use exface\UrlDataConnector\Actions\CallOData2Operation;
 use exface\Core\Actions\DeleteObject;
 use exface\Core\Interfaces\Widgets\iHaveQuickSearch;
+use exface\Core\Actions\ExportXLSX;
+use exface\Core\Actions\ExportCSV;
 
 /**
  * 
@@ -55,17 +57,27 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
     
     public function buildJsServerRequest(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
+        $test = '';
         switch (true) {
+            case $action instanceof ExportXLSX:
+                return "console.log('oParams:', {$oParamsJs});";
+            case $action instanceof ExportCSV:
+                return "console.log('oParams:', {$oParamsJs});";
             case $action instanceof ReadPrefill:
                 return $this->buildJsPrefillLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             case $action instanceof ReadData:
                 return $this->buildJsDataLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             case $action instanceof CallOData2Operation:
-                return $this->buildJsCallFunctionImport($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
+                return $this->buildJsCallFunctionImport($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             case $action instanceof DeleteObject:
-                // todo 
+                return "console.log('oParams:', {$oParamsJs});";
             default:
-                throw new FacadeLogicError('TODO');
+                return <<<JS
+console.log('oParams:', '{$action->getName()}');
+console.log('oParams:', {$oParamsJs});
+
+JS;
+                //throw new FacadeLogicError('TODO');
         }
         
         return '';
@@ -310,7 +322,6 @@ JS;
             console.error('No data to filter the prefill!');
         }
 
-        // TODO filter
         {$oParamsJs}.data.filters = {
             conditions: [
                 {
@@ -379,9 +390,43 @@ JS;
         return '';
     }
     
-    protected function buildJsCallFunctionImport(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
+    protected function buildJsCallFunctionImport(ActionInterface $action,string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
         // TODO
-        return '';
+        $widget = $this->getElement()->getWidget();
+        $object = $widget->getMetaObject();
+        $parameters = $action->getParameters();
+        $requiredParams = [];
+        foreach ($parameters as $param) {
+            if ($param->isRequired() === true)
+                $requiredParams[] = $param->getName();
+        }
+        $requiredParams = json_encode($requiredParams);
+        
+        
+        return <<<JS
+
+                var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
+                var requiredParams = {$requiredParams};
+                var oDataActionParams = {};
+                console.log({$oParamsJs});
+                if ({$oParamsJs}.data.rows.length !== 0) {
+                    if (requiredParams[0] !== undefined) {
+                        for (var i = 0; i < requiredParams.length; i++) {
+                            var param = requiredParams[i];
+                            oDataActionParams[param] = {$oParamsJs}.data.rows[0][requiredParams[i]];
+                        }
+                    }
+                } else {
+                    console.log('No row selected!');
+                }                    
+                console.log('ActionParamters:' , oDataActionParams);
+                oDataModel.callFunction('/{$action->getServiceName()}', {
+                    urlParameters: oDataActionParams,
+                    success: {$onModelLoadedJs},
+                    error: {$onErrorJs}
+                });
+            
+JS;
     }
 }

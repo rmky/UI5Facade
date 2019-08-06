@@ -347,10 +347,107 @@ JS;
         
         $widget = $this->getWidget();
         
+        $onModelLoadedJs = <<<JS
+
+                        function(data, textStatus) {
+                            console.log("Data: ", data);
+                            console.log("TextStatus: ", textStatus);
+                            if (typeof data === 'object') {
+                                response = data;
+                            } else {
+                                var response = {};
+								try {
+									response = $.parseJSON(data);
+								} catch (e) {
+									response.error = data;
+								}
+                            }
+		                   	if (response.success || textStatus.statusCode === "200"){
+								{$this->buildJsCloseDialog($widget, $input_element)}
+								{$this->buildJsInputRefresh($widget, $input_element)}
+		                       	{$this->buildJsBusyIconHide()}
+		                       	$('#{$this->getId()}').trigger('{$action->getAliasWithNamespace()}.action.performed', [requestData, '{$input_element->getId()}']);
+								if (response.success || response.undoURL){
+		                       		{$this->buildJsShowMessageSuccess("response.success + (response.undoable ? ' <a href=\"{$this->buildJsUndoUrl($action, $input_element) }\" style=\"display:block; float:right;\">UNDO</a>' : '')")}
+									if(response.redirect){
+										if (response.redirect.indexOf('target=_blank') !== 0) {
+											window.open(response.redirect.replace('target=_blank',''), '_newtab');
+										}
+										else {
+											window.location.href = response.redirect;
+										}
+                   					}
+								}
+                                {$this->buildJsOnSuccessScript()}
+		                    } else {
+								{$this->buildJsBusyIconHide()}
+								{$this->buildJsShowMessageError('response.error', '"Server error"')}
+		                    }
+						}
+
+JS;
+                                
+        $onErrorJs = <<<JS
+
+                        function(jqXHR, textStatus, errorThrown){
+                            {$this->buildJsShowError('jqXHR.responseText', 'jqXHR.statusCode + " " + jqXHR.statusText')}
+                            {$this->buildJsBusyIconHide()}
+						}
+
+JS;
+        
+        $onOfflineJs = '';
+        
+        $doAction = $this->getServerAdapter()->buildJsServerRequest(
+            $action,
+            'oModel',
+            'params',
+            $onModelLoadedJs,
+            $onErrorJs,
+            $onOfflineJs
+        );		
+		
+        $output = $this->buildJsRequestDataCollector($action, $input_element);
+        $output .= <<<JS
+                
+				if ({$input_element->buildJsValidator()}) {
+					{$this->buildJsBusyIconShow()}
+                    var oModel = new sap.ui.model.json.JSONModel();
+                    var params = {
+							action: "{$widget->getActionAlias()}",
+							resource: "{$widget->getPage()->getAliasWithNamespace()}",
+							element: "{$widget->getId()}",
+							object: "{$widget->getMetaObject()->getId()}",
+							data: requestData
+					}
+                    {$doAction}	    
+				} else {
+					{$input_element->buildJsValidationError()}
+				}
+
+JS;
+                                
+            return $output;
+    }
+}
+    
+/*    protected function buildJsClickCallServerAction(ActionInterface $action, AbstractJqueryElement $input_element)
+    {
+        $serverAdapter = $this->getServerAdapter();
+        if ($serverAdapter instanceof UI5FacadeServerAdapter) {
+            return $this->buildJsClickCallServerActionViaTrait($action, $input_element);
+        }
+        
+        $widget = $this->getWidget();
+        
+        $oParamsJs = '';
+        $onModelLoadedJs = '';
+        
         $headers = ! empty($this->getAjaxHeaders()) ? 'headers: ' . json_encode($this->getAjaxHeaders()) . ',' : '';
         
         $output = $this->buildJsRequestDataCollector($action, $input_element);
         $output .= "
+                console.log('Aktion: ', '{$widget->getActionAlias()}');
 				if (" . $input_element->buildJsValidator() . ") {
 					" . $this->buildJsBusyIconShow() . "
                     var oModel = new sap.ui.model.json.JSONModel();
@@ -403,12 +500,14 @@ JS;
 							" . $this->buildJsBusyIconHide() . "
 						}
 					});
-                    {$serverAdapter->buildJsServerRequest($action, 'oModel', $oParamsJs, $onModelLoadedJs)}
+                    
 				} else {
 					" . $input_element->buildJsValidationError() . "
 				}
 			";
                                         
         return $output;
+        
+        // insert at line 409: {$serverAdapter->buildJsServerRequest($action, 'oModel', $oParamsJs, $onModelLoadedJs)}
     }
-}
+}*/

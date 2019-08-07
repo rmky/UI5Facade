@@ -362,7 +362,7 @@ JS;
 									response.error = data;
 								}
                             }
-		                   	if (response.success || textStatus.statusCode === "200"){
+		                   	if (response.success || textStatus.statusCode === "200" || textStatus.statusCode === "204"){
 								{$this->buildJsCloseDialog($widget, $input_element)}
 								{$this->buildJsInputRefresh($widget, $input_element)}
 		                       	{$this->buildJsBusyIconHide()}

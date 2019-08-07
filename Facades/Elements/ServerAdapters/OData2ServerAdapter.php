@@ -22,6 +22,7 @@ use exface\Core\Actions\ExportCSV;
 use exface\Core\Actions\UpdateData;
 use exface\Core\CommonLogic\QueryBuilder\QueryPart;
 use exface\Core\CommonLogic\QueryBuilder\QueryPartAttribute;
+use exface\Core\Actions\SaveData;
 
 /**
  * 
@@ -74,6 +75,8 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
             case $action instanceof DeleteObject:
                 return "console.log('oParams:', {$oParamsJs});";
             case $action instanceof UpdateData:
+                return $this->buildJsDataUpdate($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
+            case $action instanceof SaveData:
                 return $this->buildJsDataUpdate($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             default:
                 return <<<JS

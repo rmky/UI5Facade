@@ -8,6 +8,7 @@ use exface\Core\Exceptions\Facades\FacadeLogicError;
 use exface\Core\Interfaces\Model\MetaObjectInterface;
 use exface\Core\Interfaces\Model\MetaAttributeInterface;
 use exface\Core\DataTypes\BooleanDataType;
+use exface\Core\DataTypes\DateDataType;
 use exface\Core\Factories\QueryBuilderFactory;
 use exface\UrlDataConnector\QueryBuilders\OData2JsonUrlBuilder;
 use exface\Core\Factories\ConditionFactory;
@@ -73,11 +74,11 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
             case $action instanceof CallOData2Operation:
                 return $this->buildJsCallFunctionImport($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             case $action instanceof DeleteObject:
-                return "console.log('oParams:', {$oParamsJs});";
+                return $this->buildJsDataDelete($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             case $action instanceof UpdateData:
-                return $this->buildJsDataUpdate($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
+                return $this->buildJsDataUpdate($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             case $action instanceof SaveData:
-                return $this->buildJsDataUpdate($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
+                return $this->buildJsDataUpdate($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             default:
                 return <<<JS
 console.log('oParams:', '{$action->getName()}');
@@ -106,9 +107,16 @@ JS;
                 $quickSearchFilters = json_encode($quickSearchFilters);
             }          
         }
+        $dateAttributes = [];
+        foreach ($object->getAttributes() as $qpart) {
+            if ($qpart->getDataType() instanceof DateDataType) {
+                $dateAttributes[] = $qpart->getAlias();
+            }
+        }
+        $dateAttributes = json_encode($dateAttributes);
         
         return <<<JS
-            
+            console.log('oParams:', {$oParamsJs});
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});  
             var oDataReadParams = {};
             var oDataReadFiltersSearch = [];
@@ -201,12 +209,31 @@ JS;
                 })
                 oDataReadFilters.push(combinedFilter)
             }
-
             console.log({$localFilters});
             console.log(oDataReadFilters);
+
+            //Sorters
+            var oDataReadSorters = [];
+            if ({$oParamsJs}.sort !== undefined && {$oParamsJs}.sort !== "") {
+                var sorters = {$oParamsJs}.sort.split(",");
+                var directions = {$oParamsJs}.order.split(",");
+                console.log('Sorters: ', sorters);
+                console.log('Directions: ', directions);
+                for (var i = 0; i < sorters.length; i++) {
+                    if (directions[i] === "desc") {
+                        var sortObject = new sap.ui.model.Sorter(sorters[i], true);
+                    } else {
+                        var sortObject = new sap.ui.model.Sorter(sorters[i], false);
+                    }
+                    oDataReadSorters.push(sortObject);
+                }
+            }
+            console.log('oSorters: ', oDataReadSorters);
+
             oDataModel.read('/{$object->getDataAddress()}', {
                 urlParameters: oDataReadParams,
                 filters: oDataReadFilters,
+                sorters: oDataReadSorters,
                 success: function(oData, response) {
                     var resultRows = oData.results;
                     
@@ -272,6 +299,26 @@ JS;
                             }
                         }
                     }
+
+                    //Date Conversion
+                    if ({$dateAttributes}[0] !== undefined) {
+                        for (var i = 0; i < resultRows.length; i++) {
+                            for (var j = 0; j < {$dateAttributes}.length; j++) {
+                                var attr = {$dateAttributes}[j].toString();
+                                var d = resultRows[i][attr];
+                                if (d !== undefined && d !== "" && d !== null) {
+                                    var month = ('0'+(d.getUTCMonth()+1)).slice(-2);
+                                    var day = ('0'+d.getUTCDate()).slice(-2);
+                                    var hours = ('0'+d.getUTCHours()).slice(-2);
+                                    var minutes = ('0'+d.getUTCMinutes()).slice(-2);
+                                    var seconds = ('0'+d.getUTCSeconds()).slice(-2);
+                                    var newVal = d.getUTCFullYear() + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+                                    resultRows[i][attr] = newVal;
+                                }
+                            }
+                        }
+                    }
+
                     var oRowData = {
                         rows: resultRows
                     };
@@ -383,7 +430,7 @@ JS;
         return $localFilterAliases;
     }
     
-    protected function buildJsDataUpdate(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
+    protected function buildJsDataUpdate(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
         // TODO
         $widget = $this->getElement()->getWidget();
@@ -397,7 +444,16 @@ JS;
         }
         $attributesType = json_encode($attributesType);
         $uidAttributeType = $object->getUidAttribute()->getDataAddressProperty('odata_type');
-        
+        if ($action instanceof UpdateData) {
+            $serverCall = <<<JS
+
+            oDataModel.update("/{$object->getDataAddress()}(" + oDataUid+ ")", oData, {
+                success: {$onModelLoadedJs},
+                error: {$onErrorJs}
+            });
+
+JS;
+        }
         
         return <<<JS
 
@@ -451,15 +507,68 @@ JS;
             } else {
                 var oDataUid = '';
             }
-            oDataModel.update("/{$object->getDataAddress()}(" + oDataUid+ ")", oData, {
+            {$serverCall}
+
+JS;
+    }
+    
+    protected function buildJsDataDelete(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
+    {
+        $widget = $this->getElement()->getWidget();
+        $object = $widget->getMetaObject();
+        $uidAttribute = $object->getUidAttributeAlias();
+        $uidAttributeType = $object->getUidAttribute()->getDataAddressProperty('odata_type');
+        
+        return <<<JS
+        
+            var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
+            var data = {$oParamsJs}.data.rows[0];
+            if ('{$uidAttribute}' in data) {
+                var oDataUid = data.{$uidAttribute};
+                var type = '{$uidAttributeType}';
+                switch (type) {
+                    case 'Edm.Guid':
+                        oDataUid = "guid" + "'" + oDataUid + "'";
+                        break;
+                    case 'Edm.Binary':
+                        oDataUid = "binary" + "'" + oDataUid + "'";
+                        break;
+                    case 'Edm.DateTime':
+                        var d = new Date(oDataUid);
+                        var month = ('0'+(d.getMonth()+1)).slice(-2);
+                        var day = ('0'+d.getDate()).slice(-2);
+                        var hours = ('0'+d.getHours()).slice(-2);
+                        var minutes = ('0'+d.getMinutes()).slice(-2);
+                        var seconds = ('0'+d.getSeconds()).slice(-2);
+                        var datestring = d.getFullYear() + '-' + month + '-' + day + 'T' + hours + ':' + minutes + ':' + seconds;
+                        oDataUid = datestring;
+                        break;                        
+                    case 'Edm.Time':
+                        var d = new Date(oDataUid);
+                        var hours = ('0'+d.getHours()).slice(-2);
+                        var minutes = ('0'+d.getMinutes()).slice(-2);
+                        var datestring = hours + 'T' + minutes + 'M';
+                        oDataUid = datestring;
+                        break;
+                    case 'Edm.Decimal':
+                        oDataUid = oDataUid.toString();
+                        break;
+                    default:
+                        oDataUid = oDataUid;
+                }
+            } else {
+                var oDataUid = '';
+            }
+            oDataModel.remove("/{$object->getDataAddress()}(" + oDataUid+ ")" , {
                 success: {$onModelLoadedJs},
                 error: {$onErrorJs}
             });
 
 JS;
+        
     }
     
-    protected function buildJsCallFunctionImport(ActionInterface $action,string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
+    protected function buildJsCallFunctionImport(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
         // TODO
         $widget = $this->getElement()->getWidget();
@@ -475,8 +584,10 @@ JS;
         
         return <<<JS
 
+            console.log('Params: ',$oParamsJs);
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
             var requiredParams = {$requiredParams};
+            console.log('RequiredParams: ',requiredParams);
             var oDataActionParams = {};
             if ({$oParamsJs}.data.rows.length !== 0) {
                 if (requiredParams[0] !== undefined) {

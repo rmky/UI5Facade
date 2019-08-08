@@ -24,6 +24,7 @@ use exface\Core\Actions\UpdateData;
 use exface\Core\CommonLogic\QueryBuilder\QueryPart;
 use exface\Core\CommonLogic\QueryBuilder\QueryPartAttribute;
 use exface\Core\Actions\SaveData;
+use exface\Core\Actions\CreateData;
 
 /**
  * 
@@ -62,6 +63,7 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
     
     public function buildJsServerRequest(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
+        $test = '';
         switch (true) {
             case $action instanceof ExportXLSX:
                 return "console.log('oParams:', {$oParamsJs});";
@@ -76,6 +78,8 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
             case $action instanceof DeleteObject:
                 return $this->buildJsDataDelete($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             case $action instanceof UpdateData:
+                return $this->buildJsDataUpdate($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
+            case $action instanceof CreateData:
                 return $this->buildJsDataUpdate($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             case $action instanceof SaveData:
                 return $this->buildJsDataUpdate($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
@@ -444,7 +448,17 @@ JS;
         }
         $attributesType = json_encode($attributesType);
         $uidAttributeType = $object->getUidAttribute()->getDataAddressProperty('odata_type');
-        if ($action instanceof UpdateData) {
+        if ($action instanceof CreateData) {
+            $serverCall = <<<JS
+            
+            oDataModel.create("/{$object->getDataAddress()}", oData, {
+                success: {$onModelLoadedJs},
+                error: {$onErrorJs}
+            });
+
+JS;
+        }
+        elseif ($action instanceof UpdateData || $action instanceof SaveData) {
             $serverCall = <<<JS
 
             oDataModel.update("/{$object->getDataAddress()}(" + oDataUid+ ")", oData, {
@@ -520,7 +534,7 @@ JS;
         $uidAttributeType = $object->getUidAttribute()->getDataAddressProperty('odata_type');
         
         return <<<JS
-        
+            console.log($oParamsJs)
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
             var data = {$oParamsJs}.data.rows[0];
             if ('{$uidAttribute}' in data) {

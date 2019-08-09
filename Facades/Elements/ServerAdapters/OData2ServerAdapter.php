@@ -453,6 +453,23 @@ JS;
         }
         elseif ($action instanceof UpdateData || $action instanceof SaveData) {
             $serverCall = <<<JS
+            
+            if ('{$uidAttribute}' in oData) {
+                var oDataUid = oData.{$uidAttribute};
+                var type = '{$uidAttributeType}';
+                switch (type) {
+                    case 'Edm.Guid':
+                        oDataUid = "guid" + "'" + data['{$uidAttribute}']+ "'";
+                        break;
+                    case 'Edm.Binary':
+                        oDataUid = "binary" + "'" + data['{$uidAttribute}'] + "'";
+                        break;
+                    default:
+                        oDataUid = oDataUid;
+                }
+            } else {
+                var oDataUid = '';
+            }
 
             oDataModel.update("/{$object->getDataAddress()}(" + oDataUid+ ")", oData, {
                 success: {$onModelLoadedJs},
@@ -498,22 +515,6 @@ JS;
                     }
                 }
             });
-            if ('{$uidAttribute}' in oData) {
-                var oDataUid = oData.{$uidAttribute};
-                var type = '{$uidAttributeType}';
-                switch (type) {
-                    case 'Edm.Guid':
-                        oDataUid = "guid" + "'" + data['{$uidAttribute}']+ "'";
-                        break;
-                    case 'Edm.Binary':
-                        oDataUid = "binary" + "'" + data['{$uidAttribute}'] + "'";
-                        break;
-                    default:
-                        oDataUid = oDataUid;
-                }
-            } else {
-                var oDataUid = '';
-            }
             {$serverCall}
 
 JS;
@@ -582,11 +583,18 @@ JS;
         $object = $widget->getMetaObject();
         $parameters = $action->getParameters();
         $requiredParams = [];
+        $defaultValues = (object)array();
         foreach ($parameters as $param) {
-            if ($param->isRequired() === true)
+            if ($param->isRequired() === true) {
                 $requiredParams[] = $param->getName();
+                if ($param->hasDefaultValue()) {
+                    $key = $param->getName();
+                    $defaultValues->$key= $param->getDefaultValue();
+                }
+            }
         }
         $requiredParams = json_encode($requiredParams);
+        $defaultValues = json_encode($defaultValues);
         
         
         return <<<JS
@@ -594,13 +602,21 @@ JS;
             console.log('Params: ',$oParamsJs);
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
             var requiredParams = {$requiredParams};
-            console.log('RequiredParams: ',requiredParams);
+            var defaultValues = {$defaultValues};
+
             var oDataActionParams = {};
             if ({$oParamsJs}.data.rows.length !== 0) {
                 if (requiredParams[0] !== undefined) {
                     for (var i = 0; i < requiredParams.length; i++) {
                         var param = requiredParams[i];
-                        oDataActionParams[param] = {$oParamsJs}.data.rows[0][requiredParams[i]];
+                        if ({$oParamsJs}.data.rows[0][requiredParams[i]] != undefined && {$oParamsJs}.data.rows[0][requiredParams[i]] != "") {
+                            oDataActionParams[param] = {$oParamsJs}.data.rows[0][requiredParams[i]];
+                        } else if (defaultValues.hasOwnProperty(param)) {
+                            oDataActionParams[param] = defaultValues[param];
+                        } else {
+                            oDataActionParams[param] = "";
+                            console.log('WARNING: No value given for required parameter: ', param);
+                        }
                     }
                 }
             } else {

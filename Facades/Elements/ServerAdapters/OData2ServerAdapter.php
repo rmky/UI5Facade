@@ -129,7 +129,6 @@ JS;
             var oDataReadFiltersArray = [];
             var oQuickSearchFilters = {$quickSearchFilters};
             var oLocalFilters = {$localFilters};
-            console.log('QuickSearch: ', oQuickSearchFilters[0])
             
             // Pagination
             if ({$oParamsJs}.hasOwnProperty('length') === true) {
@@ -213,16 +212,12 @@ JS;
                 })
                 oDataReadFilters.push(combinedFilter)
             }
-            console.log({$localFilters});
-            console.log(oDataReadFilters);
 
             //Sorters
             var oDataReadSorters = [];
             if ({$oParamsJs}.sort !== undefined && {$oParamsJs}.sort !== "") {
                 var sorters = {$oParamsJs}.sort.split(",");
                 var directions = {$oParamsJs}.order.split(",");
-                console.log('Sorters: ', sorters);
-                console.log('Directions: ', directions);
                 for (var i = 0; i < sorters.length; i++) {
                     if (directions[i] === "desc") {
                         var sortObject = new sap.ui.model.Sorter(sorters[i], true);
@@ -232,7 +227,6 @@ JS;
                     oDataReadSorters.push(sortObject);
                 }
             }
-            console.log('oSorters: ', oDataReadSorters);
 
             oDataModel.read('/{$object->getDataAddress()}', {
                 urlParameters: oDataReadParams,
@@ -240,6 +234,25 @@ JS;
                 sorters: oDataReadSorters,
                 success: function(oData, response) {
                     var resultRows = oData.results;
+
+                    //Date Conversion
+                    if ({$dateAttributes}[0] !== undefined) {
+                        for (var i = 0; i < resultRows.length; i++) {
+                            for (var j = 0; j < {$dateAttributes}.length; j++) {
+                                var attr = {$dateAttributes}[j].toString();
+                                var d = resultRows[i][attr];
+                                if (d !== undefined && d !== "" && d !== null) {
+                                    var month = ('0'+(d.getUTCMonth()+1)).slice(-2);
+                                    var day = ('0'+d.getUTCDate()).slice(-2);
+                                    var hours = ('0'+d.getUTCHours()).slice(-2);
+                                    var minutes = ('0'+d.getUTCMinutes()).slice(-2);
+                                    var seconds = ('0'+d.getUTCSeconds()).slice(-2);
+                                    var newVal = d.getUTCFullYear() + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+                                    resultRows[i][attr] = newVal;
+                                }
+                            }
+                        }
+                    }
                     
                     //Local Filtering
                     if ({$oParamsJs}.data && {$oParamsJs}.data.filters && {$oParamsJs}.data.filters.conditions) {                            
@@ -292,7 +305,6 @@ JS;
                                             return ! row[cond.expression].toString().toLowerCase().includes(val);
                                         });
                                         break;
-                                    case '=':
                                     default:
                                         var val = cond.value.toString().toLowerCase();
                                         resultRows = resultRows.filter(row => {
@@ -300,25 +312,6 @@ JS;
                                             return row[cond.expression].toString().toLowerCase().includes(val);
                                         });
                                 }                                    
-                            }
-                        }
-                    }
-
-                    //Date Conversion
-                    if ({$dateAttributes}[0] !== undefined) {
-                        for (var i = 0; i < resultRows.length; i++) {
-                            for (var j = 0; j < {$dateAttributes}.length; j++) {
-                                var attr = {$dateAttributes}[j].toString();
-                                var d = resultRows[i][attr];
-                                if (d !== undefined && d !== "" && d !== null) {
-                                    var month = ('0'+(d.getUTCMonth()+1)).slice(-2);
-                                    var day = ('0'+d.getUTCDate()).slice(-2);
-                                    var hours = ('0'+d.getUTCHours()).slice(-2);
-                                    var minutes = ('0'+d.getUTCMinutes()).slice(-2);
-                                    var seconds = ('0'+d.getUTCSeconds()).slice(-2);
-                                    var newVal = d.getUTCFullYear() + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
-                                    resultRows[i][attr] = newVal;
-                                }
                             }
                         }
                     }

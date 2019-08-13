@@ -25,6 +25,8 @@ use exface\Core\CommonLogic\QueryBuilder\QueryPart;
 use exface\Core\CommonLogic\QueryBuilder\QueryPartAttribute;
 use exface\Core\Actions\SaveData;
 use exface\Core\Actions\CreateData;
+use exface\Core\DataTypes\TimeDataType;
+use exface\Core\DataTypes\DateTimeDataType;
 
 /**
  * 
@@ -112,12 +114,17 @@ JS;
             }          
         }
         $dateAttributes = [];
+        $timeAttributes = [];
         foreach ($object->getAttributes() as $qpart) {
             if ($qpart->getDataType() instanceof DateDataType) {
                 $dateAttributes[] = $qpart->getAlias();
             }
+            if ($qpart->getDataType() instanceof TimeDataType) {
+                $timeAttributes[] = $qpart->getAlias();
+            }
         }
         $dateAttributes = json_encode($dateAttributes);
+        $timeAttributes = json_encode($timeAttributes);
         
         return <<<JS
             console.log('oParams:', {$oParamsJs});
@@ -242,12 +249,27 @@ JS;
                                 var attr = {$dateAttributes}[j].toString();
                                 var d = resultRows[i][attr];
                                 if (d !== undefined && d !== "" && d !== null) {
-                                    var month = ('0'+(d.getUTCMonth()+1)).slice(-2);
-                                    var day = ('0'+d.getUTCDate()).slice(-2);
-                                    var hours = ('0'+d.getUTCHours()).slice(-2);
-                                    var minutes = ('0'+d.getUTCMinutes()).slice(-2);
-                                    var seconds = ('0'+d.getUTCSeconds()).slice(-2);
-                                    var newVal = d.getUTCFullYear() + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+                                    var oDateFormat = sap.ui.core.format.DateFormat.getDateTimeInstance();
+                                    var newVal = oDateFormat.format(d);                                    
+                                    console.log('Date: ', newVal);                                    
+                                    resultRows[i][attr] = newVal;
+                                }
+                            }
+                        }
+                    }
+                    //Time Conversion
+                    if ({$timeAttributes}[0] !== undefined) {
+                        for (var i = 0; i < resultRows.length; i++) {
+                            for (var j = 0; j < {$timeAttributes}.length; j++) {
+                                var attr = {$timeAttributes}[j].toString();
+                                var d = resultRows[i][attr];
+                                console.log("d: ", d);
+                                if (d.ms !== undefined && d.ms !== "" && d.ms !== null) {
+                                    var hours = Math.floor(d.ms / (1000 * 60 * 60));
+                                    console.log('Hours: ', hours);
+                                    var minutes = Math.floor(d.ms / 60000 - hours * 60);                                    console.log('Minutes: ', minutes);
+                                    var newVal = hours + ":" + minutes;
+                                    console.log('Time: ', newVal);
                                     resultRows[i][attr] = newVal;
                                 }
                             }
@@ -465,7 +487,7 @@ JS;
                         oDataUid = "binary" + "'" + data['{$uidAttribute}'] + "'";
                         break;
                     default:
-                        oDataUid = oDataUid;
+                        oDataUid = "'" + oDataUid + "'";
                 }
             } else {
                 var oDataUid = '';
@@ -480,32 +502,38 @@ JS;
         }
         
         return <<<JS
-
+            console.log('Params: ',{$oParamsJs})
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
+            //oDataModel.setUseBatch(false);
             var data = {$oParamsJs}.data.rows[0];            
             var oData = {};
             Object.keys(data).forEach(key => {
                 if (data[key] != "") {
                     var type = {$attributesType}[key];
                     switch (type) {
-                        
-                        case 'Edm.DateTime':
+                        case 'Edm.DateTimeOffset':
                             var d = new Date(data[key]);
-                            var month = ('0'+(d.getMonth()+1)).slice(-2);
-                            var day = ('0'+d.getDate()).slice(-2);
-                            var hours = ('0'+d.getHours()).slice(-2);
-                            var minutes = ('0'+d.getMinutes()).slice(-2);
-                            var seconds = ('0'+d.getSeconds()).slice(-2);
-                            var datestring = d.getFullYear() + '-' + month + '-' + day + 'T' + hours + ':' + minutes + ':' + seconds;
+                            var date = d.toISOString();
+                            var datestring = date.replace(/\.[0-9]{3}/, '');
                             oData[key] = datestring;
                             break;
-                        
-                        case 'Edm.Time':
+                        case 'Edm.DateTime':
                             var d = new Date(data[key]);
-                            var hours = ('0'+d.getHours()).slice(-2);
-                            var minutes = ('0'+d.getMinutes()).slice(-2);
-                            var datestring = hours + 'T' + minutes + 'M';
+                            var date = d.toISOString();
+                            var datestring = date.substring(0,19);
                             oData[key] = datestring;
+                            break;                        
+                        case 'Edm.Time':
+                            var d = data[key];
+                            var timeParts = d.split(':');
+                            if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
+                                timeParts[3] = "00";
+                            }
+                            for (var i = 0; i < timeParts.length; i++) {
+                                timeParts[i] = ('0'+(timeParts[i])).slice(-2);
+                            }                            
+                            var timeString = "PT" + timeParts[0] + "H" + timeParts[1] + "M" + timeParts[3] + "S";
+                            oData[key] = timeString;
                             break;
                         case 'Edm.Decimal':
                             oData[key] = data[key].toString();
@@ -530,6 +558,7 @@ JS;
         return <<<JS
             console.log($oParamsJs)
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
+            //oDataModel.setUseBatch(false);
             var data = {$oParamsJs}.data.rows[0];
             if ('{$uidAttribute}' in data) {
                 var oDataUid = data.{$uidAttribute};
@@ -541,28 +570,35 @@ JS;
                     case 'Edm.Binary':
                         oDataUid = "binary" + "'" + oDataUid + "'";
                         break;
+                    case 'Edm.DateTimeOffset':
+                        var d = new Date(data[key]);
+                        var date = d.toISOString();
+                        var datestring = date.replace(/\.[0-9]{3}/, '');
+                        oData[key] = datestring;
+                        break;
                     case 'Edm.DateTime':
-                        var d = new Date(oDataUid);
-                        var month = ('0'+(d.getMonth()+1)).slice(-2);
-                        var day = ('0'+d.getDate()).slice(-2);
-                        var hours = ('0'+d.getHours()).slice(-2);
-                        var minutes = ('0'+d.getMinutes()).slice(-2);
-                        var seconds = ('0'+d.getSeconds()).slice(-2);
-                        var datestring = d.getFullYear() + '-' + month + '-' + day + 'T' + hours + ':' + minutes + ':' + seconds;
-                        oDataUid = datestring;
+                        var d = new Date(data[key]);
+                        var date = d.toISOString();
+                        var datestring = date.substring(0,19);
+                        oData[key] = datestring;
                         break;                        
                     case 'Edm.Time':
-                        var d = new Date(oDataUid);
-                        var hours = ('0'+d.getHours()).slice(-2);
-                        var minutes = ('0'+d.getMinutes()).slice(-2);
-                        var datestring = hours + 'T' + minutes + 'M';
-                        oDataUid = datestring;
+                        var d = data[key];
+                        var timeParts = d.split(':');
+                        if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
+                            timeParts[3] = "00";
+                        }
+                        for (var i = 0; i < timeParts.length; i++) {
+                            timeParts[i] = ('0'+(timeParts[i])).slice(-2);
+                        }                            
+                        var timeString = "PT" + timeParts[0] + "H" + timeParts[1] + "M" + timeParts[3] + "S";
+                        oData[key] = timeString;
                         break;
                     case 'Edm.Decimal':
                         oDataUid = oDataUid.toString();
                         break;
                     default:
-                        oDataUid = oDataUid;
+                        oDataUid = "'" + oDataUid + "'";
                 }
             } else {
                 var oDataUid = '';

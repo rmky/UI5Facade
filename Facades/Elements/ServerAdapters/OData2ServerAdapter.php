@@ -179,10 +179,25 @@ JS;
                             var oOperator = "EQ";
                     }
                     if (conditions[i].value !== "") {
+                        if ({$timeAttributes}.indexOf(conditions[i].expression) > -1) {
+                            console.log('Time Attribute in filter');
+                            var d = conditions[i].value;
+                            var timeParts = d.split(':');
+                            if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
+                                timeParts[3] = "00";
+                            }
+                            for (var j = 0; j < timeParts.length; j++) {
+                                timeParts[j] = ('0'+(timeParts[j])).slice(-2);
+                            }                            
+                            var timeString = "PT" + timeParts[0] + "H" + timeParts[1] + "M" + timeParts[3] + "S";
+                            var value = timeString;
+                        } else {
+                            var value = conditions[i].value;
+                        }
                         var filter = new sap.ui.model.Filter({
                             path: conditions[i].expression,
                             operator: oOperator,
-                            value1: conditions[i].value
+                            value1: value
                         });
                         oDataReadFiltersSearch.push(filter);                            
                     }
@@ -250,8 +265,7 @@ JS;
                                 var d = resultRows[i][attr];
                                 if (d !== undefined && d !== "" && d !== null) {
                                     var oDateFormat = sap.ui.core.format.DateFormat.getDateTimeInstance();
-                                    var newVal = oDateFormat.format(d);                                    
-                                    console.log('Date: ', newVal);                                    
+                                    var newVal = oDateFormat.format(d);                                   
                                     resultRows[i][attr] = newVal;
                                 }
                             }
@@ -263,13 +277,10 @@ JS;
                             for (var j = 0; j < {$timeAttributes}.length; j++) {
                                 var attr = {$timeAttributes}[j].toString();
                                 var d = resultRows[i][attr];
-                                console.log("d: ", d);
                                 if (d.ms !== undefined && d.ms !== "" && d.ms !== null) {
                                     var hours = Math.floor(d.ms / (1000 * 60 * 60));
-                                    console.log('Hours: ', hours);
-                                    var minutes = Math.floor(d.ms / 60000 - hours * 60);                                    console.log('Minutes: ', minutes);
+                                    var minutes = Math.floor(d.ms / 60000 - hours * 60);
                                     var newVal = hours + ":" + minutes;
-                                    console.log('Time: ', newVal);
                                     resultRows[i][attr] = newVal;
                                 }
                             }
@@ -571,19 +582,19 @@ JS;
                         oDataUid = "binary" + "'" + oDataUid + "'";
                         break;
                     case 'Edm.DateTimeOffset':
-                        var d = new Date(data[key]);
+                        var d = new Date(oDataUid);
                         var date = d.toISOString();
                         var datestring = date.replace(/\.[0-9]{3}/, '');
-                        oData[key] = datestring;
+                        oDataUid = "'" + datestring + "'";
                         break;
                     case 'Edm.DateTime':
-                        var d = new Date(data[key]);
+                        var d = new Date(oDataUid);
                         var date = d.toISOString();
                         var datestring = date.substring(0,19);
-                        oData[key] = datestring;
+                        oDataUid = "'" + datestring + "'";
                         break;                        
                     case 'Edm.Time':
-                        var d = data[key];
+                        var d = oDataUid;
                         var timeParts = d.split(':');
                         if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
                             timeParts[3] = "00";
@@ -592,10 +603,10 @@ JS;
                             timeParts[i] = ('0'+(timeParts[i])).slice(-2);
                         }                            
                         var timeString = "PT" + timeParts[0] + "H" + timeParts[1] + "M" + timeParts[3] + "S";
-                        oData[key] = timeString;
+                        oDataUid = "'" + timeString + "'";
                         break;
                     case 'Edm.Decimal':
-                        oDataUid = oDataUid.toString();
+                        oDataUid = "'" + oDataUid.toString() + "'";
                         break;
                     default:
                         oDataUid = "'" + oDataUid + "'";

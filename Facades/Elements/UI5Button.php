@@ -349,53 +349,21 @@ JS;
         
         $onModelLoadedJs = <<<JS
 
-                        function(data, textStatus) {
-                            console.log("Data: ", data);
-                            console.log("TextStatus: ", textStatus);
-                            if (typeof data === 'object') {
-                                response = data;
-                            } else {
-                                var response = {};
-								try {
-									response = $.parseJSON(data);
-								} catch (e) {
-									response.error = data;
-								}
-                            }
-		                   	if (response.success || textStatus.statusCode === "200" || textStatus.statusCode === "201" || textStatus.statusCode === "204"){
+                        function(data, oResponse) {
+                            console.log(oResponse);                            
+		                   	if (oResponse.statusCode === "200" || oResponse.statusCode === "201" || oResponse.statusCode === "204"){
 								{$this->buildJsCloseDialog($widget, $input_element)}
 								{$this->buildJsInputRefresh($widget, $input_element)}
 		                       	{$this->buildJsBusyIconHide()}
 		                       	$('#{$this->getId()}').trigger('{$action->getAliasWithNamespace()}.action.performed', [requestData, '{$input_element->getId()}']);
-								if (response.success || response.undoURL){
-		                       		{$this->buildJsShowMessageSuccess("response.success + (response.undoable ? ' <a href=\"{$this->buildJsUndoUrl($action, $input_element) }\" style=\"display:block; float:right;\">UNDO</a>' : '')")}
-									if(response.redirect){
-										if (response.redirect.indexOf('target=_blank') !== 0) {
-											window.open(response.redirect.replace('target=_blank',''), '_newtab');
-										}
-										else {
-											window.location.href = response.redirect;
-										}
-                   					}
-								}
-                                {$this->buildJsOnSuccessScript()}
+								{$this->buildJsOnSuccessScript()}
 		                    } else {
 								{$this->buildJsBusyIconHide()}
-								{$this->buildJsShowMessageError('response.error', '"Server error"')}
+								{$this->buildJsShowMessageError('"Internal Server Error"', '"Server error"')}
 		                    }
 						}
 
 JS;
-                                
-        /*$onErrorJs = <<<JS
-
-                        function(jqXHR, textStatus, errorThrown){
-                            {$this->buildJsShowError('jqXHR.responseText', 'jqXHR.statusCode + " " + jqXHR.statusText')}
-                            {$this->buildJsBusyIconHide()}
-						}
-
-JS;
-        */
 								
         $onErrorJs = <<<JS
                            

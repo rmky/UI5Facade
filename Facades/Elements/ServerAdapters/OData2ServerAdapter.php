@@ -362,9 +362,7 @@ JS;
                     {$onModelLoadedJs}
                     {$this->getElement()->buildJsBusyIconHide()}
                 },
-                error: function(oError) {
-                    console.error(oError);
-                }
+                error: {$onErrorJs}
             });
                 
 JS;
@@ -390,6 +388,8 @@ JS;
 
 JS;
         $onModelLoadedJs = $takeFirstRowOnly . $onModelLoadedJs;
+        
+        $onErrorJs = "function() { " . $onErrorJs . "}";
         
         return <<<JS
         

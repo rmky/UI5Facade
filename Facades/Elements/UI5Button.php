@@ -387,7 +387,7 @@ JS;
 
 JS;
                                 
-        $onErrorJs = <<<JS
+        /*$onErrorJs = <<<JS
 
                         function(jqXHR, textStatus, errorThrown){
                             {$this->buildJsShowError('jqXHR.responseText', 'jqXHR.statusCode + " " + jqXHR.statusText')}
@@ -395,7 +395,24 @@ JS;
 						}
 
 JS;
-        
+        */
+								
+        $onErrorJs = <<<JS
+                           
+                    function(oError){                            
+                        var response = {};
+						try {
+							response = $.parseJSON(oError.responseText);
+                            var errorText ='<p>' +  response.error.message.value + '<p>';
+						} catch (e) {
+							var errorText = 'No Error description send!';
+						}
+                        {$this->buildJsShowError('errorText', 'oError.statusCode + " " + oError.statusText')}
+                        {$this->buildJsBusyIconHide()}
+                    }
+						
+JS;
+                        
         $onOfflineJs = '';
         
         $doAction = $this->getServerAdapter()->buildJsServerRequest(

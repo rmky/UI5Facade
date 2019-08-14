@@ -216,7 +216,7 @@ JS;
             }
             
             if (oDataReadFiltersSearch.length !== 0) {
-                var tempFilter = new sap.ui.model.Filter({filters: oDataReadFiltersSearch, and: false})
+                var tempFilter = new sap.ui.model.Filter({filters: oDataReadFiltersSearch, and: true})
                 var test = tempFilter instanceof sap.ui.model.Filter;
                 oDataReadFiltersArray.push(tempFilter);
             }

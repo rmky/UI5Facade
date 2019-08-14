@@ -180,7 +180,6 @@ JS;
                     }
                     if (conditions[i].value !== "") {
                         if ({$timeAttributes}.indexOf(conditions[i].expression) > -1) {
-                            console.log('Time Attribute in filter');
                             var d = conditions[i].value;
                             var timeParts = d.split(':');
                             if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
@@ -280,7 +279,8 @@ JS;
                                 if (d.ms !== undefined && d.ms !== "" && d.ms !== null) {
                                     var hours = Math.floor(d.ms / (1000 * 60 * 60));
                                     var minutes = Math.floor(d.ms / 60000 - hours * 60);
-                                    var newVal = hours + ":" + minutes;
+                                    var seconds = Math.floor(d.ms / 1000 - hours * 60 * 60 - minutes * 60);
+                                    var newVal = hours + ":" + minutes + ":" + seconds;
                                     resultRows[i][attr] = newVal;
                                 }
                             }

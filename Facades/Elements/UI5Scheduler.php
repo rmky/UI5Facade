@@ -215,7 +215,7 @@ JS;
         return $tpl->buildJsValueBinding();
     }
     
-    public function buildJsDataGetter(ActionInterface $action)
+    public function buildJsDataGetter(ActionInterface $action = null)
     {
         if ($action === null) {
             $getRows = "var rows = sap.ui.getCore().byId('{$this->getId()}').getModel().getData().data;";

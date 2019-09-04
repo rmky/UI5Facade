@@ -19,7 +19,9 @@ class UI5SplitPanel extends UI5Panel
         $sizeDimension = $widget->getParent() instanceof SplitHorizontal ? $widget->getWidth() : $widget->getHeight();
         switch (true) {
             case $sizeDimension->isFacadeSpecific() === true:
+            case $sizeDimension->isPercentual() === true:
                 $size = $sizeDimension->getValue();
+                break;
             default:
                 $size = 'auto';
         }

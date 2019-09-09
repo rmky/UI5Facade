@@ -5243,6 +5243,11 @@ return Promise$2;
 		return pathOnly(document.baseURI);
 	}
 
+	/*
+	 * Whether the current browser is IE11, derived from the compatibility check for the URL Web API.
+	 */
+	var isIE11 = false;
+
 	/**
 	 * Resolve a given URL, either against the base URL of the current document or against a given base URL.
 	 *
@@ -5264,6 +5269,7 @@ return Promise$2;
 				_URL = null;
 			}
 		} catch (e) {
+			isIE11 = true;
 			_URL = null;
 		}
 
@@ -6118,6 +6124,77 @@ return Promise$2;
 		return mModules[sModuleName] || (mModules[sModuleName] = new Module(sModuleName));
 	};
 
+	/*
+	 * Determines the currently executing module.
+	 */
+	function getExecutingModule() {
+		if ( _execStack.length > 0 ) {
+			return _execStack[_execStack.length - 1].name;
+		}
+		return document.currentScript && document.currentScript.getAttribute("data-sap-ui-module");
+	}
+
+	// --------------------------------------------------------------------------------------------
+
+	var _globalDefine,
+		_globalDefineAMD;
+
+	function updateDefineAndInterceptAMDFlag(newDefine) {
+
+		// no change, do nothing
+		if ( _globalDefine === newDefine ) {
+			return;
+		}
+
+		// first cleanup on an old loader
+		if ( _globalDefine ) {
+			_globalDefine.amd = _globalDefineAMD;
+			_globalDefine =
+			_globalDefineAMD = undefined;
+		}
+
+		// remember the new define
+		_globalDefine = newDefine;
+
+		// intercept access to the 'amd' property of the new define, if it's not our own define
+		if ( newDefine && !newDefine.ui5 ) {
+			_globalDefineAMD = _globalDefine.amd;
+
+			Object.defineProperty(_globalDefine, "amd", {
+				get: function() {
+					var sCurrentModule = getExecutingModule();
+					if ( sCurrentModule && mShims[sCurrentModule] && mShims[sCurrentModule].amd ) {
+						log.debug("suppressing define.amd for " + sCurrentModule);
+						return undefined;
+					}
+					return _globalDefineAMD;
+				},
+				set: function(newDefineAMD) {
+					_globalDefineAMD = newDefineAMD;
+					log.debug("define.amd became " + (newDefineAMD ? "active" : "unset"));
+				},
+				configurable: true // we have to allow a redefine for debug mode or restart from CDN etc.
+			});
+		}
+	}
+
+	try {
+		Object.defineProperty(__global, "define", {
+			get: function() {
+				return _globalDefine;
+			},
+			set: function(newDefine) {
+				updateDefineAndInterceptAMDFlag(newDefine);
+				log.debug("define became " + (newDefine ? "active" : "unset"));
+			},
+			configurable: true // we have to allow a redefine for debug mode or restart from CDN etc.
+		});
+	} catch (e) {
+		log.warning("could not intercept changes to window.define, ui5loader won't be able to a change of the AMD loader");
+	}
+
+	updateDefineAndInterceptAMDFlag(__global.define);
+
 	// --------------------------------------------------------------------------------------------
 
 	function ensureStacktrace(oError) {
@@ -6445,6 +6522,9 @@ return Promise$2;
 		//oScript.src = oModule.url;
 		oScript.setAttribute("data-sap-ui-module", oModule.name);
 		if ( sAlternativeURL !== undefined ) {
+			if ( mShims[oModule.name] && mShims[oModule.name].amd ) {
+				oScript.setAttribute("data-sap-ui-module-amd", "true");
+			}
 			oScript.addEventListener('load', onload);
 			oScript.addEventListener('error', onerror);
 		}
@@ -6574,6 +6654,12 @@ return Promise$2;
 			}
 		}
 
+		if ( isIE11 && bAsync && oShim && oShim.amd ) {
+			// in IE11, we force AMD/UMD modules into sync loading to apply the define.amd workaround
+			// in other browsers, we intercept read access to window.define, see ensureDefineInterceptor
+			bAsync = false;
+		}
+
 		measure && measure.start(sModuleName, "Require module " + sModuleName, ["require"]);
 
 		// set marker for loading modules (to break cycles)
@@ -6648,22 +6734,15 @@ return Promise$2;
 	function execModule(sModuleName, bAsync) {
 
 		var oModule = mModules[sModuleName],
-			oShim = mShims[sModuleName],
 			bLoggable = log.isLoggable(),
-			sOldPrefix, sScript, vAMD, oMatch, bOldForceSyncDefines;
+			sOldPrefix, sScript, oMatch, bOldForceSyncDefines;
 
 		if ( oModule && oModule.state === LOADED && typeof oModule.data !== "undefined" ) {
 
-			// check whether the module is known to use an existing AMD loader, remember the AMD flag
-			vAMD = (oShim === true || (oShim && oShim.amd)) && typeof __global.define === "function" && __global.define.amd;
 			bOldForceSyncDefines = bForceSyncDefines;
 
 			try {
 
-				if ( vAMD ) {
-					// temp. remove the AMD Flag from the loader
-					delete __global.define.amd;
-				}
 				bForceSyncDefines = !bAsync;
 
 				if ( bLoggable ) {
@@ -6743,10 +6822,6 @@ return Promise$2;
 				oModule.fail(err);
 			} finally {
 
-				// restore AMD flag
-				if ( vAMD ) {
-					__global.define.amd = vAMD;
-				}
 				bForceSyncDefines = bOldForceSyncDefines;
 			}
 		}
@@ -7023,6 +7098,7 @@ return Promise$2;
 		ui5Define.apply(this, oArgs);
 	}
 	amdDefine.amd = {}; // identify as AMD-spec compliant loader
+	amdDefine.ui5 = {}; // identify as ui5loader
 
 
 	/**
@@ -8386,7 +8462,7 @@ return Promise$2;
 	}
 
 	// support legacy switch 'noLoaderConflict', but 'amdLoader' has higher precedence
-	var bExposeAsAMDLoader = _getBooleanOption("amd", !_getBooleanOption("noLoaderConflict", true));
+	bExposeAsAMDLoader = _getBooleanOption("amd", !_getBooleanOption("noLoaderConflict", true));
 
 	ui5loader.config({
 		baseUrl: sBaseUrl,
@@ -8601,38 +8677,29 @@ return Promise$2;
 				exports: 'esprima'
 			},
 			'sap/viz/libs/canvg': {
-				amd: true,
 				deps: ['sap/viz/libs/rgbcolor']
 			},
 			'sap/viz/libs/rgbcolor': {
-				amd: true
 			},
 			'sap/viz/libs/sap-viz': {
-				amd: true,
 				deps: ['sap/viz/library', 'sap/ui/thirdparty/jquery', 'sap/ui/thirdparty/d3', 'sap/viz/libs/canvg']
 			},
 			'sap/viz/libs/sap-viz-info-charts': {
-				amd: true,
 				deps: ['sap/viz/libs/sap-viz-info-framework']
 			},
 			'sap/viz/libs/sap-viz-info-framework': {
-				amd: true,
 				deps: ['sap/ui/thirdparty/jquery', 'sap/ui/thirdparty/d3']
 			},
 			'sap/viz/ui5/container/libs/sap-viz-controls-vizcontainer': {
-				amd: true,
 				deps: ['sap/viz/libs/sap-viz', 'sap/viz/ui5/container/libs/common/libs/rgbcolor/rgbcolor_static']
 			},
 			'sap/viz/ui5/controls/libs/sap-viz-vizframe/sap-viz-vizframe': {
-				amd: true,
 				deps: ['sap/viz/libs/sap-viz-info-charts']
 			},
 			'sap/viz/ui5/controls/libs/sap-viz-vizservices/sap-viz-vizservices': {
-				amd: true,
 				deps: ['sap/viz/libs/sap-viz-info-charts']
 			},
 			'sap/viz/resources/chart/templates/standard_fiori/template': {
-				amd: true,
 				deps: ['sap/viz/libs/sap-viz-info-charts']
 			}
 		}

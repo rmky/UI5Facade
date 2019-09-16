@@ -23,6 +23,7 @@ class UI5Button extends UI5AbstractElement
     
     use JqueryButtonTrait {
         buildJsInputRefresh as buildJsInputRefreshViaTrait;
+        buildJsNavigateToPage as buildJsNavigateToPageViaTrait;
     }
     
     /**
@@ -227,8 +228,16 @@ JS;
      * {@inheritdoc}
      * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryButtonTrait::buildJsNavigateToPage
      */
-    protected function buildJsNavigateToPage(string $pageSelector, string $urlParams = '', AbstractJqueryElement $inputElement) : string
+    protected function buildJsNavigateToPage(string $pageSelector, string $urlParams = '', AbstractJqueryElement $inputElement, bool $newWindow = false) : string
     {
+        if ($newWindow === true) {
+            return <<<JS
+            
+                        {$this->buildJsNavigateToPageViaTrait($pageSelector, $urlParams, $inputElement, $newWindow)}
+                        {$inputElement->buildJsBusyIconHide()}
+JS;
+        }
+        
         return <<<JS
 						var sUrlParams = '{$urlParams}';
                         var oUrlParams = {};

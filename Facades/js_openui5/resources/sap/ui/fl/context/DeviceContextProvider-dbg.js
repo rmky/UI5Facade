@@ -21,7 +21,7 @@ sap.ui.define([
 	 * @extends sap.ui.fl.context.BaseContextProvider
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @private

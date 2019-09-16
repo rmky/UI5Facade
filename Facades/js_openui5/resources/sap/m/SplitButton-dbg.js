@@ -50,11 +50,11 @@ function(
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.70.0
 		 *
 		 * @constructor
-		 * @sap-restricted sap.m.MenuButton,sap.ui.richtextEditor.ToolbarWrapper
 		 * @private
+		 * @ui5-restricted sap.m.MenuButton,sap.ui.richtextEditor.ToolbarWrapper
 		 * @alias sap.m.SplitButton
 		 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 		 */

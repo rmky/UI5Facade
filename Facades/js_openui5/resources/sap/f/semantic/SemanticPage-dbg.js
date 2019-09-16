@@ -71,7 +71,7 @@ sap.ui.define([
 	* 	<li><code>printAction</code></li>
 	* 	<li>Any <code>customShareActions</code></li></ul></li>
 	* <li>The navigation semantic actions - <code>fullScreenAction</code>, <code>exitFullScreenAction</code>,
-	* and <code>closeAction</li></code></ul>
+	* and <code>closeAction</code></li></ul>
 	*
 	* The actions in the <code>SemanticPage</code> footer are positioned either on its left or right area and have the following predefined order:
 	*
@@ -97,7 +97,7 @@ sap.ui.define([
 	* @extends sap.ui.core.Control
 	*
 	* @author SAP SE
-	* @version 1.68.1
+	* @version 1.70.0
 	*
 	* @constructor
 	* @public

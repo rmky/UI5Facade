@@ -21,10 +21,10 @@ function(library, Button, ContentButtonRenderer) {
 	 * @class
 	 * Private control used by the ShellBar control
 	 *
-	 * @extends sap.ui.core.Control
+	 * @extends sap.m.Button
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @private

@@ -66,6 +66,14 @@ sap.ui.define([
 		return sSortParam;
 	};
 
+	function convertLegacyFilter(oFilter) {
+		// check if sap.ui.model.odata.Filter is used. If yes, convert it to sap.ui.model.Filter
+		if (oFilter && typeof oFilter.convert === "function") {
+			oFilter = oFilter.convert();
+		}
+		return oFilter;
+	}
+
 	/**
 	 * Creates URL parameters strings for filtering.
 	 * The Parameter string is prepended with the "$filter=" system query option to form
@@ -79,7 +87,14 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataUtils.createFilterParams = function(vFilter, oMetadata, oEntityType) {
-		var oFilter = Array.isArray(vFilter) ? FilterProcessor.groupFilters(vFilter) : vFilter;
+		var oFilter;
+		if (Array.isArray(vFilter)) {
+			vFilter = vFilter.map(convertLegacyFilter);
+			oFilter = FilterProcessor.groupFilters(vFilter);
+		} else {
+			oFilter = convertLegacyFilter(vFilter);
+		}
+
 		if (!oFilter) {
 			return;
 		}
@@ -99,6 +114,8 @@ sap.ui.define([
 			oFilter = Array.isArray(vFilter) ? FilterProcessor.groupFilters(vFilter) : vFilter;
 
 		function create(oFilter, bOmitBrackets) {
+			oFilter = convertLegacyFilter(oFilter);
+
 			if (oFilter.aFilters) {
 				return createMulti(oFilter, bOmitBrackets);
 			}

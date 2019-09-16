@@ -22,7 +22,8 @@ sap.ui.define([
 	"sap/base/util/deepEqual",
 	"sap/base/Log",
 	"sap/base/assert",
-	"sap/ui/thirdparty/jquery"
+	"sap/ui/thirdparty/jquery",
+	"sap/base/util/isEmptyObject"
 ],
 		function(
 			Context,
@@ -41,7 +42,8 @@ sap.ui.define([
 			deepEqual,
 			Log,
 			assert,
-			jQuery
+			jQuery,
+			isEmptyObject
 		) {
 	"use strict";
 
@@ -81,6 +83,7 @@ sap.ui.define([
 			this.sSortParams = null;
 			this.sRangeParams = null;
 			this.sCustomParams = this.oModel.createCustomParams(this.mParameters);
+			this.mCustomParams = mParameters && mParameters.custom;
 			this.iStartIndex = 0;
 			this.iLength = 0;
 			this.bPendingChange = false;
@@ -202,7 +205,7 @@ sap.ui.define([
 		var bLoadContexts = true,
 		aContexts = this._getContexts(iStartIndex, iLength),
 		aContextData = [],
-		oSection;
+		oMissingSection;
 
 		if (this.useClientMode()) {
 			if (!this.aAllKeys && !this.bPendingRequest && this.oModel.getServiceMetadata()) {
@@ -210,14 +213,14 @@ sap.ui.define([
 				aContexts.dataRequested = true;
 			}
 		} else {
-			oSection = this.calculateSection(iStartIndex, iLength, iThreshold, aContexts);
-			bLoadContexts = aContexts.length !== iLength && !(this.bLengthFinal && aContexts.length >= this.iLength - iStartIndex);
+			oMissingSection = this.calculateSection(iStartIndex, iLength, iThreshold, aContexts);
+			bLoadContexts = aContexts.length !== iLength || oMissingSection.length > 0;
 
 			// check if metadata are already available
 			if (this.oModel.getServiceMetadata()) {
 				// If rows are missing send a request
-				if (!this.bPendingRequest && oSection.length > 0 && (bLoadContexts || iLength < oSection.length)) {
-					this.loadData(oSection.startIndex, oSection.length);
+				if (!this.bPendingRequest && oMissingSection.length > 0 && bLoadContexts) {
+					this.loadData(oMissingSection.startIndex, oMissingSection.length);
 					aContexts.dataRequested = true;
 				}
 			}
@@ -312,92 +315,50 @@ sap.ui.define([
 	};
 
 	/**
+	 * Calculates a missing section inside the binding's data array.
+	 * The result is an object containing the first missing index (startIndex),
+	 * and the number of missing entries (length).
+	 *
+	 * The given threshold is prependend and appended before/after the given iStartIndex
+	 * and iLength.
+	 *
 	 * @param {int} iStartIndex The start index of the requested contexts
 	 * @param {int} iLength The requested amount of contexts
 	 * @param {int} iThreshold The threshold value
-	 * @param {array} aContexts Array of existing contexts
-	 * @returns {object} oSection The section info object
+	 * @returns {object} oMissingSection The section object;
 	 * @private
 	 */
-	ODataListBinding.prototype.calculateSection = function(iStartIndex, iLength, iThreshold, aContexts) {
-		//var bLoadNegativeEntries = false,
-		var iSectionLength,
-		iSectionStartIndex,
-		iPreloadedSubsequentIndex,
-		iPreloadedPreviousIndex,
-		iRemainingEntries,
-		oSection = {},
-		sKey;
-
-		iSectionStartIndex = iStartIndex;
-		iSectionLength = 0;
-
-		// check which data exists before startindex; If all necessary data is loaded iPreloadedPreviousIndex stays undefined
-		for (var i = iStartIndex; i >= Math.max(iStartIndex - iThreshold, 0); i--) {
-			sKey = this.aKeys[i];
-			if (!sKey) {
-				iPreloadedPreviousIndex = i + 1;
-				break;
-			}
-		}
-		// check which data is already loaded after startindex; If all necessary data is loaded iPreloadedSubsequentIndex stays undefined
-		for (var j = iStartIndex + iLength; j < iStartIndex + iLength + iThreshold; j++) {
-			sKey = this.aKeys[j];
-			if (!sKey) {
-				iPreloadedSubsequentIndex = j;
-				break;
-			}
+	ODataListBinding.prototype.calculateSection = function(iStartIndex, iLength, iThreshold) {
+		// prepend threshold to start
+		if (iStartIndex >= iThreshold) {
+			iStartIndex -= iThreshold;
+			iLength += iThreshold;
+		} else {
+			iLength += iStartIndex;
+			iStartIndex = 0;
 		}
 
-		// calculate previous remaining entries
-		iRemainingEntries = iStartIndex - iPreloadedPreviousIndex;
-		if (iPreloadedPreviousIndex && iStartIndex > iThreshold && iRemainingEntries < iThreshold) {
-			if (aContexts.length !== iLength) {
-				iSectionStartIndex = iStartIndex - iThreshold;
-			} else {
-				iSectionStartIndex = iPreloadedPreviousIndex - iThreshold;
-			}
-			iSectionLength = iThreshold;
+		// append threshold to end
+		iLength += iThreshold;
+		if (this.bLengthFinal && iStartIndex + iLength > this.iLength) {
+			iLength = this.iLength - iStartIndex;
 		}
 
-		// prevent iSectionStartIndex to become negative
-		iSectionStartIndex = Math.max(iSectionStartIndex, 0);
-
-		// No negative preload needed; move startindex if we already have some data
-		if (iSectionStartIndex === iStartIndex) {
-			iSectionStartIndex += aContexts.length;
+		// search start of first gap
+		while (iLength && this.aKeys[iStartIndex]) {
+			iStartIndex += 1;
+			iLength -= 1;
 		}
 
-		//read the rest of the requested data
-		if (aContexts.length !== iLength) {
-			iSectionLength += iLength - aContexts.length;
+		// search end of last gap
+		while (iLength && this.aKeys[iStartIndex + iLength - 1]) {
+			iLength -= 1;
 		}
 
-		//calculate subsequent remaining entries
-		iRemainingEntries = iPreloadedSubsequentIndex - iStartIndex - iLength;
-
-		if (iRemainingEntries === 0) {
-			iSectionLength += iThreshold;
-		}
-
-		if (iPreloadedSubsequentIndex && iRemainingEntries < iThreshold && iRemainingEntries > 0) {
-			//check if we need to load previous entries; If not we can move the startindex
-			if (iSectionStartIndex > iStartIndex) {
-				iSectionStartIndex = iPreloadedSubsequentIndex;
-				iSectionLength += iThreshold;
-			}
-
-		}
-
-		//check final length and adapt sectionLength if needed.
-		if (this.bLengthFinal && this.iLength < (iSectionLength + iSectionStartIndex)) {
-			iSectionLength = this.iLength - iSectionStartIndex;
-		}
-
-		oSection.startIndex = iSectionStartIndex;
-		oSection.length = iSectionLength;
-
-		return oSection;
+		return {
+			startIndex : iStartIndex,
+			length : iLength
+		};
 	};
 
 	/**
@@ -421,7 +382,7 @@ sap.ui.define([
 			return;
 		}
 
-		if (bUpdated && this.bUsePreliminaryContext) {
+		if (bUpdated && this.bUsePreliminaryContext && this.oContext === oContext) {
 			this._fireChange({ reason: ChangeReason.Context });
 			return;
 		}
@@ -476,7 +437,7 @@ sap.ui.define([
 		var bResolves = !!this.oModel.resolve(this.sPath, this.oContext),
 			oRef = this.oModel._getObject(this.sPath, this.oContext);
 
-		if (!bResolves || oRef === undefined ||
+		if (!bResolves || oRef === undefined || this.mCustomParams ||
 		    (this.sOperationMode === OperationMode.Server && (this.aApplicationFilters.length > 0 || this.aFilters.length > 0 || this.aSorters.length > 0))) {
 			this.bUseExpandedList = false;
 			this.aExpandRefs = undefined;
@@ -715,12 +676,12 @@ sap.ui.define([
 
 		}
 
-		var sPath = this.sPath,
-		oContext = this.oContext;
+		var sPath = this.sPath;
 
-		if (this.isRelative()) {
-			sPath = this.oModel.resolve(sPath,oContext);
+		if (this.isRelative()){
+			sPath = this.oModel.resolve(this.sPath, this.oContext);
 		}
+
 		if (sPath) {
 			// Execute the request and use the metadata if available
 			this.bPendingRequest = true;
@@ -730,7 +691,7 @@ sap.ui.define([
 			this.bSkipDataEvents = false;
 			//if load is triggered by a refresh we have to check the refreshGroup
 			sGroupId = this.sRefreshGroupId ? this.sRefreshGroupId : this.sGroupId;
-			this.mRequestHandles[sGuid] = this.oModel.read(sPath, {groupId: sGroupId, urlParameters: aParams, success: fnSuccess, error: fnError});
+			this.mRequestHandles[sGuid] = this.oModel.read(this.sPath, {context: this.oContext, groupId: sGroupId, urlParameters: aParams, success: fnSuccess, error: fnError});
 		}
 
 	};
@@ -822,10 +783,10 @@ sap.ui.define([
 		// Only send request, if path is defined
 		if (sPath) {
 			// execute the request and use the metadata if available
-			sPath = sPath + "/$count";
 			//if load is triggered by a refresh we have to check the refreshGroup
 			sGroupId = this.sRefreshGroupId ? this.sRefreshGroupId : this.sGroupId;
-			this.oCountHandle = this.oModel.read(sPath, {
+			this.oCountHandle = this.oModel.read(this.sPath + "/$count", {
+				context: this.oContext,
 				withCredentials: this.oModel.bWithCredentials,
 				groupId: sGroupId,
 				urlParameters:aParams,
@@ -1118,7 +1079,7 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataListBinding.prototype.abortPendingRequest = function(bAbortCountRequest) {
-		if (!jQuery.isEmptyObject(this.mRequestHandles)) {
+		if (!isEmptyObject(this.mRequestHandles)) {
 			this.bSkipDataEvents = true;
 			jQuery.each(this.mRequestHandles, function(sPath, oRequestHandle){
 				oRequestHandle.abort();

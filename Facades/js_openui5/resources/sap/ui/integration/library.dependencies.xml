@@ -2,7 +2,152 @@
 <library  version="2.0" name="sap.ui.integration">
   <module name="sap-ui-integration.js" size="4933" compressedSize="2134" raw="true">
   </module>
-  <module name="sap/ui/integration/host/HostConfiguration.js" size="4023" compressedSize="1734">
+  <module name="sap/ui/integration/Widget.js" size="9367" compressedSize="4248">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/Log.js"/>
+      <module name="sap/base/util/LoaderExtensions.js"/>
+      <module name="sap/ui/core/ComponentContainer.js"/>
+      <module name="sap/ui/core/Control.js"/>
+      <module name="sap/ui/core/Core.js"/>
+      <module name="sap/ui/integration/WidgetRenderer.js"/>
+      <module name="sap/ui/integration/library.js"/>
+      <module name="sap/ui/integration/util/Manifest.js"/>
+      <module name="sap/ui/model/json/JSONModel.js"/>
+      <module name="sap/ui/model/resource/ResourceModel.js"/>
+      <module name="sap/ui/thirdparty/jquery.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/integration/WidgetComponent.js" size="1149" compressedSize="778">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/core/UIComponent.js"/>
+      <module name="sap/ui/model/json/JSONModel.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/integration/WidgetRenderer.js" size="1272" compressedSize="559">
+    <description>Provides default renderer for control sap.ui.integration.Widget</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/integration/designtime/controls/BaseEditor.js" size="12477" compressedSize="5756">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/i18n/ResourceBundle.js"/>
+      <module name="sap/base/util/ObjectPath.js"/>
+      <module name="sap/base/util/deepClone.js"/>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/ui/core/Control.js"/>
+      <module name="sap/ui/integration/designtime/controls/utils/ObjectBinding.js"/>
+      <module name="sap/ui/model/BindingMode.js"/>
+      <module name="sap/ui/model/json/JSONModel.js"/>
+      <module name="sap/ui/model/resource/ResourceModel.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/integration/designtime/controls/CardEditor.js" size="748" compressedSize="479">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/integration/designtime/controls/BaseEditor.js"/>
+      <module name="sap/ui/integration/designtime/controls/DefaultCardConfig.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/integration/designtime/controls/DefaultCardConfig.js" size="5332" compressedSize="3166">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.  @constructor @private @experimental</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/integration/designtime/controls/PropertyEditor.js" size="2684" compressedSize="1245">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/m/Label.js"/>
+      <module name="sap/ui/core/Control.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/integration/designtime/controls/i18n/i18n.properties" size="928">
+  </module>
+  <module name="sap/ui/integration/designtime/controls/propertyEditors/EnumStringEditor.js" size="2364" compressedSize="1304">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/base/BindingParser.js"/>
+      <module name="sap/ui/core/Item.js"/>
+      <module name="sap/ui/integration/designtime/controls/PropertyEditor.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/integration/designtime/controls/propertyEditors/IconEditor.js" size="3343" compressedSize="2007">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/core/Fragment.js"/>
+      <module name="sap/ui/core/IconPool.js"/>
+      <module name="sap/ui/integration/designtime/controls/PropertyEditor.js"/>
+      <module name="sap/ui/model/Filter.js"/>
+      <module name="sap/ui/model/FilterOperator.js"/>
+      <module name="sap/ui/model/json/JSONModel.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/integration/designtime/controls/propertyEditors/IconSelection.fragment.xml" size="460">
+    <requires>
+      <module name="sap/m/SelectDialog.js"/>
+      <module name="sap/m/StandardListItem.js"/>
+      <module name="sap/ui/core/Fragment.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/integration/designtime/controls/propertyEditors/StringEditor.js" size="1752" compressedSize="1011">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/base/BindingParser.js"/>
+      <module name="sap/ui/integration/designtime/controls/PropertyEditor.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/integration/designtime/controls/utils/ObjectBinding.js" size="1948" compressedSize="818">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/base/BindingParser.js"/>
+      <module name="sap/ui/base/ManagedObject.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/integration/designtime/library-preload.designtime.js" size="15584">
+    <requires>
+      <module name="sap/base/i18n/ResourceBundle.js"/>
+      <module name="sap/base/util/ObjectPath.js"/>
+      <module name="sap/base/util/deepClone.js"/>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/m/Label.js"/>
+      <module name="sap/ui/base/BindingParser.js"/>
+      <module name="sap/ui/base/ManagedObject.js"/>
+      <module name="sap/ui/core/Control.js"/>
+      <module name="sap/ui/core/Fragment.js"/>
+      <module name="sap/ui/core/IconPool.js"/>
+      <module name="sap/ui/core/Item.js"/>
+      <module name="sap/ui/model/BindingMode.js"/>
+      <module name="sap/ui/model/Filter.js"/>
+      <module name="sap/ui/model/FilterOperator.js"/>
+      <module name="sap/ui/model/json/JSONModel.js"/>
+      <module name="sap/ui/model/resource/ResourceModel.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+    <includes>
+      <module name="sap/ui/integration/designtime/controls/BaseEditor.js"/>
+      <module name="sap/ui/integration/designtime/controls/CardEditor.js"/>
+      <module name="sap/ui/integration/designtime/controls/DefaultCardConfig.js"/>
+      <module name="sap/ui/integration/designtime/controls/PropertyEditor.js"/>
+      <module name="sap/ui/integration/designtime/controls/propertyEditors/EnumStringEditor.js"/>
+      <module name="sap/ui/integration/designtime/controls/propertyEditors/IconEditor.js"/>
+      <module name="sap/ui/integration/designtime/controls/propertyEditors/StringEditor.js"/>
+      <module name="sap/ui/integration/designtime/controls/utils/ObjectBinding.js"/>
+    </includes>
+  </module>
+  <module name="sap/ui/integration/host/HostConfiguration.js" size="4057" compressedSize="1763">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/core/Control.js"/>
@@ -20,9 +165,14 @@
   </module>
   <module name="sap/ui/integration/library-bootstrap.js" size="2033" compressedSize="974" raw="true">
   </module>
-  <module name="sap/ui/integration/library-h2-preload.js" size="3253">
+  <module name="sap/ui/integration/library-h2-preload.js" size="5624">
     <requires>
       <module name="sap/base/Log.js"/>
+      <module name="sap/base/i18n/ResourceBundle.js"/>
+      <module name="sap/base/util/LoaderExtensions.js"/>
+      <module name="sap/base/util/ObjectPath.js"/>
+      <module name="sap/base/util/deepClone.js"/>
+      <module name="sap/base/util/merge.js"/>
       <module name="sap/f/CardRenderer.js"/>
       <module name="sap/f/cards/BaseContent.js"/>
       <module name="sap/f/cards/DataProviderFactory.js"/>
@@ -30,17 +180,31 @@
       <module name="sap/f/cards/NumericHeader.js"/>
       <module name="sap/f/library.js"/>
       <module name="sap/m/HBox.js"/>
+      <module name="sap/m/Label.js"/>
+      <module name="sap/m/SelectDialog.js"/>
+      <module name="sap/m/StandardListItem.js"/>
       <module name="sap/m/Text.js"/>
       <module name="sap/m/VBox.js"/>
+      <module name="sap/m/library.js"/>
       <module name="sap/ui/Global.js"/>
+      <module name="sap/ui/base/BindingParser.js"/>
       <module name="sap/ui/base/DataType.js"/>
       <module name="sap/ui/base/EventProvider.js"/>
+      <module name="sap/ui/base/ManagedObject.js"/>
       <module name="sap/ui/base/Object.js"/>
+      <module name="sap/ui/core/ComponentContainer.js"/>
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/Core.js"/>
+      <module name="sap/ui/core/Fragment.js"/>
       <module name="sap/ui/core/Icon.js"/>
+      <module name="sap/ui/core/IconPool.js"/>
+      <module name="sap/ui/core/Item.js"/>
       <module name="sap/ui/core/Manifest.js"/>
+      <module name="sap/ui/core/UIComponent.js"/>
       <module name="sap/ui/core/library.js"/>
+      <module name="sap/ui/model/BindingMode.js"/>
+      <module name="sap/ui/model/Filter.js"/>
+      <module name="sap/ui/model/FilterOperator.js"/>
       <module name="sap/ui/model/json/JSONModel.js"/>
       <module name="sap/ui/model/resource/ResourceModel.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
@@ -51,22 +215,38 @@
       <module name="sap/ui/integration/library.js"/>
       <module name="sap/ui/integration/manifest.json"/>
       <module name="sap-ui-integration.js"/>
+      <module name="sap/ui/integration/Widget.js"/>
+      <module name="sap/ui/integration/WidgetComponent.js"/>
+      <module name="sap/ui/integration/WidgetRenderer.js"/>
+      <module name="sap/ui/integration/designtime/controls/BaseEditor.js"/>
+      <module name="sap/ui/integration/designtime/controls/CardEditor.js"/>
+      <module name="sap/ui/integration/designtime/controls/DefaultCardConfig.js"/>
+      <module name="sap/ui/integration/designtime/controls/PropertyEditor.js"/>
+      <module name="sap/ui/integration/designtime/controls/propertyEditors/EnumStringEditor.js"/>
+      <module name="sap/ui/integration/designtime/controls/propertyEditors/IconEditor.js"/>
+      <module name="sap/ui/integration/designtime/controls/propertyEditors/IconSelection.fragment.xml"/>
+      <module name="sap/ui/integration/designtime/controls/propertyEditors/StringEditor.js"/>
+      <module name="sap/ui/integration/designtime/controls/utils/ObjectBinding.js"/>
       <module name="sap/ui/integration/host/HostConfiguration.js"/>
       <module name="sap/ui/integration/host/HostConfigurationCompiler.js"/>
       <module name="sap/ui/integration/library-bootstrap.js"/>
       <module name="sap/ui/integration/sap-ui-integration-config.js"/>
+      <module name="sap/ui/integration/sap-ui-integration-define-nojQuery.js"/>
       <module name="sap/ui/integration/services/Data.js"/>
       <module name="sap/ui/integration/services/Navigation.js"/>
       <module name="sap/ui/integration/services/Service.js"/>
-      <module name="sap/ui/integration/util/CardManifest.js"/>
       <module name="sap/ui/integration/util/CustomElements.js"/>
+      <module name="sap/ui/integration/util/Manifest.js"/>
       <module name="sap/ui/integration/util/ServiceManager.js"/>
       <module name="sap/ui/integration/widgets/Card.js"/>
     </includes>
   </module>
-  <module name="sap/ui/integration/library-preload.js" size="29841">
+  <module name="sap/ui/integration/library-preload.js" size="37005">
     <requires>
       <module name="sap/base/Log.js"/>
+      <module name="sap/base/util/LoaderExtensions.js"/>
+      <module name="sap/base/util/deepClone.js"/>
+      <module name="sap/base/util/merge.js"/>
       <module name="sap/f/CardRenderer.js"/>
       <module name="sap/f/cards/BaseContent.js"/>
       <module name="sap/f/cards/DataProviderFactory.js"/>
@@ -76,14 +256,17 @@
       <module name="sap/m/HBox.js"/>
       <module name="sap/m/Text.js"/>
       <module name="sap/m/VBox.js"/>
+      <module name="sap/m/library.js"/>
       <module name="sap/ui/Global.js"/>
       <module name="sap/ui/base/DataType.js"/>
       <module name="sap/ui/base/EventProvider.js"/>
       <module name="sap/ui/base/Object.js"/>
+      <module name="sap/ui/core/ComponentContainer.js"/>
       <module name="sap/ui/core/Control.js"/>
       <module name="sap/ui/core/Core.js"/>
       <module name="sap/ui/core/Icon.js"/>
       <module name="sap/ui/core/Manifest.js"/>
+      <module name="sap/ui/core/UIComponent.js"/>
       <module name="sap/ui/core/library.js"/>
       <module name="sap/ui/model/json/JSONModel.js"/>
       <module name="sap/ui/model/resource/ResourceModel.js"/>
@@ -93,207 +276,164 @@
     </requires>
     <includes>
       <module name="sap-ui-integration.js"/>
+      <module name="sap/ui/integration/Widget.js"/>
+      <module name="sap/ui/integration/WidgetComponent.js"/>
+      <module name="sap/ui/integration/WidgetRenderer.js"/>
       <module name="sap/ui/integration/host/HostConfiguration.js"/>
       <module name="sap/ui/integration/host/HostConfigurationCompiler.js"/>
       <module name="sap/ui/integration/library-bootstrap.js"/>
       <module name="sap/ui/integration/library.js"/>
       <module name="sap/ui/integration/manifest.json"/>
       <module name="sap/ui/integration/sap-ui-integration-config.js"/>
+      <module name="sap/ui/integration/sap-ui-integration-define-nojQuery.js"/>
       <module name="sap/ui/integration/services/Data.js"/>
       <module name="sap/ui/integration/services/Navigation.js"/>
       <module name="sap/ui/integration/services/Service.js"/>
-      <module name="sap/ui/integration/util/CardManifest.js"/>
       <module name="sap/ui/integration/util/CustomElements.js"/>
+      <module name="sap/ui/integration/util/Manifest.js"/>
       <module name="sap/ui/integration/util/ServiceManager.js"/>
       <module name="sap/ui/integration/widgets/Card.js"/>
     </includes>
   </module>
-  <module name="sap/ui/integration/library-preload.json" size="0">
-    <requires>
-      <module name="sap/base/Log.js"/>
-      <module name="sap/f/CardRenderer.js"/>
-      <module name="sap/f/cards/BaseContent.js"/>
-      <module name="sap/f/cards/DataProviderFactory.js"/>
-      <module name="sap/f/cards/Header.js"/>
-      <module name="sap/f/cards/NumericHeader.js"/>
-      <module name="sap/f/library-preload.json"/>
-      <module name="sap/f/library.js"/>
-      <module name="sap/m/HBox.js"/>
-      <module name="sap/m/Text.js"/>
-      <module name="sap/m/VBox.js"/>
-      <module name="sap/ui/Global.js"/>
-      <module name="sap/ui/base/DataType.js"/>
-      <module name="sap/ui/base/EventProvider.js"/>
-      <module name="sap/ui/base/Object.js"/>
-      <module name="sap/ui/core/Control.js"/>
-      <module name="sap/ui/core/Core.js"/>
-      <module name="sap/ui/core/Icon.js"/>
-      <module name="sap/ui/core/Manifest.js"/>
-      <module name="sap/ui/core/library-preload.json"/>
-      <module name="sap/ui/core/library.js"/>
-      <module name="sap/ui/model/json/JSONModel.js"/>
-      <module name="sap/ui/model/resource/ResourceModel.js"/>
-      <module name="sap/ui/thirdparty/jquery.js"/>
-      <module name="sap/ui/thirdparty/less.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-    <includes>
-      <module name="sap-ui-integration.js"/>
-      <module name="sap/ui/integration/host/HostConfiguration.js"/>
-      <module name="sap/ui/integration/host/HostConfigurationCompiler.js"/>
-      <module name="sap/ui/integration/library-bootstrap.js"/>
-      <module name="sap/ui/integration/library.js"/>
-      <module name="sap/ui/integration/manifest.json"/>
-      <module name="sap/ui/integration/sap-ui-integration-config.js"/>
-      <module name="sap/ui/integration/services/Data.js"/>
-      <module name="sap/ui/integration/services/Navigation.js"/>
-      <module name="sap/ui/integration/services/Service.js"/>
-      <module name="sap/ui/integration/util/CardManifest.js"/>
-      <module name="sap/ui/integration/util/CustomElements.js"/>
-      <module name="sap/ui/integration/util/ServiceManager.js"/>
-      <module name="sap/ui/integration/widgets/Card.js"/>
-    </includes>
-  </module>
-  <module name="sap/ui/integration/library.js" size="2126" compressedSize="853">
-    <description>Initialization Code and shared classes of library sap.f.</description>
+  <module name="sap/ui/integration/library.js" size="2243" compressedSize="942">
+    <description>Initialization Code and shared classes of library sap.ui.integration.</description>
     <requires>
       <module name="sap/f/library.js"/>
+      <module name="sap/m/library.js"/>
       <module name="sap/ui/Global.js"/>
       <module name="sap/ui/base/DataType.js"/>
       <module name="sap/ui/core/library.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/integration/manifest.json" size="1090">
+  <module name="sap/ui/integration/manifest.json" size="1129">
   </module>
-  <module name="sap/ui/integration/messagebundle.properties" size="189">
+  <module name="sap/ui/integration/messagebundle.properties" size="424">
   </module>
-  <module name="sap/ui/integration/messagebundle_ar.properties" size="140">
+  <module name="sap/ui/integration/messagebundle_ar.properties" size="375">
   </module>
-  <module name="sap/ui/integration/messagebundle_bg.properties" size="140">
+  <module name="sap/ui/integration/messagebundle_bg.properties" size="375">
   </module>
-  <module name="sap/ui/integration/messagebundle_ca.properties" size="130">
+  <module name="sap/ui/integration/messagebundle_ca.properties" size="365">
   </module>
-  <module name="sap/ui/integration/messagebundle_cs.properties" size="129">
+  <module name="sap/ui/integration/messagebundle_cs.properties" size="364">
   </module>
-  <module name="sap/ui/integration/messagebundle_da.properties" size="130">
+  <module name="sap/ui/integration/messagebundle_da.properties" size="365">
   </module>
-  <module name="sap/ui/integration/messagebundle_de.properties" size="131">
+  <module name="sap/ui/integration/messagebundle_de.properties" size="366">
   </module>
-  <module name="sap/ui/integration/messagebundle_el.properties" size="146">
+  <module name="sap/ui/integration/messagebundle_el.properties" size="381">
   </module>
-  <module name="sap/ui/integration/messagebundle_en.properties" size="130">
+  <module name="sap/ui/integration/messagebundle_en.properties" size="365">
   </module>
   <module name="sap/ui/integration/messagebundle_en_US_sappsd.properties" size="146">
   </module>
   <module name="sap/ui/integration/messagebundle_en_US_saptrc.properties" size="153">
   </module>
-  <module name="sap/ui/integration/messagebundle_es.properties" size="130">
+  <module name="sap/ui/integration/messagebundle_es.properties" size="365">
   </module>
-  <module name="sap/ui/integration/messagebundle_et.properties" size="129">
+  <module name="sap/ui/integration/messagebundle_et.properties" size="364">
   </module>
-  <module name="sap/ui/integration/messagebundle_fi.properties" size="129">
+  <module name="sap/ui/integration/messagebundle_fi.properties" size="364">
   </module>
-  <module name="sap/ui/integration/messagebundle_fr.properties" size="127">
+  <module name="sap/ui/integration/messagebundle_fr.properties" size="362">
   </module>
-  <module name="sap/ui/integration/messagebundle_hi.properties" size="159">
+  <module name="sap/ui/integration/messagebundle_hi.properties" size="394">
   </module>
-  <module name="sap/ui/integration/messagebundle_hr.properties" size="130">
+  <module name="sap/ui/integration/messagebundle_hr.properties" size="365">
   </module>
-  <module name="sap/ui/integration/messagebundle_hu.properties" size="129">
+  <module name="sap/ui/integration/messagebundle_hu.properties" size="364">
   </module>
-  <module name="sap/ui/integration/messagebundle_it.properties" size="130">
+  <module name="sap/ui/integration/messagebundle_it.properties" size="365">
   </module>
-  <module name="sap/ui/integration/messagebundle_iw.properties" size="152">
+  <module name="sap/ui/integration/messagebundle_iw.properties" size="387">
   </module>
-  <module name="sap/ui/integration/messagebundle_ja.properties" size="129">
+  <module name="sap/ui/integration/messagebundle_ja.properties" size="364">
   </module>
-  <module name="sap/ui/integration/messagebundle_kk.properties" size="129">
+  <module name="sap/ui/integration/messagebundle_kk.properties" size="364">
   </module>
-  <module name="sap/ui/integration/messagebundle_ko.properties" size="127">
+  <module name="sap/ui/integration/messagebundle_ko.properties" size="362">
   </module>
-  <module name="sap/ui/integration/messagebundle_lt.properties" size="135">
+  <module name="sap/ui/integration/messagebundle_lt.properties" size="370">
   </module>
-  <module name="sap/ui/integration/messagebundle_lv.properties" size="130">
+  <module name="sap/ui/integration/messagebundle_lv.properties" size="365">
   </module>
-  <module name="sap/ui/integration/messagebundle_ms.properties" size="136">
+  <module name="sap/ui/integration/messagebundle_ms.properties" size="371">
   </module>
-  <module name="sap/ui/integration/messagebundle_nl.properties" size="131">
+  <module name="sap/ui/integration/messagebundle_nl.properties" size="366">
   </module>
-  <module name="sap/ui/integration/messagebundle_no.properties" size="130">
+  <module name="sap/ui/integration/messagebundle_no.properties" size="365">
   </module>
-  <module name="sap/ui/integration/messagebundle_pl.properties" size="129">
+  <module name="sap/ui/integration/messagebundle_pl.properties" size="364">
   </module>
-  <module name="sap/ui/integration/messagebundle_pt.properties" size="130">
+  <module name="sap/ui/integration/messagebundle_pt.properties" size="365">
   </module>
-  <module name="sap/ui/integration/messagebundle_ro.properties" size="131">
+  <module name="sap/ui/integration/messagebundle_ro.properties" size="366">
   </module>
-  <module name="sap/ui/integration/messagebundle_ru.properties" size="140">
+  <module name="sap/ui/integration/messagebundle_ru.properties" size="375">
   </module>
-  <module name="sap/ui/integration/messagebundle_sh.properties" size="130">
+  <module name="sap/ui/integration/messagebundle_sh.properties" size="365">
   </module>
-  <module name="sap/ui/integration/messagebundle_sk.properties" size="129">
+  <module name="sap/ui/integration/messagebundle_sk.properties" size="364">
   </module>
-  <module name="sap/ui/integration/messagebundle_sl.properties" size="130">
+  <module name="sap/ui/integration/messagebundle_sl.properties" size="365">
   </module>
-  <module name="sap/ui/integration/messagebundle_sv.properties" size="130">
+  <module name="sap/ui/integration/messagebundle_sv.properties" size="365">
   </module>
-  <module name="sap/ui/integration/messagebundle_th.properties" size="146">
+  <module name="sap/ui/integration/messagebundle_th.properties" size="381">
   </module>
-  <module name="sap/ui/integration/messagebundle_tr.properties" size="129">
+  <module name="sap/ui/integration/messagebundle_tr.properties" size="364">
   </module>
-  <module name="sap/ui/integration/messagebundle_uk.properties" size="134">
+  <module name="sap/ui/integration/messagebundle_uk.properties" size="369">
   </module>
-  <module name="sap/ui/integration/messagebundle_vi.properties" size="137">
+  <module name="sap/ui/integration/messagebundle_vi.properties" size="372">
   </module>
-  <module name="sap/ui/integration/messagebundle_zh_CN.properties" size="160">
+  <module name="sap/ui/integration/messagebundle_zh_CN.properties" size="395">
   </module>
-  <module name="sap/ui/integration/messagebundle_zh_TW.properties" size="127">
+  <module name="sap/ui/integration/messagebundle_zh_TW.properties" size="362">
   </module>
   <module name="sap/ui/integration/sap-ui-integration-config.js" size="524" compressedSize="380" raw="true">
   </module>
-  <module name="sap/ui/integration/sap-ui-integration-define-nojQuery.js" size="429" compressedSize="342">
+  <module name="sap/ui/integration/sap-ui-integration-define-nojQuery.js" size="434" compressedSize="347" raw="true">
     <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
-    <includes>
-      <module name="sap/ui/thirdparty/jquery.js"/>
-      <module name="sap/ui/thirdparty/ui/jquery/jquery-ui-position.js"/>
-    </includes>
   </module>
-  <module name="sap/ui/integration/services/Data.js" size="1866" compressedSize="388">
+  <module name="sap/ui/integration/services/Data.js" size="1917" compressedSize="388">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/integration/services/Service.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/integration/services/Navigation.js" size="1248" compressedSize="333">
+  <module name="sap/ui/integration/services/Navigation.js" size="1261" compressedSize="333">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/integration/services/Service.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/integration/services/Service.js" size="1280" compressedSize="461">
+  <module name="sap/ui/integration/services/Service.js" size="1293" compressedSize="461">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/integration/util/CardManifest.js" size="10700" compressedSize="3261">
+  <module name="sap/ui/integration/util/CustomElements.js" size="10240" compressedSize="5754">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/integration/util/Manifest.js" size="12219" compressedSize="4027">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/Log.js"/>
+      <module name="sap/base/util/deepClone.js"/>
+      <module name="sap/base/util/merge.js"/>
       <module name="sap/ui/base/Object.js"/>
       <module name="sap/ui/core/Manifest.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/integration/util/CustomElements.js" size="10319" compressedSize="5752">
-    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="sap/base/Log.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
@@ -305,10 +445,11 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/integration/widgets/Card.js" size="22783" compressedSize="10028">
+  <module name="sap/ui/integration/widgets/Card.js" size="23804" compressedSize="10733">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
+      <module name="sap/base/util/LoaderExtensions.js"/>
       <module name="sap/f/CardRenderer.js"/>
       <module name="sap/f/cards/BaseContent.js"/>
       <module name="sap/f/cards/DataProviderFactory.js"/>
@@ -322,7 +463,7 @@
       <module name="sap/ui/core/Core.js"/>
       <module name="sap/ui/core/Icon.js"/>
       <module name="sap/ui/integration/library.js"/>
-      <module name="sap/ui/integration/util/CardManifest.js"/>
+      <module name="sap/ui/integration/util/Manifest.js"/>
       <module name="sap/ui/integration/util/ServiceManager.js"/>
       <module name="sap/ui/model/json/JSONModel.js"/>
       <module name="sap/ui/model/resource/ResourceModel.js"/>

@@ -71,11 +71,6 @@
 			"theme": "base"
 		},
 		{
-			"name": "ColumnHeader.less",
-			"designtime": true,
-			"theme": "base"
-		},
-		{
 			"name": "ColumnListItem.less",
 			"designtime": true,
 			"theme": "base"
@@ -102,6 +97,11 @@
 		},
 		{
 			"name": "CustomTile.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "DatePicker.less",
 			"designtime": true,
 			"theme": "base"
 		},
@@ -551,6 +551,11 @@
 			"theme": "base"
 		},
 		{
+			"name": "SinglePlanningCalendarMonthGrid.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
 			"name": "SlideTile.less",
 			"designtime": true,
 			"theme": "base"
@@ -737,11 +742,6 @@
 		},
 		{
 			"name": "ViewSettingsDialog.less",
-			"designtime": true,
-			"theme": "base"
-		},
-		{
-			"name": "ViewSettingsPopover.less",
 			"designtime": true,
 			"theme": "base"
 		},

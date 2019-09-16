@@ -23,7 +23,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', './library', 'sap/ui/core/CustomStyle
 	 * @class
 	 * Tree node element
 	 * @extends sap.ui.core.Element
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @public

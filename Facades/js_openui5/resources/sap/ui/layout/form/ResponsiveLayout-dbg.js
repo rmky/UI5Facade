@@ -50,7 +50,7 @@ sap.ui.define([
 	 * @extends sap.ui.layout.form.FormLayout
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @public
@@ -103,6 +103,7 @@ sap.ui.define([
 	var Panel = Control.extend("sap.ui.layout.form.ResponsiveLayoutPanel", {
 
 		metadata : {
+			library: "sap.ui.layout",
 			aggregations: {
 				"content"   : {type: "sap.ui.layout.ResponsiveFlowLayout", multiple: false}
 			},

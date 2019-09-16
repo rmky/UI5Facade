@@ -129,7 +129,7 @@ function(
 		 * @extends sap.m.DateTimeField
 		 *
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.70.0
 		 *
 		 * @constructor
 		 * @public
@@ -1685,7 +1685,6 @@ function(
 				role: oRenderer.getAriaRole(this),
 				type: sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("ACC_CTR_TYPE_TIMEINPUT"),
 				description: [sValue, oRenderer.getLabelledByAnnouncement(this), oRenderer.getDescribedByAnnouncement(this)].join(" ").trim(),
-				multiline: false,
 				autocomplete: "none",
 				expanded: false,
 				haspopup: true,

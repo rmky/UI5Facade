@@ -9,6 +9,6 @@ sap.ui.define([], function() {
 	"use strict";
 
 	return {
-		actions: null
+		actions: "not-adaptable"
 	};
 }, /* bExport= */ false);

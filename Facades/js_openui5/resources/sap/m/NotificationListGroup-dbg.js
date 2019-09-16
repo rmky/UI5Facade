@@ -54,7 +54,7 @@ function(
 	 * @extends sap.m.NotificationListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @public
@@ -172,19 +172,20 @@ function(
 	//================================================================================
 
 	/**
-	 * Overwrites the setter for collapsed property.
+	 * Sets a new value for property {@link #collapsed}.
+	 * Determines if the group is collapsed or expanded.
 	 *
 	 * @override
 	 * @public
-	 * @param {boolean} Collapsed Collapsed indicator.
+	 * @param {boolean} bCollapsed New value for property <code>collapsed</code>.
 	 * @returns {sap.m.NotificationListGroup} this NotificationListGroup reference for chaining.
 	 */
-	NotificationListGroup.prototype.setCollapsed = function (collapsed) {
-		this._toggleCollapsed();
-		//Setter overwritten to suppress invalidation
+	NotificationListGroup.prototype.setCollapsed = function (bCollapsed) {
+		this._toggleCollapsed(bCollapsed);
 
-		this.setProperty('collapsed', collapsed, true);
-		this.fireOnCollapse({collapsed: collapsed});
+		//Setter overwritten to suppress invalidation
+		this.setProperty('collapsed', bCollapsed, true);
+		this.fireOnCollapse({collapsed: bCollapsed});
 
 		return this;
 	};
@@ -267,6 +268,9 @@ function(
 		this._updateAccessibilityInfo();
 		this._updateCollapseButtonText(this.getCollapsed());
 
+		var oAuthorPicture = this.getAuthorPicture();
+		this._getAuthorImage().setSrc(oAuthorPicture);
+
 		this._maxNumberOfNotificationsTitle = this._resourceBundle.getText('NOTIFICATION_LIST_GROUP_MAX_NOTIFICATIONS_TITLE', notificationsCount - this._maxNumberOfNotifications);
 		this._maxNumberOfNotificationsBody = this._resourceBundle.getText('NOTIFICATION_LIST_GROUP_MAX_NOTIFICATIONS_BODY');
 	};
@@ -314,14 +318,12 @@ function(
 	/**
 	 * Toggles the NotificationListGroup state between collapsed/expanded.
 	 *
+	 * @param {boolean} bCollapsed The desired collapse state.
 	 * @private
 	 */
-	NotificationListGroup.prototype._toggleCollapsed = function () {
-		/** @type {boolean} */
-		var newCollapsedState = !this.getCollapsed();
-		this._updateCollapseButtonText(newCollapsedState);
-
-		this.$().toggleClass('sapMNLG-Collapsed', newCollapsedState);
+	NotificationListGroup.prototype._toggleCollapsed = function (bCollapsed) {
+		this._updateCollapseButtonText(bCollapsed);
+		this.$().toggleClass('sapMNLG-Collapsed', bCollapsed);
 		this.$().toggleClass('sapMNLG-NoNotifications', this._getVisibleItemsCount() <= 0);
 	};
 

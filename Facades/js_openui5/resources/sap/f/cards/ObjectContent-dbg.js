@@ -18,7 +18,7 @@ sap.ui.define(["sap/f/cards/BaseContent", "sap/m/HBox", "sap/m/VBox", "sap/m/Tex
 		 *
 		 * @extends sap.f.cards.BaseContent
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.70.0
 		 *
 		 * @constructor
 		 * @experimental

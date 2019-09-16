@@ -11,7 +11,7 @@
  * This API is independent from any other part of the UI5 framework. This allows it to be loaded beforehand, if it is needed, to create the UI5 bootstrap
  * dynamically depending on the capabilities of the browser or device.
  *
- * @version 1.68.1
+ * @version 1.70.0
  * @namespace
  * @name sap.ui.Device
  * @public
@@ -32,7 +32,7 @@ if (typeof window.sap.ui !== "object") {
 
 	//Skip initialization if API is already available
 	if (typeof window.sap.ui.Device === "object" || typeof window.sap.ui.Device === "function") {
-		var apiVersion = "1.68.1";
+		var apiVersion = "1.70.0";
 		window.sap.ui.Device._checkAPIVersion(apiVersion);
 		return;
 	}
@@ -105,7 +105,7 @@ if (typeof window.sap.ui !== "object") {
 
 	//Only used internal to make clear when Device API is loaded in wrong version
 	Device._checkAPIVersion = function(sVersion) {
-		var v = "1.68.1";
+		var v = "1.70.0";
 		if (v != sVersion) {
 			oLogger.log(WARNING, "Device API version differs: " + v + " <-> " + sVersion);
 		}
@@ -1482,7 +1482,7 @@ if (typeof window.sap.ui !== "object") {
 	/**
 	 * Returns information about the current active range of the range set with the given name.
 	 *
-	 * If the optional parameter <code>iWidth</iWidth> is given, the active range will be determined for that width,
+	 * If the optional parameter <code>iWidth</code> is given, the active range will be determined for that width,
 	 * otherwise it is determined for the current window size.
 	 *
 	 * @param {string} sName The name of the range set. The range set must be initialized beforehand ({@link sap.ui.Device.media.initRangeSet})

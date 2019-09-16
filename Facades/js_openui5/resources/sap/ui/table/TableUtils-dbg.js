@@ -207,7 +207,7 @@ sap.ui.define([
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @namespace
 	 * @alias sap.ui.table.TableUtils
 	 * @private
@@ -331,8 +331,11 @@ sap.ui.define([
 				return false;
 			}
 
-			var iSelectableRowCount = oTable._getSelectableRowCount();
-			return iSelectableRowCount > 0 && iSelectableRowCount === oTable._getSelectedIndicesCount();
+			var oSelectionPlugin = oTable._getSelectionPlugin();
+			var iSelectableRowCount = oSelectionPlugin.getSelectableCount();
+			var iSelectedRowCount = oSelectionPlugin.getSelectedCount();
+
+			return iSelectableRowCount > 0 && iSelectableRowCount === iSelectedRowCount;
 		},
 
 		/**
@@ -465,8 +468,10 @@ sap.ui.define([
 				return false;
 			}
 
+			var oSelectionPlugin = oTable._getSelectionPlugin();
+
 			function setSelectionState(iAbsoluteRowIndex) {
-				if (!oTable._isRowSelectable(iAbsoluteRowIndex)) {
+				if (!oSelectionPlugin.isIndexSelectable(iAbsoluteRowIndex)) {
 					return false;
 				}
 
@@ -476,14 +481,14 @@ sap.ui.define([
 
 				if (fnDoSelect) {
 					bSelectionChanged = fnDoSelect(iAbsoluteRowIndex, bSelect);
-				} else if (oTable.isIndexSelected(iAbsoluteRowIndex)) {
+				} else if (oSelectionPlugin.isIndexSelected(iAbsoluteRowIndex)) {
 					if (bSelect !== true) {
 						bSelectionChanged = true;
-						oTable.removeSelectionInterval(iAbsoluteRowIndex, iAbsoluteRowIndex);
+						oSelectionPlugin.removeSelectionInterval(iAbsoluteRowIndex, iAbsoluteRowIndex);
 					}
 				} else if (bSelect !== false) {
 					bSelectionChanged = true;
-					oTable.addSelectionInterval(iAbsoluteRowIndex, iAbsoluteRowIndex);
+					oSelectionPlugin.addSelectionInterval(iAbsoluteRowIndex, iAbsoluteRowIndex);
 				}
 
 				delete oTable._iSourceRowIndex;
@@ -578,7 +583,8 @@ sap.ui.define([
 		 * @returns {boolean} Whether variable row height support is enabled.
 		 */
 		isVariableRowHeightEnabled: function(oTable) {
-			return oTable && oTable._bVariableRowHeightEnabled && oTable.getFixedRowCount() <= 0 && oTable.getFixedBottomRowCount() <= 0;
+			var mRowCounts = oTable._getRowCounts();
+			return oTable && oTable._bVariableRowHeightEnabled && !mRowCounts.fixedTop && !mRowCounts.fixedBottom;
 		},
 
 		/**
@@ -592,7 +598,7 @@ sap.ui.define([
 		getTotalRowCount: function(oTable, bIncludeEmptyRows) {
 			var iRowCount = oTable._getTotalRowCount();
 			if (bIncludeEmptyRows) {
-				iRowCount = Math.max(iRowCount, oTable.getVisibleRowCount());
+				iRowCount = Math.max(iRowCount, oTable._getRowCounts().count);
 			}
 			return iRowCount;
 		},
@@ -606,7 +612,7 @@ sap.ui.define([
 		 * @returns {int} The number of rendered rows that are not empty.
 		 */
 		getNonEmptyVisibleRowCount: function(oTable) {
-			return Math.min(oTable.getVisibleRowCount(), oTable._getTotalRowCount());
+			return Math.min(oTable._getRowCounts().count, oTable._getTotalRowCount());
 		},
 
 		/**
@@ -904,27 +910,23 @@ sap.ui.define([
 		 * Existing ResizeHandlers will be de-registered before the new one is registered.
 		 *
 		 * @param {sap.ui.table.Table} oTable Instance of the table.
-		 * @param {string} sIdSuffix ID suffix to identify the DOM element for which to register the ResizeHandler.
+		 * @param {string} sHandlerId, ID of the handler. Required to deregister the handler.
 		 * @param {Function} fnHandler Function to handle the resize event.
-		 * @param {boolean}[bRegisterParent] Flag to register the ResizeHandler for the parent DOM element of the one identified by sIdSuffix.
+		 * @param {string} [sDOMIdSuffix=""] ID suffix to identify the DOM element for which to register the ResizeHandler.
+		 * @param {boolean} [bRegisterParent=false] Flag to register the ResizeHandler for the parent DOM element of the one identified by sIdSuffix.
 		 * @returns {int | undefined} ResizeHandler ID or undefined if the DOM element could not be found.
 		 */
-		registerResizeHandler: function(oTable, sIdSuffix, fnHandler, bRegisterParent) {
-			var oDomRef;
-			if (typeof sIdSuffix == "string") {
-				oDomRef = oTable.getDomRef(sIdSuffix);
-			} else {
-				Log.error("sIdSuffix must be a string", oTable);
+		registerResizeHandler: function(oTable, sHandlerId, fnHandler, sDOMIdSuffix, bRegisterParent) {
+			sDOMIdSuffix = sDOMIdSuffix == null ? "" : sDOMIdSuffix;
+			bRegisterParent = bRegisterParent === true;
+
+			if (!oTable || typeof sHandlerId !== "string" || typeof fnHandler !== "function") {
 				return undefined;
 			}
 
-			if (typeof fnHandler !== "function") {
-				Log.error("fnHandler must be a function", oTable);
-				return undefined;
-			}
+			var oDomRef = oTable.getDomRef(sDOMIdSuffix);
 
-			// make sure that each DOM element of the table can only have one resize handler in order to avoid memory leaks
-			TableUtils.deregisterResizeHandler(oTable, sIdSuffix);
+			TableUtils.deregisterResizeHandler(oTable, sHandlerId);
 
 			if (!oTable._mResizeHandlerIds) {
 				oTable._mResizeHandlerIds = {};
@@ -935,45 +937,46 @@ sap.ui.define([
 			}
 
 			if (oDomRef) {
-				oTable._mResizeHandlerIds[sIdSuffix] = ResizeHandler.register(oDomRef, fnHandler);
+				oTable._mResizeHandlerIds[sHandlerId] = ResizeHandler.register(oDomRef, fnHandler);
 			}
 
-			return oTable._mResizeHandlerIds[sIdSuffix];
+			return oTable._mResizeHandlerIds[sHandlerId];
 		},
 
 		/**
 		 * De-register ResizeHandler identified by sIdSuffix. If sIdSuffix is undefined, all know ResizeHandlers will be de-registered.
 		 *
 		 * @param {sap.ui.table.Table} oTable Instance of the table.
-		 * @param {string | Array.<string>} [vIdSuffix] ID suffix to identify the ResizeHandler to de-register. If undefined, all will be
-		 *                                              de-registered.
+		 * @param {string | Array.<string> | undefined} [vHandlerId] ID to identify the ResizeHandler to de-register. If undefined, all will be
+		 * de-registered.
 		 */
-		deregisterResizeHandler: function(oTable, vIdSuffix) {
-			var aIdSuffix;
+		deregisterResizeHandler: function(oTable, vHandlerId) {
+			var aHandlerIds = [];
+
 			if (!oTable._mResizeHandlerIds) {
 				// no resize handler registered so far
 				return;
 			}
 
-			if (typeof vIdSuffix == "string") {
-				aIdSuffix = [vIdSuffix];
-			} else if (vIdSuffix === undefined) {
-				aIdSuffix = [];
+			if (typeof vHandlerId === "string") {
+				aHandlerIds.push(vHandlerId);
+			} else if (vHandlerId === undefined) {
 				// de-register all resize handlers if no specific is named
 				for (var sKey in oTable._mResizeHandlerIds) {
 					if (typeof sKey == "string" && oTable._mResizeHandlerIds.hasOwnProperty(sKey)) {
-						aIdSuffix.push(sKey);
+						aHandlerIds.push(sKey);
 					}
 				}
-			} else if (Array.isArray(vIdSuffix)) {
-				aIdSuffix = vIdSuffix;
+			} else if (Array.isArray(vHandlerId)) {
+				aHandlerIds = vHandlerId;
 			}
 
-			for (var i = 0; i < aIdSuffix.length; i++) {
-				var sIdSuffix = aIdSuffix[i];
-				if (oTable._mResizeHandlerIds[sIdSuffix]) {
-					ResizeHandler.deregister(oTable._mResizeHandlerIds[sIdSuffix]);
-					oTable._mResizeHandlerIds[sIdSuffix] = undefined;
+			for (var i = 0; i < aHandlerIds.length; i++) {
+				var sHandlerId = aHandlerIds[i];
+
+				if (oTable._mResizeHandlerIds[sHandlerId]) {
+					ResizeHandler.deregister(oTable._mResizeHandlerIds[sHandlerId]);
+					oTable._mResizeHandlerIds[sHandlerId] = undefined;
 				}
 			}
 		},
@@ -990,8 +993,7 @@ sap.ui.define([
 				var $Ref = jQuery(row);
 				row = parseInt($Ref.add($Ref.parent()).filter("[data-sap-ui-rowindex]").attr("data-sap-ui-rowindex"));
 			}
-			var iFixed = oTable.getFixedRowCount() || 0;
-			return row == iFixed;
+			return row == oTable._getRowCounts().fixedTop;
 		},
 
 		/**
@@ -1006,8 +1008,8 @@ sap.ui.define([
 				var $Ref = jQuery(row);
 				row = parseInt($Ref.add($Ref.parent()).filter("[data-sap-ui-rowindex]").attr("data-sap-ui-rowindex"));
 			}
-			var iFixed = oTable.getFixedBottomRowCount() || 0;
-			return row == oTable.getVisibleRowCount() - iFixed - 1;
+			var mRowCounts = oTable._getRowCounts();
+			return row == mRowCounts.count - mRowCounts.fixedBottom - 1;
 		},
 
 		/**
@@ -1112,22 +1114,22 @@ sap.ui.define([
 		 * @returns {int} The index of the first fixed bottom row in the <code>rows</code> aggregation, or <code>-1</code>.
 		 */
 		getFirstFixedBottomRowIndex: function(oTable) {
-			var iFixedBottomRowCount = oTable.getFixedBottomRowCount();
-			var oBinding = oTable.getBinding("rows");
+			var mRowCounts = oTable._getRowCounts();
+
+			if (!oTable.getBinding("rows") || mRowCounts.fixedBottom === 0) {
+				return -1;
+			}
+
 			var iFirstFixedBottomIndex = -1;
+			var iFirstVisibleRow = oTable.getFirstVisibleRow();
+			var iTotalRowCount = oTable._getTotalRowCount();
 
-			if (oBinding && iFixedBottomRowCount > 0) {
-				var iVisibleRowCount = oTable.getVisibleRowCount();
-				var iFirstVisibleRow = oTable.getFirstVisibleRow();
-				var iTotalRowCount = oTable._getTotalRowCount();
-
-				if (iTotalRowCount >= iVisibleRowCount) {
-					iFirstFixedBottomIndex = iVisibleRowCount - iFixedBottomRowCount;
-				} else {
-					var iIdx = iTotalRowCount - iFixedBottomRowCount - iFirstVisibleRow;
-					if (iIdx >= 0 && (iFirstVisibleRow + iIdx) < iTotalRowCount) {
-						iFirstFixedBottomIndex = iIdx;
-					}
+			if (iTotalRowCount >= mRowCounts.count) {
+				iFirstFixedBottomIndex = mRowCounts.count - mRowCounts.fixedBottom;
+			} else {
+				var iIdx = iTotalRowCount - mRowCounts.fixedBottom - iFirstVisibleRow;
+				if (iIdx >= 0 && (iFirstVisibleRow + iIdx) < iTotalRowCount) {
+					iFirstFixedBottomIndex = iIdx;
 				}
 			}
 
@@ -1534,6 +1536,31 @@ sap.ui.define([
 		deselectElementText: function(oElement) {
 			if (hasSelectableText(oElement)) {
 				oElement.setSelectionRange(0, 0);
+			}
+		},
+
+		/**
+		 * Adds a delegate that listens to the events that are fired on an element.
+		 *
+		 * @param {sap.ui.core.Element} oElement The element to add the delegate to.
+		 * @param {object} oDelegate The delegate object.
+		 * @param {sap.ui.core.Element} [oThis] The context in the delegate's event listeners. The default is the delegate object itself.
+		 */
+		addDelegate: function(oElement, oDelegate, oThis) {
+			if (oElement && oDelegate) {
+				oElement.addDelegate(oDelegate, false, oThis ? oThis : oDelegate, false);
+			}
+		},
+
+		/**
+		 * Removes a delegate from an element.
+		 *
+		 * @param {sap.ui.core.Element} oElement The element to add the delegate to.
+		 * @param {object} oDelegate The delegate object.
+		 */
+		removeDelegate: function(oElement, oDelegate) {
+			if (oElement && oDelegate) {
+				oElement.removeDelegate(oDelegate);
 			}
 		}
 	};

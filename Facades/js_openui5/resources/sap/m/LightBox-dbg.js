@@ -99,7 +99,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.70.0
 		 *
 		 * @constructor
 		 * @public
@@ -199,7 +199,11 @@ sap.ui.define([
 			var oImageContent = this._getImageContent(),
 				oNativeImage = oImageContent._getNativeImage(),
 				sImageSrc = oImageContent.getImageSrc(),
-				sState = oImageContent._getImageState();
+				sState = oImageContent._getImageState(),
+				oInvisiblePopupText = this.getAggregation('_invisiblePopupText'),
+				sInvisiblePopupText = this._rb.getText("LIGHTBOX_ARIA_ENLARGED", [oImageContent.getTitle(), oImageContent.getSubtitle()]),
+				errorMessageTitle = this._rb.getText('LIGHTBOX_IMAGE_ERROR'),
+				errorMessageSubtitle = this._rb.getText('LIGHTBOX_IMAGE_ERROR_DETAILS');
 
 			this._createErrorControls();
 
@@ -227,15 +231,14 @@ sap.ui.define([
 					break;
 				case LightBoxLoadingStates.Error:
 					clearTimeout(this._timeoutId);
+					sInvisiblePopupText += " " +  errorMessageTitle + " " + errorMessageSubtitle;
 					break;
 				default:
 					break;
 			}
 
-			var oInvisiblePopupText = this.getAggregation('_invisiblePopupText');
-
 			if (oImageContent && oInvisiblePopupText) {
-				oInvisiblePopupText.setText(this._rb.getText("LIGHTBOX_ARIA_ENLARGED", [oImageContent.getTitle(), oImageContent.getSubtitle()]));
+				oInvisiblePopupText.setText(sInvisiblePopupText);
 			}
 
 			this._isRendering = true;

@@ -1,8 +1,8 @@
 /*!
- * OpenUI5
+* OpenUI5
  * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
- */
+*/
 
 sap.ui.define([
 	"sap/base/Log"
@@ -35,6 +35,7 @@ sap.ui.define([
 			coreInstance: null
 		};
 
+	// polyfill for CustomEvent
 	function initCustomEvents() {
 		if (typeof window.CustomEvent === "function") {
 			return false;
@@ -56,11 +57,11 @@ sap.ui.define([
 
 	function fireCustomEvent(node, eventType, data) {
 		var event = new window.CustomEvent(eventType),
-			attrValue = node.getAttribute("on" + eventType);
+			attrValue = node.getAttribute("on-" + eventType);
 		event.data = data;
 		if (attrValue) {
 			eventHelper.setAttribute("onclick", attrValue);
-			eventHelper.onclick(event);
+			node.addEventListener(eventType, eventHelper.onclick);
 		}
 		node.dispatchEvent(event);
 	}
@@ -143,6 +144,18 @@ sap.ui.define([
 		return observer;
 	}
 
+	function isJSON(text) {
+		if (typeof text !== "string") {
+			return false;
+		}
+		try {
+			JSON.parse(text);
+			return true;
+		} catch (error) {
+			return false;
+		}
+	}
+
 	function createTagClass(prefixedTagName, TagImpl) {
 		if (document.createCustomElement[prefixedTagName]) {
 			return document.createCustomElement[prefixedTagName];
@@ -150,7 +163,7 @@ sap.ui.define([
 		var tagMetadata = TagImpl.getMetadata(),
 			tagAllProperties = tagMetadata.getAllProperties(),
 			tagAllAssociations = tagMetadata.getAllAssociations(),
-			tagAllEvents = tagMetadata.getAllEvents(),
+			tagAllEvents = tagMetadata.getEvents(),
 			tagAllAttributes = {};
 		//create attributes for properties
 		Object.keys(tagAllProperties).map(function (n) {
@@ -162,7 +175,7 @@ sap.ui.define([
 		});
 		//create attributes for all events and register
 		Object.keys(tagAllEvents).map(function (n) {
-			tagAllAttributes["on" + n.toLowerCase()] = tagAllEvents[n];
+			tagAllAttributes["on-" + n.toLowerCase()] = tagAllEvents[n];
 		});
 
 		var Tag = function (node) {
@@ -170,15 +183,20 @@ sap.ui.define([
 			node._control = this;
 			Tag.initCloneNode(node);
 			Tag.defineProperties(node);
-			this._controlImpl = this._controlImpl || new TagImpl(node.getAttribute("id"));
+			this._controlImpl = this._controlImpl || new TagImpl();
 			this._changeProperties(node);
-			//TODO: How to avoid the UI Area?
-			node.setAttribute("id", this._controlImpl.getId() + "-area");
 			this._uiArea = oInterface.coreInstance.createUIArea(node);
 			this._uiArea.addContent(this._controlImpl);
 			if (Tag.isInActiveDocument(node)) {
 				this._connectedCallback();
 			}
+
+			// attach event listeners for all the control events
+			Object.keys(tagAllEvents).map(function (n) {
+				this._controlImpl[tagAllEvents[n]._sMutator](function(oEvent) {
+					fireCustomEvent(node, n, oEvent);
+				});
+			}.bind(this));
 			return node;
 		};
 
@@ -257,29 +275,23 @@ sap.ui.define([
 				var oType = oSetting.getType();
 				var vValue = oType.parseValue(newValue);
 				var vOldValue = oSetting.get(oTagImpl);
+
+				if (property === "manifest" && oType.getName() === "any" && isJSON(vValue)) {
+					vValue = JSON.parse(vValue);
+				}
+
 				if (oType.isValid(vValue)) {
 					oSetting.set(oTagImpl, vValue);
 				} else {
 					oSetting.set(oTagImpl, vOldValue);
 				}
-			} else if (oSetting && oSetting._iKind === 5 /*event*/ ) {
-				var that = this;
-				//detatch the old event handler
-				if (this["_" + oSetting.name]) {
-					oTagImpl[oSetting._sDetachMutator](this["_" + oSetting.name]);
-				}
-				//create a new event handler
-				this["_" + oSetting.name] = function (oEvent) {
-					//simply fire a custom browser event with the parameters
-					that.fireCustomEvent(oSetting.name.toLowerCase(), oEvent.mParameters);
-				};
-				//attach the new event handler
-				oTagImpl[oSetting._sMutator](this["_" + oSetting.name]);
 			} else if (property === "class") {
 				var aClasss = newValue.split(" ");
 				this._addedClasses = this._addedClasses || [];
 				this._addedClasses.forEach(function (s) {
-					s && oTagImpl.removeStyleClass(s);
+					if (s) {
+						oTagImpl.removeStyleClass(s);
+					}
 				});
 				aClasss.forEach(function (s) {
 					s = oTagImpl.addStyleClass(s);

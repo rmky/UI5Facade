@@ -914,11 +914,13 @@ div.sapMInputSuggestionPopup {
 	&:hover {
 		background: @sapUiButtonLiteHoverBackground;
 		border-left: 1px solid @sapUiFieldBorderColor;
+		margin-left: -1px;
 	}
 	&:active {
 		background-color: @sapUiToggleButtonPressedBackground;
 		color: @sapUiButtonActiveTextColor;
 		border-left: 1px solid @sapUiFieldBorderColor;
+		margin-left: -1px;
 	}
 }
 
@@ -3558,6 +3560,26 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 			border: 0.125rem dotted @sapUiContentFocusColor;
 		}
 	}
+}
+
+/* ------------------------------ */
+/* Disabled                       */
+/* ------------------------------ */
+
+.sapMTokenizer.sapMTokenizerDisabled .sapMToken  {
+  &.sapMToken:hover,
+  &.sapMToken:focus,
+  &.sapMTokenSelected,
+  &.sapMToken .sapMTokenIcon {
+    background: @sapUiButtonBackground;
+    cursor: default;
+    color: @sapUiButtonTextColor;
+    outline: none;
+  }
+
+  &.sapMTokenText {
+    color: @sapUiButtonTextColor;
+  }
 }
 /* END "Tokenizer.less" */
 

@@ -28,7 +28,19 @@ sap.ui.define(['sap/ui/core/Renderer'],
 				visibleGroupsCount,
 				groups = control.getItems(),
 				expanded = control.getExpanded(),
-				visibleGroups = [];
+				visibleGroups = [],
+				hasGroupWithIcon = false;
+
+			//Checking which groups should render
+			groups.forEach(function(group) {
+				if (group.getVisible()) {
+					visibleGroups.push(group);
+
+					if (group.getIcon()) {
+						hasGroupWithIcon = true;
+					}
+				}
+			});
 
 			rm.write("<ul");
 			rm.writeControlData(control);
@@ -45,6 +57,10 @@ sap.ui.define(['sap/ui/core/Renderer'],
 				rm.addClass("sapTntNavLICollapsed");
 			}
 
+			if (!hasGroupWithIcon) {
+				rm.addClass("sapTntNavLINoIcons");
+			}
+
 			rm.writeClasses();
 
 			// ARIA
@@ -53,13 +69,6 @@ sap.ui.define(['sap/ui/core/Renderer'],
 			rm.writeAttribute("role", role);
 
 			rm.write(">");
-
-			//Checking which groups should render
-			groups.forEach(function(group) {
-				if (group.getVisible()) {
-					visibleGroups.push(group);
-				}
-			});
 
 			// Rendering the visible groups
 			visibleGroups.forEach(function(group, index) {

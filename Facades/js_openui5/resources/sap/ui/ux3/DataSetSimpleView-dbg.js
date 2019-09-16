@@ -11,16 +11,17 @@ sap.ui.define([
 	'sap/ui/core/ResizeHandler',
 	'./library',
 	'./DataSetSimpleViewRenderer',
-	'sap/base/Log'
+	'sap/base/Log',
+	"sap/ui/model/ChangeReason"
 ],
 	function(
 		jQuery,
 		Control,
 		ResizeHandler,
 		library,
-		DataSetSimpleViewRenderer
-		/* jQuerySap */,
-		Log
+		DataSetSimpleViewRenderer,
+		Log,
+		ChangeReason
 	) {
 	"use strict";
 
@@ -36,7 +37,7 @@ sap.ui.define([
 	 * DataSetSimpleView provides a simple view example for DataSet usage.
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.ux3.DataSetView
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @public
@@ -258,7 +259,7 @@ sap.ui.define([
 						/*eslint-disable no-loop-func */
 						onAfterRendering: function() {
 							this.calculateItemCounts();
-							this.getParent().updateItems(sap.ui.model.ChangeReason.Change);
+							this.getParent().updateItems(ChangeReason.Change);
 							template.removeDelegate(oDelegate);
 						}
 						/*eslint-enable no-loop-func */
@@ -303,7 +304,7 @@ sap.ui.define([
 			that = this;
 
 		var fnScroll = function(oEvent) {
-			that.getParent().updateItems(sap.ui.model.ChangeReason.Change);
+			that.getParent().updateItems(ChangeReason.Change);
 		};
 		if (typeof $scrollArea === 'string') {
 			$scrollArea = jQuery(document.getElementById($scrollArea));
@@ -429,7 +430,7 @@ sap.ui.define([
 	DataSetSimpleView.prototype.onThemeChanged = function(){
 		if (this._bRendered) {
 			this.calculateItemCounts();
-			this.getParent().updateItems(sap.ui.model.ChangeReason.Change);
+			this.getParent().updateItems(ChangeReason.Change);
 		}
 	};
 
@@ -455,7 +456,7 @@ sap.ui.define([
 		}
 		if (this._bUsePagination && this.items.length > 0) {
 			this.calculateItemCounts();
-			this.getParent().updateItems(sap.ui.model.ChangeReason.Change);
+			this.getParent().updateItems(ChangeReason.Change);
 		}
 	};
 
@@ -535,4 +536,4 @@ sap.ui.define([
 
 	return DataSetSimpleView;
 
-}, /* bExport= */ true);
+});

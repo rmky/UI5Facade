@@ -6,7 +6,7 @@
 
 // Provides control sap.m.DateTimeInput.
 sap.ui.define([
-	'jquery.sap.global',
+	"sap/ui/thirdparty/jquery",
 	'sap/ui/core/Control',
 	'./library',
 	'./DatePicker',
@@ -62,7 +62,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @public

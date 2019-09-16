@@ -562,6 +562,7 @@ sap.ui.predefine('sap/ui/core/rules/Config.support',[
 				if (LoaderExtensions) {
 					aDeclaredModules = LoaderExtensions.getAllRequiredModules();
 				} else {
+					// TODO: migration not possible. jQuery.sap.getAllDeclaredModules is deprecated.
 					aDeclaredModules = jQuery.sap.getAllDeclaredModules();
 				}
 				Object.keys(mLibraries).forEach(function(sLibrary) {
@@ -853,7 +854,7 @@ sap.ui.predefine('sap/ui/core/rules/Config.support',[
 /**
  * Helper for core functionality in Support Tool infrastructure.
  */
-sap.ui.predefine('sap/ui/core/rules/CoreHelper.support',["sap/ui/thirdparty/jquery"],
+sap.ui.predefine('sap/ui/core/rules/CoreHelper.support',["sap/ui/thirdparty/jquery", "sap/ui/dom/jquery/control"],  // jQuery Plugin "control"
 	function(jQuery) {
 		"use strict";
 
@@ -868,6 +869,7 @@ sap.ui.predefine('sap/ui/core/rules/CoreHelper.support',["sap/ui/thirdparty/jque
 				/**
 				 * Here we white list all controls that can contain DOM elements with style different than the framework style
 				 */
+				// jQuery Plugin "control"
 				var skipParents = ["sap.ui.core.HTML"],
 					parentNode = jQuery(node).control()[0];
 
@@ -937,8 +939,8 @@ sap.ui.predefine('sap/ui/core/rules/CoreHelper.support',["sap/ui/thirdparty/jque
 /**
  * Defines miscellaneous support rules.
  */
-sap.ui.predefine('sap/ui/core/rules/Misc.support',["sap/ui/support/library", "./CoreHelper.support"],
-	function(SupportLib, CoreHelper) {
+sap.ui.predefine('sap/ui/core/rules/Misc.support',["sap/ui/support/library", "./CoreHelper.support", "sap/ui/thirdparty/jquery", "sap/ui/dom/jquery/control"], // jQuery Plugin "control"
+	function(SupportLib, CoreHelper, jQuery) {
 	"use strict";
 
 	// support rules can get loaded within a ui5 version which does not have module "sap/base/Log" yet
@@ -1085,6 +1087,7 @@ sap.ui.predefine('sap/ui/core/rules/Misc.support',["sap/ui/support/library", "./
 					matchedNodes.forEach(function (node) {
 						var hasUI5Parent = CoreHelper.nodeHasUI5ParentControl(node, oScope);
 						if (hasUI5Parent) {
+							// jQuery Plugin "control"
 							var ui5Control = jQuery(node).control()[0];
 
 							if (!controlCustomCssHashMap.hasOwnProperty(ui5Control.getId())) {
@@ -1324,8 +1327,8 @@ sap.ui.predefine('sap/ui/core/rules/Model.support',[
 /**
  * Defines support rules related to the view.
  */
-sap.ui.predefine('sap/ui/core/rules/View.support',["sap/ui/support/library", "sap/ui/core/Element"],
-	function(SupportLib, Element) {
+sap.ui.predefine('sap/ui/core/rules/View.support',["sap/ui/support/library", "sap/ui/core/Element", "sap/ui/thirdparty/jquery", "sap/base/util/isEmptyObject"],
+	function(SupportLib, Element, jQuery, isEmptyObject) {
 	"use strict";
 
 	// shortcuts
@@ -1586,7 +1589,7 @@ sap.ui.predefine('sap/ui/core/rules/View.support',["sap/ui/support/library", "sa
 				for (var sAggregation in mAggregations) {
 					// if aggregation is deprecated and contains elements
 					if (mAggregations[sAggregation].deprecated
-						&& !jQuery.isEmptyObject(oElement.getAggregation(sAggregation))) {
+						&& !isEmptyObject(oElement.getAggregation(sAggregation))) {
 
 						oIssueManager.addIssue({
 							severity: Severity.Medium,
@@ -1626,7 +1629,7 @@ sap.ui.predefine('sap/ui/core/rules/View.support',["sap/ui/support/library", "sa
 				for (var sAssociation in mAssociations) {
 					// if association is deprecated and set by developer
 					if (mAssociations[sAssociation].deprecated
-						&& !jQuery.isEmptyObject(oElement.getAssociation(sAssociation))) {
+						&& !isEmptyObject(oElement.getAssociation(sAssociation))) {
 
 						oIssueManager.addIssue({
 							severity: Severity.Medium,

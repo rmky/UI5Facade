@@ -26,7 +26,8 @@ sap.ui.define(["sap/m/Text"], function (Text) {
 	 */
 	BreadcrumbsRenderer.render = function (oRm, oControl) {
 		var aControls = oControl._getControlsForBreadcrumbTrail(),
-			oSelect = oControl._getSelect();
+			oSelect = oControl._getSelect(),
+			sSeparator = oControl.getSeparatorStyle();
 
 		oRm.openStart("nav", oControl);
 		oRm.class("sapMBreadcrumbs");
@@ -36,25 +37,25 @@ sap.ui.define(["sap/m/Text"], function (Text) {
 		oRm.openEnd();
 
 		if (oSelect.getVisible()) {
-			this._renderControlInListItem(oRm, oSelect, false, "sapMBreadcrumbsSelectItem");
+			this._renderControlInListItem(oRm, oSelect, sSeparator, false, "sapMBreadcrumbsSelectItem");
 		}
 
 		aControls.forEach(function (oChildControl) {
-			this._renderControlInListItem(oRm, oChildControl, oChildControl instanceof Text);
+			this._renderControlInListItem(oRm, oChildControl, sSeparator, oChildControl instanceof Text);
 		}, this);
 
 		oRm.close("ol");
 		oRm.close("nav");
 	};
 
-	BreadcrumbsRenderer._renderControlInListItem = function (oRm, oControl, bSkipSeparator, sAdditionalItemClass) {
+	BreadcrumbsRenderer._renderControlInListItem = function (oRm, oControl, sSeparator, bSkipSeparator, sAdditionalItemClass) {
 		oRm.openStart("li");
 		oRm.class("sapMBreadcrumbsItem");
 		oRm.class(sAdditionalItemClass);
 		oRm.openEnd();
 		oRm.renderControl(oControl);
 		if (!bSkipSeparator) {
-			oRm.openStart("span").class("sapMBreadcrumbsSeparator").openEnd().text("/").close("span");
+			oRm.openStart("span").class("sapMBreadcrumbsSeparator").openEnd().text(sSeparator).close("span");
 		}
 		oRm.close("li");
 	};

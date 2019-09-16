@@ -27,7 +27,7 @@ sap.ui.define(['sap/ui/model/BindingMode', 'sap/ui/model/ClientModel', 'sap/ui/m
 	 * @extends sap.ui.model.ClientModel
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @param {sap.ui.core.message.MessageManager} oMessageManager The MessageManager instance
 	 * @public
@@ -61,8 +61,8 @@ sap.ui.define(['sap/ui/model/BindingMode', 'sap/ui/model/ClientModel', 'sap/ui/m
 		this.checkUpdate();
 	};
 
-	MessageModel.prototype.fireMessageChange = function(mArguments) {
-		this.fireEvent("messageChange", mArguments);
+	MessageModel.prototype.fireMessageChange = function(oParameters) {
+		this.fireEvent("messageChange", oParameters);
 		return this;
 	};
 

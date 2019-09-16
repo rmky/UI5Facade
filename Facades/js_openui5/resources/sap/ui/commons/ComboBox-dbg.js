@@ -18,6 +18,7 @@ sap.ui.define([
     'sap/ui/dom/containsOrEquals',
     'sap/ui/events/KeyCodes',
     'sap/ui/events/jquery/EventExtension',
+    'sap/ui/dom/jquery/rect', // jQuery Plugin "rect"
     'sap/ui/dom/jquery/selectText', // jQuery.fn.selectText
     'jquery.sap.strings' // jQuery.sap.startsWithIgnoreCase
 ],
@@ -43,7 +44,7 @@ sap.ui.define([
 	 * @implements sap.ui.commons.ToolbarItem
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @public
@@ -610,6 +611,7 @@ sap.ui.define([
 		this._sTypeAhead = null;
 		this._sWantedSelectedKey = undefined; // something typed -> do not search again for not existing items
 		this._sWantedSelectedItemId = undefined;
+		//TODO: global jquery call found
 		var oLB = this._getListBox(),
 			aItems = oLB.getItems(),
 			oItem,
@@ -832,6 +834,7 @@ sap.ui.define([
 
 			var oDomRef = this.getDomRef();
 			if (oDomRef) {
+				// jQuery Plugin "rect"
 				oListBox.setMinWidth(jQuery(oDomRef).rect().width + "px");
 			}
 		}
@@ -934,6 +937,7 @@ sap.ui.define([
 		// update the list and the input field
 		this._bOpening = true;
 
+		//TODO: global jquery call found
 		var $Ref = jQuery(this.getInputDomRef()),
 			oValue = $Ref.val(),
 			oNewValue,

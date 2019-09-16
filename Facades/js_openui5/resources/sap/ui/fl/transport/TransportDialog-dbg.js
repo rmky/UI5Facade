@@ -284,7 +284,9 @@ function(
 			tooltip: this._oResources.getText("TRANSPORT_DIALOG_PACKAGE_TT"),
 			width: "100%",
 			change: function() {
-				var oTransports, oPromise, oObject;
+				var oTransports;
+				var oPromise;
+				var oObject;
 
 				oObject = that._createObjectInfo();
 				oTransports = new sap.ui.fl.transport.Transports(); // FIXME workaround to make test stub work with AMD
@@ -310,9 +312,10 @@ function(
 	 * @private
 	 */
 	TransportDialog.prototype._createObjectInfo = function() {
-		var oObject, oResult = {
-				"package" : this._oPackage.getValue() || ""
-			};
+		var oObject;
+		var oResult = {
+			"package" : this._oPackage.getValue() || ""
+		};
 
 		oObject = this.getProperty("lrepObject");
 
@@ -367,7 +370,8 @@ function(
 	 * @private
 	 */
 	TransportDialog.prototype._setTransports = function(oTransports) {
-		var oLock, aTransports;
+		var oLock;
+		var aTransports;
 
 		//get the transports into an array.
 		oLock = this._hasLock(oTransports.transports);
@@ -416,7 +420,8 @@ function(
 	 * @private
 	 */
 	TransportDialog.prototype._hasLock = function(aTransports) {
-		var oTransport, len = aTransports.length;
+		var oTransport;
+		var len = aTransports.length;
 
 		while (len--) {
 			oTransport = aTransports[len];
@@ -467,7 +472,9 @@ function(
 	 * @public
 	 */
 	TransportDialog.prototype.setTransports = function(aSelection) {
-		var i, len = 0, oItem;
+		var i;
+		var len = 0;
+		var oItem;
 
 		if (aSelection) {
 			this.setProperty("transports", aSelection);

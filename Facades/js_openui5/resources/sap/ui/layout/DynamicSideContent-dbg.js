@@ -10,9 +10,10 @@ sap.ui.define([
 	'sap/ui/core/Control',
 	'sap/ui/core/ResizeHandler',
 	'sap/ui/layout/library',
-	'./DynamicSideContentRenderer'
+	'./DynamicSideContentRenderer',
+	"sap/ui/Device"
 ],
-	function(jQuery, Control, ResizeHandler, library, DynamicSideContentRenderer) {
+	function(jQuery, Control, ResizeHandler, library, DynamicSideContentRenderer, Device) {
 		"use strict";
 
 		// shortcut for sap.ui.layout.SideContentPosition
@@ -89,7 +90,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.70.0
 		 *
 		 * @constructor
 		 * @public
@@ -693,11 +694,11 @@ sap.ui.define([
 				$mainContent.addClass(HIDDEN_CLASS);
 				$sideContent.addClass(HIDDEN_CLASS);
 			//BCP: 1980254677
-			} else if (sap.ui.Device.system.phone && !this._SCVisible && this._MCVisible && bSideContentVisibleProperty && bMainContentVisibleProperty) {
+			} else if (Device.system.phone && !this._SCVisible && this._MCVisible && bSideContentVisibleProperty && bMainContentVisibleProperty) {
 				$sideContent.removeClass().addClass(SPAN_SIZE_12_CLASS);
 				$mainContent.addClass(HIDDEN_CLASS);
 			//BCP: 1970185680
-			} else if (sap.ui.Device.system.phone && !this._MCVisible && this._SCVisible && bSideContentVisibleProperty && bMainContentVisibleProperty) {
+			} else if (Device.system.phone && !this._MCVisible && this._SCVisible && bSideContentVisibleProperty && bMainContentVisibleProperty) {
 				$mainContent.removeClass().addClass(SPAN_SIZE_12_CLASS);
 				$sideContent.addClass(HIDDEN_CLASS);
 			} else if (this._MCVisible && bMainContentVisibleProperty) {

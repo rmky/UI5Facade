@@ -10,6 +10,9 @@ sap.ui.define([
 ], function(Log, ComponentContainer, coreLib) {
 	"use strict";
 
+	// shortcut for sap.ui.core.ComponentLifecycle
+	var ComponentLifecycle = coreLib.ComponentLifecycle;
+
 	/**
 	 * Provide methods for sap.ui.core.routing.Target in async mode
 	 * @private
@@ -207,7 +210,7 @@ sap.ui.define([
 									component: oComponent,
 									height: "100%",
 									width: "100%",
-									lifecycle: sap.ui.core.ComponentLifecycle.Application
+									lifecycle: ComponentLifecycle.Application
 								}, oOptions.containerOptions);
 
 								oObject = new ComponentContainer(sComponentContainerId, oContainerOptions);

@@ -118,29 +118,6 @@
 			]
 		},
 		{
-			"name": "library-h2-preload-dbg.js",
-			"module": "sap/ui/suite/library-h2-preload.js",
-			"isDebug": true,
-			"merged": true,
-			"required": [
-				"sap/ui/core/Control.js",
-				"sap/ui/core/Core.js",
-				"sap/ui/core/Element.js",
-				"sap/ui/core/EnabledPropagator.js",
-				"sap/ui/core/library.js",
-				"sap/ui/thirdparty/jquery.js"
-			],
-			"included": [
-				"sap/ui/suite/library.js",
-				"sap/ui/suite/manifest.json",
-				"sap/ui/suite/QuickViewUtils.js",
-				"sap/ui/suite/TaskCircle.js",
-				"sap/ui/suite/TaskCircleRenderer.js",
-				"sap/ui/suite/VerticalProgressIndicator.js",
-				"sap/ui/suite/VerticalProgressIndicatorRenderer.js"
-			]
-		},
-		{
 			"name": "library-h2-preload.js",
 			"module": "sap/ui/suite/library-h2-preload.js",
 			"merged": true,
@@ -193,33 +170,6 @@
 			"isDebug": true
 		},
 		{
-			"name": "library-preload.json",
-			"module": "sap/ui/suite/library-preload.json",
-			"merged": true,
-			"required": [
-				"sap/ui/core/Control.js",
-				"sap/ui/core/Core.js",
-				"sap/ui/core/Element.js",
-				"sap/ui/core/EnabledPropagator.js",
-				"sap/ui/core/library-preload.json",
-				"sap/ui/core/library.js",
-				"sap/ui/thirdparty/jquery.js"
-			],
-			"included": [
-				"sap/ui/suite/QuickViewUtils.js",
-				"sap/ui/suite/TaskCircle.js",
-				"sap/ui/suite/TaskCircleRenderer.js",
-				"sap/ui/suite/VerticalProgressIndicator.js",
-				"sap/ui/suite/VerticalProgressIndicatorRenderer.js",
-				"sap/ui/suite/library.js",
-				"sap/ui/suite/manifest.json"
-			]
-		},
-		{
-			"name": "library.dependencies.json",
-			"designtime": true
-		},
-		{
 			"name": "library.dependencies.xml",
 			"designtime": true
 		},
@@ -230,10 +180,6 @@
 				"sap/ui/core/Core.js",
 				"sap/ui/core/library.js"
 			]
-		},
-		{
-			"name": "library.templates.xml",
-			"designtime": true
 		},
 		{
 			"name": "manifest.json",

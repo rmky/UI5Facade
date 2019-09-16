@@ -318,7 +318,7 @@ sap.ui.define([
 			var sLabel = "";
 			if (oCountChangeInfo.initial) {
 				var oTable = oExtension.getTable();
-				sLabel = oTable.getAriaLabelledBy().join(" ") + " " + oTable.getId() + "-ariacount";
+				sLabel = oTable.getAriaLabelledBy().join(" ") + " " + oTable.getId() + "-ariadesc " + oTable.getId() + "-ariacount";
 				if (oTable.getSelectionMode() !== SelectionMode.None) {
 					sLabel = sLabel + " " + oTable.getId() + "-ariaselection";
 				}
@@ -495,8 +495,10 @@ sap.ui.define([
 				aLabels.push(oTable.getId() + "-cellacc");
 			}
 
-			if (iSpan <= 1 && oColumn && oColumn.getSorted()) {
-				aLabels.push(oTable.getId() + (oColumn.getSortOrder() === "Ascending" ? "-ariacolsortedasc" : "-ariacolsorteddes"));
+			if (Device.browser.msie) {
+				if (iSpan <= 1 && oColumn && oColumn.getSorted()) {
+					aLabels.push(oTable.getId() + (oColumn.getSortOrder() === "Ascending" ? "-ariacolsortedasc" : "-ariacolsorteddes"));
+				}
 			}
 			if (iSpan <= 1 && oColumn && oColumn.getFiltered()) {
 				aLabels.push(oTable.getId() + "-ariacolfiltered");
@@ -627,7 +629,7 @@ sap.ui.define([
 			switch (sType) {
 				case TableAccExtension.ELEMENTTYPES.COLUMNROWHEADER:
 					mAttributes["aria-labelledby"] = [sTableId + "-ariacolrowheaderlabel"];
-					var mRenderConfig = oTable._oSelectionPlugin.getRenderConfig();
+					var mRenderConfig = oTable._getSelectionPlugin().getRenderConfig();
 
 					if (mRenderConfig.headerSelector.visible) {
 						mAttributes["role"] = ["button"];
@@ -736,18 +738,14 @@ sap.ui.define([
 				case TableAccExtension.ELEMENTTYPES.CONTENT: //The content area of the table which contains all the table elements, rowheaders, columnheaders, etc
 					mAttributes["role"] = TableUtils.Grouping.isGroupMode(oTable) || TableUtils.Grouping.isTreeMode(oTable) ? "treegrid" : "grid";
 
-					mAttributes["aria-labelledby"] = [].concat(oTable.getAriaLabelledBy());
-					if (oTable.getTitle()) {
-						mAttributes["aria-labelledby"].push(oTable.getTitle().getId());
-					}
-
 					if (oTable.getSelectionMode() === SelectionMode.MultiToggle) {
 						mAttributes["aria-multiselectable"] = "true";
 					}
 
+					var mRowCounts = oTable._getRowCounts();
 					var bHasFixedColumns = TableUtils.hasFixedColumns(oTable);
-					var bHasFixedTopRows = oTable.getFixedRowCount() > 0;
-					var bHasFixedBottomRows = oTable.getFixedBottomRowCount() > 0;
+					var bHasFixedTopRows = mRowCounts.fixedTop > 0;
+					var bHasFixedBottomRows = mRowCounts.fixedBottom > 0;
 					var bHasRowHeader = TableUtils.hasRowHeader(oTable);
 					var bHasRowActions = TableUtils.hasRowActions(oTable);
 
@@ -824,7 +822,7 @@ sap.ui.define([
 					mAttributes["role"] = "row";
 					var bSelected = false;
 					if (mParams && typeof mParams.index === "number" && oTable.getSelectionMode() !== SelectionMode.None
-						&& oTable.isIndexSelected(mParams.index)) {
+						&& oTable._getSelectionPlugin().isIndexSelected(mParams.index)) {
 						mAttributes["aria-selected"] = "true";
 						bSelected = true;
 					} else {
@@ -907,7 +905,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles ACC related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccExtension
@@ -922,7 +920,7 @@ sap.ui.define([
 			this._accMode = sap.ui.getCore().getConfiguration().getAccessibility();
 			this._busyCells = [];
 
-			oTable.addEventDelegate(this);
+			TableUtils.addDelegate(oTable, this);
 
 			// Initialize Render extension
 			TableExtension.enrich(oTable, TableAccRenderExtension);
@@ -1209,7 +1207,7 @@ sap.ui.define([
 		if (!bGroup && $RowHdr && !bTreeMode) {
 			var iIndex = $RowHdr.attr("data-sap-ui-rowindex");
 			var mAttributes = ExtensionHelper.getAriaAttributesFor(
-				this, TableAccExtension.ELEMENTTYPES.ROWHEADER, {rowSelected: !oRow._bHidden && oTable.isIndexSelected(iIndex)});
+				this, TableAccExtension.ELEMENTTYPES.ROWHEADER, {rowSelected: !oRow._bHidden && oTable._getSelectionPlugin().isIndexSelected(iIndex)});
 			sTitle = mAttributes["title"] || null;
 		}
 
@@ -1309,7 +1307,7 @@ sap.ui.define([
 			}
 		};
 
-		var iSelectedIndicesCount = oTable._getSelectedIndicesCount();
+		var iSelectedIndicesCount = oTable._getSelectionPlugin().getSelectedCount();
 
 		if (sSelectionMode === SelectionMode.Single) {
 			mTooltipTexts.mouse.rowSelect = bShowTooltips ? TableUtils.getResourceText("TBL_ROW_SELECT") : "";
@@ -1341,7 +1339,8 @@ sap.ui.define([
 	 */
 	TableAccExtension.prototype.setSelectAllState = function(bSelectAll) {
 		var oTable = this.getTable();
-		if (oTable) {
+
+		if (this._accMode && oTable) {
 			oTable.$("selall").attr("aria-pressed", bSelectAll ? "true" : "false");
 		}
 	};

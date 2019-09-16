@@ -123,6 +123,10 @@ sap.ui.define([
 	 *   The entity's edit URL
 	 * @param {string} sPath
 	 *   The entity's path within the cache (as used by change listeners)
+	 * @param {object} [oETagEntity]
+	 *   An entity with the ETag of the binding for which the deletion was requested. This is
+	 *   provided if the deletion is delegated from a context binding with empty path to a list
+	 *   binding.
 	 * @param {function} fnCallback
 	 *   A function which is called after a transient entity has been deleted from the cache or
 	 *   after the entity has been deleted from the server and from the cache; the index of the
@@ -132,7 +136,7 @@ sap.ui.define([
 	 *
 	 * @public
 	 */
-	Cache.prototype._delete = function (oGroupLock, sEditUrl, sPath, fnCallback) {
+	Cache.prototype._delete = function (oGroupLock, sEditUrl, sPath, oETagEntity, fnCallback) {
 		var aSegments = sPath.split("/"),
 			vDeleteProperty = aSegments.pop(),
 			sParentPath = aSegments.join("/"),
@@ -162,7 +166,7 @@ sap.ui.define([
 				throw new Error("Must not delete twice: " + sEditUrl);
 			}
 			oEntity["$ui5.deleting"] = true;
-			mHeaders = {"If-Match" : oEntity};
+			mHeaders = {"If-Match" : oETagEntity || oEntity};
 			sEditUrl += that.oRequestor.buildQueryString(that.sMetaPath, that.mQueryOptions, true);
 			return that.oRequestor.request("DELETE", sEditUrl, oGroupLock, mHeaders, undefined,
 					undefined, undefined, undefined,
@@ -1187,7 +1191,7 @@ sap.ui.define([
 				return Promise.resolve();
 			}
 			// Note: there should be only *one* parked PATCH per entity, but we don't rely on that
-			that.oRequestor.relocateAll("$parked." + sGroupId, oEntity, sGroupId);
+			that.oRequestor.relocateAll("$parked." + sGroupId, sGroupId, oEntity);
 			// send and register the PATCH request
 			sEditUrl += that.oRequestor.buildQueryString(that.sMetaPath, that.mQueryOptions, true);
 			return patch(oGroupLock);
@@ -2236,8 +2240,10 @@ sap.ui.define([
 			throw new Error("Parallel POST requests not allowed");
 		}
 
-		// Note: there should be only *one* parked PATCH per entity, but we don't rely on that
-		this.oRequestor.relocateAll("$parked." + sGroupId, oEntity, sGroupId);
+		if (oEntity) {
+			// Note: there should be only *one* parked PATCH per entity, but we don't rely on that
+			this.oRequestor.relocateAll("$parked." + sGroupId, sGroupId, oEntity);
+		}
 
 		if (oData) {
 			sHttpMethod = oData["X-HTTP-Method"] || sHttpMethod;

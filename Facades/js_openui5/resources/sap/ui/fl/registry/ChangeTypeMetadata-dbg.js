@@ -4,7 +4,11 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/fl/Utils"], function(Utils) {
+sap.ui.define([
+	"sap/base/Log"
+], function(
+	Log
+) {
 	"use strict";
 
 	/**
@@ -20,16 +24,16 @@ sap.ui.define(["sap/ui/fl/Utils"], function(Utils) {
 	 * @alias sap.ui.fl.registry.ChangeTypeMetadata
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @experimental Since 1.27.0
 	 *
 	 */
 	var ChangeTypeMetadata = function(mParam) {
 		if (!mParam.name) {
-			Utils.log.error("sap.ui.fl.registry.ChangeType: Name required");
+			Log.error("sap.ui.fl.registry.ChangeType: Name required");
 		}
 		if (!mParam.changeHandler) {
-			Utils.log.error("sap.ui.fl.registry.ChangeType: ChangeHandler required");
+			Log.error("sap.ui.fl.registry.ChangeType: ChangeHandler required");
 		}
 
 		this._name = mParam.name;

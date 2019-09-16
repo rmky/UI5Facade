@@ -108,7 +108,7 @@ function(
 	 * <li>The user needs to choose between two options such as ON or OFF and YES or NO. In this case, consider using a {@link sap.m.Switch switch} control instead</li>
 	 * <li>You need to display more that one attribute. In this case, consider using the {@link sap.m.SelectDialog select dialog} or value help dialog instead.</li>
 	 * <li>The user needs to search on multiple attributes. In this case, consider using the {@link sap.m.SelectDialog select dialog} or value help dialog instead.</li>
-	 * <li>Your use case requires all available options to be displayed right away, without any user interaction. In this case, consider using the {@link sap.m.Checkbox checkboxes} instead.</li>
+	 * <li>Your use case requires all available options to be displayed right away, without any user interaction. In this case, consider using the {@link sap.m.CheckBox checkboxes} instead.</li>
 	 * </ul>
 	 * <h3>Responsive Behavior</h3>
 	 * If there are many tokens, the control shows only the last selected tokens that fit and for the others a label N-more is provided.
@@ -133,7 +133,7 @@ function(
 	 * </ul>
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @extends sap.m.ComboBoxBase
@@ -1023,6 +1023,8 @@ function(
 
 		this._bInitialSettersCompleted = true;
 
+		this._oTokenizer.setEnabled(this.getEnabled());
+
 		this.setEditable(this.getEditable());
 
 		this._deregisterResizeHandler();
@@ -1319,6 +1321,8 @@ function(
 	 * @private
 	 */
 	MultiComboBox.prototype.setSelection = function(mOptions) {
+		var oList = this._getList();
+
 		if (mOptions.item && this.isItemSelected(mOptions.item)) {
 			return;
 		}
@@ -1328,9 +1332,9 @@ function(
 		}
 
 
-		if (!mOptions.listItemUpdated && this.getListItem(mOptions.item)) {
+		if (!mOptions.listItemUpdated && this.getListItem(mOptions.item) && oList) {
 			// set the selected item in the List
-			this._getList().setSelectedItem(this.getListItem(mOptions.item), true);
+			oList.setSelectedItem(this.getListItem(mOptions.item), true);
 		}
 
 		// Fill Tokenizer
@@ -1516,27 +1520,25 @@ function(
 	 * @private
 	 */
 	MultiComboBox.prototype.updateItems = function (sReason) {
-		var bKeyItemSync, aItems,
-			// Get selected keys should be requested at that point as it
-			// depends on getSelectedItems()- calls it internally
-			aKeys = this.getSelectedKeys();
+		var fnGetItemKey = function (oItem) {
+				return oItem && oItem.getKey && oItem.getKey();
+			},
+			aSelectedItems,
+			// Stash selected keys and items prior the update
+			aSelectedItemKeys = this.getSelectedItems().map(fnGetItemKey),
+			aSelectedKeys = this.getSelectedKeys();
 
 		var oUpdateItems = ComboBoxBase.prototype.updateItems.apply(this, arguments);
 
-		// It's important to request the selected items after the update,
-		// because the sync breaks there.
-		aItems = this.getSelectedItems();
+		// Now check if selectedItems' keys have been modified. This means that the model has been updated.
+		// And as the ListItem instances are reused, we need to check for something more relevant like the key
+		aSelectedItemKeys = this.getSelectedItems().map(fnGetItemKey).filter(function (sItemKey) {
+			return aSelectedItemKeys.indexOf(sItemKey) > -1;
+		});
 
-		// Check if selected keys and selected items are in sync
-		bKeyItemSync = (aItems.length === aKeys.length) && aItems.every(function (oItem) {
-				return oItem && oItem.getKey && aKeys.indexOf(oItem.getKey()) > -1;
-			});
+		aSelectedItems = aSelectedKeys.concat(aSelectedItemKeys);
 
-		// Synchronize if sync has been broken by the update
-		if (!bKeyItemSync) {
-			aItems = aKeys.map(this.getItemByKey, this);
-			this.setSelectedItems(aItems);
-		}
+		this.setSelectedKeys(aSelectedItems);
 
 		return oUpdateItems;
 	};
@@ -1916,6 +1918,23 @@ function(
 		oInput.updateDomValue(sUpdateValue);
 	};
 
+	MultiComboBox.prototype.onItemChange = function (oControlEvent) {
+		var oValue = ComboBoxBase.prototype.onItemChange.apply(this, arguments);
+		this._forwardItemInfoToToken(oControlEvent);
+
+		return oValue;
+	};
+
+	MultiComboBox.prototype._forwardItemInfoToToken = function (oControlEvent) {
+		var oItem = oControlEvent.getSource(),
+			oPropertyInfo = oControlEvent.getParameters(),
+			oToken = this._getTokenByItem(oItem);
+
+		if (oPropertyInfo.name === "enabled" && oToken) {
+			oToken.setVisible(oPropertyInfo.newValue);
+		}
+	};
+
 	/**
 	 * Handler for the press event on the N-more label.
 	 *
@@ -1998,11 +2017,11 @@ function(
 		var oToken = oEvent.getParameter("token");
 		var oItem = null;
 
-		if (sType !== sap.m.Tokenizer.TokenChangeType.Removed && sType !== sap.m.Tokenizer.TokenChangeType.Added) {
+		if (sType !== Tokenizer.TokenChangeType.Removed && sType !== Tokenizer.TokenChangeType.Added) {
 			return;
 		}
 
-		if (sType === sap.m.Tokenizer.TokenChangeType.Removed) {
+		if (sType === Tokenizer.TokenChangeType.Removed) {
 
 			oItem = (oToken && this._getItemByToken(oToken));
 
@@ -2227,7 +2246,7 @@ function(
 		if (this.getCursorPosition() === 0 && !this._isCompleteTextSelected()) {
 
 			if (oEvent.srcControl === this) {
-				sap.m.Tokenizer.prototype.onsapprevious.apply(this._oTokenizer, arguments);
+				Tokenizer.prototype.onsapprevious.apply(this._oTokenizer, arguments);
 			}
 		}
 	};
@@ -2605,7 +2624,6 @@ function(
 	 *
 	 * @param {sap.ui.core.Item | sap.ui.core.ID | string} oItem The item to be removed
 	 * @returns {sap.ui.core.ID | null} The removed selectedItem or null
-	 * @override
 	 * @public
 	 */
 	MultiComboBox.prototype.removeSelectedItem = function(oItem) {
@@ -2636,7 +2654,6 @@ function(
 	 * Removes all the controls in the association named selectedItems.
 	 *
 	 * @returns {sap.ui.core.ID[]} An array of the removed elements (might be empty)
-	 * @override
 	 * @public
 	 */
 	MultiComboBox.prototype.removeAllSelectedItems = function() {
@@ -2692,7 +2709,7 @@ function(
 	 *
 	 * @param {string[]} aKeys Keys of items to be set as selected
 	 * @returns {sap.m.MultiComboBox} <code>this</code> to allow method chaining.
-	 * @override
+	 * @public
 	 */
 	MultiComboBox.prototype.setSelectedKeys = function (aKeys) {
 		if (this._bInitialSettersCompleted) {
@@ -2712,8 +2729,8 @@ function(
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	MultiComboBox.prototype.addSelectedKeys = function (aKeys) {
-		var bUpdateSelectedKeys = false,
-			aSelectedKeys = this.getProperty("selectedKeys") || [];
+		var aStoredSelectedKeys,
+			aSelectedKeys = [];
 
 		aKeys = this.validateProperty("selectedKeys", aKeys);
 
@@ -2727,11 +2744,16 @@ function(
 				// If at this point of time aggregation 'items' does not exist we
 				// have save provided key.
 				aSelectedKeys.push(sKey);
-				bUpdateSelectedKeys = true;
 			}
 		}, this);
 
-		if (bUpdateSelectedKeys) {
+		// Merging should happen here as addSelectedItem could modify the selectedKeys property
+		if (aSelectedKeys.length > 0) {
+			aStoredSelectedKeys = this.getProperty("selectedKeys").filter(function (sKey) {
+				return aSelectedKeys.indexOf(sKey) === -1;
+			});
+			aSelectedKeys = aStoredSelectedKeys.concat(aSelectedKeys);
+
 			this.setProperty("selectedKeys", aSelectedKeys, true);
 		}
 
@@ -3318,8 +3340,8 @@ function(
 	 *
 	 * @since 1.64
 	 * @experimental Since 1.64
-	 * @protected
-	 * @sap-restricted
+	 * @private
+	 * @ui5-restricted
 	 */
 	MultiComboBox.prototype.applyShowItemsFilters = function () {
 		this.syncPickerContent();

@@ -20,7 +20,8 @@ sap.ui.define([
 	"./Toolbar",
 	"sap/base/assert",
 	"sap/base/security/encodeXML",
-	"sap/ui/core/Core"
+	"sap/ui/core/Core",
+	"sap/ui/dom/jquery/control" // jQuery Plugin "control"
 ],
 	function(
 		InputBase,
@@ -38,7 +39,8 @@ sap.ui.define([
 		Toolbar,
 		assert,
 		encodeXML,
-		core
+		core,
+		jQuery
 	) {
 		"use strict";
 
@@ -85,7 +87,7 @@ sap.ui.define([
 		 * </ul>
 		 *
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.70.0
 		 *
 		 * @constructor
 		 * @extends sap.m.ComboBoxBase
@@ -1256,6 +1258,7 @@ sap.ui.define([
 		 * @private
 		 */
 		ComboBox.prototype._handleItemTap = function(oControlEvent) {
+			// jQuery Plugin "control"
 			var oTappedControl = jQuery(oControlEvent.target).control(0);
 
 			if (!oTappedControl.isA("sap.m.GroupHeaderListItem")) {
@@ -1786,12 +1789,16 @@ sap.ui.define([
 		 * @protected
 		 */
 		ComboBox.prototype._configureList = function (oList) {
+			var oRenderer = this.getRenderer();
+
 			if (!oList) {
 				return;
 			}
 
 			// configure the list
-			oList.setMode(ListMode.SingleSelectMaster);
+			oList.setMode(ListMode.SingleSelectMaster)
+				.addStyleClass(oRenderer.CSS_CLASS_COMBOBOXBASE + "List")
+				.addStyleClass(oRenderer.CSS_CLASS_COMBOBOX + "List");
 
 			// attach event handlers
 			oList
@@ -2355,8 +2362,8 @@ sap.ui.define([
 		 *
 		 * @since 1.64
 		 * @experimental Since 1.64
-		 * @protected
-		 * @sap-restricted
+		 * @private
+		 * @ui5-restricted
 		 */
 		ComboBox.prototype.applyShowItemsFilters = function () {
 			var oPicker, fnPickerOpenListener;

@@ -5,23 +5,28 @@
  */
 sap.ui.define([
 	"sap/ui/core/Control",
+	"sap/ui/core/Core",
 	"sap/ui/base/ManagedObjectObserver",
 	'sap/ui/core/ResizeHandler',
 	"sap/ui/core/delegate/ItemNavigation",
 	"sap/f/GridContainerRenderer",
 	"sap/ui/Device",
 	"sap/ui/layout/cssgrid/VirtualGrid",
-	"sap/f/GridContainerSettings"
-
+	"sap/f/GridContainerSettings",
+	"sap/base/strings/capitalize"
 ], function (Control,
-             ManagedObjectObserver,
-             ResizeHandler,
-             ItemNavigation,
-             GridContainerRenderer,
-             Device,
-			 VirtualGrid,
-			 GridContainerSettings) {
+			Core,
+            ManagedObjectObserver,
+            ResizeHandler,
+            ItemNavigation,
+            GridContainerRenderer,
+            Device,
+			VirtualGrid,
+			GridContainerSettings,
+			capitalize) {
 	"use strict";
+
+	var isRtl = Core.getConfiguration().getRTL();
 
 	/**
 	 * Indicates the version of Microsoft Edge browser that has support for the display grid.
@@ -132,9 +137,12 @@ sap.ui.define([
 	 * </pre>
 	 *
 	 * <h3>Drag and drop:</h3>
-	 * The <code>items</code> aggregation of <code>sap.f.GridContainer</code> is valid drag and drop target.
-	 * This can be configured with either the default <code>{@link sap.ui.core.dnd.DropInfo}</code>, or with an extended version of it - <code>{@link sap.f.dnd.GridDropInfo}</code>.
-	 * <code>GridDropInfo</code> will provide a different visualization more suitable for grids during drag over.
+	 * Drag and drop is enabled for the <code>GridContainer</code> with enhanced visualization and interaction, better suited for grid items. This is configured by using the <code>{@link sap.f.dnd.GridDropInfo}</code>.
+	 *
+	 * Similar to the <code>{@link sap.ui.core.dnd.DropInfo}</code>, <code>{@link sap.f.dnd.GridDropInfo}</code> has to be added to the <code>dragDropConfig</code> aggregation, by using <code>{@link sap.ui.core.Element#addDragDropConfig}</code>.
+	 *
+	 * Both <code>{@link sap.ui.core.dnd.DropInfo}</code> and <code>{@link sap.f.dnd.GridDropInfo}</code> can be used to configure drag and drop.
+	 * The difference is that the <code>{@link sap.f.dnd.GridDropInfo}</code> will provide a drop indicator, which mimics the size of the dragged item and shows the potential drop position inside the grid.
 	 *
 	 * @see {@link topic:cca5ee5d63ca44c89318f8496a58f9f2 Grid Container (Experimental)}
 	 * @see {@link topic:32d4b9c2b981425dbc374d3e9d5d0c2e Grid Controls}
@@ -142,7 +150,7 @@ sap.ui.define([
 	 * @see {@link sap.f.dnd.GridDropInfo}
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @extends sap.ui.core.Control
 	 *
@@ -211,26 +219,33 @@ sap.ui.define([
 				 * The sap.f.GridContainerSettings applied if no settings are provided for a specific size.
 				 *
 				 * If no layout is given, a default layout will be used. See the default values for <code>sap.f.GridContainerSettings</code>.
+				 *
+				 * <b>Note:</b> It is not possible to reuse the same instance of <code>GridContainerSettings</code> for several layouts. New instance has to be created for each of them. This is caused by the fact that one object can exist in only a single aggregation.
 				 */
 				layout: { type: "sap.f.GridContainerSettings", multiple: false },
 
 				/**
-				 * The sap.f.GridContainerSettings applied for size "S"
+				 * The sap.f.GridContainerSettings applied for size "XS". Range: up to 374px.
+				 */
+				layoutXS: { type: "sap.f.GridContainerSettings", multiple: false },
+
+				/**
+				 * The sap.f.GridContainerSettings applied for size "S". Range: 375px - 599px.
 				 */
 				layoutS: { type: "sap.f.GridContainerSettings", multiple: false },
 
 				/**
-				 * The sap.f.GridContainerSettings applied for size "M"
+				 * The sap.f.GridContainerSettings applied for size "M". Range: 600px - 1023px.
 				 */
 				layoutM: { type: "sap.f.GridContainerSettings", multiple: false },
 
 				/**
-				 * The sap.f.GridContainerSettings applied for size "L"
+				 * The sap.f.GridContainerSettings applied for size "L". Range: 1023px - 1439px.
 				 */
 				layoutL: { type: "sap.f.GridContainerSettings", multiple: false },
 
 				/**
-				 * The sap.f.GridContainerSettings applied for size "XL"
+				 * The sap.f.GridContainerSettings applied for size "XL". Range: from 1440px.
 				 */
 				layoutXL: { type: "sap.f.GridContainerSettings", multiple: false },
 
@@ -259,14 +274,32 @@ sap.ui.define([
 	});
 
 	/**
+	 * Allow detection of changes in items, in order to optimize (avoid re-rendering) when items are rearranged.
+	 * @see {@link topic:7cdff73f308b4b10bdf7d83b7aba72e7 Extended Change Detection}
+	 * @type {boolean}
+	 * @private
+	 */
+	GridContainer.prototype.bUseExtendedChangeDetection = true;
+
+	/**
 	 * Gets the <code>GridContainerSettings</code> for the current layout breakpoint.
 	 * @public
 	 * @returns {sap.f.GridContainerSettings} The settings for the current layout
 	 */
 	GridContainer.prototype.getActiveLayoutSettings = function () {
-		return this.getAggregation(this._sActiveLayout)
-			|| this.getAggregation("layout")
-			|| this.getAggregation("_defaultLayout");
+		var oSettings = this.getAggregation(this._sActiveLayout);
+
+		if (!oSettings && this._sActiveLayout === "layoutXS") {
+			// if XS is not define, apply the S settings to stay backward compatible
+			oSettings = this.getAggregation("layoutS");
+		}
+
+		if (!oSettings) {
+			oSettings = this.getAggregation("layout")
+				|| this.getAggregation("_defaultLayout");
+		}
+
+		return oSettings;
 	};
 
 	/**
@@ -334,6 +367,10 @@ sap.ui.define([
 		}
 
 		delete this._resizeListeners;
+
+		if (!this.getContainerQuery()) {
+			Device.resize.detachHandler(this._resizeHandler);
+		}
 	};
 
 	/**
@@ -357,15 +394,24 @@ sap.ui.define([
 	 * @returns {boolean} True if the layout settings were changed.
 	 */
 	GridContainer.prototype._detectActiveLayout = function () {
-		var iWidth = (this.getContainerQuery() && this.getDomRef()) ? this.$().outerWidth() : window.innerWidth,
-			oRange = Device.media.getCurrentRange("StdExt", iWidth),
-			sLayout = oRange ? GridContainer.mSizeLayouts[oRange.name] : "layout",
+		var iWidth = (this.getContainerQuery() && this.getDomRef()) ? this.$().outerWidth() : Device.resize.width,
+			oRange = Device.media.getCurrentRange("GridContainerRangeSet", iWidth),
+			sLayout = "layout" + oRange.name,
 			oOldSettings = this.getActiveLayoutSettings(),
 			bSettingsAreChanged = false;
 
 		if (this._sActiveLayout !== sLayout) {
+			this.addStyleClass("sapFGridContainer" + capitalize(sLayout));
+			if (this._sActiveLayout) { // remove old layout class if any
+				this.removeStyleClass("sapFGridContainer" + capitalize(this._sActiveLayout));
+			}
+
 			this._sActiveLayout = sLayout;
 			bSettingsAreChanged = oOldSettings !== this.getActiveLayoutSettings();
+
+			this.fireLayoutChange({
+				layout: this._sActiveLayout
+			});
 		}
 
 		return bSettingsAreChanged;
@@ -379,10 +425,18 @@ sap.ui.define([
 	GridContainer.prototype._getActiveGridStyles = function () {
 		var oSettings = this.getActiveLayoutSettings(),
 			sColumns = oSettings.getColumns() || "auto-fill",
+			sColumnSize = oSettings.getColumnSize(),
+			sMinColumnSize = oSettings.getMinColumnSize(),
+			sMaxColumnSize = oSettings.getMaxColumnSize(),
 			mStyles = {
-				"grid-template-columns": "repeat(" + sColumns + ", " + oSettings.getColumnSize() + ")",
 				"grid-gap": oSettings.getGap()
 			};
+
+		if (sMinColumnSize && sMaxColumnSize) {
+			mStyles["grid-template-columns"] = "repeat(" + sColumns + ", minmax(" + sMinColumnSize + ", " + sMaxColumnSize + "))";
+		} else {
+			mStyles["grid-template-columns"] = "repeat(" + sColumns + ", " + sColumnSize + ")";
+		}
 
 		if (this.getInlineBlockLayout()) {
 			mStyles["grid-auto-rows"] = "min-content";
@@ -400,6 +454,8 @@ sap.ui.define([
 	GridContainer.prototype.init = function () {
 		this.setAggregation("_defaultLayout", new GridContainerSettings());
 
+		this._initRangeSet();
+
 		this._resizeListeners = {};
 
 		this._itemDelegate = {
@@ -411,6 +467,11 @@ sap.ui.define([
 		this._itemsObserver.observe(this, {aggregations: ["items"]});
 
 		this._resizeHandler = this._resize.bind(this);
+
+		if (!this.getContainerQuery()) {
+			Device.resize.attachHandler(this._resizeHandler);
+		}
+
 		this._resizeItemHandler = this._resizeItem.bind(this);
 
 		this._itemNavigation = new ItemNavigation().setCycling(false);
@@ -419,6 +480,68 @@ sap.ui.define([
 			sapprevious: ["alt", "meta"]
 		});
 		this.addDelegate(this._itemNavigation);
+
+		if (!isGridSupportedByBrowser()) {
+			this._attachDndPolyfill();
+		}
+	};
+
+	/**
+	 * Inserts an item into the aggregation named <code>items</code>.
+	 *
+	 * @param {sap.ui.core.Item} oItem The item to be inserted; if empty, nothing is inserted.
+	 * @param {int} iIndex The <code>0</code>-based index the item should be inserted at; for
+	 *             a negative value of <code>iIndex</code>, the item is inserted at position 0; for a value
+	 *             greater than the current size of the aggregation, the item is inserted at the last position.
+	 * @returns {sap.f.GridContainer} <code>this</code> to allow method chaining.
+	 * @public
+	 */
+	GridContainer.prototype.insertItem = function (oItem, iIndex) {
+		if (!this.getDomRef() || !isGridSupportedByBrowser()) {
+			// if not rendered or not supported - insert aggregation and invalidate
+			return this.insertAggregation("items", oItem, iIndex);
+		}
+
+		var oRm = Core.createRenderManager(),
+			oWrapper = this._createItemWrapper(oItem),
+			oTarget = this._getItemAt(iIndex),
+			oGridRef = this.getDomRef();
+
+		if (oTarget) {
+			oGridRef.insertBefore(oWrapper, oTarget.getDomRef().parentElement);
+		} else {
+			oGridRef.appendChild(oWrapper);
+		}
+
+		this.insertAggregation("items", oItem, iIndex, true);
+
+		oRm.render(oItem, oWrapper);
+		oRm.destroy();
+
+		return this;
+	};
+
+	/**
+	 * Removes an item from the aggregation named <code>items</code>.
+	 *
+	 * @param {int | string | sap.ui.core.Item} vItem The item to remove or its index or ID.
+	 * @returns {sap.ui.core.Control} The removed item or null.
+	 * @public
+	 */
+	GridContainer.prototype.removeItem = function (vItem) {
+		var oRemovedItem = this.removeAggregation("items", vItem, true),
+			oGridRef = this.getDomRef(),
+			oItemRef = oRemovedItem.getDomRef();
+
+		if (!oGridRef || !oItemRef || !isGridSupportedByBrowser()) {
+			this.invalidate();
+			return oRemovedItem;
+		}
+
+		// remove the item's wrapper from DOM
+		oGridRef.removeChild(oItemRef.parentElement);
+
+		return oRemovedItem;
 	};
 
 	/**
@@ -466,22 +589,51 @@ sap.ui.define([
 			this._itemNavigation.destroy();
 			delete this._itemNavigation;
 		}
+
+		if (!isGridSupportedByBrowser()) {
+			this._detachDndPolyfill();
+		}
 	};
 
 	/**
-	 * Handler for resize of the grid.
+	 * Initializes the specific Device.media range set for <code>GridContainer</code>.
+	 */
+	GridContainer.prototype._initRangeSet = function () {
+		if (!Device.media.hasRangeSet("GridContainerRangeSet")) {
+			Device.media.initRangeSet("GridContainerRangeSet", [375, 600, 1024, 1440], "px", ["XS", "S", "M", "L", "XL"]);
+		}
+	};
+
+	/**
+	 * Handler for resize of the grid or the viewport
 	 * @protected
 	 */
 	GridContainer.prototype._resize = function () {
-		var bSettingsAreChanged = this._detectActiveLayout();
-
-		this._applyLayout(bSettingsAreChanged);
-
-		if (bSettingsAreChanged) {
-			this.fireLayoutChange({
-				layout: this._sActiveLayout
-			});
+		if (!this._isWidthChanged()) {
+			return;
 		}
+
+		var bSettingsAreChanged = this._detectActiveLayout();
+		this._applyLayout(bSettingsAreChanged);
+	};
+
+	/**
+	 * Checks if the width of the grid or the viewport is different from the last time when it was checked.
+	 * Use to avoid resize handling when not needed.
+	 * @protected
+	 * @returns {boolean} True if the width of the grid or of the viewport is changed since last check.
+	 */
+	GridContainer.prototype._isWidthChanged = function () {
+		var iGridWidth = this.getDomRef() ? this.$().outerWidth() : 0,
+			iViewportWidth = Device.resize.width;
+
+		if (this._lastGridWidth === iGridWidth && this._lastViewportWidth === iViewportWidth) {
+			return false;
+		}
+
+		this._lastGridWidth = iGridWidth;
+		this._lastViewportWidth = iViewportWidth;
+		return true;
 	};
 
 	/**
@@ -572,6 +724,48 @@ sap.ui.define([
 	};
 
 	/**
+	 * Gets the item at specified index.
+	 * @param {int} iIndex Which item to get
+	 * @return {sap.ui.core.Control|null} The item at the specified index. <code>null</code> if index is out of range.
+	 */
+	GridContainer.prototype._getItemAt = function (iIndex) {
+		var aItems = this.getItems(),
+			oTarget;
+
+		if (iIndex < 0) {
+			iIndex = 0;
+		}
+
+		if (aItems.length && aItems[iIndex]) {
+			oTarget = aItems[iIndex];
+		}
+
+		return oTarget;
+	};
+
+	/**
+	 * Creates a wrapper div for the given item.
+	 * @param {sap.ui.core.Control} oItem The item
+	 * @return {HTMLElement} The created wrapper
+	 */
+	GridContainer.prototype._createItemWrapper = function (oItem) {
+		var mStylesInfo = GridContainerRenderer.getStylesForItemWrapper(oItem, this),
+			mStyles = mStylesInfo.styles,
+			aClasses = mStylesInfo.classes,
+			oWrapper = document.createElement("div");
+
+		mStyles.forEach(function (sValue, sKey) {
+			oWrapper.style.setProperty(sKey, sValue);
+		});
+
+		aClasses.forEach(function (sValue) {
+			oWrapper.classList.add(sValue);
+		});
+
+		return oWrapper;
+	};
+
+	/**
 	 * ===================== IE11 Polyfill =====================
 	 */
 
@@ -603,14 +797,24 @@ sap.ui.define([
 		}
 
 		var $that = this.$(),
+			innerWidth = $that.innerWidth(),
 			oSettings = this.getActiveLayoutSettings(),
 			columnSize = oSettings.getColumnSizeInPx(),
 			rowSize = oSettings.getRowSizeInPx(),
 			gapSize = oSettings.getGapInPx(),
-			columnsCount = oSettings.getComputedColumnsCount($that.innerWidth()),
+			columnsCount = oSettings.getComputedColumnsCount(innerWidth),
 			topOffset = parseInt($that.css("padding-top").replace("px", "")),
 			leftOffset = parseInt($that.css("padding-left").replace("px", "")),
 			items = this.getItems();
+
+		if (oSettings.getMinColumnSize()) {
+			// Breathing not supported for IE.
+			return;
+		}
+
+		if (!columnSize || !rowSize) {
+			return;
+		}
 
 		if (!items.length) {
 			return;
@@ -625,55 +829,126 @@ sap.ui.define([
 			gapSize: gapSize,
 			topOffset: topOffset ? topOffset : 0,
 			leftOffset: leftOffset ? leftOffset : 0,
-			allowDenseFill: this.getAllowDenseFill()
+			allowDenseFill: this.getAllowDenseFill(),
+			rtl: isRtl,
+			width: innerWidth
 		});
 
 		var i,
+			k,
 			item,
-			virtualGridItem,
+			$item,
 			columns,
-			rows;
+			rows,
+			aFittedElements = [];
 
-		for (i = 0; i < items.length; i++) {
+		var fnInsertPolyfillDropIndicator = function (iKId) {
+			virtualGrid.fitElement(
+				iKId + '',
+				oSettings.calculateColumnsForItem(Math.round(this._polyfillDropIndicator.width)),
+				oSettings.calculateRowsForItem(Math.round(this._polyfillDropIndicator.height))
+			);
+			aFittedElements.push({
+				id: iKId + '',
+				domRef: this._polyfillDropIndicator.domRef
+			});
+		}.bind(this);
+
+		for (i = 0, k = 0; i < items.length; i++) {
+
+			if (this._polyfillDropIndicator && this._polyfillDropIndicator.insertAt === i) {
+				fnInsertPolyfillDropIndicator(k);
+				k++;
+			}
+
 			item = items[i];
+			$item = item.$();
+
+			if (!$item.is(":visible")) {
+				continue;
+			}
+
 			columns = getItemColumnCount(item);
 
 			if (hasItemAutoHeight(item)) {
-				rows = oSettings.calculateRowsForItem(item.$().height());
+				rows = oSettings.calculateRowsForItem($item.height());
 			} else {
 				rows = getItemRowCount(item);
 			}
 
-			virtualGrid.fitElement(i + '', columns, rows);
+			virtualGrid.fitElement(k + '', columns, rows);
+			aFittedElements.push({
+				id: k + '',
+				domRef: $item.parent()
+			});
+			k++;
+		}
+
+		if (this._polyfillDropIndicator && this._polyfillDropIndicator.insertAt >= items.length) {
+			fnInsertPolyfillDropIndicator(items.length);
 		}
 
 		virtualGrid.calculatePositions();
 
-		for (i = 0; i < items.length; i++) {
-			item = items[i];
-			virtualGridItem = virtualGrid.getItems()[i];
+		aFittedElements.forEach(function (oFittedElement) {
 
-			item.$().parent().css({
+			var virtualGridItem = virtualGrid.getItems()[oFittedElement.id];
+
+			oFittedElement.domRef.css({
 				position: 'absolute',
 				top: virtualGridItem.top,
 				left: virtualGridItem.left,
 				width: virtualGridItem.width,
 				height: virtualGridItem.height
 			});
-		}
+		});
 
 		$that.css("height", virtualGrid.getHeight() + "px");
 	};
 
 	/**
-	 * A map from Std-ext size to layout aggregation name
-	 * @private
+	 * Implements polyfill for IE after drag over.
+	 * @param {Object} oEvent After drag over event
+	 * @protected
 	 */
-	GridContainer.mSizeLayouts = {
-		"Phone": "layoutS",
-		"Tablet": "layoutM",
-		"Desktop": "layoutL",
-		"LargeDesktop": "layoutXL"
+	GridContainer.prototype._polyfillAfterDragOver = function (oEvent) {
+		var $indicator = oEvent.getParameter("indicator");
+
+		this._polyfillDropIndicator = {
+			width: oEvent.getParameter("width"),
+			height: oEvent.getParameter("height"),
+			domRef: $indicator,
+			insertAt: $indicator.index()
+		};
+
+		this._scheduleIEPolyfill();
+	};
+
+	/**
+	 * Implements polyfill for IE after drag end.
+	 * @param {Object} oEvent After drag end event
+	 * @protected
+	 */
+	GridContainer.prototype._polyfillAfterDragEnd = function (oEvent) {
+		this._polyfillDropIndicator = null;
+	};
+
+	/**
+	 * Attaches polyfill methods for drag and drop for IE.
+	 * @protected
+	 */
+	GridContainer.prototype._attachDndPolyfill = function () {
+		this.attachEvent("_gridPolyfillAfterDragOver", this._polyfillAfterDragOver, this);
+		this.attachEvent("_gridPolyfillAfterDragEnd", this._polyfillAfterDragEnd, this);
+	};
+
+	/**
+	 * Detaches polyfill methods for drag and drop for IE.
+	 * @protected
+	 */
+	GridContainer.prototype._detachDndPolyfill = function () {
+		this.detachEvent("_gridPolyfillAfterDragOver", this._polyfillAfterDragOver, this);
+		this.detachEvent("_gridPolyfillAfterDragEnd", this._polyfillAfterDragEnd, this);
 	};
 
 	return GridContainer;

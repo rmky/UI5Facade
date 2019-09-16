@@ -13,6 +13,9 @@ sap.ui.define([],
 		aggregations : {
 			content : {
 				domRef : ":sap-domref > .sapMPage > section"
+			},
+			landmarkInfo: {
+				ignore: true
 			}
 		}
 	};

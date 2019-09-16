@@ -60,7 +60,7 @@ function (
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @private
@@ -1084,17 +1084,18 @@ function (
 	 */
 	DesignTime.prototype._onElementModified = function(oEvent) {
 		var oParams = merge({}, oEvent.getParameters());
+		var oElementOverlay = oEvent.getSource();
 		oParams.type = !oParams.type ? oEvent.getId() : oParams.type;
 		switch (oParams.type) {
 			case "addOrSetAggregation":
 			case "insertAggregation":
 				if (this.getStatus() === DesignTimeStatus.SYNCING) {
-					this.attachEventOnce("synced", function (oParams) {
+					this.attachEventOnce("synced", oParams, function () {
 						// DesignTime instance at this point might be destroyed by third-parties on synced event
 						if (!this.bIsDestroyed) {
-							this._onAddAggregation(oParams.value, oParams.target, oParams.name);
+							this._onAddAggregation(arguments[1].value, arguments[1].target, arguments[1].name);
 						}
-					}.bind(this, oParams));
+					}, this);
 				} else {
 					this._onAddAggregation(oParams.value, oParams.target, oParams.name);
 				}
@@ -1114,9 +1115,11 @@ function (
 				delete oParams.target;
 
 				if (this.getStatus() === DesignTimeStatus.SYNCING) {
-					this.attachEventOnce("synced", function (oParams) {
-						this.fireElementPropertyChanged(oParams);
-					}.bind(this, oParams));
+					this.attachEventOnce("synced", oParams, function () {
+						if (!oElementOverlay.bIsDestroyed) {
+							this.fireElementPropertyChanged(arguments[1]);
+						}
+					}, this);
 				} else {
 					this.fireElementPropertyChanged(oParams);
 				}
@@ -1130,10 +1133,13 @@ function (
 	 */
 	DesignTime.prototype._onEditableChanged = function(oEvent) {
 		var oParams = merge({}, oEvent.getParameters());
-		oParams.id = oEvent.getSource().getId();
+		var oElementOverlay = oEvent.getSource();
+		oParams.id = oElementOverlay.getId();
 		if (this.getStatus() === DesignTimeStatus.SYNCING) {
-			this.attachEventOnce("synced", function () {
-				this.fireElementOverlayEditableChanged(oParams);
+			this.attachEventOnce("synced", oParams, function() {
+				if (!oElementOverlay.bIsDestroyed) {
+					this.fireElementOverlayEditableChanged(arguments[1]);
+				}
 			}, this);
 		} else {
 			this.fireElementOverlayEditableChanged(oParams);
@@ -1151,33 +1157,41 @@ function (
 			var oParentAggregationOverlay = oParentOverlay.getAggregationOverlay(sAggregationName);
 			var oElementOverlay = OverlayRegistry.getOverlay(oElement);
 
-			if (!oElementOverlay) {
+			if (
+				!oElementOverlay
+				&& oParentAggregationOverlay
+				&& oParentAggregationOverlay.getElement()
+			) {
 				var iTaskId = this._oTaskManager.add({
 					type: 'createChildOverlay',
 					element: oElement
 				});
-				oElementOverlay = this.createOverlay({
+				this.createOverlay({
 					element: oElement,
 					root: false,
 					parentMetadata: oParentAggregationOverlay.getDesignTimeMetadata().getData()
 				})
 					.then(function (oElementOverlay) {
-						oParentAggregationOverlay.insertChild(null, oElementOverlay);
-						oElementOverlay.applyStyles(); // TODO: remove after Task Manager implementation
+						var vInsertChildReply = oParentAggregationOverlay.insertChild(null, oElementOverlay);
+						if (vInsertChildReply === true) {
+							oElementOverlay.applyStyles(); // TODO: remove after Task Manager implementation
 
-						var iOverlayPosition = oParentAggregationOverlay.indexOfAggregation('children', oElementOverlay);
+							var iOverlayPosition = oParentAggregationOverlay.indexOfAggregation('children', oElementOverlay);
 
 							// `ElementOverlayAdded` event should be emitted only when overlays are ready to prevent
 							// an access to still syncing overlays (e.g. the overlay is still not available in overlay registry
 							// at this point and not registered in the plugins).
-						this.attachEventOnce("synced", function () {
-							this.fireElementOverlayAdded({
-								id: oElementOverlay.getId(),
-								targetIndex: iOverlayPosition,
-								targetId: oParentAggregationOverlay.getId(),
-								targetAggregation: oParentAggregationOverlay.getAggregationName()
-							});
-						}, this);
+							this.attachEventOnce("synced", oElementOverlay, function() {
+								if (!oElementOverlay.bIsDestroyed) {
+									this.fireElementOverlayAdded({
+										id: oElementOverlay.getId(),
+										targetIndex: iOverlayPosition,
+										targetId: oParentAggregationOverlay.getId(),
+										targetAggregation: oParentAggregationOverlay.getAggregationName()
+									});
+								}
+							}, this);
+						}
 						this._oTaskManager.complete(iTaskId);
 					}.bind(this),
 						function (vError) {

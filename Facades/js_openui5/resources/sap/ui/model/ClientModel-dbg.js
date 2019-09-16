@@ -12,14 +12,16 @@ sap.ui.define([
 	'./ClientListBinding',
 	'./ClientPropertyBinding',
 	'./ClientTreeBinding',
-	'./Model'
+	'./Model',
+	"sap/ui/thirdparty/jquery"
 ],
 	function(
 		ClientContextBinding,
 		ClientListBinding,
 		ClientPropertyBinding,
 		ClientTreeBinding,
-		Model
+		Model,
+		jQuery
 	) {
 	"use strict";
 
@@ -32,7 +34,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.Model
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @param {string} [oData] URL where to load the data from
 	 * @public

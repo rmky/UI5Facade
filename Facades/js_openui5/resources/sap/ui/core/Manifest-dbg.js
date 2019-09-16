@@ -15,7 +15,8 @@ sap.ui.define([
 	'sap/base/i18n/ResourceBundle',
 	'sap/base/util/uid',
 	'sap/base/util/isPlainObject',
-	'sap/base/util/LoaderExtensions'
+	'sap/base/util/LoaderExtensions',
+	"sap/base/util/isEmptyObject"
 ],
 	function(
 		jQuery,
@@ -27,7 +28,8 @@ sap.ui.define([
 		ResourceBundle,
 		uid,
 		isPlainObject,
-		LoaderExtensions
+		LoaderExtensions,
+		isEmptyObject
 	) {
 	"use strict";
 
@@ -157,7 +159,7 @@ sap.ui.define([
 	 * @class The Manifest class.
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @alias sap.ui.core.Manifest
 	 * @since 1.33.0
 	 */
@@ -697,7 +699,7 @@ sap.ui.define([
 			// activate the customizing configuration
 			var oUI5Manifest = this.getEntry("sap.ui5", true),
 				mExtensions = oUI5Manifest && oUI5Manifest["extends"] && oUI5Manifest["extends"].extensions;
-			if (!jQuery.isEmptyObject(mExtensions)) {
+			if (!isEmptyObject(mExtensions)) {
 				var CustomizingConfiguration = sap.ui.requireSync('sap/ui/core/CustomizingConfiguration');
 				if (!oInstance) {
 					CustomizingConfiguration.activateForComponent(this.getComponentName());
@@ -755,14 +757,18 @@ sap.ui.define([
 	 * @param {string} [mOptions.componentName] name of the component
 	 * @param {boolean} [mOptions.async] Flag whether to load the manifest async or not (defaults to false)
 	 * @param {boolean} [mOptions.failOnError] Flag whether to fail if an error occurs or not (defaults to true)
+	 * @param {function} [mOptions.processJson] Callback for asynchronous processing of the loaded manifest.
+	 * The callback receives the parsed manifest object and must return a Promise which resolves with an object.
+	 * It allows to early access and modify the manifest object.
 	 * @return {sap.ui.core.Manifest|Promise} Manifest object or for asynchronous calls an ECMA Script 6 Promise object will be returned.
 	 * @protected
 	 */
 	Manifest.load = function(mOptions) {
 		var sManifestUrl = mOptions && mOptions.manifestUrl,
-		    sComponentName = mOptions && mOptions.componentName,
-		    bAsync = mOptions && mOptions.async,
-		    bFailOnError = mOptions && mOptions.failOnError;
+			sComponentName = mOptions && mOptions.componentName,
+			bAsync = mOptions && mOptions.async,
+			bFailOnError = mOptions && mOptions.failOnError,
+			fnProcessJson = mOptions && mOptions.processJson;
 
 		// When loading the manifest via URL the language and client should be
 		// added as query parameter as it may contain language dependent texts
@@ -807,6 +813,13 @@ sap.ui.define([
 
 		if (bAsync) {
 			return oManifestJSON.then(function(oManifestJSON) {
+				// callback for preprocessing the json, e.g. via flex-hook in Component
+				if (fnProcessJson) {
+					return fnProcessJson(oManifestJSON);
+				} else {
+					return oManifestJSON;
+				}
+			}).then(function(oManifestJSON) {
 				return new Manifest(oManifestJSON, mSettings);
 			});
 		}

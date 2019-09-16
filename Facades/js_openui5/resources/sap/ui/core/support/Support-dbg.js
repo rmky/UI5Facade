@@ -11,7 +11,7 @@ sap.ui.define(['sap/ui/base/EventProvider', './Plugin', 'sap/ui/Device', "sap/ba
 		Plugin,
 		Device,
 		UriParameters,
-		jQueryDOM,
+		jQuery,
 		Log,
 		encodeURL
 	) {
@@ -26,7 +26,7 @@ sap.ui.define(['sap/ui/base/EventProvider', './Plugin', 'sap/ui/Device', "sap/ba
 	 * @class This class provides the support tool functionality of UI5. This class is internal and all its functions must not be used by an application.
 	 *
 	 * @extends sap.ui.base.EventProvider
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @private
 	 * @alias sap.ui.core.support.Support
 	 */
@@ -55,7 +55,7 @@ sap.ui.define(['sap/ui/base/EventProvider', './Plugin', 'sap/ui/Device', "sap/ba
 					this.attachEvent(mEvents.TEAR_DOWN, function(oEvent){
 						that._isOpen = false;
 						if ( Device.browser.msie ) {// TODO remove after 1.62 version
-							jQueryDOM(document.getElementById(ID_SUPPORT_AREA + "-frame")).remove();
+							jQuery(document.getElementById(ID_SUPPORT_AREA + "-frame")).remove();
 						} else {
 							close(that._oRemoteWindow);
 						}
@@ -77,7 +77,7 @@ sap.ui.define(['sap/ui/base/EventProvider', './Plugin', 'sap/ui/Device', "sap/ba
 					break;
 				case mTypes.IFRAME:
 					this._oRemoteWindow = window.parent;
-					this._sRemoteOrigin = new UriParameters(window.location.href).get("sap-ui-xx-support-origin");
+					this._sRemoteOrigin = UriParameters.fromQuery(window.location.search).get("sap-ui-xx-support-origin");
 					this.openSupportTool();
 					jQuery(window).bind("unload", function(oEvent){
 						close(that._oOpenedWindow);
@@ -85,7 +85,7 @@ sap.ui.define(['sap/ui/base/EventProvider', './Plugin', 'sap/ui/Device', "sap/ba
 					break;
 				case mTypes.TOOL:
 					this._oRemoteWindow = window.opener;
-					this._sRemoteOrigin = new UriParameters(window.location.href).get("sap-ui-xx-support-origin");
+					this._sRemoteOrigin = UriParameters.fromQuery(window.location.search).get("sap-ui-xx-support-origin");
 					jQuery(window).bind("unload", function(oEvent){
 						that.sendEvent(mEvents.TEAR_DOWN);
 						Support.exitPlugins(that, true);
@@ -186,7 +186,7 @@ sap.ui.define(['sap/ui/base/EventProvider', './Plugin', 'sap/ui/Device', "sap/ba
 	 * Returns all plugins for the diagnostics tool window
 	 * @returns {sap.ui.core.support.Plugin[]}
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted
 	 */
 	Support.getToolPlugins = function() {
 		var aResult = [];
@@ -202,7 +202,7 @@ sap.ui.define(['sap/ui/base/EventProvider', './Plugin', 'sap/ui/Device', "sap/ba
 	 * Returns all plugins for the application window
 	 * @returns {sap.ui.core.support.Plugin[]}
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted
 	 */
 	Support.getAppPlugins = function() {
 		var aResult = [];
@@ -231,7 +231,7 @@ sap.ui.define(['sap/ui/base/EventProvider', './Plugin', 'sap/ui/Device', "sap/ba
 	 *
 	 * @returns {boolean} true if this stub is running on the diagnostics tool window, otherwise, false
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted
 	 */
 	Support.prototype.isToolStub = function() {
 		return this._sType === Support.StubType.TOOL;
@@ -242,7 +242,7 @@ sap.ui.define(['sap/ui/base/EventProvider', './Plugin', 'sap/ui/Device', "sap/ba
 	 *
 	 * @returns {boolean} true if this stub is running on the application window, otherwise, false
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted
 	 */
 	Support.prototype.isAppStub = function() {
 		return this._sType === Support.StubType.APPLICATION;
@@ -288,8 +288,8 @@ sap.ui.define(['sap/ui/base/EventProvider', './Plugin', 'sap/ui/Device', "sap/ba
 	 *
 	 * @param {string} sEventId the event id
 	 * @param {Object} [mParams] the parameter map (JSON)
-	 * @sap-restricted
 	 * @private
+	 * @ui5-restricted
 	 */
 	Support.prototype.sendEvent = function(sEventId, mParams) {
 		if (!this._oRemoteWindow) {
@@ -337,7 +337,7 @@ sap.ui.define(['sap/ui/base/EventProvider', './Plugin', 'sap/ui/Device', "sap/ba
 			}
 		} else if (this._sType === mTypes.IFRAME) {
 			// use script name from URI parameter to hand it over to the tool
-			sBootstrapScript = new UriParameters(window.location.href).get("sap-ui-xx-support-bootstrap");
+			sBootstrapScript = UriParameters.fromQuery(window.location.search).get("sap-ui-xx-support-bootstrap");
 		}
 
 		// sap-ui-core.js is the default. no need for passing it to the support window
@@ -378,7 +378,7 @@ sap.ui.define(['sap/ui/base/EventProvider', './Plugin', 'sap/ui/Device', "sap/ba
 	 * @private
 	 */
 	Support._onSupportIFrameLoaded = function(){
-		_oStubInstance._oRemoteWindow = jQueryDOM(document.getElementById(ID_SUPPORT_AREA + "-frame"))[0].contentWindow;
+		_oStubInstance._oRemoteWindow = jQuery(document.getElementById(ID_SUPPORT_AREA + "-frame"))[0].contentWindow;
 	};
 
 
@@ -401,7 +401,7 @@ sap.ui.define(['sap/ui/base/EventProvider', './Plugin', 'sap/ui/Device', "sap/ba
 	 * @param {Object} [mParameters] the parameter map (JSON)
 	 * @return {sap.ui.core.support.Support} Returns <code>this</code> to allow method chaining
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted
 	 */
 
 
@@ -411,7 +411,7 @@ sap.ui.define(['sap/ui/base/EventProvider', './Plugin', 'sap/ui/Device', "sap/ba
 	 * @name sap.ui.core.support.Support.prototype.detachEvent
 	 * @function
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted
 	 */
 
 
@@ -421,7 +421,7 @@ sap.ui.define(['sap/ui/base/EventProvider', './Plugin', 'sap/ui/Device', "sap/ba
 	 * @name sap.ui.core.support.Support.prototype.attachEvent
 	 * @function
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted
 	 */
 
 
@@ -434,7 +434,7 @@ sap.ui.define(['sap/ui/base/EventProvider', './Plugin', 'sap/ui/Device', "sap/ba
 
 
 	function getSupportArea() {
-		var $support = jQueryDOM(document.getElementById(ID_SUPPORT_AREA));
+		var $support = jQuery(document.getElementById(ID_SUPPORT_AREA));
 		if ($support.length === 0) {
 			$support = jQuery("<DIV/>", {id:ID_SUPPORT_AREA}).
 				addClass("sapUiHidden").
@@ -448,7 +448,7 @@ sap.ui.define(['sap/ui/base/EventProvider', './Plugin', 'sap/ui/Device', "sap/ba
 		var oFrame = document.createElement("iframe");
 		oFrame.id = ID_SUPPORT_AREA + "-frame";
 		oFrame.src = sIFrameUrl + sParams;
-		oFrame.onload = sap.ui.core.support.Support._onSupportIFrameLoaded;
+		oFrame.onload = Support._onSupportIFrameLoaded;
 
 		return oFrame;
 	}

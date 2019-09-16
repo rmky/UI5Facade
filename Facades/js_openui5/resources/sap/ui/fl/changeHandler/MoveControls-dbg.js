@@ -4,8 +4,12 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/fl/Utils"],
-function(FlexUtils) {
+sap.ui.define([
+	"sap/base/Log"
+],
+function(
+	Log
+) {
 	"use strict";
 
 	/**
@@ -13,7 +17,7 @@ function(FlexUtils) {
 	 *
 	 * @alias sap.ui.fl.changeHandler.MoveControls
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @experimental Since 1.46
 	 */
 	var MoveControls = { };
@@ -228,7 +232,7 @@ function(FlexUtils) {
 		oChangeContent.movedElements.forEach(function(mMovedElement, iElementIndex) {
 			var oMovedElement = this._getElementControlOrThrowError(mMovedElement, oModifier, oAppComponent, oView);
 			if (!oMovedElement) {
-				FlexUtils.log.warning("Element to move not found");
+				Log.warning("Element to move not found");
 				return;
 			}
 

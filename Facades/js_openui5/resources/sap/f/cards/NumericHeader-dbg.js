@@ -47,7 +47,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @public
@@ -57,6 +57,7 @@ sap.ui.define([
 	 */
 	var NumericHeader = Control.extend("sap.f.cards.NumericHeader", {
 		metadata: {
+			library: "sap.f",
 			interfaces: ["sap.f.cards.IHeader"],
 			properties: {
 

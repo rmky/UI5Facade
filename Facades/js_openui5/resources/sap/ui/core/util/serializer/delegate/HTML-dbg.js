@@ -19,10 +19,10 @@ sap.ui.define(['./Delegate', "sap/base/strings/hyphenate", "sap/base/util/deepEq
 	 * @class HTML serializer delegate class.
 	 * @extends sap.ui.core.util.serializer.delegate.Delegate
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @alias sap.ui.core.util.serializer.delegate.HTML
 	 * @private
-	 * @sap-restricted sap.watt com.sap.webide
+	 * @ui5-restricted sap.watt com.sap.webide
 	 */
 	var HTML = Delegate.extend("sap.ui.core.util.serializer.delegate.HTML", /** @lends sap.ui.core.util.serializer.delegate.HTML.prototype */
 	{

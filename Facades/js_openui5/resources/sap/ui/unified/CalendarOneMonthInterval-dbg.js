@@ -12,7 +12,9 @@ sap.ui.define([
 	'sap/ui/unified/Calendar',
 	'./library',
 	'sap/ui/unified/CalendarDateInterval',
-	'sap/ui/unified/calendar/OneMonthDatesRow'
+	'sap/ui/unified/calendar/OneMonthDatesRow',
+	"sap/ui/unified/DateRange",
+	"./CalendarOneMonthIntervalRenderer"
 ], function(
 	CustomMonthPicker,
 	CalendarUtils,
@@ -20,7 +22,9 @@ sap.ui.define([
 	Calendar,
 	library,
 	CalendarDateInterval,
-	OneMonthDatesRow
+	OneMonthDatesRow,
+	DateRange,
+	CalendarOneMonthIntervalRenderer
 ) {
 		"use strict";
 
@@ -53,7 +57,7 @@ sap.ui.define([
 		 * Navigation via year picker switches to the corresponding year and the same month as before the navigation.
 		 *
 		 * @extends sap.ui.unified.CalendarDateInterval
-		 * @version 1.68.1
+		 * @version 1.70.0
 		 *
 		 * @constructor
 		 * @private
@@ -280,7 +284,7 @@ sap.ui.define([
 				oLocaleDate = oDate.toLocalJSDate();
 
 			this.removeAllSelectedDates();
-			this.addSelectedDate(new sap.ui.unified.DateRange({startDate: oLocaleDate}));
+			this.addSelectedDate(new DateRange({startDate: oLocaleDate}));
 			oMonth.selectDate(oLocaleDate);
 			this._bDateRangeChanged = undefined;
 		};

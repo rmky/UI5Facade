@@ -602,7 +602,7 @@ sap.ui.define([
 				return 0;
 			}
 
-			return VERTICAL_OVERFLOW_BUFFER_LENGTH * oTable._getDefaultRowHeight();
+			return VERTICAL_OVERFLOW_BUFFER_LENGTH * oTable._getBaseRowHeight();
 		},
 
 		/**
@@ -632,7 +632,7 @@ sap.ui.define([
 		 */
 		getScrollRangeRowFraction: function(oTable) {
 			var oScrollExtension = oTable._getScrollExtension();
-			var iVirtualRowCount = oTable._getTotalRowCount() - oTable.getVisibleRowCount();
+			var iVirtualRowCount = oTable._getTotalRowCount() - oTable._getRowCounts().count;
 			var iScrollRangeWithoutBuffer;
 
 			if (TableUtils.isVariableRowHeightEnabled(oTable)) {
@@ -643,7 +643,7 @@ sap.ui.define([
 				// completely.
 				var bScrollRangeMaxedOut = oScrollExtension.getVerticalScrollHeight() === MAX_VERTICAL_SCROLL_HEIGHT;
 				if (!bScrollRangeMaxedOut) {
-					iScrollRangeWithoutBuffer += oTable._getDefaultRowHeight();
+					iScrollRangeWithoutBuffer += oTable._getBaseRowHeight();
 				}
 			} else {
 				iScrollRangeWithoutBuffer = VerticalScrollingHelper.getScrollRange(oTable);
@@ -682,10 +682,10 @@ sap.ui.define([
 			}
 
 			var aRowHeights = oTable._aRowHeights;
-			var iEstimatedViewportHeight = oTable._getDefaultRowHeight() * oTable.getVisibleRowCount();
+			var iEstimatedViewportHeight = oTable._getBaseRowHeight() * oTable._getRowCounts().count;
 
 			// Only sum rows filled with data, ignore empty rows.
-			if (oTable.getVisibleRowCount() >= oTable._getTotalRowCount()) {
+			if (oTable._getRowCounts().count >= oTable._getTotalRowCount()) {
 				aRowHeights = aRowHeights.slice(0, oTable._getTotalRowCount());
 			}
 
@@ -913,12 +913,12 @@ sap.ui.define([
 				var bIsScrollPositionInBuffer = TableUtils.isVariableRowHeightEnabled(this)
 												&& this._getFirstRenderedRowIndex() === iMaxFirstRenderedRowIndex;
 				var nScrollRangeRowFraction = VerticalScrollingHelper.getScrollRangeRowFraction(this);
-				var nScrollDeltaFactor = bIsScrollPositionInBuffer ? this._getDefaultRowHeight() : nScrollRangeRowFraction;
+				var nScrollDeltaFactor = bIsScrollPositionInBuffer ? this._getBaseRowHeight() : nScrollRangeRowFraction;
 
 				if (oEvent.deltaMode === 1 /* DOM_DELTA_LINE */) {
 					iScrollDelta *= nScrollDeltaFactor;
 				} else if (oEvent.deltaMode === 2 /* DOM_DELTA_PAGE */) {
-					iScrollDelta *= nScrollDeltaFactor * this.getVisibleRowCount();
+					iScrollDelta *= nScrollDeltaFactor * this._getRowCounts().count;
 				}
 
 				if (bScrollingForward) {
@@ -936,7 +936,7 @@ sap.ui.define([
 					var nPixelsToScroll = iScrollDelta;
 
 					if (!bIsScrollPositionInBuffer || (bIsScrollPositionInBuffer && nVirtualScrollPosition === 0 && !bScrollingForward)) {
-						var nRowsToScroll = iScrollDelta / (oEvent.deltaMode === 0 ? this._getDefaultRowHeight() : nScrollRangeRowFraction);
+						var nRowsToScroll = iScrollDelta / (oEvent.deltaMode === 0 ? this._getBaseRowHeight() : nScrollRangeRowFraction);
 
 						// If at least one row is scrolled, floor to full rows. Below one row, we scroll pixels.
 						if (nRowsToScroll > 1) {
@@ -1224,6 +1224,7 @@ sap.ui.define([
 			// focused cell always gets scrolled into the viewport. If the cell is wider than the row container, no action is performed.
 			var oRowContainer;
 			var oCellInfo = TableUtils.getCellInfo(oEvent.target);
+			var oHSb = this._getScrollExtension().getHorizontalScrollbar();
 
 			if (oCellInfo.isOfType(TableUtils.CELLTYPE.DATACELL)) {
 				oRowContainer = this.getDomRef("sapUiTableCtrlScr");
@@ -1231,8 +1232,7 @@ sap.ui.define([
 				oRowContainer = this.getDomRef("sapUiTableColHdrScr");
 			}
 
-			if (oRowContainer && oCellInfo.columnIndex >= this.getComputedFixedColumnCount()) {
-				var oHSb = this._getScrollExtension().getHorizontalScrollbar();
+			if (oRowContainer && oHSb && oCellInfo.columnIndex >= this.getComputedFixedColumnCount()) {
 				var $HSb = jQuery(oHSb);
 				var oCell = oCellInfo.cell[0];
 
@@ -1368,7 +1368,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles scrolling.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableScrollExtension
@@ -1381,7 +1381,7 @@ sap.ui.define([
 		 */
 		_init: function(oTable, sTableType, mSettings) {
 			this._delegate = ExtensionDelegate;
-			oTable.addEventDelegate(this._delegate, oTable);
+			TableUtils.addDelegate(oTable, this._delegate, oTable);
 
 			return "ScrollExtension";
 		},
@@ -1464,23 +1464,22 @@ sap.ui.define([
 		bAsync = bAsync === true;
 
 		var bScrolled = false;
-		var iRowCount = oTable._getTotalRowCount();
-		var iVisibleRowCount = oTable.getVisibleRowCount();
-		var iScrollableRowCount = iVisibleRowCount - oTable.getFixedRowCount() - oTable.getFixedBottomRowCount();
+		var iTotalRowCount = oTable._getTotalRowCount();
+		var mRowCounts = oTable._getRowCounts();
 		var iFirstVisibleScrollableRow = oTable.getFirstVisibleRow();
-		var iSize = bPage ? iScrollableRowCount : 1;
+		var iSize = bPage ? mRowCounts.scrollable : 1;
 
 		if (bDown) {
-			if (iFirstVisibleScrollableRow + iVisibleRowCount < iRowCount) {
+			if (iFirstVisibleScrollableRow + mRowCounts.count < iTotalRowCount) {
 				if (fnBeforeScroll) {
 					fnBeforeScroll();
 				}
 				if (bAsync) {
 					setTimeout(function() {
-						oTable.setFirstVisibleRow(Math.min(iFirstVisibleScrollableRow + iSize, iRowCount - iVisibleRowCount));
+						oTable.setFirstVisibleRow(Math.min(iFirstVisibleScrollableRow + iSize, iTotalRowCount - mRowCounts.count));
 					}, 0);
 				} else {
-					oTable.setFirstVisibleRow(Math.min(iFirstVisibleScrollableRow + iSize, iRowCount - iVisibleRowCount));
+					oTable.setFirstVisibleRow(Math.min(iFirstVisibleScrollableRow + iSize, iTotalRowCount - mRowCounts.count));
 				}
 				bScrolled = true;
 			}
@@ -1745,8 +1744,7 @@ sap.ui.define([
 			return 0;
 		}
 
-		var iScrollableRowCount = Math.max(1, oTable.getVisibleRowCount() - oTable.getFixedRowCount() - oTable.getFixedBottomRowCount());
-		return iScrollableRowCount * oTable._getDefaultRowHeight();
+		return oTable._getRowCounts().scrollable * oTable._getBaseRowHeight();
 	};
 
 	/**
@@ -1770,8 +1768,7 @@ sap.ui.define([
 				oVSbBg.style.top = iTop + "px";
 			}
 
-			var iFixedRows = oTable.getFixedRowCount();
-			if (iFixedRows > 0) {
+			if (oTable._getRowCounts().fixedTop > 0) {
 				iTop += oTable._iVsbTop;
 			}
 
@@ -1833,18 +1830,18 @@ sap.ui.define([
 		}
 
 		var iTotalRowCount = oTable._getTotalRowCount();
-		var iVisibleRowCount = oTable.getVisibleRowCount();
-		var iDefaultRowHeight = oTable._getDefaultRowHeight();
+		var iVisibleRowCount = oTable._getRowCounts().count;
+		var iBaseRowHeight = oTable._getBaseRowHeight();
 		var iRowCount;
 		var iScrollHeight;
 
 		if (TableUtils.isVariableRowHeightEnabled(oTable)) {
 			iRowCount = Math.max(iTotalRowCount, iVisibleRowCount + 1);
-			iScrollHeight = iDefaultRowHeight * (iRowCount - 1 /* The last row is inside the buffer */)
+			iScrollHeight = iBaseRowHeight * (iRowCount - 1 /* The last row is inside the buffer */)
 							+ VerticalScrollingHelper.getScrollRangeBuffer(oTable);
 		} else {
 			iRowCount = Math.max(iTotalRowCount, iVisibleRowCount);
-			iScrollHeight = iDefaultRowHeight * iRowCount;
+			iScrollHeight = iBaseRowHeight * iRowCount;
 		}
 
 		if (bBoundless === true) {
@@ -1896,7 +1893,7 @@ sap.ui.define([
 		}
 
 		return TableUtils.isVariableRowHeightEnabled(oTable) && VerticalScrollingHelper.getInnerScrollRange(oTable) > 0
-				|| (oTable._getTotalRowCount() > oTable.getVisibleRowCount());
+				|| (oTable._getTotalRowCount() > oTable._getRowCounts().count);
 	};
 
 	/**

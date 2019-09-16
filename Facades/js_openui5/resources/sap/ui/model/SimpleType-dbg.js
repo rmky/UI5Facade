@@ -28,7 +28,7 @@ sap.ui.define(['sap/ui/base/DataType', './Type', './FormatException', './ParseEx
 	 * @extends sap.ui.model.Type
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @param {object} [oFormatOptions] options as provided by concrete subclasses
 	 * @param {object} [oConstraints] constraints as supported by concrete subclasses

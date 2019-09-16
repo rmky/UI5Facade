@@ -61,7 +61,7 @@
 	display: none;
 }
 
-.sapUiAFLayoutOneLine > div:last-child {
+.sapUiAFLayoutOneLine > .sapUiAFLayoutSpacer:last-child {
 	flex-basis: auto !important; /* needs to override inline style */
 	flex-grow: 0;
 }
@@ -984,10 +984,17 @@ L  0.390625% =  4px / 1024px
 }
 
 .sapUiLayoutCSSGridBoxLayoutPolyfill {
+	white-space: normal; // 1980317947
+
 	> .sapUiLayoutCSSGridItem {
 		display: inline-block;
 		vertical-align: top;
 		margin: 0 0.5rem 0.5rem 0;
+
+		.sapUiDnDGridIndicator {
+			display: inline-block;
+			margin: 0 0.5rem 0.5rem 0;
+		}
 	}
 
 	.sapMGHLI {

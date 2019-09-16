@@ -17,7 +17,8 @@ sap.ui.define([
 	'./ColorPaletteRenderer',
 	"sap/ui/dom/containsOrEquals",
 	"sap/ui/events/KeyCodes",
-	"sap/ui/thirdparty/jquery"
+	"sap/ui/thirdparty/jquery",
+	"sap/ui/unified/ColorPickerDisplayMode"
 ], function(
 	Control,
 	Device,
@@ -30,7 +31,8 @@ sap.ui.define([
 	ColorPaletteRenderer,
 	containsOrEquals,
 	KeyCodes,
-	jQuery
+	jQuery,
+	ColorPickerDisplayMode
 ) {
 		"use strict";
 
@@ -99,7 +101,7 @@ sap.ui.define([
 		 * <code>ColorPalette</code> should also load the <code>sap.ui.unified</code> library.
 		 *
 		 * @extends sap.ui.core.Control
-		 * @version 1.68.1
+		 * @version 1.70.0
 		 *
 		 * @constructor
 		 * @public
@@ -175,6 +177,9 @@ sap.ui.define([
 			// If the "More colors" button should be shown. Private API. Allowed consumer is ColorPaletteAPI.
 			this._bShowMoreColorsButton = false;
 
+			// Display mode. Private API. Allowed consumer is ColorPaletteAPI.
+			this._oDisplayMode = ColorPickerDisplayMode.Default;
+
 			// Reference to the dialog containing the internal "Color Picker". For private use.
 			this._oMoreColorsDialog = null;
 
@@ -202,6 +207,29 @@ sap.ui.define([
 				throw new Error("Cannot set property 'colors' - array must has minimum 2 and maximum 15 elements");
 			}
 			return this.setProperty("colors", aColors);
+		};
+
+		/**
+		 * Sets a default displayMode.
+		 * @param {sap.ui.unified.ColorPickerDisplayMode} color the color
+		 * @private
+		 * @return {sap.m.ColorPalette} <code>this</code> for method chaining
+		 */
+		ColorPalette.prototype._setDisplayMode = function (oDisplayMode) {
+			var oColorPicker = this._getColorPicker();
+			oColorPicker.setDisplayMode(oDisplayMode);
+			this._oDisplayMode = oDisplayMode;
+
+			return this;
+		};
+
+		// Display mode
+		ColorPalette.prototype._getDisplayMode = function () {
+			return this._oDisplayMode;
+		};
+
+		ColorPalette.prototype._getColorPicker = function () {
+			return this._ensureMoreColorsDialog()._oColorPicker;
 		};
 
 		ColorPalette.prototype.ontap = function (oEvent) {
@@ -396,7 +424,8 @@ sap.ui.define([
 
 			// keep explicit reference to the picker attached to the parent dialog
 			oDialog.addContent(oDialog._oColorPicker = new ColorPicker({
-				mode: ColorPickerMode.HSL
+				mode: ColorPickerMode.HSL,
+				displayMode: this._oDisplayMode
 			}));
 
 			// OK button

@@ -26,14 +26,20 @@ sap.ui.define([
 	 * @param {object} [mSettings] Initial settings for the GridDropInfo
 	 *
 	 * @class
-	 * Provides enhanced configuration for drop operations inside grid based controls.
-	 * If drop position is "Between" and drop layout is "Horizontal", this drop configuration will provide  enhanced user experience. This includes the display of a target drop indicator which represents the exact position and size of the dragged control.
+	 * Provides enhanced configuration for drop operations inside grid-based controls.
+	 *
+	 * If drop position is <code>Between</code> and drop layout is <code>Horizontal</code>, this drop configuration will provide enhanced visualization and interaction, better suited for grid items.
+	 * It will show a drop indicator which mimics the size of the dragged item and shows the potential drop position inside the grid.
+	 * The indicator will push away other grid items, showing the correct arrangement calculated by the grid’s auto-placement algorithm.
+	 *
+	 * When position is different than <code>Between</code> or layout is not <code>Horizontal</code>, the drag and drop will look and behave like the general <code>{@link sap.ui.core.dnd.DropInfo}</code>.
+	 *
 	 * <b>Note:</b> This configuration might be ignored due to control {@link sap.ui.core.Element.extend metadata} restrictions.
 	 *
 	 * @extends sap.ui.core.dnd.DropInfo
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @public
 	 * @experimental Since 1.68 This class is experimental. The API may change.
@@ -94,13 +100,27 @@ sap.ui.define([
 		// hide the original indicator
 		this._hideDefaultIndicator(oEvent);
 
-		var mDropPosition = this._suggestDropPosition(oEvent);
+		var gridDragOver = GridDragOver.getInstance();
 
-		return this.fireEvent("dragEnter", {
+		gridDragOver.setCurrentContext(
+			oEvent.dragSession.getDragControl(),
+			this.getDropTarget(),
+			this.getTargetAggregation()
+		);
+
+		var mDropPosition = gridDragOver.getSuggestedDropPosition();
+
+		var eventResult = this.fireEvent("dragEnter", {
 			dragSession: oEvent.dragSession,
 			browserEvent: oEvent.originalEvent,
 			target: mDropPosition ? mDropPosition.targetControl : null
 		}, true);
+
+		if (eventResult) {
+			gridDragOver.handleDragOver(oEvent);
+		}
+
+		return eventResult;
 	};
 
 	GridDropInfo.prototype.fireDragOver = function(oEvent) {
@@ -160,7 +180,7 @@ sap.ui.define([
 			droppedControl: mDropPosition ? mDropPosition.targetControl : null
 		});
 
-		gridDragOver.endDrag();
+		gridDragOver.scheduleEndDrag();
 	};
 
 	/**
@@ -173,11 +193,6 @@ sap.ui.define([
 		if (this._bShouldEnhance === undefined) {
 			if (!this.getParent().isA("sap.f.dnd.IGridDroppable")) {
 				Log.error("The control which uses 'sap.f.dnd.GridDropInfo' has to implement 'sap.f.dnd.IGridDroppable'.", "sap.f.dnd.GridDropInfo");
-				this._bShouldEnhance = false;
-				return this._bShouldEnhance;
-			}
-
-			if (Device.browser.msie) { // enhanced DnD is not yet possible for IE
 				this._bShouldEnhance = false;
 				return this._bShouldEnhance;
 			}

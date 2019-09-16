@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/calendar/CalendarUtils', 'sap/ui/core/date/UniversalDate', 'sap/ui/core/InvisibleText', 'sap/ui/unified/library'],
-	function (CalendarDate, CalendarUtils,  UniversalDate, InvisibleText, unifiedLibrary) {
+sap.ui.define(['sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/calendar/CalendarUtils', 'sap/ui/core/date/UniversalDate', 'sap/ui/core/InvisibleText', './PlanningCalendarLegend', 'sap/ui/unified/library'],
+	function(CalendarDate, CalendarUtils, UniversalDate, InvisibleText, PlanningCalendarLegend, unifiedLibrary) {
 		"use strict";
 
 		var iVerticalPaddingBetweenAppointments = 2;
@@ -76,7 +76,7 @@ sap.ui.define(['sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/calendar/
 				if (aDayTypes && aDayTypes[0]) {
 					oType = aDayTypes[0];
 					oRm.addClass("sapUiCalItem" + oType.type);
-					sLegendItemType = oControl._findCorrespondingLegendItem(oControl, oType);
+					sLegendItemType = PlanningCalendarLegend.findLegendItemForItem(sap.ui.getCore().byId(oControl._sLegendId), oType);
 				}
 
 				oRm.addClass("sapMSpecialDaysInDayView");
@@ -683,7 +683,7 @@ sap.ui.define(['sap/ui/unified/calendar/CalendarDate', 'sap/ui/unified/calendar/
 			oRm.addStyle("top", oControl._calculateTopPosition(oDate) + "px");
 			oRm.addClass("sapMSinglePCNowMarker");
 
-			if (oControl._isOutsideVisibleHours(oDate.getHours())) {
+			if (!oControl._isVisibleHour(oDate.getHours())) {
 				oRm.addClass("sapMSinglePCNowMarkerHidden");
 			}
 

@@ -42,7 +42,7 @@ sap.ui.define([
 	 * @author SAP SE
 	 * @public
 	 * @since 1.58.0
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @namespace
 	 * @alias module:sap/ui/core/ComponentSupport
 	 */
@@ -74,7 +74,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Find all DOM elements with the attribute <code>data-sap-ui-component</div>
+	 * Find all DOM elements with the attribute <code>data-sap-ui-component</code>
 	 * and parse the attributes from these DOM elements for the settings of the
 	 * <code>ComponentContainer</code> which will be placed into these DOM elements.
 	 *

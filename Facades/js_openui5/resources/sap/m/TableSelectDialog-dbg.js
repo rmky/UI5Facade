@@ -46,6 +46,8 @@ sap.ui.define([
 	// shortcut for sap.m.ListMode
 	var ListMode = library.ListMode;
 
+	// shortcut for sap.m.ButtonType
+	var ButtonType = library.ButtonType;
 
 
 	/**
@@ -96,7 +98,7 @@ sap.ui.define([
 	 * </ul>
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @public
@@ -169,7 +171,7 @@ sap.ui.define([
 			 * Optional:
 			 * In case <code>multiSelect</code> is set to <code>true</code>, the selection can be easily cleared with one click.
 			 *
-			 * <b>Note:</b> When used with oData, only the loaded selections will be cleared.
+			 * <b>Note:</b> When used with OData, only the loaded selections will be cleared.
 			 * @since 1.58
 			 */
 			showClearButton : {type : "boolean", group : "Behavior", defaultValue : false},
@@ -239,7 +241,13 @@ sap.ui.define([
 					/**
 					 * Determines the Items binding of the Table Select Dialog. Only available if the items aggregation is bound to a model.
 					 */
-					itemsBinding : {type : "any"}
+					itemsBinding : {type : "any"},
+
+					/**
+					 * Returns if the Clear button is pressed.
+					 * @since 1.70
+					 */
+					clearButtonPressed: {type: "boolean"}
 				}
 			},
 
@@ -349,14 +357,17 @@ sap.ui.define([
 				clearTimeout(iLiveChangeTimer);
 				if (iDelay) {
 					iLiveChangeTimer = setTimeout(function () {
-						that._executeSearch(sValue, "liveChange");
+						that._executeSearch(sValue, false, "liveChange");
 					}, iDelay);
 				} else {
-					that._executeSearch(sValue, "liveChange");
+					that._executeSearch(sValue, false, "liveChange");
 				}
 			},
 			search: function (oEvent) {
-				that._executeSearch(oEvent.getSource().getValue(), "search");
+				var sValue = oEvent.getSource().getValue(),
+					bClearButtonPressed = oEvent.getParameter("clearButtonPressed");
+
+				that._executeSearch(sValue, bClearButtonPressed, "search");
 			}
 		});
 		this._searchField = this._oSearchField; // for downward compatibility
@@ -879,10 +890,11 @@ sap.ui.define([
 	 * This function is also called whenever a search event on the "search field" is triggered
 	 * @private
 	 * @param {string} sValue The new Search value or undefined if called by management functions
+	 * @param {boolean} bClearButtonPressed Indicates if the clear button is pressed
 	 * @param {string} sEventType The search field event type that has been called (liveChange / search)
 	 * @returns {sap.m.TableSelectDialog} this pointer for chaining
 	 */
-	TableSelectDialog.prototype._executeSearch = function (sValue, sEventType) {
+	TableSelectDialog.prototype._executeSearch = function (sValue, bClearButtonPressed, sEventType) {
 		var oTable = this._oTable,
 			oBinding = (oTable ? oTable.getBinding("items") : undefined),
 			bSearchValueDifferent = (this._sSearchFieldValue !== sValue); // to prevent unwanted duplicate requests
@@ -901,7 +913,11 @@ sap.ui.define([
 				if (sEventType === "search") {
 
 					// fire the search so the data can be updated externally
-					this.fireSearch({value: sValue, itemsBinding: oBinding});
+					this.fireSearch({
+						value: sValue,
+						itemsBinding: oBinding,
+						clearButtonPressed: bClearButtonPressed
+					});
 				} else if (sEventType === "liveChange") {
 					// fire the liveChange so the data can be updated externally
 					this.fireLiveChange({value: sValue, itemsBinding: oBinding});
@@ -910,7 +926,10 @@ sap.ui.define([
 				// no binding, just fire the event for manual filtering
 				if (sEventType === "search") {
 					// fire the search so the data can be updated externally
-					this.fireSearch({value: sValue});
+					this.fireSearch({
+						value: sValue,
+						clearButtonPressed: bClearButtonPressed
+					});
 				} else if (sEventType === "liveChange") {
 					// fire the liveChange so the data can be updated externally
 					this.fireLiveChange({value: sValue});
@@ -1017,6 +1036,7 @@ sap.ui.define([
 
 		if (!this._oOkButton) {
 			this._oOkButton = new Button(this.getId() + "-ok", {
+				type: ButtonType.Emphasized,
 				text: this.getConfirmButtonText() || this._oRb.getText("SELECT_CONFIRM_BUTTON"),
 				press: function () {
 					// attach the reset function to afterClose to hide the dialog changes from the end user
@@ -1167,7 +1187,7 @@ sap.ui.define([
 		// due to the delayed call (dialog onAfterClose) the control could be already destroyed
 		if (!this.bIsDestroyed) {
 			var oBindings = this._oTable.getBinding("items");
-			if (oBindings) {
+			if (oBindings && oBindings.aFilters && oBindings.aFilters.length) {
 				oBindings.filter([]);
 			}
 			this._oTable.removeSelections();

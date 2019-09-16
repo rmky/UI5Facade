@@ -18,15 +18,16 @@ sap.ui.define(["./TableExtension", "./TableUtils", "./library"], function(TableE
 		aCSSClasses = aCSSClasses || [];
 		aCSSClasses.push("sapUiInvisibleText");
 
-		oRm.write("<span");
-		oRm.writeAttribute("id", sParentId + "-" + sId);
-		oRm.writeAttribute("class", aCSSClasses.join(" "));
-		oRm.writeAttribute("aria-hidden", "true");
-		oRm.write(">");
+		oRm.openStart("span", sParentId + "-" + sId);
+		aCSSClasses.forEach(function(sClass) {
+			oRm.class(sClass);
+		});
+		oRm.attr("aria-hidden", "true");
+		oRm.openEnd();
 		if (sText) {
-			oRm.writeEscaped(sText);
+			oRm.text(sText);
 		}
-		oRm.write("</span>");
+		oRm.close("span");
 	};
 
 	//********************************************************************
@@ -39,7 +40,7 @@ sap.ui.define(["./TableExtension", "./TableUtils", "./library"], function(TableE
 	 * @class Extension for sap.ui.table.TableRenderer which handles ACC related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableAccRenderExtension
@@ -69,15 +70,22 @@ sap.ui.define(["./TableExtension", "./TableUtils", "./library"], function(TableE
 
 			var sTableId = oTable.getId();
 
-			oRm.write("<div class='sapUiTableHiddenTexts' style='display:none;' aria-hidden='true'>");
+			oRm.openStart("div");
+			oRm.class("sapUiTableHiddenTexts");
+			oRm.style("display", "none");
+			oRm.attr("aria-hidden", "true");
+			oRm.openEnd();
 
+			// aria description for the table
+			var sDesc = oTable.getTitle() && oTable.getTitle().getText && oTable.getTitle().getText() != "" ? oTable.getTitle().getText() : "";
+			_writeAccText(oRm, sTableId, "ariadesc", sDesc);
 			// aria description for the row and column count
 			_writeAccText(oRm, sTableId, "ariacount");
 			// aria description for toggling the edit mode
 			_writeAccText(oRm, sTableId, "toggleedit", TableUtils.getResourceText("TBL_TOGGLE_EDIT_KEY"));
 			// aria description for select all button
 			var bAllRowsSelected = TableUtils.areAllRowsSelected(oTable);
-			var mRenderConfig = oTable._oSelectionPlugin.getRenderConfig();
+			var mRenderConfig = oTable._getSelectionPlugin().getRenderConfig();
 			var sSelectAllResourceTextID;
 			if (mRenderConfig.headerSelector.type === "toggle") {
 				sSelectAllResourceTextID = bAllRowsSelected ? "TBL_DESELECT_ALL" : "TBL_SELECT_ALL";
@@ -136,7 +144,7 @@ sap.ui.define(["./TableExtension", "./TableUtils", "./library"], function(TableE
 				_writeAccText(oRm, sTableId, "ariafixedcolumn", TableUtils.getResourceText("TBL_FIXED_COLUMN"));
 			}
 
-			oRm.write("</div>");
+			oRm.close("div");
 		},
 
 		/**
@@ -165,7 +173,7 @@ sap.ui.define(["./TableExtension", "./TableUtils", "./library"], function(TableE
 					oValue = oValue.join(" ");
 				}
 				if (oValue) {
-					oRm.writeAttributeEscaped(sKey, oValue);
+					oRm.attr(sKey.toLowerCase(), oValue);
 				}
 			}
 		},
@@ -185,7 +193,7 @@ sap.ui.define(["./TableExtension", "./TableUtils", "./library"], function(TableE
 				return;
 			}
 
-			var bIsSelected = oTable.isIndexSelected(iRowIndex);
+			var bIsSelected = oTable._getSelectionPlugin().isIndexSelected(iRowIndex);
 			var mTooltipTexts = oTable._getAccExtension().getAriaTextsForSelectionMode(true);
 			var sText = mTooltipTexts.keyboard[bIsSelected ? "rowDeselect" : "rowSelect"];
 

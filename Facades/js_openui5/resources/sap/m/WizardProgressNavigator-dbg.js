@@ -41,7 +41,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @private
@@ -505,7 +505,6 @@ function(
 	 * Updates the current step in the control instance as well as the DOM structure.
 	 * @param {number} newStep The step number to which current step will be set. Non zero-based.
 	 * @param {number} oldStep The step number to which current step was set. Non zero-based.
-	 * @param {boolean} suppressEvent Suppress the stepChanged event.
 	 * @returns {sap.m.WizardProgressNavigator} Pointer to the control instance for chaining.
 	 * @private
 	 */

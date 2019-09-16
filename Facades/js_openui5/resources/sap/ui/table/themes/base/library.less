@@ -157,6 +157,12 @@
 	}
 }
 
+.sapUiTablePlaceholder {
+	background-color: @sapUiListBackground;
+	box-sizing: border-box;
+	border-bottom: @_sap_ui_table_BaseBorderWidth solid @sapUiListHeaderBorderColor;
+}
+
 .sapUiTableOuterAfter,
 .sapUiTableOuterBefore {
 	display: none;
@@ -741,14 +747,13 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 			// The height is fixed to the default row height (or the application defined height, see TableRenderer) until variable row heights are
 			// generally supported.
 			> .sapUiTableCellInner {
-				max-height: @_sap_ui_table_RowHeight;
+				max-height: @_sap_ui_table_BaseSize;
 
 				.sapUiSizeCozy & {
-					max-height: @_sap_ui_table_RowHeightCozy;
+					max-height: @_sap_ui_table_BaseSizeCozy;
 				}
-
 				.sapUiSizeCondensed & {
-					max-height: @_sap_ui_table_RowHeightCondensed;
+					max-height: @_sap_ui_table_BaseSizeCondensed;
 				}
 			}
 		}
@@ -771,6 +776,11 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 @_sap_ui_table_Cell_Padding: 0 0.5rem;
 @_sap_ui_table_Cell_TouchMenuIconSize: 1.375rem;
 @_sap_ui_table_Cell_ColumnIconSize: 0.75rem;
+@_sap_ui_table_Cell_BorderColorSelected: @sapUiListBorderColor;
+@_sap_ui_table_Cell_ShadowColorSelected: transparent;
+@_sap_ui_table_Cell_BorderColorFixedSelected: @sapUiListTableFixedBorder;
+@_sap_ui_table_Cell_ShadowColorFixed: transparent;
+@_sap_ui_table_Cell_BorderBottomFocus: @sapUiListTableFixedBorder;
 
 /*
  * Focus visualization
@@ -865,6 +875,16 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 	.sapUiTableRowLastFixedTop > &,
 	.sapUiTableRowLastScrollable > & {
 		border-bottom-color: @sapUiListTableFixedBorder;
+		box-shadow: 0 -@_sap_ui_table_BaseBorderWidth @_sap_ui_table_Cell_ShadowColorFixed inset;
+
+		.sapUiTableRowSel& {
+			border-bottom-color: @_sap_ui_table_Cell_BorderColorFixedSelected;
+			box-shadow: 0 -@_sap_ui_table_BaseBorderWidth @_sap_ui_table_Cell_ShadowColorSelected inset;
+		}
+
+		&:focus {
+			border-bottom-color: @_sap_ui_table_Cell_BorderBottomFocus;
+		}
 	}
 
 	// Last row border
@@ -875,6 +895,10 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 
 	> .sapUiTableCellInner {
 		box-sizing: border-box;
+	}
+
+	.sapUiTableRowSel > & {
+		border-bottom-color: @_sap_ui_table_Cell_BorderColorSelected;
 	}
 }
 
@@ -930,6 +954,13 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 
 	&:active {
 		background-color: @sapUiListActiveBackground;
+	}
+
+	&[disabled] {
+		pointer-events: none;
+		& > * {
+			opacity: 0.3;
+		}
 	}
 }
 
@@ -1104,18 +1135,6 @@ html[data-sap-ui-browser^="ie"] .sapUiTableColHdrCnt {
 			> * {
 				box-sizing: border-box;
 				padding: @_sap_ui_table_Cell_Padding;
-			}
-		}
-
-		.sapUiTableFixedRowHeights & {
-			max-height: @_sap_ui_table_BaseSize;
-
-			.sapUiSizeCozy & {
-				max-height: @_sap_ui_table_BaseSizeCozy;
-			}
-			.sapUiSizeCondensed &,
-			.sapUiSizeCondensed& {
-				max-height: @_sap_ui_table_BaseSizeCondensed;
 			}
 		}
 	}

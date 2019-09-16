@@ -34,7 +34,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.support.apps.contentbrowser.controller.ContentDetailsEdit
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @experimental Since 1.45
 	 */
 	return Controller.extend("sap.ui.fl.support.apps.contentbrowser.controller.ContentDetailsEdit", {
@@ -130,7 +130,10 @@ sap.ui.define([
 			var oSelectedContentModel = this.getView().getModel("selectedContent");
 			var oContentData = oSelectedContentModel.getData();
 			var sLayer;
-			var sTransportIdFromContent, sPackageFromContent, sTransportId, sPackageName;
+			var sTransportIdFromContent;
+			var sPackageFromContent;
+			var sTransportId;
+			var sPackageName;
 			oContentData.metadata.some(function (oMetadata) {
 				if (oMetadata.name === "layer") {
 					sLayer = oMetadata.value;

@@ -6,6 +6,11 @@
 			"theme": "sap_belize_hcb"
 		},
 		{
+			"name": "Cell.less",
+			"designtime": true,
+			"theme": "sap_belize_hcb"
+		},
+		{
 			"name": "DragDrop.less",
 			"designtime": true,
 			"theme": "sap_belize_hcb"

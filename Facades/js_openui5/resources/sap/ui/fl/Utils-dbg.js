@@ -31,6 +31,7 @@ function(
 	"use strict";
 	//Stack of layers in the layered repository
 	var aLayers = [
+		"BASE",
 		"VENDOR",
 		"PARTNER",
 		"CUSTOMER_BASE",
@@ -49,7 +50,7 @@ function(
 	 * @namespace
 	 * @alias sap.ui.fl.Utils
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @experimental Since 1.25.0
 	 */
 	var Utils = {
@@ -61,26 +62,6 @@ function(
 		DEFAULT_APP_VERSION : "DEFAULT_APP_VERSION",
 		APP_ID_AT_DESIGN_TIME : "${pro" + "ject.art" + "ifactId}", //avoid replaced by content of sap.ui.fl placeholder at build steps
 		VARIANT_MODEL_NAME: "$FlexVariants",
-		/**
-		 * log object exposes available log functions
-		 *
-		 * @name sap.ui.fl.Utils.log
-		 * @public
-		 */
-		log: {
-			error: function (sMessage, sDetails, sComponent) {
-				Log.error(sMessage, sDetails, sComponent);
-			},
-			warning: function (sMessage, sDetails, sComponent) {
-				Log.warning(sMessage, sDetails, sComponent);
-			},
-			debug: function (sMessage, sDetails, sComponent) {
-				Log.debug(sMessage, sDetails, sComponent);
-			},
-			info: function (sMessage, sDetails, sComponent) {
-				Log.info(sMessage, sDetails, sComponent);
-			}
-		},
 
 		/**
 		 * Formats the log message by replacing placeholders with values and logging the message.
@@ -93,7 +74,7 @@ function(
 		formatAndLogMessage: function(sLogType, aMessageComponents, aValuesToInsert, sCallStack) {
 			var sLogMessage = aMessageComponents.join(' ');
 			sLogMessage = formatMessage(sLogMessage, aValuesToInsert);
-			this.log[sLogType](sLogMessage, sCallStack || "");
+			Log[sLogType](sLogMessage, sCallStack || "");
 		},
 
 		/**
@@ -227,7 +208,9 @@ function(
 		 * @name sap.ui.fl.Utils.getAppDescriptor
 		 */
 		getAppDescriptor: function (oControl) {
-			var oManifest = null, oComponent = null, oComponentMetaData = null;
+			var oManifest = null;
+			var oComponent = null;
+			var oComponentMetaData = null;
 
 			// determine UI5 component out of given control
 			if (oControl) {
@@ -255,7 +238,8 @@ function(
 		 * @name sap.ui.fl.Utils.getSiteId
 		 */
 		getSiteId: function (oControl) {
-			var sSiteId = null, oAppComponent = null;
+			var sSiteId = null;
+			var oAppComponent = null;
 
 			// determine UI5 component out of given control
 			if (oControl) {
@@ -555,9 +539,10 @@ function(
 		 */
 		getAppDescriptorComponentObjectForControl: function(oControl) {
 			var oAppComponent = this.getAppComponentForControl(oControl);
+			var oManifest = oAppComponent.getManifest();
 			return {
-				name: this.getComponentClassName(oAppComponent).replace(".Component", ""),
-				version: this.getAppVersionFromManifest(oAppComponent.getManifest())
+				name: this.getAppIdFromManifest(oManifest),
+				version: this.getAppVersionFromManifest(oManifest)
 			};
 		},
 
@@ -703,7 +688,8 @@ function(
 		 * @name sap.ui.fl.Utils.getCurrentLayer
 		 */
 		getCurrentLayer: function (bIsEndUser) {
-			var oUriParams, sLayer;
+			var oUriParams;
+			var sLayer;
 			if (bIsEndUser) {
 				return "USER";
 			}
@@ -742,14 +728,15 @@ function(
 		 * @name sap.ui.fl.Utils.getClient
 		 */
 		getClient: function () {
-			var oUriParams, sClient;
+			var oUriParams;
+			var sClient;
 			oUriParams = this._getUriParameters();
 			sClient = oUriParams.get("sap-client");
 			return sClient || undefined;
 		},
 
 		_getUriParameters: function () {
-			return new UriParameters(window.location.href);
+			return UriParameters.fromQuery(window.location.search);
 		},
 		/**
 		 * Returns whether the hot fix mode is active (url parameter hotfix=true)
@@ -758,7 +745,8 @@ function(
 		 * @returns {boolean} is hotfix mode active, or not
 		 */
 		isHotfixMode: function () {
-			var oUriParams, sIsHotfixMode;
+			var oUriParams;
+			var sIsHotfixMode;
 			oUriParams = this._getUriParameters();
 			sIsHotfixMode = oUriParams.get("hotfix");
 			return (sIsHotfixMode === "true");
@@ -789,6 +777,31 @@ function(
 			}
 
 			return "";
+		},
+
+		getLrepUrl: function () {
+			var aFlexibilityServices = sap.ui.getCore().getConfiguration().getFlexibilityServices();
+			var oLrepConfiguration = aFlexibilityServices.find(function (oServiceConfig) {
+				return oServiceConfig.connectorName === "LrepConnector";
+			});
+
+			return oLrepConfiguration ? oLrepConfiguration.url : "";
+		},
+
+		/**
+		 * Determines if the new Connector functionality should be used.
+		 *
+		 * @returns {boolean} A boolean indicates if the new functionality must be used
+		 * @private
+		 * @ui5-restricted sap.ui.fl
+		 */
+		areNewConnectorsNecessary: function () {
+			var aFlexibilityServices = sap.ui.getCore().getConfiguration().getFlexibilityServices();
+			var bOnlyLrepConnectorConfigured = aFlexibilityServices.every(function (oServiceConfig) {
+				return oServiceConfig.connectorName === "LrepConnector";
+			});
+
+			return !bOnlyLrepConnectorConfigured;
 		},
 
 		/**
@@ -858,12 +871,12 @@ function(
 		/**
 		 * See {@link sap.ui.core.BaseTreeModifier#checkControlId} method
 		 */
-		checkControlId: function (vControl, oAppComponent, bSuppressLogging) {
+		checkControlId: function (vControl, oAppComponent) {
 			if (!oAppComponent) {
 				vControl = vControl instanceof ManagedObject ? vControl : sap.ui.getCore().byId(vControl);
 				oAppComponent = Utils.getAppComponentForControl(vControl);
 			}
-			return BaseTreeModifier.checkControlId(vControl, oAppComponent, bSuppressLogging);
+			return BaseTreeModifier.checkControlId(vControl, oAppComponent);
 		},
 
 		/**
@@ -906,7 +919,7 @@ function(
 				var oParsedHash = oURLParser.parseShellHash(hasher.getHash());
 				return oParsedHash || {};
 			}
-			return { };
+			return {};
 		},
 
 		/**
@@ -927,7 +940,7 @@ function(
 				var mTechnicalParameters = Utils.getTechnicalParametersForComponent(oComponent);
 					// if mTechnicalParameters are not available we write a warning and continue updating the hash
 				if (!mTechnicalParameters) {
-					this.log.warning("Component instance not provided, so technical parameters in component data and browser history remain unchanged");
+					Log.warning("Component instance not provided, so technical parameters in component data and browser history remain unchanged");
 				}
 				if (aValues.length === 0) {
 					delete oParsedHash.params[sParameterName];
@@ -968,7 +981,7 @@ function(
 		 * @private
 		 */
 		getUrlParameter: function (sParameterName) {
-			return new UriParameters(window.location.href).get(sParameterName);
+			return UriParameters.fromQuery(window.location.search).get(sParameterName);
 		},
 
 		/**
@@ -1149,8 +1162,25 @@ function(
 					return sAppId;
 				}
 			}
-			this.log.warning("No Manifest received.");
+			Log.warning("No Manifest received.");
 			return "";
+		},
+
+
+		/**
+		 * Returns the descriptor Id, which is alwas the reference for descriptor changes
+		 *
+		 * @param {object} oManifest - Manifest of the component
+		 * @returns {string} Version of application if it is available in the manifest, otherwise an empty string
+		 * @public
+		 */
+		getAppIdFromManifest: function (oManifest) {
+			if (oManifest) {
+				var oSapApp = (oManifest.getEntry) ? oManifest.getEntry("sap.app") : oManifest["sap.app"];
+				return oSapApp && oSapApp.id;
+			}
+
+			throw new Error("No Manifest received, descriptor changes are not possible");
 		},
 
 		/**
@@ -1168,7 +1198,7 @@ function(
 					sVersion = oSapApp.applicationVersion.version;
 				}
 			} else {
-				this.log.warning("No Manifest received.");
+				Log.warning("No Manifest received.");
 			}
 			return sVersion;
 		},
@@ -1188,7 +1218,7 @@ function(
 					sUri = oSapApp.dataSources.mainService.uri;
 				}
 			} else {
-				this.log.warning("No Manifest received.");
+				Log.warning("No Manifest received.");
 			}
 			return sUri;
 		},
@@ -1259,7 +1289,8 @@ function(
 		indexOfObject: function(aArray, oObject) {
 			var iObjectIndex = -1;
 			aArray.some(function(oArrayObject, iIndex) {
-				var aKeysArray, aKeysObject;
+				var aKeysArray;
+				var aKeysObject;
 				if (!oArrayObject) {
 					aKeysArray = [];
 				} else {
@@ -1319,76 +1350,89 @@ function(
 				.catch(function(e) {
 					var sErrorMessage = "Error during execPromiseQueueSequentially processing occured";
 					sErrorMessage += e ? ": " + e.message : "";
-					this.log.error(sErrorMessage);
+					Log.error(sErrorMessage);
 
 					if (bThrowError) {
 						throw new Error(sErrorMessage);
 					}
-				}.bind(this))
+				})
 
 				.then(function() {
 					return this.execPromiseQueueSequentially(aPromiseQueue, bThrowError, bAsync);
 				}.bind(this));
 			}
 
-			this.log.error("Changes could not be applied, promise not wrapped inside function.");
+			Log.error("Changes could not be applied, promise not wrapped inside function.");
 			return this.execPromiseQueueSequentially(aPromiseQueue, bThrowError, bAsync);
 		},
 
 		/**
-		 * Function that behaves like Promise (es6) but is synchronous. Implements 'then' and 'catch' functions.
+		 * Class that behaves like a promise (es6), but is synchronous. Implements <code>then</code> and <code>catch</code> functions.
 		 * After instantiating can be used similar to standard Promises but synchronously.
 		 * As soon as one of the callback functions returns a Promise the asynchronous Promise replaces the FakePromise in further processing.
 		 *
+		 * @class sap.ui.fl.Utils.FakePromise
 		 * @param {any} vInitialValue - value on resolve FakePromise
 		 * @param {any} vError - value on reject FakePromise
 		 * @param {string} sInitialPromiseIdentifier - value identifies previous promise in chain. If the identifier is passed to the function and don't match with the FakePromiseIdentifier then native Promise execution is used for further processing
 		 * @returns {sap.ui.fl.Utils.FakePromise|Promise} Returns instantiated FakePromise only if no Promise is passed by value parameter
+		 * @private
+		 * @ui5-restricted
 		 */
 		FakePromise : function(vInitialValue, vError, sInitialPromiseIdentifier) {
 			Utils.FakePromise.fakePromiseIdentifier = "sap.ui.fl.Utils.FakePromise";
 			this.vValue = vInitialValue;
 			this.vError = vError;
 			this.bContinueWithFakePromise = arguments.length < 3 || (sInitialPromiseIdentifier === Utils.FakePromise.fakePromiseIdentifier);
+
+			var fnResolveOrReject = function(vParam, fn) {
+				try {
+					var vResolve = fn(vParam, Utils.FakePromise.fakePromiseIdentifier);
+					if (vResolve instanceof Promise ||
+							vResolve instanceof Utils.FakePromise) {
+						return vResolve;
+					}
+					return new Utils.FakePromise(vResolve);
+				} catch (oError) {
+					var vReject = oError;
+					return new Utils.FakePromise(undefined, vReject);
+				}
+			};
+
+			/**
+			 * <code>then</code> function as for promise (es6), but without a rejection handler.
+			 * @param {function} fn - Resolve handler
+			 * @returns {sap.ui.fl.Utils.FakePromise|Promise} <code>FakePromise</code> if no promise is returned by the resolve handler
+			 * @public
+			 */
 			Utils.FakePromise.prototype.then = function(fn) {
 				if (!this.bContinueWithFakePromise) {
 					return Promise.resolve(fn(this.vValue));
 				}
+
 				if (!this.vError) {
-					try {
-						this.vValue = fn(this.vValue, Utils.FakePromise.fakePromiseIdentifier);
-					} catch (oError) {
-						this.vError = oError;
-						this.vValue = null;
-						return this;
-					}
-					if (this.vValue instanceof Promise ||
-						this.vValue instanceof Utils.FakePromise) {
-						return this.vValue;
-					}
+					return fnResolveOrReject(this.vValue, fn);
 				}
 				return this;
 			};
+
+			/**
+			 * <code>catch</code> function as for promise (es6), but without a rejection handler.
+			 * @param {function} fn - Rejection handler
+			 * @returns {sap.ui.fl.Utils.FakePromise|Promise} <code>FakePromise</code> if no promise is returned by the rejection handler
+			 * @public
+			 */
 			Utils.FakePromise.prototype.catch = function(fn) {
 				if (!this.bContinueWithFakePromise) {
 					return Promise.reject(fn(this.vError));
 				}
+
 				if (this.vError) {
-					try {
-						this.vValue = fn(this.vError, Utils.FakePromise.fakePromiseIdentifier);
-					} catch (oError) {
-						this.vError = oError;
-						this.vValue = null;
-						return this;
-					}
-					this.vError = null;
-					if (this.vValue instanceof Promise ||
-						this.vValue instanceof Utils.FakePromise) {
-						return this.vValue;
-					}
+					return fnResolveOrReject(this.vError, fn);
 				}
 				return this;
 			};
+
 			if (this.vValue instanceof Promise ||
 				this.vValue instanceof Utils.FakePromise) {
 				return this.vValue;
@@ -1430,6 +1474,26 @@ function(
 					fnReject(oError);
 				});
 			});
+		},
+
+		/**
+		 * Returns a new object composed of the own and inherited property paths
+		 * of given object which are not in the given array
+		 *
+		 * Example: for obj = { 'a': 1, 'b': '2', 'c': 3 };
+		 * omit(obj, ['a', 'c']); -> Returns { 'b': '2' }
+		 *
+		 * @param  {Object} oObject - Source object
+		 * @param  {string|string[]} vPropertyName - Property paths to omit
+		 * @return {Object} returns new object
+		 */
+		omit: function (oObject, vPropertyName) {
+			var oNewObject = Object.assign({}, oObject);
+			var aPropertyPaths = Array.isArray(vPropertyName) ? vPropertyName : [vPropertyName];
+			aPropertyPaths.forEach(function (sProperty) {
+				delete oNewObject[sProperty];
+			});
+			return oNewObject;
 		}
 	};
 	return Utils;

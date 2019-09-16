@@ -25,7 +25,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.SimpleType
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @public
 	 * @param {object} [oFormatOptions] formatting options. String doesn't support any formatting options

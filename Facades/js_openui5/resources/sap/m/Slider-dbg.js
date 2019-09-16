@@ -93,7 +93,7 @@ function(
 		 * @implements sap.ui.core.IFormContent
 		 *
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.70.0
 		 *
 		 * @constructor
 		 * @public
@@ -667,8 +667,8 @@ function(
 		 *
 		 * @param {string} oTooltip Tooltip to be changed
 		 * @param {float} fValue New value of the Slider
-		 * @sap-restricted sap.m.SliderTooltipBase
 		 * @private
+		 * @ui5-restricted sap.m.SliderTooltipBase
 		 */
 		Slider.prototype.updateTooltipsPositionAndState = function (oTooltip, fValue) {
 			var oTooltipsContainer = this.getAggregation("_tooltipContainer");

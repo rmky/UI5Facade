@@ -49,6 +49,9 @@ sap.ui.define([
 
 
 
+	// shortcut for sap.m.ButtonType
+	var ButtonType = library.ButtonType;
+
 	// shortcut for sap.m.ToolbarDesign
 	var ToolbarDesign = library.ToolbarDesign;
 
@@ -76,7 +79,7 @@ sap.ui.define([
 	 * @class Table Personalization Dialog
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @alias sap.m.TablePersoDialog
 	 */
 	var TablePersoDialog = ManagedObject.extend("sap.m.TablePersoDialog", /** @lends sap.m.TablePersoDialog */
@@ -417,7 +420,7 @@ sap.ui.define([
 					Device.resize.detachHandler(that._fnHandleResize);
 					that.fireConfirm();
 				},
-				type : sap.m.ButtonType.Emphasized
+				type : ButtonType.Emphasized
 			}),
 			rightButton : new Button(this.getId() + "-buttonCancel", {
 				text: this._oRb.getText("PERSODIALOG_CANCEL"),

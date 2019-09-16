@@ -59,7 +59,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IContextMenu
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @since 1.21.0
 	 *
 	 * @constructor
@@ -175,8 +175,8 @@ sap.ui.define([
 	 * The function is called once per MenuItem.
 	 *
 	 * @param {function} fn The callback function
-	 * @protected
-	 * @sap-restricted sap.m.Menu
+	 * @private
+	 * @ui5-restricted sap.m.Menu
 	 * @returns void
 	 */
 	Menu.prototype._setCustomEnhanceAccStateFunction = function(fn) {
@@ -969,28 +969,13 @@ sap.ui.define([
 
 		if (!oItem) {
 			this.oHoveredItem = null;
-			jQuery(this.getDomRef()).removeAttr("aria-activedescendant");
 			return;
 		}
 
 		this.oHoveredItem = oItem;
 		oItem.hover(true, this);
-		this._setActiveDescendant(this.oHoveredItem);
 
 		this.scrollToItem(this.oHoveredItem);
-	};
-
-	Menu.prototype._setActiveDescendant = function(oItem){
-		if (sap.ui.getCore().getConfiguration().getAccessibility() && oItem) {
-			var that = this;
-			that.$().removeAttr("aria-activedescendant");
-			setTimeout(function(){
-				//Setting active descendant must be a bit delayed. Otherwise the screenreader does not announce it.
-				if (that.oHoveredItem === oItem) {
-					that.$().attr("aria-activedescendant", that.oHoveredItem.getId());
-				}
-			}, 10);
-		}
 	};
 
 	/**
@@ -1166,7 +1151,6 @@ sap.ui.define([
 	Menu.prototype.focus = function(){
 		if (this.bOpen) {
 			Control.prototype.focus.apply(this, arguments);
-			this._setActiveDescendant(this.oHoveredItem);
 		}
 	};
 

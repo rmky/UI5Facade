@@ -22,7 +22,7 @@ sap.ui.define(['sap/m/OverflowToolbarButton', 'sap/m/ButtonRenderer'],
 	 * @extends sap.m.OverflowToolbarButton
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @private
@@ -31,6 +31,9 @@ sap.ui.define(['sap/m/OverflowToolbarButton', 'sap/m/ButtonRenderer'],
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var SemanticOverflowToolbarButton = OverflowToolbarButton.extend("sap.m.semantic.SemanticOverflowToolbarButton", /** @lends sap.m.SemanticOverflowToolbarButton.prototype */ {
+		metadata: {
+			library: "sap.m"
+		},
 		renderer: ButtonRenderer.render
 	});
 

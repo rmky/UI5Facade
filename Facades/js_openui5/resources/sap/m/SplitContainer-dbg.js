@@ -66,7 +66,7 @@ function(
 	 *
 	 * NOTE: This control must be rendered as a full screen control in order to make the show/hide master area work properly.
 	 * @extends sap.ui.core.Control
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @public
@@ -157,7 +157,7 @@ function(
 			/**
 			 * Determines the content entities, between which the SplitContainer navigates in master area.
 			 * These can be of type sap.m.Page, sap.ui.core.View, sap.m.Carousel or any other control with fullscreen/page semantics.
-			 * These aggregated controls receive navigation events like {@link sap.m.NavContainerChild#beforeShow beforeShow},
+			 * These aggregated controls receive navigation events like {@link sap.m.NavContainerChild#event:beforeShow beforeShow},
 			 * they are documented in the pseudo interface {@link sap.m.NavContainerChild sap.m.NavContainerChild}.
 			 */
 			masterPages : {type : "sap.ui.core.Control", multiple : true, singularName : "masterPage"},
@@ -165,7 +165,7 @@ function(
 			/**
 			 * Determines the content entities, between which the SplitContainer navigates in detail area.
 			 * These can be of type sap.m.Page, sap.ui.core.View, sap.m.Carousel or any other control with fullscreen/page semantics.
-			 * These aggregated controls receive navigation events like {@link sap.m.NavContainerChild#beforeShow beforeShow},
+			 * These aggregated controls receive navigation events like {@link sap.m.NavContainerChild#event:beforeShow beforeShow},
 			 * they are documented in the pseudo interface {@link sap.m.NavContainerChild sap.m.NavContainerChild}.
 			 */
 			detailPages : {type : "sap.ui.core.Control", multiple : true, singularName : "detailPage"},

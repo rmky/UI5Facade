@@ -12,6 +12,7 @@ sap.ui.define([
 	'sap/f/cards/DataProviderFactory',
 	'sap/ui/model/json/JSONModel',
 	"sap/f/cards/HeaderRenderer",
+	"sap/f/cards/IconFormatter",
 	"sap/f/cards/ActionEnablement",
 	"sap/base/strings/formatMessage"
 ], function (
@@ -23,6 +24,7 @@ sap.ui.define([
 	DataProviderFactory,
 	JSONModel,
 	HeaderRenderer,
+	IconFormatter,
 	ActionEnablement,
 	formatMessage
 ) {
@@ -51,7 +53,7 @@ sap.ui.define([
 	 * @implements sap.f.cards.IHeader
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @public
@@ -61,6 +63,7 @@ sap.ui.define([
 	 */
 	var Header = Control.extend("sap.f.cards.Header", {
 		metadata: {
+			library: "sap.f",
 			interfaces: ["sap.f.cards.IHeader"],
 			properties: {
 
@@ -227,7 +230,24 @@ sap.ui.define([
 		this._getTitle().setText(this.getTitle());
 		this._getSubtitle().setText(this.getSubtitle());
 		this._getAvatar().setDisplayShape(this.getIconDisplayShape());
-		this._getAvatar().setSrc(this.getIconSrc());
+
+		// Format the relative icon src for the integration card only.
+		if (this.isInsideIntegrationCard() && this.getIconSrc()) {
+			var sAppId = this.getModel("parameters").getProperty("/appId");
+			var oSrcBindingInfo = this.getBindingInfo("iconSrc");
+
+			if (oSrcBindingInfo) {
+				oSrcBindingInfo.formatter = function (sValue) {
+					return IconFormatter.formatSrc(sValue, sAppId);
+				};
+				this._getAvatar().bindProperty("src", oSrcBindingInfo);
+			} else {
+				this._getAvatar().setSrc(IconFormatter.formatSrc(this.getIconSrc(), sAppId));
+			}
+		} else {
+			this._getAvatar().setSrc(this.getIconSrc());
+		}
+
 		this._getAvatar().setInitials(this.getIconInitials());
 	};
 
@@ -265,6 +285,17 @@ sap.ui.define([
 	 */
 	Header.prototype.ontap = function () {
 		this.firePress();
+	};
+
+	/**
+	 * @returns {boolean} Wether or not the parent of the header is an integration card.
+	 */
+	Header.prototype.isInsideIntegrationCard = function () {
+		var oParent = this.getParent();
+		if (oParent && oParent.isA("sap.ui.integration.widgets.Card")) {
+			return true;
+		}
+		return false;
 	};
 
 	/**

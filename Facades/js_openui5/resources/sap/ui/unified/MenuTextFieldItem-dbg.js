@@ -45,7 +45,7 @@ sap.ui.define([
 	 * @extends sap.ui.unified.MenuItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @since 1.21.0
 	 *
 	 * @constructor
@@ -103,12 +103,18 @@ sap.ui.define([
 
 		rm.write("<li ");
 		rm.writeAttribute("class", sClass);
+
+		if (!bIsEnabled) {
+			rm.writeAttribute("disabled", "disabled");
+		}
+
 		rm.writeElementData(oItem);
 
 		// ARIA
 		if (oInfo.bAccessible) {
 			rm.writeAttribute("role", "menuitem");
-			rm.writeAttribute("aria-disabled", !bIsEnabled);
+			rm.writeAttribute("aria-posinset", oInfo.iItemNo);
+			rm.writeAttribute("aria-setsize", oInfo.iTotalItems);
 		}
 
 		// Left border
@@ -137,11 +143,9 @@ sap.ui.define([
 		if (oInfo.bAccessible) {
 			rm.writeAccessibilityState(oItem, {
 				role: "textbox",
-				disabled: !bIsEnabled,
+				disabled: null, // Prevent aria-disabled as a disabled attribute is enough
 				multiline: false,
 				autocomplete: "none",
-				posinset: oInfo.iItemNo,
-				setsize: oInfo.iTotalItems,
 				labelledby: {value: /*oMenu.getId() + "-label " + */itemId + "-lbl", append: true}
 			});
 		}

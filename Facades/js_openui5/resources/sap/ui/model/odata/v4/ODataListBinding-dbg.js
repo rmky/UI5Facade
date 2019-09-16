@@ -61,8 +61,7 @@ sap.ui.define([
 	 * @param {object} [mParameters]
 	 *   Map of binding parameters
 	 * @throws {Error}
-	 *   If incorrect binding parameters are provided, an unsupported operation mode is used, or
-	 *   if any given filter including their embedded filters is marked as case insensitive
+	 *   If incorrect binding parameters are provided or an unsupported operation mode is used
 	 *
 	 * @alias sap.ui.model.odata.v4.ODataListBinding
 	 * @author SAP SE
@@ -75,7 +74,7 @@ sap.ui.define([
 	 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#hasPendingChanges as #hasPendingChanges
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#isInitial as #isInitial
@@ -103,7 +102,6 @@ sap.ui.define([
 				}
 				this.oAggregation = null;
 				this.aApplicationFilters = _Helper.toArray(vFilters);
-				ODataListBinding.checkCaseSensitiveFilters(this.aApplicationFilters);
 
 				this.sChangeReason = oModel.bAutoExpandSelect ? "AddVirtualContext" : undefined;
 				this.oDiff = undefined;
@@ -182,34 +180,6 @@ sap.ui.define([
 	};
 
 	/**
-	 * Check whether all given <code>sap.ui.model.Filter</code> and their embedded filters are case
-	 * sensitive.
-	 *
-	 * @param {sap.ui.model.Filter[]} aFilters
-	 *   An array of filter objects
-	 * @throws {Error}
-	 *   If any given filter is marked as case insensitive
-	 *
-	 * @private
-	 */
-	ODataListBinding.checkCaseSensitiveFilters = function (aFilters) {
-		function checkSingleFilter(oFilter) {
-			if (oFilter.bCaseSensitive === false) {
-				throw new Error("Filter for path '" + oFilter.sPath
-					+ "' has unsupported value for 'caseSensitive' : false");
-			}
-			if (oFilter.aFilters) {
-				ODataListBinding.checkCaseSensitiveFilters(oFilter.aFilters);
-			}
-			if (oFilter.oCondition) {
-				checkSingleFilter(oFilter.oCondition);
-			}
-		}
-
-		aFilters.forEach(checkSingleFilter);
-	};
-
-	/**
 	 * Deletes the entity identified by the edit URL.
 	 *
 	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oGroupLock
@@ -219,17 +189,21 @@ sap.ui.define([
 	 *   The edit URL to be used for the DELETE request
 	 * @param {number} oContext
 	 *   The context to be deleted
+	 * @param {object} [oETagEntity]
+	 *   An entity with the ETag of the binding for which the deletion was requested. This is
+	 *   provided if the deletion is delegated from a context binding with empty path to a list
+	 *   binding.
 	 * @returns {Promise}
 	 *   A promise which is resolved without a result in case of success, or rejected with an
 	 *   instance of <code>Error</code> in case of failure.
 	 *
 	 * @private
 	 */
-	ODataListBinding.prototype._delete = function (oGroupLock, sEditUrl, oContext) {
+	ODataListBinding.prototype._delete = function (oGroupLock, sEditUrl, oContext, oETagEntity) {
 		var bFireChange = false,
 			that = this;
 
-		return this.deleteFromCache(oGroupLock, sEditUrl, String(oContext.iIndex),
+		return this.deleteFromCache(oGroupLock, sEditUrl, String(oContext.iIndex), oETagEntity,
 			function (iIndex, aEntities) {
 				var sContextPath, i, sPredicate, sResolvedPath, i$skipIndex;
 
@@ -278,6 +252,38 @@ sap.ui.define([
 				that._fireChange({reason : ChangeReason.Remove});
 			}
 		});
+	};
+
+	/**
+	 * @override
+	 * @see sap.ui.model.odata.v4.ODataBinding#adjustPredicate
+	 */
+	ODataListBinding.prototype.adjustPredicate = function (sTransientPredicate, sPredicate,
+			oContext) {
+		var that = this;
+
+		/*
+		 * Replace $uid also in previous data to avoid useless diff in ODLB#getContexts.
+		 *
+		 * @param {string} sOldPath - The old path containing the transient predicate
+		 * @param {string} sNewPath - The path with the transient predicate replaced
+		 */
+		function adjustPreviousData(sOldPath, sNewPath) {
+			var iIndex = that.aPreviousData.indexOf(sOldPath);
+
+			if (iIndex >= 0) {
+				that.aPreviousData[iIndex] = sNewPath;
+			}
+		}
+
+		if (oContext) {
+			oContext.adjustPredicate(sTransientPredicate, sPredicate, adjustPreviousData);
+		} else {
+			this.oHeaderContext.adjustPredicate(sTransientPredicate, sPredicate);
+			this.aContexts.forEach(function (oContext) {
+				oContext.adjustPredicate(sTransientPredicate, sPredicate, adjustPreviousData);
+			});
+		}
 	};
 
 	/**
@@ -334,16 +340,22 @@ sap.ui.define([
 	};
 
 	/**
-	 * The 'change' event is fired when new contexts are created or its parent context is changed.
-	 * Controls use the event to get notified about changes to the binding contexts of this
-	 * list binding. Registered event handlers are called with the change reason as parameter.
+	 * The 'change' event is fired when new contexts are created or removed, or the binding's parent
+	 * context is changed. Controls use the event to get notified about changes to the binding
+	 * contexts of this list binding. Registered event handlers are called with the reason and
+	 * detailed reason as parameters.
 	 *
 	 * @param {sap.ui.base.Event} oEvent
 	 * @param {object} oEvent.getParameters()
 	 * @param {sap.ui.model.ChangeReason} oEvent.getParameters().reason
-	 *   The reason for the 'change' event: {@link sap.ui.model.ChangeReason.Change} when a new
-	 *   context is created, or {@link sap.ui.model.ChangeReason.Context} when the parent context is
-	 *   changed
+	 *   The reason for the 'change' event: {@link sap.ui.model.ChangeReason.Add} when a new
+	 *   context is created, {@link sap.ui.model.ChangeReason.Remove} when a context is removed,
+	 *   {@link sap.ui.model.ChangeReason.Context} when the parent context is changed, or
+	 *   {@link sap.ui.model.ChangeReason.Change} for other changes
+	 * @param {string} oEvent.getParameters().detailedReason
+	 *   During automatic determination of $expand and $select, a "virtual" context is first added
+	 *   with detailed reason "AddVirtualContext" and then removed with detailed reason
+	 *   "RemoveVirtualContext" (since 1.69.0); <code>undefined</code> is used in all other cases
 	 *
 	 * @event
 	 * @name sap.ui.model.odata.v4.ODataListBinding#change
@@ -623,18 +635,13 @@ sap.ui.define([
 				that.fireEvent("createSent", {context : oContext});
 			}
 		).then(function (oCreatedEntity) {
-			var sGroupId, iIndex, sPredicate;
+			var sGroupId, sPredicate;
 
 			if (!(oInitialData && oInitialData["@$ui5.keepTransientPath"])) {
 				// refreshSingle requires the new key predicate in oContext.getPath()
 				sPredicate = _Helper.getPrivateAnnotation(oCreatedEntity, "predicate");
 				if (sPredicate) {
-					oContext.sPath = sResolvedPath + sPredicate;
-					iIndex = that.aPreviousData.indexOf(sTransientPath);
-					if (iIndex >= 0) {
-						// replace $uid also in previous data to avoid useless diff
-						that.aPreviousData[iIndex] = oContext.sPath;
-					}
+					that.adjustPredicate(sTransientPredicate, sPredicate, oContext);
 					that.oModel.checkMessages();
 				}
 			}
@@ -680,6 +687,7 @@ sap.ui.define([
 	 */
 	ODataListBinding.prototype.createContexts = function (iStart, iLength, aResults) {
 		var bChanged = false,
+			oContext,
 			sContextPath,
 			i,
 			iCount = aResults.$count,
@@ -718,26 +726,24 @@ sap.ui.define([
 			if (this.aContexts[i] === undefined) {
 				bChanged = true;
 				i$skipIndex = i - this.iCreatedContexts; // index on server ($skip)
-				sPredicate = _Helper.getPrivateAnnotation(aResults[i - iStart], "predicate");
+				sPredicate = _Helper.getPrivateAnnotation(aResults[i - iStart], "predicate")
+					|| _Helper.getPrivateAnnotation(aResults[i - iStart], "transientPredicate");
 				sContextPath = sPath + (sPredicate || "/" + i$skipIndex);
-				if (sContextPath in this.mPreviousContextsByPath) {
-					this.aContexts[i] = this.mPreviousContextsByPath[sContextPath];
+				oContext = this.mPreviousContextsByPath[sContextPath];
+				if (oContext && (!oContext.created() || oContext.isTransient())) {
+					// reuse the previous context, unless it is created and persisted
 					delete this.mPreviousContextsByPath[sContextPath];
-					this.aContexts[i].iIndex = i$skipIndex;
-					this.aContexts[i].checkUpdate();
+					oContext.iIndex = i$skipIndex;
+					oContext.checkUpdate();
 				} else {
-					this.aContexts[i] = Context.create(oModel, this, sContextPath, i$skipIndex);
+					oContext = Context.create(oModel, this, sContextPath, i$skipIndex);
 				}
+				this.aContexts[i] = oContext;
 			}
 		}
 		// destroy previous contexts which are not reused
 		if (Object.keys(this.mPreviousContextsByPath).length) {
-			sap.ui.getCore().addPrerenderingTask(function () {
-				Object.keys(that.mPreviousContextsByPath).forEach(function (sPath) {
-					that.mPreviousContextsByPath[sPath].destroy();
-					delete that.mPreviousContextsByPath[sPath];
-				});
-			});
+			sap.ui.getCore().addPrerenderingTask(this.destroyPreviousContexts.bind(this));
 		}
 		if (iCount !== undefined) {
 			this.bLengthFinal = true;
@@ -779,6 +785,7 @@ sap.ui.define([
 		this.aContexts.forEach(function (oContext) {
 			oContext.destroy();
 		});
+		this.destroyPreviousContexts();
 		if (this.oHeaderContext) {
 			this.oHeaderContext.destroy();
 		}
@@ -822,15 +829,32 @@ sap.ui.define([
 			this.bCreatedAtEnd = undefined;
 		}
 		this.aContexts.splice(iIndex, 1);
-		if (bDestroyLater) {
+		if (bDestroyLater && this.iCurrentEnd) {
 			// Add the context to mPreviousContextsByPath although it definitely won't be reused.
-			// Then it is destroyed later.
+			// Then it is destroyed later, but only if there is a listener (iCurrentEnd is set by
+			// getContexts and mPreviousContextsByPath is only cleared when getContexts is called)
 			this.mPreviousContextsByPath[oContext.getPath()] = oContext;
 		} else {
 			oContext.destroy();
 		}
 		// The path of all contexts in aContexts after the removed one is untouched, still points to
 		// the same data, hence no checkUpdate is needed.
+	};
+
+	/**
+	 * Clears mPreviousContextsByPath, destroying all contexts.
+	 *
+	 * @private
+	 */
+	ODataListBinding.prototype.destroyPreviousContexts = function () {
+		var mPreviousContextsByPath = this.mPreviousContextsByPath;
+
+		if (mPreviousContextsByPath) { // binding may have been destroyed already
+			Object.keys(mPreviousContextsByPath).forEach(function (sPath) {
+				mPreviousContextsByPath[sPath].destroy();
+			});
+			this.mPreviousContextsByPath = {};
+		}
 	};
 
 	/**
@@ -889,6 +913,106 @@ sap.ui.define([
 	};
 
 	/**
+	 * Fetches the data and creates contexts for the given range.
+	 *
+	 * @param {number} iStart
+	 *   The index where to start the retrieval of contexts
+	 * @param {number} iLength
+	 *   The number of contexts to retrieve beginning from the start index, <code>Infinity</code>
+	 *   may be used to retrieve all data
+	 * @param {number} iMaximumPrefetchSize
+	 *   The maximum number of rows to read before and after the given range
+	 * @param {sap.ui.model.odata.v4.lib._GroupLock} [oGroupLock]
+	 *   A lock for the group ID to be used, defaults to the binding's group ID
+	 * @param {boolean} [bAsync]
+	 *   Whether the function must be async even if the data is available synchronously
+	 * @param {function} [fnDataRequested]
+	 *   The function is called just before a back-end request is sent.
+	 *   If no back-end request is needed, the function is not called.
+	 * @returns {sap.ui.base.SyncPromise|Promise}
+	 *   A promise that resolves with a boolean indicating whether the binding's contexts have been
+	 *   modified; it rejects when iStart or iLength are negative or when the request failed
+	 *
+	 * @private
+	 */
+	ODataListBinding.prototype.fetchContexts = function (iStart, iLength, iMaximumPrefetchSize,
+			oGroupLock, bAsync, fnDataRequested) {
+		var oPromise,
+			that = this;
+
+		if (this.bCreatedAtEnd) {
+			// Note: We still have to read iLength rows in this case to get all entities from
+			// the server. The created entities then are placed behind using the calculated or
+			// estimated length.
+			iStart += this.iCreatedContexts;
+		}
+		oGroupLock = oGroupLock || this.lockGroup();
+		oPromise = this.fetchData(iStart, iLength, iMaximumPrefetchSize, oGroupLock,
+			fnDataRequested);
+		if (bAsync) {
+			oPromise = Promise.resolve(oPromise);
+		}
+
+		return oPromise.then(function (oResult) {
+			return oResult && that.createContexts(iStart, iLength, oResult.value);
+		}, function (oError) {
+			oGroupLock.unlock(true);
+			throw oError;
+		});
+	};
+
+	/**
+	 * Reads the requested range from the cache and returns an object as described in _Cache#read.
+	 *
+	 * @param {number} iIndex
+	 *   The start index of the range
+	 * @param {number} iLength
+	 *   The length of the range, <code>Infinity</code> may be used to retrieve all data
+	 * @param {number} iMaximumPrefetchSize
+	 *   The maximum number of rows to read before and after the given range
+	 * @param {sap.ui.model.odata.v4.lib._GroupLock} [oGroupLock]
+	 *   A lock for the group ID to be used, defaults to the binding's group ID
+	 * @param {function} [fnDataRequested]
+	 *   The function is called just before a back-end request is sent.
+	 *   If no back-end request is needed, the function is not called.
+	 * @returns {sap.ui.base.SyncPromise}
+	 *   A promise to be resolved with the requested range as described in _Cache#read, or
+	 *   <code>undefined</code> w/o reading if the result is irrelevant because the context changed
+	 *
+	 * @private
+	 */
+	ODataListBinding.prototype.fetchData = function (iIndex, iLength, iMaximumPrefetchSize,
+		oGroupLock, fnDataRequested) {
+		var oContext = this.oContext,
+			that = this;
+
+		return this.oCachePromise.then(function (oCache) {
+			// ensure that the result is still relevant
+			if (that.bRelative && oContext !== that.oContext) {
+				return undefined;
+			}
+
+			if (oCache) {
+				return oCache.read(iIndex, iLength, iMaximumPrefetchSize, oGroupLock,
+					fnDataRequested);
+			}
+
+			oGroupLock.unlock();
+			return oContext.fetchValue(that.sReducedPath).then(function (aResult) {
+				var iCount;
+
+				// aResult may be undefined e.g. in case of a missing $expand in parent binding
+				aResult = aResult || [];
+				iCount = aResult.$count;
+				aResult = aResult.slice(iIndex, iIndex + iLength);
+				aResult.$count = iCount;
+
+				return {value : aResult};
+			});
+		});
+	};
+
+	/**
 	 * Requests a $filter query option value for the this binding; the value is computed from the
 	 * given arrays of dynamic application and control filters and the given static filter.
 	 *
@@ -917,18 +1041,24 @@ sap.ui.define([
 		 * @returns {string} The $filter value
 		 */
 		function getSingleFilterValue(oFilter, sEdmType, bWithinAnd) {
-			var sFilter,
-				sValue = _Helper.formatLiteral(oFilter.oValue1, sEdmType),
-				sFilterPath = decodeURIComponent(oFilter.sPath);
+			var sFilter, sFilterPath, bToLower, sValue;
+
+			function setCase(sText) {
+				return bToLower ? "tolower(" + sText + ")" : sText;
+			}
+
+			bToLower = sEdmType === "Edm.String" && oFilter.bCaseSensitive === false;
+			sFilterPath = setCase(decodeURIComponent(oFilter.sPath));
+			sValue = setCase(_Helper.formatLiteral(oFilter.oValue1, sEdmType));
 
 			switch (oFilter.sOperator) {
 				case FilterOperator.BT :
 					sFilter = sFilterPath + " ge " + sValue + " and " + sFilterPath + " le "
-						+ _Helper.formatLiteral(oFilter.oValue2, sEdmType);
+						+ setCase(_Helper.formatLiteral(oFilter.oValue2, sEdmType));
 					break;
 				case FilterOperator.NB :
 					sFilter = wrap(sFilterPath + " lt " + sValue + " or " + sFilterPath + " gt "
-						+ _Helper.formatLiteral(oFilter.oValue2, sEdmType), bWithinAnd);
+						+ setCase(_Helper.formatLiteral(oFilter.oValue2, sEdmType)), bWithinAnd);
 					break;
 				case FilterOperator.EQ :
 				case FilterOperator.GE :
@@ -1091,6 +1221,10 @@ sap.ui.define([
 	 * {@link sap.ui.model.odata.v4.ODataModel#resetChanges} to reset the changes before calling
 	 * {@link #filter}.
 	 *
+	 * Filters are case sensitive unless the property <code>caseSensitive</code> is set to
+	 * <code>false</code>. This property has to be set on each filter, it is not inherited from a
+	 * multi-filter.
+	 *
 	 * @param {sap.ui.model.Filter|sap.ui.model.Filter[]} [vFilters]
 	 *   The dynamic filters to be used; replaces the dynamic filters given in
 	 *   {@link sap.ui.model.odata.v4.ODataModel#bindList}.
@@ -1107,9 +1241,8 @@ sap.ui.define([
 	 * @returns {sap.ui.model.odata.v4.ODataListBinding}
 	 *   <code>this</code> to facilitate method chaining
 	 * @throws {Error}
-	 *   If there are pending changes, if an unsupported operation mode is used (see
-	 *   {@link sap.ui.model.odata.v4.ODataModel#bindList}), or if any given filter including their
-	 *   embedded filters is marked as case insensitive
+	 *   If there are pending changes or if an unsupported operation mode is used (see
+	 *   {@link sap.ui.model.odata.v4.ODataModel#bindList})
 	 *
 	 * @public
 	 * @see sap.ui.model.ListBinding#filter
@@ -1118,7 +1251,6 @@ sap.ui.define([
 	ODataListBinding.prototype.filter = function (vFilters, sFilterType) {
 		var aFilters = _Helper.toArray(vFilters);
 
-		ODataListBinding.checkCaseSensitiveFilters(aFilters);
 		if (this.sOperationMode !== OperationMode.Server) {
 			throw new Error("Operation mode has to be sap.ui.model.odata.OperationMode.Server");
 		}
@@ -1177,13 +1309,11 @@ sap.ui.define([
 	 */
 	ODataListBinding.prototype.getContexts = function (iStart, iLength, iMaximumPrefetchSize) {
 		var sChangeReason,
-			oContext = this.oContext,
 			aContexts,
 			bDataRequested = false,
 			bFireChange = false,
 			oGroupLock,
 			oPromise,
-			iReadStart,
 			bRefreshEvent = !!this.sChangeReason,
 			oVirtualContext,
 			that = this;
@@ -1205,7 +1335,7 @@ sap.ui.define([
 				+ " third parameter must not be set if extended change detection is enabled");
 		}
 
-		if (this.bRelative && !oContext) { // unresolved relative binding
+		if (this.bRelative && !this.oContext) { // unresolved relative binding
 			this.aPreviousData = []; // compute diff from scratch when binding is resolved again
 			return [];
 		}
@@ -1218,8 +1348,12 @@ sap.ui.define([
 			sap.ui.getCore().addPrerenderingTask(function () {
 				// Note: first result of getContexts after refresh is ignored
 				that.sChangeReason = "RemoveVirtualContext";
-				that._fireChange({reason : ChangeReason.Change});
+				that._fireChange({
+					detailedReason : that.sChangeReason,
+					reason : ChangeReason.Change
+				});
 				that.reset(ChangeReason.Refresh);
+				oVirtualContext.destroy();
 			}, true);
 			oVirtualContext = Context.create(this.oModel, this,
 				this.oModel.resolve(this.sPath, this.oContext) + "/" + Context.VIRTUAL,
@@ -1239,65 +1373,26 @@ sap.ui.define([
 
 		oGroupLock = this.oReadGroupLock;
 		this.oReadGroupLock = undefined;
-		if (!this.bUseExtendedChangeDetection || !this.oDiff) {
-			iReadStart = iStart;
-			if (this.bCreatedAtEnd) {
-				// Note: We still have to read iLength rows in this case to get all entities from
-				// the server. The created entities then are placed behind using the calculated or
-				// estimated length.
-				iReadStart += this.iCreatedContexts;
-			}
-			oPromise = this.oCachePromise.then(function (oCache) {
-				if (oCache) {
-					// getContexts needs no lock, only the group ID (or re-use the refresh lock)
-					oGroupLock = that.lockGroup(that.getGroupId(), oGroupLock);
-					return oCache.read(iReadStart, iLength, iMaximumPrefetchSize, oGroupLock,
-						function () {
-							bDataRequested = true;
-							that.fireDataRequested();
-						});
-				} else {
-					if (oGroupLock) {
-						oGroupLock.unlock();
-					}
-					return oContext.fetchValue(that.sPath).then(function (aResult) {
-						var iCount;
-
-						// aResult may be undefined e.g. in case of a missing $expand in
-						// parent binding
-						aResult = aResult || [];
-						iCount = aResult.$count;
-						aResult = aResult.slice(iReadStart, iReadStart + iLength);
-						aResult.$count = iCount;
-						return {
-							value : aResult
-						};
-					});
-				}
-			});
+		if (!this.oDiff) { // w/o E.C.D there won't be a diff
+			// make sure "refresh" is followed by async "change"
+			oPromise = this.fetchContexts(iStart, iLength, iMaximumPrefetchSize, oGroupLock,
+				/*bAsync=*/bRefreshEvent, function () {
+					bDataRequested = true;
+					that.fireDataRequested();
+				});
 			this.resolveRefreshPromise(oPromise);
-			if (oPromise.isFulfilled() && bRefreshEvent) {
-				// make sure "refresh" is followed by async "change"
-				oPromise = Promise.resolve(oPromise);
-			}
-			oPromise.then(function (oResult) {
-				var bChanged;
-
-				// ensure that the result is still relevant
-				if (!that.bRelative || that.oContext === oContext) {
-					bChanged = that.createContexts(iReadStart, iLength, oResult.value);
-					if (that.bUseExtendedChangeDetection) {
-						that.oDiff = {
-							aDiff : that.getDiff(iLength),
-							iLength : iLength
-						};
-					}
-					if (bFireChange) {
-						if (bChanged || (that.oDiff && that.oDiff.aDiff.length)) {
-							that._fireChange({reason : sChangeReason});
-						} else { // we cannot keep a diff if we do not tell the control to fetch it!
-							that.oDiff = undefined;
-						}
+			oPromise.then(function (bChanged) {
+				if (that.bUseExtendedChangeDetection) {
+					that.oDiff = {
+						aDiff : that.getDiff(iLength),
+						iLength : iLength
+					};
+				}
+				if (bFireChange) {
+					if (bChanged || (that.oDiff && that.oDiff.aDiff.length)) {
+						that._fireChange({reason : sChangeReason});
+					} else { // we cannot keep a diff if we do not tell the control to fetch it!
+						that.oDiff = undefined;
 					}
 				}
 				if (bDataRequested) {
@@ -1310,9 +1405,6 @@ sap.ui.define([
 				}
 				throw oError;
 			}).catch(function (oError) {
-				if (oGroupLock) {
-					oGroupLock.unlock(true);
-				}
 				that.oModel.reportError("Failed to get contexts for "
 						+ that.oModel.sServiceUrl
 						+ that.oModel.resolve(that.sPath, that.oContext).slice(1)
@@ -1691,7 +1783,10 @@ sap.ui.define([
 	ODataListBinding.prototype.initialize = function () {
 		if ((!this.bRelative || this.oContext) && !this.getRootBinding().isSuspended()) {
 			if (this.oModel.bAutoExpandSelect) {
-				this._fireChange({reason : ChangeReason.Change});
+				this._fireChange({
+					detailedReason : this.sChangeReason,
+					reason : ChangeReason.Change
+				});
 			} else {
 				this._fireRefresh({reason : ChangeReason.Refresh});
 			}
@@ -1703,7 +1798,7 @@ sap.ui.define([
 	 * server. If the length is a client side estimation <code>false</code> is returned.
 	 *
 	 * @returns {boolean}
-	 *   If <code>true</true> the length is determined by server side data
+	 *   If <code>true</code> the length is determined by server side data
 	 *
 	 * @public
 	 * @see sap.ui.model.ListBinding#isLengthFinal
@@ -1828,7 +1923,6 @@ sap.ui.define([
 				that._fireChange({reason : ChangeReason.Remove});
 			}
 
-			oGroupLock.setGroupId(oBinding.getGroupId());
 			aPromises.push(
 				(bAllowRemoval
 					? oCache.refreshSingleWithRemove(oGroupLock, sPath, oContext.getModelIndex(),
@@ -1875,11 +1969,65 @@ sap.ui.define([
 	};
 
 	/**
+	 * Requests the entities for the given index range of the binding's collection and resolves with
+	 * the corresponding contexts.
+	 *
+	 * @param {number} [iStart=0]
+	 *   The index where to start the retrieval of contexts; must be greater than or equal to 0
+	 * @param {number} [iLength]
+	 *   The number of contexts to retrieve beginning from the start index; defaults to the model's
+	 *   size limit, see {@link sap.ui.model.Model#setSizeLimit}; must be greater than 0,
+	 *   <code>Infinity</code> may be used to retrieve all data
+	 * @param {string} [sGroupId]
+	 *   The group ID to be used for the request; if not specified, the group ID for this binding is
+	 *   used, see {@link sap.ui.model.odata.v4.ODataListBinding#constructor}.
+	 *   Valid values are <code>undefined</code>, '$auto', '$auto.*', '$direct' or application group
+	 *   IDs as specified in {@link sap.ui.model.odata.v4.ODataModel}.
+	 * @returns {Promise<sap.ui.model.odata.v4.Context[]>}
+	 *   A promise which is resolved with the array of the contexts, the first entry containing the
+	 *   context for <code>iStart</code>; it is rejected if <code>iStart</code> or
+	 *   <code>iLength</code> are less than 0 or when requesting the data fails
+	 * @throws {Error} If the binding is relative and has no context, if the binding's root binding
+	 *   is suspended or if the given group ID is invalid
+	 *
+	 * @public
+	 * @since 1.70.0
+	 */
+	ODataListBinding.prototype.requestContexts = function (iStart, iLength, sGroupId) {
+		var that = this;
+
+		if (this.bRelative && !this.oContext) {
+			throw new Error("Unresolved binding: " + this.sPath);
+		}
+		this.checkSuspended();
+		this.oModel.checkGroupId(sGroupId);
+
+		iStart = iStart || 0;
+		iLength = iLength || this.oModel.iSizeLimit;
+		return Promise.resolve(this.fetchContexts(iStart, iLength, 0,
+			this.lockGroup(sGroupId, true)
+		).then(function (bChanged) {
+			if (bChanged) {
+				that._fireChange({reason : ChangeReason.Change});
+			}
+			return that.getContextsInViewOrder(iStart, iLength);
+		}, function (oError) {
+			that.oModel.reportError("Failed to get contexts for "
+				+ that.oModel.sServiceUrl
+				+ that.oModel.resolve(that.sPath, that.oContext).slice(1)
+				+ " with start index " + iStart + " and length " + iLength,
+				sClassName, oError);
+			throw oError;
+		}));
+	};
+
+	/**
 	 * @override
 	 * @see sap.ui.model.odata.v4.ODataParentBinding#requestSideEffects
 	 */
 	ODataListBinding.prototype.requestSideEffects = function (sGroupId, aPaths, oContext) {
-		var oModel = this.oModel,
+		var bAllContextsTransient,
+			oModel = this.oModel,
 			// Hash set of collection-valued navigation property meta paths (relative to the cache's
 			// root) which need to be refreshed, maps string to <code>true</code>
 			mNavigationPropertyPaths = {},
@@ -1920,6 +2068,14 @@ sap.ui.define([
 			if (bSingle) {
 				return that.refreshSingle(oContext, oModel.lockGroup(sGroupId), false);
 			}
+			if (that.aContexts.length) {
+				bAllContextsTransient = that.aContexts.every(function (oContext) {
+					return oContext.isTransient();
+				});
+				if (bAllContextsTransient) {
+					return SyncPromise.resolve();
+				}
+			}
 			return that.refreshInternal("", sGroupId, false, true);
 		});
 	};
@@ -1941,10 +2097,6 @@ sap.ui.define([
 
 		if (this.aContexts) {
 			this.aContexts.forEach(function (oContext) {
-				if (oContext.created()) {
-					oContext.oCreatePromise = undefined;
-					oContext.oSyncCreatePromise = undefined;
-				}
 				that.mPreviousContextsByPath[oContext.getPath()] = oContext;
 			});
 		}
@@ -2000,7 +2152,10 @@ sap.ui.define([
 			// In a refresh event the table would ignore the result -> no virtual context -> no
 			// auto-$expand/$select. The refresh event is sent later after the change event with
 			// reason "RemoveVirtualContext".
-			this._fireChange({reason : sChangeReason});
+			this._fireChange({
+				detailedReason : this.sChangeReason,
+				reason : sChangeReason
+			});
 		} else {
 			this._fireRefresh({reason : sChangeReason});
 		}

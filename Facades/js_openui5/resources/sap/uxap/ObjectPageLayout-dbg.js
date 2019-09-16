@@ -523,7 +523,7 @@ sap.ui.define([
 		this._$footerWrapper = [];                  //dom reference to the floating footer wrapper
 		this._$opWrapper = [];                      //dom reference to the header for Dark mode background image scrolling scenario
 		this._$anchorBar = [];                      //dom reference to the anchorBar
-		this._$headerTitle = [];                    //dom reference to the header title
+		this._$titleArea = [];                    //dom reference to the header title
 		this._$stickyAnchorBar = [];                //dom reference to the sticky anchorBar
 		this._$headerContent = [];                  //dom reference to the headerContent
 		this._$stickyHeaderContent = [];            //dom reference to the stickyHeaderContent
@@ -698,6 +698,21 @@ sap.ui.define([
 		}
 	};
 
+	/**
+	 * Snaps the header
+	 * and toggles the state of the title and the anchorBar accordingly
+	 *
+	 * @param bAppendHeaderToContent, determines if the header should be snapped
+	 * with or without scroll:
+	 *
+	 * (1) If the <code>bAppendHeaderToContent</code> is <code>true</code>, then the
+	 * snapping is done by ensuring the header content is visible but scrolled-out of view
+	 *
+	 * (2) If the <code>bAppendHeaderToContent</code> is <code>false</code>, then the
+	 * snapping is done by ensuring the header content is not visible using <code>display:none</code>
+	 *
+	 * @private
+	 */
 	ObjectPageLayout.prototype._snapHeader = function (bAppendHeaderToContent) {
 
 		var bIsPageTop,
@@ -710,6 +725,7 @@ sap.ui.define([
 		}
 
 		this._toggleHeaderTitle(false /* not expand */, true /* user interaction */);
+		this._toggleHeaderVisibility(bAppendHeaderToContent);
 		this._moveAnchorBarToTitleArea();
 
 		if (bAppendHeaderToContent) {
@@ -729,7 +745,6 @@ sap.ui.define([
 			return;
 		}
 
-		this._toggleHeaderVisibility(false);
 		this._bHeaderExpanded = false;
 
 		this._updateToggleHeaderVisualIndicators();
@@ -739,6 +754,15 @@ sap.ui.define([
 		this._requestAdjustLayout();
 	};
 
+	/**
+	 * Expands the header
+	 * and toggles the state of the title and the anchorBar accordingly
+	 *
+	 * @param bAppendHeaderToTitle, determines if the header should be in the
+	 * scrollable content-area or in the non-scrollable title-area
+	 *
+	 * @private
+	 */
 	ObjectPageLayout.prototype._expandHeader = function (bAppendHeaderToTitle) {
 
 		this._toggleHeaderTitle(true /* expand */, true /* user interaction */);
@@ -817,9 +841,10 @@ sap.ui.define([
 	 */
 	ObjectPageLayout.prototype._handleExpandButtonPressEventLifeCycle = function (bAttach) {
 		var oHeaderTitle = this.getHeaderTitle(),
+			bHasDynamicTitle = this._hasDynamicTitle(),
 			oExpandButton;
 
-		if (oHeaderTitle) {
+		if (oHeaderTitle && !bHasDynamicTitle) {
 			oExpandButton = oHeaderTitle.getAggregation("_expandButton");
 			if (oExpandButton) {
 				oExpandButton[bAttach ? "attachPress" : "detachPress"](this._handleExpandButtonPress, this);
@@ -1042,6 +1067,9 @@ sap.ui.define([
 			if (this.getUseIconTabBar()) {
 				this._setSelectedSectionId(sSectionToSelectID);
 				this._setCurrentTabSection(oSectionToSelect);
+				// in iconTabBar mode, only the subSections of the current section are shown
+				// => update the <code>this._bAllContentFitsContainer</code> value
+				this._bAllContentFitsContainer = this._hasSingleVisibleFullscreenSubSection(oSectionToSelect);
 			} else {
 				this.scrollToSection(sSectionToSelectID, 0);
 			}
@@ -1325,7 +1353,7 @@ sap.ui.define([
 
 	ObjectPageLayout.prototype._cacheDomElements = function () {
 		this._$footerWrapper = jQuery(document.getElementById(this.getId() + "-footerWrapper"));
-		this._$headerTitle = jQuery(document.getElementById(this.getId() + "-headerTitle"));
+		this._$titleArea = jQuery(document.getElementById(this.getId() + "-headerTitle"));
 		this._$anchorBar = jQuery(document.getElementById(this.getId() + "-anchorBar"));
 		this._$stickyAnchorBar = jQuery(document.getElementById(this.getId() + "-stickyAnchorBar"));
 		this._$opWrapper = jQuery(document.getElementById(this.getId() + "-opwrapper"));
@@ -1347,10 +1375,7 @@ sap.ui.define([
 	 * @private
 	 */
 	ObjectPageLayout.prototype._handleExpandButtonPress = function (oEvent) {
-		if (this._bStickyAnchorBar) {
-			this._moveHeaderToTitleArea();
-			this._toggleHeaderTitle(true /* expand */);
-		}
+		this._expandHeader(true);
 	};
 
 	/**
@@ -1360,9 +1385,9 @@ sap.ui.define([
 	ObjectPageLayout.prototype._toggleHeaderTitle = function (bExpand, bUserInteraction) {
 		var oHeaderTitle = this.getHeaderTitle();
 
-		// note that <code>this._$headerTitle</code> is the placeholder [of the sticky area] where both the header title and header content are placed
-		this._$headerTitle.toggleClass("sapUxAPObjectPageHeaderStickied", !bExpand);
-		this._$headerTitle.toggleClass("sapUxAPObjectPageHeaderSnappedTitleOnMobile",
+		// note that <code>this._$titleArea</code> is the placeholder [of the sticky area] where both the header title and header content are placed
+		this._$titleArea.toggleClass("sapUxAPObjectPageHeaderStickied", !bExpand);
+		this._$titleArea.toggleClass("sapUxAPObjectPageHeaderSnappedTitleOnMobile",
 				this._hasDynamicTitleWithSnappedTitleOnMobile() && !bExpand);
 
 		if (bExpand) {
@@ -1810,7 +1835,7 @@ sap.ui.define([
 	 * to the existing object, since it's layout might have changed and the app
 	 * needs to react to the new subsections in view.
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted
 	 */
 	ObjectPageLayout.prototype._triggerVisibleSubSectionsEvents = function () {
 		this._bDelayDOMBasedCalculations = false;
@@ -1854,6 +1879,22 @@ sap.ui.define([
 		if (this.getUseIconTabBar()) {
 			var oToSelect = ObjectPageSection._getClosestSection(oSection);
 
+			var bWasFullscreenMode = this._bAllContentFitsContainer,
+				bFullscreenModeChanged;
+
+			// the current tab changed => update the <code>this._bAllContentFitsContainer</code> accordingly
+			this._bAllContentFitsContainer = this._hasSingleVisibleFullscreenSubSection(oToSelect);
+			this._toggleScrolling(!this._bAllContentFitsContainer);
+
+			bFullscreenModeChanged = this._bAllContentFitsContainer !== bWasFullscreenMode;
+			if (bFullscreenModeChanged && !this._bHeaderExpanded) {
+				// call the snapping function again with the *latest* parameter value
+				// to properly switch between the two ways of snapping the header
+				// (snap *with* scroll VS snap *without* scroll)
+				this._snapHeader(!this._bAllContentFitsContainer);
+				this._bSupressModifyOnScrollOnce = true;
+			}
+
 			/* exclude the previously selected tab from propagation chain for performance reasons */
 			if (this._oCurrentTabSection) {
 				this._oCurrentTabSection._allowPropagationToLoadedViews(false);
@@ -1872,7 +1913,7 @@ sap.ui.define([
 			});
 		}
 
-		if (this._bHeaderInTitleArea && !this._shouldPreserveHeaderInTitleArea()) {
+		if (this._bHeaderInTitleArea && !this._shouldPreserveHeaderInTitleArea() && !this._bAllContentFitsContainer) {
 			this._moveHeaderToContentArea();
 			this._toggleHeaderTitle(false /* snap */);
 			this._bHeaderExpanded = false;
@@ -1923,6 +1964,13 @@ sap.ui.define([
 
 			this._scrollTo(iScrollTo, iDuration);
 		}
+	};
+
+	ObjectPageLayout.prototype._hasSingleVisibleFullscreenSubSection = function (oSection) {
+		var aVisibleSubSections = oSection.getSubSections().filter(function(oSubSection) {
+			return oSubSection.getVisible() && oSubSection._getInternalVisible() && (oSubSection.getBlocks().length > 0);
+		});
+		return (aVisibleSubSections.length === 1) && aVisibleSubSections[0].hasStyleClass(ObjectPageSubSection.FIT_CONTAINER_CLASS);
 	};
 
 	ObjectPageLayout.prototype._computeScrollDuration = function (iAppSpecifiedDuration, oTargetSection) {
@@ -3203,7 +3251,7 @@ sap.ui.define([
 	 * @protected
 	 */
 	ObjectPageLayout.prototype.invalidate = function (oOrigin) {
-		if (this.getUseIconTabBar() && oOrigin && (oOrigin instanceof ObjectPageSection) && !oOrigin.isActive()) {
+		if (this.getUseIconTabBar() && oOrigin && (oOrigin instanceof ObjectPageSection) && !oOrigin.isActive() && this._oSectionInfo[oOrigin.getId()]) {
 			return; // no need to invalidate when an inactive tab is changed
 		}
 
@@ -3294,7 +3342,7 @@ sap.ui.define([
 
 		//checking the $headerTitle we prevent from checking the headerHeights multiple times during the first rendering
 		//$headerTitle is set in the objectPageLayout.onAfterRendering, thus before the objectPageLayout is fully rendered once, we don't enter here multiple times (performance tweak)
-		if (this._$headerTitle.length > 0) {
+		if (this._$titleArea.length > 0) {
 
 			// read the headerContentHeight ---------------------------
 			// Note: we are using getBoundingClientRect on the Dom reference to get the correct height taking into account
@@ -3305,20 +3353,20 @@ sap.ui.define([
 			this.iStickyHeaderContentHeight = this._$stickyHeaderContent.height();
 
 			//figure out the anchorBarHeight  ------------------------
-			this.iAnchorBarHeight = this._bStickyAnchorBar ? this._$stickyAnchorBar.height() : this._$anchorBar.height();
+			this.iAnchorBarHeight = this._bStickyAnchorBar ? this._$stickyAnchorBar.outerHeight() : this._$anchorBar.outerHeight();
 
 			//in sticky mode, we need to calculate the size of original header
 			if (!this._bHeaderExpanded) {
 
 				//read the headerTitleStickied ---------------------------
-				this.iHeaderTitleHeightStickied = this._$headerTitle.height() - this.iAnchorBarHeight;
+				this.iHeaderTitleHeightStickied = this._$titleArea.height() - this.iAnchorBarHeight;
 
 				//adjust the headerTitle  -------------------------------
 				this.iHeaderTitleHeight = this._obtainExpandedTitleHeight(bPreviewTitleHeightViaDomClone);
 			} else { //otherwise it's the sticky that we need to calculate
 
 				//read the headerTitle -----------------------------------
-				this.iHeaderTitleHeight = this._$headerTitle.is(":visible") ? this._$headerTitle.height() : 0;
+				this.iHeaderTitleHeight = this._$titleArea.is(":visible") ? this._$titleArea.height() : 0;
 
 				//adjust headerTitleStickied ----------------------------
 				this.iHeaderTitleHeightStickied = this._obtainSnappedTitleHeight(bPreviewTitleHeightViaDomClone);
@@ -3334,11 +3382,12 @@ sap.ui.define([
 
 	ObjectPageLayout.prototype._appendTitleCloneToDOM = function (bEnableStickyMode) {
 
-		var $headerTitleClone = this._$headerTitle.clone();
+		var $headerTitle = this.getHeaderTitle().$(),
+			$headerTitleClone = $headerTitle.clone();
 		//prepare: make sure it won't be visible ever and fix width to the original headerTitle which is 100%
-		$headerTitleClone.css({left: "-10000px", top: "-10000px", width: this._$headerTitle.width() + "px"});
+		$headerTitleClone.css({left: "-10000px", top: "-10000px", width: $headerTitle.width() + "px"});
 		$headerTitleClone.toggleClass("sapUxAPObjectPageHeaderStickied", bEnableStickyMode);
-		$headerTitleClone.appendTo(this._$headerTitle.parent());
+		$headerTitleClone.appendTo(this._$titleArea.parent());
 
 		if (bEnableStickyMode) {
 			this.getHeaderTitle() && this.getHeaderTitle()._adaptLayoutForDomElement($headerTitleClone);
@@ -3352,6 +3401,10 @@ sap.ui.define([
 		var oTitle = this.getHeaderTitle(),
 			$Clone,
 			iHeight;
+
+		if (!oTitle) {
+			return 0;
+		}
 
 		// BCP: 1870298358 - setting overflow-y to hidden of the wrapper element to eliminate unwanted
 		// scrollbar appearing during measurement of the snapped title height
@@ -3380,6 +3433,10 @@ sap.ui.define([
 			iHeight,
 			iSectionsContainerHeight,
 			iSectionsContainerNewHeight;
+
+		if (!oTitle) {
+			return 0;
+		}
 
 		if (bViaClone) {
 			// BCP: 1870298358 - setting overflow-y to hidden of the wrapper element during clone to eliminate unwanted
@@ -4192,8 +4249,8 @@ sap.ui.define([
 	 * Sets a flag to [temporarily] deactivate any scrolling requested with the <code>sap.uxap.ObjectPageLayout.prototype._scrollTo</code> function
 	 * This flag is used by RTA for the purpose of postponing the auto-scrolling of the ObjectPage to its selected section
 	 * so that the scrolling does not start before RTA operation fully completed
-	 * @sap-restricted
 	 * @private
+	 * @ui5-restricted
 	 */
 	ObjectPageLayout.prototype._suppressScroll = function () {
 		this._bSuppressScroll = true;
@@ -4203,8 +4260,8 @@ sap.ui.define([
 	 * Un-sets the flag that deactivates scrolling requested with the <code>sap.uxap.ObjectPageLayout.prototype._scrollTo</code> function
 	 * This flag is used by RTA for the purpose of postponing/resuming the auto-scrolling of the ObjectPage to its selected section
 	 * so that the scrolling does not start before RTA operation fully completed
-	 * @sap-restricted
 	 * @private
+	 * @ui5-restricted
 	 */
 	ObjectPageLayout.prototype._resumeScroll = function () {
 		this._bSuppressScroll = false;

@@ -12,7 +12,7 @@ sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery"],
 	 * Handles dragging of a control over a given grid container.
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @extends sap.ui.base.Object
 	 *
@@ -29,7 +29,24 @@ sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery"],
 		/**
 		 * @type {jQuery} The indicator to show in the grid
 		 */
-		_$indicator: jQuery("<div class='sapUiDnDGridIndicator'></div>")
+		_$indicator: jQuery("<div class='sapUiDnDGridIndicator'></div>"),
+
+		/**
+		 * Constructor.
+		 */
+		constructor: function() {
+			// prepare drag end delegate for later use
+			this._oDragEndDelegate = {
+				ondragend: this.scheduleEndDrag.bind(this)
+			};
+		},
+
+		/**
+		 * Destroyer.
+		 */
+		destroy: function () {
+			this._oDragEndDelegate = null;
+		}
 	});
 
 	/**
@@ -69,6 +86,8 @@ sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery"],
 		oDropContainer.getAggregation(sTargetAggregation).forEach(function (oControl) {
 			oControl.addStyleClass("sapUiDnDGridControl"); // helps with locating the controls later
 		});
+
+		this._attachDragEndDelegate();
 
 		return this;
 	};
@@ -123,18 +142,61 @@ sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery"],
 	};
 
 	/**
-	 * Clean up after dragging is finished.
+	 * Schedule the execution of end drag which will hide the indicator and show the control.
+	 */
+	GridDragOver.prototype.scheduleEndDrag = function() {
+		if (!this._isDragActive()) {
+			return;
+		}
+
+		var oBinding = this._oDropContainer.getBindingInfo(this._sTargetAggregation);
+		if (oBinding && oBinding.template) {
+			// if there is template binding for target aggregation, wait for the framework to update items and then hide the indicator
+			setTimeout(this.endDrag.bind(this), 0);
+		} else {
+			// if there is no template binding for target aggregation, execute endDrag immediately
+			this.endDrag();
+		}
+	};
+
+	/**
+	 * Clean up after dragging is finished. This will hide the indicator and show the dragged control.
+	 * Use <code>scheduleEndDrag</code> if cleanup should be scheduled for a different tick and not executed immediately.
 	 */
 	GridDragOver.prototype.endDrag = function() {
+		if (!this._isDragActive()) {
+			return;
+		}
+
 		this._$indicator.detach();
 
 		// this._oDragControl.setVisible(true); // todo
 		this._showDraggedItem();
 
+		this._removeDragEndDelegate();
+
+		// fire private event for handling IE specific layout fixes
+		this._oDropContainer.fireEvent("_gridPolyfillAfterDragEnd", {
+			indicator: this._$indicator
+		});
+
+		this._$indicator.attr("style", ""); // VirtualGrid sets position 'absolute' to the indicator, which breaks calculations in other containers, such as GridList
+		this._oDragControl = null;
+		this._oDropContainer = null;
+		this._sTargetAggregation = null;
+
 		this._iDragFromIndex = null;
 		this._iDropPositionHoldStart = null;
 		this._mLastDropPosition = null;
 		this._mFreezePosition = null;
+	};
+
+	/**
+	 * Is the drag still active or it has ended.
+	 * @returns {bool} True if the drag is still active, false if it was ended.
+	 */
+	GridDragOver.prototype._isDragActive = function() {
+		return this._oDragControl && this._oDropContainer;
 	};
 
 	/**
@@ -145,6 +207,11 @@ sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery"],
 		var $targetGridItem = this._findContainingGridItem(mDropPosition.targetControl),
 			$insertTarget = $targetGridItem || mDropPosition.targetControl.$(),
 			mStyles;
+
+		if (this._oDropContainer.isA("sap.f.GridContainer")) {
+			// todo: find better way to find the item wrapper when it is not grid item, needed for IE
+			$insertTarget = $insertTarget.closest(".sapFGridContainerItemWrapper");
+		}
 
 		// indicator should be the same size as dragged item
 		if ($targetGridItem) { // target container is a grid
@@ -172,6 +239,13 @@ sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery"],
 
 		// when drop indicator is shown, it becomes the new "drag from"
 		this._iDragFromIndex = this._$indicator.index();
+
+		// fire private event for handling IE specific layout fixes
+		this._oDropContainer.fireEvent("_gridPolyfillAfterDragOver", {
+			indicator: this._$indicator,
+			width: this._mDragItemDimensions.rect.width,
+			height: this._mDragItemDimensions.rect.height
+		});
 	};
 
 	/**
@@ -191,13 +265,17 @@ sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery"],
 	 * Shows the control that is currently dragged.
 	 */
 	GridDragOver.prototype._showDraggedItem = function() {
-		this._oDragControl.$().show();
+
+		if (this._oDragControl.getDomRef()) {
+			this._oDragControl.$().show();
+		}
 		// this._oDragControl.setVisible(false); // todo, this brakes the drag session
 
 		var $gridItem = this._findContainingGridItem(this._oDragControl);
 		if ($gridItem) {
 			$gridItem.show();
 		}
+
 	};
 
 	/**
@@ -430,7 +508,9 @@ sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery"],
 		// note: this method can be improved, currently it handles most of the cases, but not all of them
 
 		// try around
-		var iStepX = 80, // px
+		var bIsRtl = sap.ui.getCore().getConfiguration().getRTL(),
+			iIsRtlModifier = bIsRtl ? -1 : 1,
+			iStepX = 80 * iIsRtlModifier, // px
 			iStepY = 20, // px
 			$found,
 			sDirection,
@@ -458,6 +538,23 @@ sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery"],
 			target: $found,
 			direction: sDirection
 		};
+	};
+
+	/**
+	 * Removes drag end delegate from drop container.
+	 */
+	GridDragOver.prototype._removeDragEndDelegate = function() {
+		if (this._oDropContainer) {
+			this._oDropContainer.removeEventDelegate(this._oDragEndDelegate);
+		}
+	};
+
+	/**
+	 * Attaches drag end delegate to the container over which we currently drag.
+	 */
+	GridDragOver.prototype._attachDragEndDelegate = function() {
+		this._removeDragEndDelegate(); // make sure we attach only once
+		this._oDropContainer.addEventDelegate(this._oDragEndDelegate);
 	};
 
 	/**

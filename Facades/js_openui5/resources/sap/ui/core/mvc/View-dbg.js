@@ -56,7 +56,7 @@ sap.ui.define([
 	 * Also see {@link topic:91f28be26f4d1014b6dd926db0e91070 "Support for Unique IDs"} in the documentation.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @public
 	 * @alias sap.ui.core.mvc.View
@@ -959,8 +959,8 @@ sap.ui.define([
 	 * Some internal use-cases need the View instance synchronously instead of the wrapping Promises
 	 * of the [...]View.create() factories: e.g. root-view creation in sap/ui/core/UIComponent
 	 * Internally, the views might still be loaded and processed asynchronously.
-	 * @sap-restricted sap.ui.core
 	 * @private
+	 * @ui5-restricted sap.ui.core
 	 * @see {sap.ui.view}
 	 */
 	View._legacyCreate = viewFactory;

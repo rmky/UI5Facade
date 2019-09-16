@@ -5,9 +5,9 @@
  */
 
 sap.ui.define([
-	"sap/ui/fl/Utils"
+	"sap/base/Log"
 ], function(
-	FlexUtils
+	Log
 ) {
 	"use strict";
 
@@ -16,7 +16,7 @@ sap.ui.define([
 	 *
 	 * @alias sap.ui.fl.changeHandler.MoveElements
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @experimental Since 1.34.0
 	 */
 	var MoveElements = { };
@@ -89,7 +89,7 @@ sap.ui.define([
 			var oMovedElement = getElementControlOrThrowError(mMovedElement, oModifier, oAppComponent, oView);
 
 			if (!oMovedElement) {
-				FlexUtils.log.warning("Element to move not found");
+				Log.warning("Element to move not found");
 				return;
 			}
 

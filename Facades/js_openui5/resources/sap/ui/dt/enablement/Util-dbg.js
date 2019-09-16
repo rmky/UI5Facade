@@ -24,7 +24,7 @@ function(
 	 * Utility functionality for Element tests
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @private
 	 * @static

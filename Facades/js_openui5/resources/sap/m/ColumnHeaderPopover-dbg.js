@@ -44,7 +44,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @since 1.63
@@ -60,6 +60,9 @@ sap.ui.define([
 
 			},
 			aggregations: {
+				/**
+				 * Note that the content created inside ColumnPopoverCustomItem can not be used more than once.
+				 */
 				items: {type : "sap.m.ColumnPopoverItem",  multiple : true, singularName : "item", bindable: true},
 				_popover: {type : "sap.m.ResponsivePopover", multiple : false, visibility : "hidden"}
 			},
@@ -368,10 +371,9 @@ sap.ui.define([
 		var oOpenerDomRef = oControl.getFocusDomRef();
 		if (oOpenerDomRef) {
 			oPopover.setOffsetY(-oOpenerDomRef.clientHeight);
+			oPopover.setContentWidth(oOpenerDomRef.clientWidth > 128 ? oOpenerDomRef.clientWidth + "px" : "128px");
 		}
-		if (oControl.$().width()) {
-			oPopover.setContentWidth(oControl.$().width() + "px");
-		}
+
 		oPopover.openBy(oControl);
 	};
 

@@ -25,7 +25,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @experimental
@@ -35,6 +35,7 @@ sap.ui.define([
 	 */
 	var HostConfiguration = Control.extend("sap.ui.integration.host.HostConfiguration", {
 		metadata: {
+			library: "sap.ui.integration",
 			properties: {
 				/**
 				 * The hostConfiguration json either given as a URL string or as a JSON Object

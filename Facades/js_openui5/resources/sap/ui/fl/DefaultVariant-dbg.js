@@ -14,7 +14,7 @@ sap.ui.define(["sap/ui/fl/Change"], function(Change) {
 	 * @alias sap.ui.fl.DefaultVariant
 	 * @author SAP SE
 	 *
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @experimental Since 1.25.0
 	 */
@@ -169,7 +169,8 @@ sap.ui.define(["sap/ui/fl/Change"], function(Change) {
 	 * @public
 	 */
 	DefaultVariant.prototype.createChangeObject = function(mParameters) {
-		var oFileContent, oChange;
+		var oFileContent;
+		var oChange;
 
 		oFileContent = this._createChangeFile(mParameters);
 		oChange = new Change(oFileContent);

@@ -257,7 +257,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableDragAndDropExtension
@@ -272,7 +272,7 @@ sap.ui.define([
 		_init: function(oTable, sTableType, mSettings) {
 			this._oDelegate = ExtensionDelegate;
 
-			oTable.addEventDelegate(this._oDelegate, oTable);
+			TableUtils.addDelegate(oTable, this._oDelegate, oTable);
 
 			return "DragAndDropExtension";
 		},

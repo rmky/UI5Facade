@@ -26,10 +26,10 @@ sap.ui.define([
 	 * @class XML serializer delegate class.
 	 * @extends sap.ui.core.util.serializer.delegate.Delegate
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @alias sap.ui.core.util.serializer.delegate.XML
 	 * @private
-	 * @sap-restricted sap.watt com.sap.webide
+	 * @ui5-restricted sap.watt com.sap.webide
 	 */
 	var XML = Delegate.extend("sap.ui.core.util.serializer.delegate.XML", /** @lends sap.ui.core.util.serializer.delegate.XML.prototype */
 	{

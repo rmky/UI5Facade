@@ -117,7 +117,6 @@ sap.ui.define([
 	 * @public
 	 * @since 1.56
 	 * @alias sap.ui.fl.variants.VariantManagement
-	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var VariantManagement = Control.extend("sap.ui.fl.variants.VariantManagement", /** @lends sap.ui.fl.variants.VariantManagement.prototype */ {
 		metadata: {
@@ -192,6 +191,14 @@ sap.ui.define([
 					type: "boolean",
 					group: "Misc",
 					defaultValue: false
+				},
+				/**
+				 * When set to false, doesn't reset the <code>VariantManagement</code> control to the default variant, when its binding context is changed.
+				 */
+				resetOnContextChange: {
+					type: "boolean",
+					group: "Misc",
+					defaultValue: true
 				}
 			},
 			associations: {
@@ -479,7 +486,9 @@ sap.ui.define([
 	 * Sets the popover title.
 	 */
 	VariantManagement.prototype._assignPopoverTitle = function() {
-		var sTitle, oInnerModel, oModel = this.getModel(this._sModelName);
+		var sTitle;
+		var oInnerModel;
+		var oModel = this.getModel(this._sModelName);
 		if (oModel && this.oContext) {
 			sTitle = oModel.getProperty(this.oContext + "/popoverTitle");
 		}
@@ -571,7 +580,8 @@ sap.ui.define([
 	};
 
 	VariantManagement.prototype._getItemByKey = function(sKey) {
-		var oItem = null, aItems = this._getItems();
+		var oItem = null;
+		var aItems = this._getItems();
 		aItems.some(function(oEntry) {
 			if (oEntry.key === sKey) {
 				oItem = oEntry;
@@ -642,7 +652,8 @@ sap.ui.define([
 	};
 
 	VariantManagement.prototype._setBindingContext = function() {
-		var oModel, sLocalId;
+		var oModel;
+		var sLocalId;
 
 		if (!this.oContext) {
 			oModel = this.getModel(this._sModelName);
@@ -681,7 +692,8 @@ sap.ui.define([
 		var oBinding = new PropertyBinding(oModel, this.oContext + "/variantsEditable");
 		oBinding.attachChange(function(oData) {
 			if (oData && oData.oSource && oData.oSource.oModel && oData.oSource.sPath) {
-				var oInnerModel, bFlag = oData.oSource.oModel.getProperty(oData.oSource.sPath);
+				var oInnerModel;
+				var bFlag = oData.oSource.oModel.getProperty(oData.oSource.sPath);
 				oInnerModel = this.getModel(VariantManagement.INNER_MODEL_NAME);
 				if (oInnerModel) {
 					oInnerModel.setProperty("/editable", bFlag);
@@ -1134,7 +1146,9 @@ sap.ui.define([
 	};
 
 	VariantManagement.prototype._handleVariantSaveAs = function(sNewVariantName) {
-		var sKey = null, sName = sNewVariantName.trim(), sManualKey = this.oInputManualKey.getValue().trim();
+		var sKey = null;
+		var sName = sNewVariantName.trim();
+		var sManualKey = this.oInputManualKey.getValue().trim();
 
 		if (sName === "") {
 			this.oInputName.setValueState(ValueState.Error);
@@ -1199,12 +1213,12 @@ sap.ui.define([
 	 * @public
 	 * @param {boolean} bCreateAlways - Indicates that if this is set to <code>true</code>, the former dialog will be destroyed before a new one is created
 	 */
-	VariantManagement.prototype.openManagementDialog = function(bCreateAlways) {
+	VariantManagement.prototype.openManagementDialog = function(bCreateAlways, sClass) {
 		if (bCreateAlways && this.oManagementDialog) {
 			this.oManagementDialog.destroy();
 			this.oManagementDialog = undefined;
 		}
-		this._openManagementDialog();
+		this._openManagementDialog(sClass);
 	};
 
 	VariantManagement.prototype._triggerSearchInManageDialog = function(oEvent, oManagementTable) {
@@ -1375,7 +1389,11 @@ sap.ui.define([
 	};
 
 	VariantManagement.prototype._templateFactoryManagementDialog = function(sId, oContext) {
-		var sTooltip = null, oDeleteButton, sBindingPath, oNameControl, oItem = oContext.getObject();
+		var sTooltip = null;
+		var oDeleteButton;
+		var sBindingPath;
+		var oNameControl;
+		var oItem = oContext.getObject();
 		if (!oItem) {
 			return undefined;
 		}
@@ -1493,7 +1511,7 @@ sap.ui.define([
 		return oTemplate;
 	};
 
-	VariantManagement.prototype._openManagementDialog = function() {
+	VariantManagement.prototype._openManagementDialog = function(sClass) {
 		this._createManagementDialog();
 
 		if (this.oVariantPopOver) {
@@ -1518,7 +1536,9 @@ sap.ui.define([
 				filters: this._getVisibleFilter()
 			});
 		}
-
+		if (sClass) {
+			this.oManagementDialog.addStyleClass(sClass);
+		}
 		this.oManagementDialog.open();
 	};
 
@@ -1544,15 +1564,16 @@ sap.ui.define([
 		}
 
 		if (this.getShowFavorites() && !oItem.favorite && oRadioButton) {
-			this._setFavoriteIcon(oRadioButton.getParent().getCells()[VariantManagement.COLUMN_FAV_IDX], oItem.favorite);
-			oItem.favorite = !oItem.favorite;
+			oItem.favorite = true;
+			this._setFavoriteIcon(oRadioButton.getParent().getCells()[VariantManagement.COLUMN_FAV_IDX], true);
 		}
 
 		this.setDefaultVariantKey(sKey);
 	};
 
 	VariantManagement.prototype._handleManageCancelPressed = function() {
-		var sDefaultVariantKey, oModel;
+		var sDefaultVariantKey;
+		var oModel;
 		this._getDeletedItems().forEach(function(oItem) {
 			oItem.visible = true;
 		});
@@ -1587,8 +1608,24 @@ sap.ui.define([
 		this._setFavoriteIcon(oIcon, oItem.favorite);
 	};
 
+	VariantManagement.prototype._getRowForKey = function(sKey) {
+		var oRowForKey = null;
+		if (this.oManagementTable) {
+			this.oManagementTable.getItems().some(function(oRow) {
+				if (sKey === oRow.getCells()[0].getBindingContext(this._sModelName).getObject().key) {
+					oRowForKey = oRow;
+				}
+
+				return oRowForKey !== null;
+			}.bind(this));
+		}
+
+		return oRowForKey;
+	};
+
 	VariantManagement.prototype._handleManageDeletePressed = function(oItem) {
-		var oModel, sKey = oItem.key;
+		var oModel;
+		var sKey = oItem.key;
 
 		// do not allow the deletion of the last entry
 		if (this.oManagementTable.getItems().length === 1) {
@@ -1604,6 +1641,16 @@ sap.ui.define([
 
 		if ((sKey === this.getDefaultVariantKey())) {
 			this.setDefaultVariantKey(this.getStandardVariantKey());
+			if (this.getShowFavorites()) {
+				var oNewDefaultItem = this._getItemByKey(this.getStandardVariantKey());
+				if (oNewDefaultItem && !oNewDefaultItem.favorite) {
+					var oRow = this._getRowForKey(this.getStandardVariantKey());
+					if (oRow) {
+						oNewDefaultItem.favorite = true;
+						this._setFavoriteIcon(oRow.getCells()[VariantManagement.COLUMN_FAV_IDX], true);
+					}
+				}
+			}
 		}
 
 		oModel = this.getModel(this._sModelName);
@@ -1649,7 +1696,9 @@ sap.ui.define([
 	};
 
 	VariantManagement.prototype._anyInErrorState = function(oManagementTable) {
-		var aItems, oInput, bInError = false;
+		var aItems;
+		var oInput;
+		var bInError = false;
 
 		if (oManagementTable) {
 			aItems = oManagementTable.getItems();
@@ -1741,7 +1790,9 @@ sap.ui.define([
 	};
 
 	VariantManagement.prototype._checkIsDuplicate = function(sValue, sKey) {
-		var bDublicate = false, aItems = this._getItems(), sLowerCaseValue = sValue.toLowerCase();
+		var bDublicate = false;
+		var aItems = this._getItems();
+		var sLowerCaseValue = sValue.toLowerCase();
 		aItems.some(function(oItem) {
 			if (oItem.title.toLowerCase() === sLowerCaseValue) {
 				if (sKey && (sKey === oItem.key)) {

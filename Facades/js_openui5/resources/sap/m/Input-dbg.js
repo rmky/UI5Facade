@@ -119,7 +119,7 @@ function(
 	 *
 	 * @extends sap.m.InputBase
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @public
@@ -503,6 +503,7 @@ function(
 
 		if (this.getShowSuggestion()) {
 
+			this._oSuggPopover._bAutocompleteEnabled = this.getAutocomplete();
 			if (this.getShowTableSuggestionValueHelp()) {
 				this._addShowMoreButton();
 			} else {
@@ -1350,7 +1351,7 @@ function(
 		 * @public
 		 * @param {boolean} bValue Show suggestions.
 		 * @return {sap.m.Input} this Input instance for chaining.
-	 	 */
+		 */
 		Input.prototype.setShowSuggestion = function(bValue){
 			this.setProperty("showSuggestion", bValue, true);
 
@@ -1378,7 +1379,7 @@ function(
 		 * @public
 		 * @param {boolean} bValue Show suggestions.
 		 * @return {sap.m.Input} this Input instance for chaining.
-	 	 */
+		 */
 		Input.prototype.setShowTableSuggestionValueHelp = function(bValue) {
 			this.setProperty("showTableSuggestionValueHelp", bValue, true);
 
@@ -1460,10 +1461,13 @@ function(
 		 * @return {object} Object containing the matched items and groups information
 		 */
 		Input.prototype._filterListItems = function (aItems, sTypedChars) {
-			var i, oListItem, oItem,
+			var i,
+				oListItem,
+				oItem,
 				aGroups = [],
 				aHitItems = [],
-				bFilter = this.getFilterSuggests();
+				bFilter = this.getFilterSuggests(),
+				bIsAnySuggestionAlreadySelected = false;
 
 			for (i = 0; i < aItems.length; i++) {
 				oItem = aItems[i];
@@ -1489,6 +1493,11 @@ function(
 					} else {
 						oListItem = new StandardListItem(oItem.getId() + "-sli");
 						oListItem.setTitle(oItem.getText());
+					}
+
+					if (!bIsAnySuggestionAlreadySelected && (this._oSuggPopover._sProposedItemText === aItems[i].getText())) {
+						oListItem.setSelected(true);
+						bIsAnySuggestionAlreadySelected = true;
 					}
 
 					if (aGroups.length) {
@@ -1523,7 +1532,8 @@ function(
 				bShowItem,
 				bFilter = this.getFilterSuggests(),
 				aHitItems = [],
-				aGroups = [];
+				aGroups = [],
+				bIsAnySuggestionAlreadySelected = false;
 
 			// filter tabular items
 			for (i = 0; i < aTabularRows.length; i++) {
@@ -1537,6 +1547,11 @@ function(
 
 					aTabularRows[i].setVisible(bShowItem);
 					bShowItem && aHitItems.push(aTabularRows[i]);
+
+					if (!bIsAnySuggestionAlreadySelected && bShowItem && this._oSuggPopover._sProposedItemText === this._fnRowResultFilter(aTabularRows[i])) {
+						aTabularRows[i].setSelected(true);
+						bIsAnySuggestionAlreadySelected = true;
+					}
 
 					if (aGroups.length && bShowItem) {
 						aGroups[aGroups.length - 1].visible = true;
@@ -1994,7 +2009,7 @@ function(
 	 */
 	Input.prototype.onfocusin = function(oEvent) {
 		InputBase.prototype.onfocusin.apply(this, arguments);
-		this.$().addClass("sapMInputFocused");
+		this.addStyleClass("sapMInputFocused");
 
 		// Close the ValueStateMessage when the suggestion popup is being opened.
 		// Only do this in case a popup is used.
@@ -2048,7 +2063,7 @@ function(
 	 */
 	Input.prototype.onfocusout = function(oEvent) {
 		InputBase.prototype.onfocusout.apply(this, arguments);
-		this.$().removeClass("sapMInputFocused");
+		this.removeStyleClass("sapMInputFocused");
 		this.closeValueStateMessage(this);
 		this.$("SuggDescr").text(""); // clear suggestion text, if any
 	};

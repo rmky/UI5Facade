@@ -39,7 +39,7 @@ function(
 		 * @class
 		 * The FormattedText control allows the usage of a limited set of tags for inline display of formatted text in HTML format.
 		 * @extends sap.ui.core.Control
-		 * @version 1.68.1
+		 * @version 1.70.0
 		 *
 		 * @constructor
 		 * @public
@@ -319,8 +319,8 @@ function(
 		 * Sets should a limited list of rendering rules be used instead of the default one. This limited list
 		 * will evaluate only a small subset of the default HTML elements and attributes.
 		 * @param {boolean} bLimit Should the control use the limited list
-		 * @sap-restricted sap.m.MessageStrip
 		 * @private
+		 * @ui5-restricted sap.m.MessageStrip
 		 */
 		FormattedText.prototype._setUseLimitedRenderingRules = function (bLimit) {
 			this._renderingRules = bLimit ? _limitedRenderingRules : _defaultRenderingRules;

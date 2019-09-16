@@ -44,7 +44,7 @@ sap.ui.define([
 	 * @class
 	 * DataSet
 	 * @extends sap.ui.core.Control
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @public
@@ -149,7 +149,7 @@ sap.ui.define([
 
 	DataSet.prototype.init = function() {
 		var that = this, oToolbar;
-		this.selectionModel = new SelectionModel(sap.ui.model.SelectionModel.SINGLE_SELECTION);
+		this.selectionModel = new SelectionModel(SelectionModel.SINGLE_SELECTION);
 		// init toolbar
 		this._oSegBut = new SegmentedButton();
 		this._oSegBut.attachSelect(function(oEvent){that.press(oEvent);}, that);
@@ -509,12 +509,12 @@ sap.ui.define([
 		if (!bMode) {
 			this.setProperty("multiSelect", false);
 			if (!!this.selectionModel) {
-				this.selectionModel.setSelectionMode(sap.ui.model.SelectionModel.SINGLE_SELECTION);
+				this.selectionModel.setSelectionMode(SelectionModel.SINGLE_SELECTION);
 			}
 		} else {
 			this.setProperty("multiSelect", true);
 			if (!!this.selectionModel) {
-				this.selectionModel.setSelectionMode(sap.ui.model.SelectionModel.MULTI_SELECTION);
+				this.selectionModel.setSelectionMode(SelectionModel.MULTI_SELECTION);
 			}
 		}
 		return this;

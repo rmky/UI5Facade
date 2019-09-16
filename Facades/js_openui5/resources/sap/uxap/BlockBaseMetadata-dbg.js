@@ -17,7 +17,7 @@ sap.ui.define(["sap/ui/thirdparty/jquery", "sap/ui/core/ElementMetadata", "sap/b
 	 *
 	 * @class
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @since 1.26
 	 * @alias sap.uxap.BlockBaseMetadata
 	 * @extends sap.ui.core.ElementMetadata

@@ -6,14 +6,12 @@
 sap.ui.define([
 	"sap/ui/fl/LrepConnector",
 	"sap/ui/rta/appVariant/AppVariantUtils",
-	"sap/ui/rta/appVariant/Feature",
 	"sap/ui/fl/registry/Settings",
 	"sap/base/i18n/ResourceBundle"
 ],
 function(
 	LrepConnector,
 	AppVariantUtils,
-	RtaFeature,
 	Settings,
 	ResourceBundle
 ) {
@@ -59,9 +57,7 @@ function(
 			if (sAppVarStatus !== 'E') {
 				return oI18n.getText("MAA_NEW_APP_VARIANT");
 			}
-			return undefined;
 		}
-		return undefined;
 	};
 
 	Utils._checkMenuItemOptions = function(oPreparedObject, bAdaptUIButtonEnabled) {
@@ -189,7 +185,6 @@ function(
 
 		// Calculate current status of application required for Overview Dialog
 		oAppVariantAttributes.currentStatus = this._calculateCurrentStatus(oAppVariantInfo.appId, oAppVariantInfo.appVarStatus);
-
 
 		var bIsS4HanaCloud;
 		return Settings.getInstance().then(function(oSettings) {

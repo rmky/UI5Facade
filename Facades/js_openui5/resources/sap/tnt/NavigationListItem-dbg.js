@@ -1,9 +1,24 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+
 // Provides control sap.tnt.NavigationListItem.
 sap.ui.define(["./library", 'sap/ui/core/Core', "sap/ui/core/Item", 'sap/ui/core/Icon',
-		'./NavigationList', 'sap/ui/core/InvisibleText', 'sap/ui/core/Renderer', 'sap/ui/core/IconPool', "sap/ui/events/KeyCodes"],
+		'./NavigationList', 'sap/ui/core/InvisibleText', 'sap/ui/core/Renderer', 'sap/ui/core/IconPool', "sap/ui/events/KeyCodes", "sap/ui/core/library",
+		// jQuery Plugin "addAriaLabelledBy"
+		"sap/ui/dom/jquery/Aria"],
 	function(library, Core, Item, Icon,
-	         NavigationList, InvisibleText, Renderer, IconPool, KeyCodes) {
+			 NavigationList, InvisibleText, Renderer, IconPool, KeyCodes, coreLibrary) {
 		"use strict";
+
+
+		// shortcut for sap.ui.core.TextAlign
+		var TextAlign = coreLibrary.TextAlign;
+
+		// shortcut for sap.ui.core.TextDirection
+		var TextDirection = coreLibrary.TextDirection;
 
 		/**
 		 * Constructor for a new NavigationListItem.
@@ -17,7 +32,7 @@ sap.ui.define(["./library", 'sap/ui/core/Core', "sap/ui/core/Item", 'sap/ui/core
 		 * @extends sap.ui.core.Item
 		 *
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.70.0
 		 *
 		 * @constructor
 		 * @public
@@ -642,11 +657,11 @@ sap.ui.define(["./library", 'sap/ui/core/Core', "sap/ui/core/Item", 'sap/ui/core
 			rm.writeClasses();
 
 			var textDir = this.getTextDirection();
-			if (textDir !== sap.ui.core.TextDirection.Inherit){
+			if (textDir !== TextDirection.Inherit){
 				rm.writeAttribute("dir", textDir.toLowerCase());
 			}
 
-			var textAlign = Renderer.getTextAlign(sap.ui.core.TextAlign.Begin, textDir);
+			var textAlign = Renderer.getTextAlign(TextAlign.Begin, textDir);
 			if (textAlign) {
 				rm.addStyle("text-align", textAlign);
 				rm.writeStyles();
@@ -784,6 +799,8 @@ sap.ui.define(["./library", 'sap/ui/core/Core', "sap/ui/core/Item", 'sap/ui/core
 				text = accType + " " + itemPosition + " " + selected + " " + itemText;
 
 			invisibleText.setText(text);
+
+			// jQuery Plugin "addAriaLabelledBy"
 			$focusedItem.addAriaLabelledBy(invisibleText.getId());
 		};
 
@@ -822,10 +839,5 @@ sap.ui.define(["./library", 'sap/ui/core/Core', "sap/ui/core/Item", 'sap/ui/core
 
 		return NavigationListItem;
 
-	}, /* bExport= */true);
+	});
 
-/*!
- * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
- * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
- */

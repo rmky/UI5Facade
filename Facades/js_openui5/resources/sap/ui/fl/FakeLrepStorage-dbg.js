@@ -14,7 +14,7 @@ sap.ui.define(function () {
 	 * @class
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @private
 	 * @static
@@ -98,8 +98,8 @@ sap.ui.define(function () {
 		 * @returns {Object[]} All local changes
 		 */
 		FakeLrepStorage.getChanges = function(sReference, sLayer) {
-			var aChanges = [],
-				oChange;
+			var aChanges = [];
+			var oChange;
 
 			this.forEachLrepChangeInLocalStorage(function(sKey) {
 				oChange = JSON.parse(oStorage[sKey]);
@@ -188,7 +188,8 @@ sap.ui.define(function () {
 		 * @param  {Object} oChange The change object
 		 */
 		FakeLrepStorage.saveChange = function(sId, oChange) {
-			var sChangeKey, sChange;
+			var sChangeKey;
+			var sChange;
 
 			if (sId && oChange) {
 				if (oChange.fileType === "ctrl_variant" && oChange.variantManagementReference) {

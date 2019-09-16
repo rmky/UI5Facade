@@ -94,6 +94,9 @@ sap.ui.define([
 ) {
 	"use strict";
 
+	// shortcut for sap.m.Sticky
+	var Sticky = library.Sticky;
+
 	// shortcut for sap.ui.unified.CalendarDayType
 	var CalendarDayType = unifiedLibrary.CalendarDayType;
 
@@ -180,7 +183,7 @@ sap.ui.define([
 	 * {@link sap.m.PlanningCalendarView PlanningCalendarView}'s properties.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @public
@@ -1526,10 +1529,10 @@ sap.ui.define([
 			bStickyInfoToolbar = bStick && !(Device.system.phone && Device.orientation.landscape) && !bMobile1MonthView;
 
 		if (bStickyToolbar) {
-			aStickyParts.push(sap.m.Sticky.HeaderToolbar);
+			aStickyParts.push(Sticky.HeaderToolbar);
 		}
 		if (this._oInfoToolbar && bStickyInfoToolbar) {
-			aStickyParts.push(sap.m.Sticky.InfoToolbar);
+			aStickyParts.push(Sticky.InfoToolbar);
 		}
 
 		this.getAggregation("table").setSticky(aStickyParts);
@@ -2756,19 +2759,17 @@ sap.ui.define([
 	 */
 	var PlanningCalendarRowHeader = StandardListItem.extend("PlanningCalendarRowHeader", {
 
-		renderer: Renderer.extend(StandardListItemRenderer)
+		renderer: Renderer.extend(StandardListItemRenderer),
+		TagName: "div"
 
 	});
 
+	PlanningCalendarRowHeader.prototype.isSelectable = function () {
+		// The header itself isn't selectable - the row is.
+		return false;
+	};
+
 	/*global PlanningCalendarRowHeaderRenderer:true*/
-	PlanningCalendarRowHeaderRenderer.openItemTag = function(oRm, oLI) {
-		oRm.write("<div");
-	};
-
-	PlanningCalendarRowHeaderRenderer.closeItemTag = function(oRm, oLI) {
-		oRm.write("</div>");
-	};
-
 	PlanningCalendarRowHeaderRenderer.renderTabIndex = function(oRm, oLI) {
 	};
 
@@ -3369,9 +3370,13 @@ sap.ui.define([
 
 	PlanningCalendar.prototype._calcResizeNewDaysAppPos = function(oRowStartDate, oAppStartDate, oAppEndDate, iIndex) {
 		var oEndDate = new Date(oRowStartDate),
-			iNewEndDate = oEndDate.getDate() + iIndex + 1;
+			iNewEndDate = oEndDate.getDate() + iIndex + 1,
+			oNewEndDate = new Date(oEndDate.getFullYear(), oEndDate.getMonth(), oEndDate.getDate());
 
-		if (iNewEndDate <= oAppStartDate.getDate()) {
+		oNewEndDate.setDate(iNewEndDate);
+
+		// This line checks if the start date is after the new end date and if so it just adds 1 to the startdate.
+		if (oNewEndDate.getTime() <= oAppStartDate.getTime()) {
 			iNewEndDate = oAppStartDate.getDate() + 1;
 		}
 

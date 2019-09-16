@@ -135,7 +135,7 @@ function(
 		*
 		* @implements sap.ui.core.PopupInterface
 		* @author SAP SE
-		* @version 1.68.1
+		* @version 1.70.0
 		*
 		* @constructor
 		* @public
@@ -1035,7 +1035,7 @@ function(
 		};
 
 		/**
-		 * If a scrollable control (<code>sap.m.NavContainer</code>, <code>sap.m.ScrollContainer</code>, <code>sap.m.Page</code>, <code>sap.m.SplitContainer</code>) is added to the Dialog content aggregation as a single child or through one or more <code>sap.ui.mvc.View<c/ode> instances,
+		 * If a scrollable control (<code>sap.m.NavContainer</code>, <code>sap.m.ScrollContainer</code>, <code>sap.m.Page</code>, <code>sap.m.SplitContainer</code>) is added to the Dialog content aggregation as a single child or through one or more <code>sap.ui.mvc.View</code> instances,
 		 * the scrolling inside the Dialog will be disabled in order to avoid wrapped scrolling areas.
 		 *
 		 * If more than one scrollable control is added to the Dialog, the scrolling needs to be disabled manually.
@@ -1548,10 +1548,8 @@ function(
 		};
 
 		Dialog.prototype.setBeginButton = function (oButton) {
-			var sTheme = Core.getConfiguration().getTheme();
 
-			if (oButton && oButton.isA("sap.m.Button") && sTheme.startsWith("sap_fiori_")) {
-				oButton.setType("Emphasized");
+			if (oButton && oButton.isA("sap.m.Button")) {
 				oButton.addStyleClass("sapMDialogBeginButton");
 			}
 
@@ -1559,10 +1557,8 @@ function(
 		};
 
 		Dialog.prototype.setEndButton = function (oButton) {
-			var sTheme = Core.getConfiguration().getTheme();
 
-			if (oButton && oButton.isA("sap.m.Button") && sTheme.startsWith("sap_fiori_")) {
-				oButton.setType("Transparent");
+			if (oButton && oButton.isA("sap.m.Button")) {
 				oButton.addStyleClass("sapMDialogEndButton");
 			}
 

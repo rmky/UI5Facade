@@ -18,7 +18,7 @@ sap.ui.define([
 	 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Column...</code>
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @namespace
 	 * @alias sap.ui.table.TableColumnUtils
 	 * @private

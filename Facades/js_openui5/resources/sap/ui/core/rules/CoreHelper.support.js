@@ -6,7 +6,7 @@
 /**
  * Helper for core functionality in Support Tool infrastructure.
  */
-sap.ui.define(["sap/ui/thirdparty/jquery"],
+sap.ui.define(["sap/ui/thirdparty/jquery", "sap/ui/dom/jquery/control"],  // jQuery Plugin "control"
 	function(jQuery) {
 		"use strict";
 
@@ -21,6 +21,7 @@ sap.ui.define(["sap/ui/thirdparty/jquery"],
 				/**
 				 * Here we white list all controls that can contain DOM elements with style different than the framework style
 				 */
+				// jQuery Plugin "control"
 				var skipParents = ["sap.ui.core.HTML"],
 					parentNode = jQuery(node).control()[0];
 

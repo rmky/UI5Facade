@@ -46,6 +46,9 @@ sap.ui.define([
 			// shortcut for sap.ui.core.TextDirection
 			var TextDirection = coreLibrary.TextDirection;
 
+			// shortcut for sap.m.ButtonType
+			var ButtonType = library.ButtonType;
+
 			/**
 			 * Provides easier methods to create sap.m.Dialog with type sap.m.DialogType.Message, such as standard alerts,
 			 * confirmation dialogs, or arbitrary message dialogs.
@@ -193,30 +196,20 @@ sap.ui.define([
 
 			(function () {
 				var Action = MessageBox.Action,
-						Icon = MessageBox.Icon,
-						//set the information icon according to the used theme
-						bInformationIconUsed = Parameters.get("_sap_m_Message_Box_Information_Icon") === "true",
-						sSrcIcon = bInformationIconUsed ? "message-information" : "hint",
-						mClasses = {
-							"INFORMATION": "sapMMessageBoxInfo",
-							"WARNING": "sapMMessageBoxWarning",
-							"ERROR": "sapMMessageBoxError",
-							"SUCCESS": "sapMMessageBoxSuccess",
-							"QUESTION": "sapMMessageBoxQuestion",
-							"STANDARD":  "sapMMessageBoxStandard"
-						},
-						mIcons = {
-							"INFORMATION": IconPool.getIconURI(sSrcIcon),
-							"WARNING": IconPool.getIconURI("message-warning"),
-							"ERROR": IconPool.getIconURI("message-error"),
-							"SUCCESS": IconPool.getIconURI("message-success"),
-							"QUESTION": IconPool.getIconURI("question-mark")
-						};
+						Icon = MessageBox.Icon;
 
 				var _verifyBundle = function () {
 					if (MessageBox._rb !== sap.ui.getCore().getLibraryResourceBundle("sap.m")) {
 						MessageBox._rb = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 					}
+				};
+
+				var _fnIsCustomAction = function (mOptions) {
+					if (mOptions && mOptions.actions && mOptions.actions.length > 0) {
+						return true;
+					}
+
+					return false;
 				};
 
 				/**
@@ -283,6 +276,24 @@ sap.ui.define([
 								horizontalScrolling: true,
 								details: "",
 								contentWidth: null
+							},
+							//set the information icon according to the used theme
+							bInformationIconUsed = Parameters.get("_sap_m_Message_Box_Information_Icon") === "true",
+							sSrcIcon = bInformationIconUsed ? "message-information" : "hint",
+							mClasses = {
+								"INFORMATION": "sapMMessageBoxInfo",
+								"WARNING": "sapMMessageBoxWarning",
+								"ERROR": "sapMMessageBoxError",
+								"SUCCESS": "sapMMessageBoxSuccess",
+								"QUESTION": "sapMMessageBoxQuestion",
+								"STANDARD":  "sapMMessageBoxStandard"
+							},
+							mIcons = {
+								"INFORMATION": IconPool.getIconURI(sSrcIcon),
+								"WARNING": IconPool.getIconURI("message-warning"),
+								"ERROR": IconPool.getIconURI("message-error"),
+								"SUCCESS": IconPool.getIconURI("message-success"),
+								"QUESTION": IconPool.getIconURI("question-mark")
 							};
 
 					_verifyBundle();
@@ -306,6 +317,10 @@ sap.ui.define([
 						};
 					}
 
+					if (mOptions && mOptions.isCustomAction === undefined) {
+						mOptions.isCustomAction = _fnIsCustomAction(mOptions);
+					}
+
 					if (mOptions && mOptions.hasOwnProperty("details")) {
 						mDefaults.icon = Icon.INFORMATION;
 						mDefaults.actions = [Action.OK, Action.CANCEL];
@@ -318,12 +333,14 @@ sap.ui.define([
 					if (typeof mOptions.actions !== "undefined" && !Array.isArray(mOptions.actions)) {
 						mOptions.actions = [mOptions.actions];
 					}
+
 					if (!mOptions.actions || mOptions.actions.length === 0) {
 						mOptions.actions = [Action.OK];
+						mOptions.isCustomAction = false;
 					}
 
 					/** creates a button for the given action */
-					function button(sAction) {
+					function button(sAction, sButtonType) {
 						var sText;
 
 						// Don't check in ResourceBundle library if the button is with custom text
@@ -334,6 +351,7 @@ sap.ui.define([
 						var oButton = new Button({
 							id: ElementMetadata.uid("mbox-btn-"),
 							text: sText || sAction,
+							type: sButtonType,
 							press: function () {
 								oResult = sAction;
 								oDialog.close();
@@ -342,8 +360,11 @@ sap.ui.define([
 						return oButton;
 					}
 
+					var sButtonType;
+
 					for (i = 0; i < mOptions.actions.length; i++) {
-						aButtons.push(button(mOptions.actions[i]));
+						sButtonType = !mOptions.isCustomAction && Action.OK === mOptions.actions[i] ? ButtonType.Emphasized : ButtonType.Default;
+						aButtons.push(button(mOptions.actions[i], sButtonType));
 					}
 
 					function getInformationLayout(mOptions, oMessageText) {
@@ -545,6 +566,10 @@ sap.ui.define([
 						};
 					}
 
+					if (mOptions) {
+						mOptions.isCustomAction = _fnIsCustomAction(mOptions);
+					}
+
 					mOptions = jQuery.extend({}, mDefaults, mOptions);
 
 					return MessageBox.show(vMessage, mOptions);
@@ -620,6 +645,10 @@ sap.ui.define([
 						};
 					}
 
+					if (mOptions) {
+						mOptions.isCustomAction = _fnIsCustomAction(mOptions);
+					}
+
 					mOptions = jQuery.extend({}, mDefaults, mOptions);
 
 					return MessageBox.show(vMessage, mOptions);
@@ -677,6 +706,10 @@ sap.ui.define([
 						initialFocus: null
 					};
 
+					if (mOptions) {
+						mOptions.isCustomAction = _fnIsCustomAction(mOptions);
+					}
+
 					mOptions = jQuery.extend({}, mDefaults, mOptions);
 
 					return MessageBox.show(vMessage, mOptions);
@@ -732,6 +765,10 @@ sap.ui.define([
 						id: ElementMetadata.uid("info"),
 						initialFocus: null
 					};
+
+					if (mOptions) {
+						mOptions.isCustomAction = _fnIsCustomAction(mOptions);
+					}
 
 					mOptions = jQuery.extend({}, mDefaults, mOptions);
 
@@ -789,6 +826,10 @@ sap.ui.define([
 						initialFocus: null
 					};
 
+					if (mOptions) {
+						mOptions.isCustomAction = _fnIsCustomAction(mOptions);
+					}
+
 					mOptions = jQuery.extend({}, mDefaults, mOptions);
 
 					return MessageBox.show(vMessage, mOptions);
@@ -844,6 +885,10 @@ sap.ui.define([
 						id: ElementMetadata.uid("success"),
 						initialFocus: null
 					};
+
+					if (mOptions) {
+						mOptions.isCustomAction = _fnIsCustomAction(mOptions);
+					}
 
 					mOptions = jQuery.extend({}, mDefaults, mOptions);
 

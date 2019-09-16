@@ -8,12 +8,14 @@ sap.ui.define([
 	"sap/ui/fl/DefaultVariant",
 	"sap/ui/fl/StandardVariant",
 	"sap/ui/fl/Utils",
-	"sap/ui/fl/ChangePersistenceFactory"
+	"sap/ui/fl/ChangePersistenceFactory",
+	"sap/base/Log"
 ], function(
 	DefaultVariant,
 	StandardVariant,
 	Utils,
-	ChangePersistenceFactory
+	ChangePersistenceFactory,
+	Log
 ) {
 	"use strict";
 	/**
@@ -24,7 +26,7 @@ sap.ui.define([
 	 * @param {string} [sStableIdPropertyName='id'] the stable id
 	 * @alias sap.ui.fl.Persistence
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @experimental Since 1.25.0
 	 */
 	var Persistence = function(oControl, sStableIdPropertyName) {
@@ -35,7 +37,7 @@ sap.ui.define([
 
 		this._sComponentName = Utils.getComponentClassName(oControl);
 		if (!this._sComponentName) {
-			Utils.log.error("The Control does not belong to an SAPUI5 component. Variants and Changes for this control might not work as expected.");
+			Log.error("The Control does not belong to an SAPUI5 component. Variants and Changes for this control might not work as expected.");
 		}
 		this._oAppDescriptor = Utils.getAppDescriptor(oControl);
 		this._sSiteId = Utils.getSiteId(oControl);
@@ -105,7 +107,7 @@ sap.ui.define([
 	 */
 	Persistence.prototype.getChange = function(sChangeId) {
 		if (!sChangeId) {
-			Utils.log.error("sap.ui.fl.Persistence.getChange : sChangeId is not defined");
+			Log.error("sap.ui.fl.Persistence.getChange : sChangeId is not defined");
 			return undefined;
 		}
 
@@ -167,7 +169,8 @@ sap.ui.define([
 	 * @public
 	 */
 	Persistence.prototype.setExecuteOnSelectSync = function(bExecuteOnSelect) {
-		var mParameters, oChange;
+		var mParameters;
+		var oChange;
 
 		var selector = {};
 		selector[this._sStableIdPropertyName] = this._sStableId;
@@ -224,7 +227,8 @@ sap.ui.define([
 	 * @public
 	 */
 	Persistence.prototype.setDefaultVariantIdSync = function(sDefaultVariantId) {
-		var mParameters, oChange;
+		var mParameters;
+		var oChange;
 
 		var selector = {};
 		selector[this._sStableIdPropertyName] = this._sStableId;
@@ -269,7 +273,8 @@ sap.ui.define([
 	 * @public
 	 */
 	Persistence.prototype.isVariantDownport = function() {
-		var sLayer, bIsHotfix;
+		var sLayer;
+		var bIsHotfix;
 		sLayer = Utils.getCurrentLayer();
 		bIsHotfix = Utils.isHotfixMode();
 

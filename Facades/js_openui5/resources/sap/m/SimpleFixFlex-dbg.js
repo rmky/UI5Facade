@@ -7,9 +7,10 @@
 sap.ui.define([
 	'sap/ui/core/Control',
 	'sap/ui/core/ResizeHandler',
+	'sap/base/Log',
 	'./SimpleFixFlexRenderer'
 ],
-function (Control, ResizeHandler /**, SimpleFixFlexRenderer */) {
+function (Control, ResizeHandler, Log /**, SimpleFixFlexRenderer */) {
 	"use strict";
 	/**
 	 * Constructor for a new <code>sap.m.SimpleFixFlex</code>.
@@ -30,7 +31,7 @@ function (Control, ResizeHandler /**, SimpleFixFlexRenderer */) {
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @private
@@ -55,7 +56,7 @@ function (Control, ResizeHandler /**, SimpleFixFlexRenderer */) {
 				*/
 				flexContent: {
 					type: "sap.ui.core.Control",
-					multiple: false
+					multiple: true
 				}
 			},
 			properties: {
@@ -72,8 +73,20 @@ function (Control, ResizeHandler /**, SimpleFixFlexRenderer */) {
 		}
 	});
 
+	/*************************************** Static members ******************************************/
+
+	SimpleFixFlex.FIX_AREA_CHARACTER_COUNT_RECOMMENDATION = 200;
+	SimpleFixFlex.FIX_AREA_CHARACTERS_ABOVE_RECOMMENDED_WARNING = "It is recommended to use less than " +
+	SimpleFixFlex.FIX_AREA_CHARACTER_COUNT_RECOMMENDATION + " characters as a value state text.";
+
 	SimpleFixFlex.prototype.onBeforeRendering = function () {
 		this._deregisterFixContentResizeHandler();
+		var oFixContent = this.getFixContent();
+
+		if (oFixContent && oFixContent.isA("sap.m.Text") &&
+			oFixContent.getText().length > SimpleFixFlex.FIX_AREA_CHARACTER_COUNT_RECOMMENDATION) {
+			Log.warning(SimpleFixFlex.FIX_AREA_CHARACTERS_ABOVE_RECOMMENDED_WARNING, "", this.getId());
+		}
 	};
 
 	SimpleFixFlex.prototype.onAfterRendering = function () {

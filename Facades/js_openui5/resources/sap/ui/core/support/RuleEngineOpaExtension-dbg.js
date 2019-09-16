@@ -4,16 +4,14 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["jquery.sap.global",
+sap.ui.define(["sap/ui/thirdparty/jquery",
 		'sap/ui/base/Object',
 		"sap/base/util/UriParameters",
-		"sap/ui/thirdparty/jquery",
 		"sap/ui/support/RuleAnalyzer",
 		"sap/ui/support/library"],
 	function(jQuery,
 			 BaseObject,
 			 UriParameters,
-			 jQueryDOM,
 			 RuleAnalyzer,
 			 library) {
 	"use strict";
@@ -47,7 +45,7 @@ sap.ui.define(["jquery.sap.global",
 		 */
 		onAfterInit : function () {
 			var bLoaded = sap.ui.getCore().getLoadedLibraries()["sap.ui.support"],
-				deferred = jQueryDOM.Deferred();
+				deferred = jQuery.Deferred();
 
 			if (!bLoaded) {
 				sap.ui.require(["sap/ui/support/Bootstrap"], function (bootstrap) {
@@ -71,7 +69,7 @@ sap.ui.define(["jquery.sap.global",
 		getAssertions : function () {
 
 			var fnShouldSkipRulesIssues = function () {
-				return new UriParameters(window.location.href).get('sap-skip-rules-issues') == 'true';
+				return UriParameters.fromQuery(window.location.search).get('sap-skip-rules-issues') == 'true';
 			};
 			var getWindow = function () {
 				var opaWindow = window.parent;
@@ -110,7 +108,7 @@ sap.ui.define(["jquery.sap.global",
 				 * @returns {Promise} Promise.
 				 */
 				noRuleFailures: function(options) {
-					var ruleDeferred = jQueryDOM.Deferred(),
+					var ruleDeferred = jQuery.Deferred(),
 						options = options[0] || {},
 						failOnAnyRuleIssues = options["failOnAnyIssues"],
 						failOnHighRuleIssues = options["failOnHighIssues"],
@@ -171,7 +169,7 @@ sap.ui.define(["jquery.sap.global",
 				 * @returns {Promise} Promise.
 				 */
 				getFinalReport: function () {
-					var ruleDeferred = jQueryDOM.Deferred(),
+					var ruleDeferred = jQuery.Deferred(),
 						history = RuleAnalyzer.getFormattedAnalysisHistory(),
 						analysisHistory = RuleAnalyzer.getAnalysisHistory(),
 						totalIssues = analysisHistory.reduce(function (total, analysis) {
@@ -219,7 +217,7 @@ sap.ui.define(["jquery.sap.global",
 					var oContext,
 						oHistory,
 						options = options[0] || {},
-						ruleDeferred = jQueryDOM.Deferred(),
+						ruleDeferred = jQuery.Deferred(),
 						sHistoryFormat = options["historyFormat"],
 						sFile = options["fileName"];
 

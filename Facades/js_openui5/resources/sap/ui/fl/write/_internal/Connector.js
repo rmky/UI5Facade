@@ -1,0 +1,6 @@
+/*
+ * ! OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/fl/apply/_internal/connectors/Utils","sap/ui/fl/write/_internal/connectors/Utils"],function(A,W){"use strict";function f(l,c){var F=c.filter(function(o){return o.layerFilter.indexOf("ALL")!==-1||o.layerFilter.indexOf(l)!==-1;});if(F.length===1){return F[0].connector;}if(F.length===0){throw new Error("No Connector could be found to write into layer: "+l);}if(F.length>1){throw new Error("sap.ui.core.Configuration 'xx-flexibilityConnectors' has a misconfiguration: Multiple Connectors were found to write into layer: "+l);}}function s(p,c){p.urls={};var b=c.map(function(o){if(o.url){p.urls[o.connectorName]=o.url;}return new Promise(function(r){return o.connector.loadFeatures(p).then(r,A.logAndResolveDefault.bind(null,r,{},o,"loadFeatures"));});});return Promise.all(b);}function g(l){return W.getWriteConnectors().then(f.bind(this,l));}function a(p,c){return c.writeFlexData(p);}var C={};C.writeFlexData=function(p){return g(p.layer).then(a.bind(this,p));};C.loadFeatures=function(){return W.getWriteConnectors().then(s).then(A.mergeResults);};return C;},true);

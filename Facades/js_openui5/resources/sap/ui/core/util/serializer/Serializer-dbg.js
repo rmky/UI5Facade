@@ -21,10 +21,10 @@ sap.ui.define(['sap/ui/base/EventProvider', "sap/base/assert"],
 	 * @class Serializer class.
 	 * @extends sap.ui.base.EventProvider
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @alias sap.ui.core.util.serializer.Serializer
 	 * @private
-	 * @sap-restricted sap.watt com.sap.webide
+	 * @ui5-restricted sap.watt com.sap.webide
 	 */
 	var Serializer = EventProvider.extend("sap.ui.core.util.serializer.Serializer", /** @lends sap.ui.core.util.serializer.Serializer.prototype */
 	{

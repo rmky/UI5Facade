@@ -6,7 +6,7 @@
 
 //Provides control sap.m.DateTimePicker.
 sap.ui.define([
-	'jquery.sap.global',
+	"sap/ui/thirdparty/jquery",
 	'./InputBase',
 	'./DatePicker',
 	'sap/ui/model/type/Date',
@@ -134,7 +134,7 @@ sap.ui.define([
 	 * mobile devices, it opens in full screen.
 	 *
 	 * @extends sap.m.DatePicker
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @public
@@ -160,12 +160,6 @@ sap.ui.define([
 			 * @since 1.56
 			 */
 			secondsStep: {type: "int", group: "Misc", defaultValue: 1 }
-		},
-		aggregations: {
-			/**
-			 * Internal aggregation that contains the inner _picker pop-up.
-			 */
-			_popup: { type: "sap.m.ResponsivePopover", multiple: false, visibility: "hidden" }
 		},
 		designtime: "sap/m/designtime/DateTimePicker.designtime",
 		dnd: { draggable: false, droppable: true }
@@ -571,7 +565,7 @@ sap.ui.define([
 
 		if (bNoCalendar) {
 			this._oPopupContent.setCalendar(this._oCalendar);
-			this._oCalendar.attachSelect(_selectDate, this);
+			this._oCalendar.attachSelect(_handleCalendarSelect, this);
 
 			var that = this,
 				oHideMonthPicker = this._oCalendar._hideMonthPicker,
@@ -692,7 +686,7 @@ sap.ui.define([
 
 	function _handleOkPress(oEvent){
 
-		this._selectDate();
+		this._handleCalendarSelect();
 
 	}
 
@@ -735,6 +729,7 @@ sap.ui.define([
 		this.$("inner").attr("aria-expanded", false);
 		this._restoreInputSelection(this._$input.get(0));
 
+		this._oCalendar._closedPickers();
 		Device.media.detachHandler(this._handleWindowResize, this);
 	}
 
@@ -773,7 +768,7 @@ sap.ui.define([
 
 	}
 
-	function _selectDate(oEvent) {
+	function _handleCalendarSelect(oEvent) {
 
 		this._oPopupContent.switchToTime();
 

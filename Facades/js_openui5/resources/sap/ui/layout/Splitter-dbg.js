@@ -13,7 +13,8 @@ sap.ui.define([
 	'sap/ui/core/RenderManager',
 	'./SplitterRenderer',
 	"sap/base/Log",
-	"sap/ui/thirdparty/jquery"
+	"sap/ui/thirdparty/jquery",
+	"sap/ui/layout/SplitterLayoutData"
 ],
 	function(
 		Control,
@@ -23,7 +24,8 @@ sap.ui.define([
 		RenderManager,
 		SplitterRenderer,
 		Log,
-		jQuery
+		jQuery,
+		SplitterLayoutData
 	) {
 	"use strict";
 
@@ -52,7 +54,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 *
 	 * @constructor
 	 * @public
@@ -1116,7 +1118,7 @@ sap.ui.define([
 			oLd = null;
 		}
 		if (!oLd) {
-			oContent.setLayoutData(new sap.ui.layout.SplitterLayoutData());
+			oContent.setLayoutData(new SplitterLayoutData());
 		}
 	}
 

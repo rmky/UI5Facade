@@ -85,6 +85,6 @@ sap.ui.predefine('sap/m/designtime/VBox.designtime',[],function(){"use strict";r
 sap.ui.predefine('sap/m/designtime/Wizard.designtime',[],function(){"use strict";return{palette:{group:"CONTAINER"},templates:{create:"sap/m/designtime/Wizard.create.fragment.xml"},name:{singular:"WIZARD_NAME",plural:"WIZARD_NAME_PLURAL"}};},false);
 sap.ui.predefine('sap/m/designtime/library.designtime',[],function(){"use strict";return{};});
 sap.ui.predefine('sap/m/designtime/semantic/DetailPage.designtime',[],function(){"use strict";return{aggregations:{content:{domRef:":sap-domref > .sapMPage > section"}}};},false);
-sap.ui.predefine('sap/m/designtime/semantic/SemanticPage.designtime',[],function(){"use strict";return{aggregations:{content:{domRef:":sap-domref > .sapMPage > section"}}};},false);
+sap.ui.predefine('sap/m/designtime/semantic/SemanticPage.designtime',[],function(){"use strict";return{aggregations:{content:{domRef:":sap-domref > .sapMPage > section"},landmarkInfo:{ignore:true}}};},false);
 sap.ui.predefine('sap/m/designtime/semantic/ShareMenuPage.designtime',[],function(){"use strict";return{aggregations:{content:{domRef:":sap-domref > .sapMPage > section"}}};},false);
 //# sourceMappingURL=library-preload.designtime.js.map

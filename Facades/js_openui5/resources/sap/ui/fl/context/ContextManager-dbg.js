@@ -24,7 +24,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.context.ContextManager
 	 * @since 1.38.0
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 */
 	var ContextManager;
 

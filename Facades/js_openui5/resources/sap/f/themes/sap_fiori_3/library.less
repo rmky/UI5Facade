@@ -19,19 +19,16 @@
 
 @_sap_f_Avatar_Color: @sapUiContentContrastTextColor;
 
-.sapFAvatarImageContain {
-	background-color: darken(@sapUiAccent7,8);
+.sapFAvatarBorder {
+	&.sapFAvatarIcon,
+	&.sapFAvatarInitials,
+	.sapFAvatarImageHolder {
+		box-shadow: 0 0 0 0.0625rem fade(@sapUiContentShadowColor, 10) inset;
+	}
 }
 
 .sapFAvatarIcon {
-	background-color: darken(@sapUiAccent7,8);
-	border-color: darken(@sapUiAccent7,8);
 	color: @_sap_f_Avatar_Color;
-}
-
-.sapFAvatarInitials {
-	background-color: darken(@sapUiAccent7,8);
-	border-color: darken(@sapUiAccent7,8);
 }
 
 .sapFAvatarInitialsHolder {
@@ -276,6 +273,16 @@ To be used in Comparison pattern scenario. */
 	}
 }
 /* END "FlexibleColumnLayout.less" */
+
+/* START "GridListItem.less" */
+/* =================================== */
+/* CSS for control sap.f/GridListItem  */
+/* Fiori 3 theme                       */
+/* =================================== */
+
+@_sap_f_GridListItem_Header_BoxShadow: 0 0 0.25rem 0 fade(@sapUiContentShadowColor, 15), inset 0 -0.0625rem 0 0 @sapUiPageHeaderBorderColor;
+@_sap_f_GridListItem_HeaderHeight: 2.75rem;
+/* END "GridListItem.less" */
 
 /* START "ShellBar.less" */
 

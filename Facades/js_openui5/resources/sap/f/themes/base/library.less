@@ -21,9 +21,30 @@
 	position: relative;
 }
 
+// Define a loop and go trough 10 color sets
+.loop-colors(@i: 1) when (@i =< 10) {
+	.generateColor(@i);
+
+	.loop-colors(@i + 1); // Execute next loop iteration
+}
+
+// Execute Loop through color sets
+.loop-colors(1);
+
+// Create classes which would just set background color of Avatar
+.generateColor (@accentIndex) {
+	@css-selector: ~"sapFAvatarColorAccent@{accentIndex}"; // Create the css selector string
+	@color-param: ~"sapUiAccent@{accentIndex}"; // Build the color param which is a sapUiAccent
+
+	// Build the real CSS selector.
+	// The output would be something like this: .sapFAvatar.sapFAvatarColorAccent6 {background-color: #0092d1;}
+	.@{css-selector} {
+		background-color: @@color-param;
+	}
+}
+
 .sapFAvatarIcon {
 	text-align: center;
-	background-color: @sapUiContentImagePlaceholderBackground;
 	color: @sapUiContentIconColor;
 
 	.sapUiIcon {
@@ -45,6 +66,7 @@
 
 .sapFAvatarImage {
 	text-align: center;
+	background-color: transparent;
 
 	.sapUiIcon, .sapFAvatarInitialsHolder {
 		display: none;
@@ -71,7 +93,6 @@
 
 .sapFAvatarImageContain {
 	background-size: contain;
-	background-color: @sapUiContentImagePlaceholderBackground;
 }
 
 .sapFAvatarCircle {
@@ -146,10 +167,6 @@ html[data-sap-ui-browser^="ed"] .sapFAvatarFocusable:focus {
 
 html:not(.sap-desktop) .sapFAvatarFocusable:focus {
 	outline: none;
-}
-
-.sapFAvatarInitials {
-	background-color: @sapUiContentImagePlaceholderBackground;
 }
 
 .sapFAvatarInitialsHolder {
@@ -329,12 +346,6 @@ html[data-sap-ui-browser^="ie"] {
 	.sapFDynamicPageContentWrapper {
 		overflow: hidden;
 	}
-}
-
-.sapFDynamicPageScrollBar {
-	right: 0;
-	position: absolute;
-	z-index: 10;
 }
 
 .sapFDynamicPage .sapFDynamicPageTitleWrapper {
@@ -950,6 +961,17 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
   outline: none;
 }
 
+//This class can be used for styling a Widget as a card
+.sapFCardBase {
+  position: relative;
+  box-sizing: border-box;
+  background: @sapUiTileBackground;
+  box-shadow: @sapUiShadowLevel0;
+  border-radius: 0.25rem;
+  color: @sapUiGroupTitleTextColor;
+  outline: none;
+}
+
 .sapFCardMaxItems > .sapMGrowingList,
 .sapFCardMaxItems .sapSuiteUiCommonsTimelineShowMoreWrapper {
 	display: none;
@@ -1296,6 +1318,118 @@ html[data-sap-ui-browser^="ie"] .sapFCard .sapFCardHeader.sapFCardNumericHeader:
 
 /* END "Card.less" */
 
+/* START "GridListItem.less" */
+/* =================================== */
+/* CSS for control sap.f/GridListItem  */
+/* Base theme                          */
+/* =================================== */
+
+@_sap_f_GridListItem_Header_BoxShadow: inset 0 -0.0625rem @sapUiPageHeaderBorderColor;
+@_sap_f_GridListItem_HeaderHeight: 3rem;
+@_sap_f_GridListItem_Compact_HeaderHeight: 2rem;
+
+.sapFGLI {
+	padding: 0;
+	border-radius: 0.25rem;
+	border: none;
+	box-shadow: @sapUiShadowLevel0;
+
+	// Highlighted items
+	.sapMLIBHighlight {
+		border-top-left-radius: 0.25rem;
+		border-bottom-left-radius: 0.25rem;
+		z-index: 1;
+	}
+
+	.sapFGLIWrapper {
+		width: 100%;
+		height: 100%;
+
+		// Header Toolbar
+		.sapFGLIToolbar {
+			height: @_sap_f_GridListItem_HeaderHeight;
+			box-shadow: @_sap_f_GridListItem_Header_BoxShadow;
+			padding: 0 0.5rem;
+
+			display: flex;
+			align-items: center;
+
+			.sapFGLIToolbarSpacer {
+				flex: 1;
+			}
+
+			.sapMLIBCounter {
+				padding: 0;
+			}
+
+			// add spacing between the items, except for the first item
+			>:not(:first-child) {
+				padding: 0 0 0 0.5rem;
+				margin: 0;
+			}
+		}
+
+		// Content
+		.sapMLIBContent {
+			height: 100%;;
+		}
+
+		.sapFGLIToolbar + .sapMLIBContent {
+			height: calc(100% ~"-" @_sap_f_GridListItem_HeaderHeight);
+		}
+	}
+}
+
+/* GridList with highlighted GridListItems */
+.sapFGridList .sapMListHighlight .sapFGLI .sapFGLIWrapper {
+
+	.sapMLIBContent:first-child {
+		margin-left: 0;
+	}
+}
+
+.sapFGLI.sapMLIBActionable .sapFGLIWrapper .sapMLIBImgNav {
+	cursor: pointer;
+}
+
+/* Interaction states */
+.sapFGLI,
+.sapFGridList .sapMLIB {
+
+	&.sapMLIBHoverable:hover {
+		box-shadow: 0 0 0 1px fade(@sapUiContentShadowColor, 30);
+	}
+
+	&.sapMLIB.sapMLIBSelected {
+		box-shadow: 0 0 0px 0.125rem @sapUiSelected, 0 0 1px @sapUiListBackground inset;
+	}
+
+	&.sapMLIBActive {
+		.sapFGLIWrapper .sapFGLIToolbar {
+			box-shadow: none;
+		}
+	}
+}
+
+/* Compact size */
+.sapUiSizeCompact .sapFGLI .sapFGLIWrapper {
+
+	.sapFGLIToolbar {
+		height: @_sap_f_GridListItem_Compact_HeaderHeight;
+	}
+
+	// Content
+	.sapMLIBContent {
+		height: 100%;;
+	}
+
+	.sapFGLIToolbar + .sapMLIBContent {
+		height: calc(100% ~"-" @_sap_f_GridListItem_Compact_HeaderHeight);
+	}
+}
+
+/* END "GridListItem.less" */
+
 /* START "GridContainer.less" */
 /* ================================== */
 /* CSS for control sap.f/GridContainer  */
@@ -1567,9 +1701,17 @@ html[data-sap-ui-animation='on'] {
 	}
 }
 
-.sapFGridList .sapMLIB {
-	border: 1px solid @sapUiListBorderColor;
+/* List Item overrides. */
+.sapFGridList .sapMLIB:not(.sapMGHLI) {
+	border-radius: 0.25rem;
+	border: none;
+	box-shadow: @sapUiShadowLevel0;
 
+	// Highlighted items
+	.sapMLIBHighlight {
+		border-top-left-radius: 0.25rem;
+		border-bottom-left-radius: 0.25rem;
+	}
 	& > .sapMLIBContent {
 		height: 100%;
 	}

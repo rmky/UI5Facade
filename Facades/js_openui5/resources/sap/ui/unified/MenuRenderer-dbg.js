@@ -15,7 +15,7 @@ sap.ui.define([],
 	 * Menu renderer.
 	 * @author SAP - TD Core UI&AM UI Infra
 	 *
-	 * @version 1.68.1
+	 * @version 1.70.0
 	 * @namespace
 	 */
 	var MenuRenderer = {
@@ -53,9 +53,6 @@ sap.ui.define([],
 				disabled: null,
 				labelledby: {value: oMenu.getId() + "-label", append: true}
 			});
-			if (oMenu.oHoveredItem) {
-				oRm.writeAttribute("aria-activedescendant", oMenu.oHoveredItem.getId());
-			}
 		}
 
 		oRm.addClass("sapUiMnu");

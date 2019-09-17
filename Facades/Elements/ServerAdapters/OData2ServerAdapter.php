@@ -27,6 +27,10 @@ use exface\Core\Actions\SaveData;
 use exface\Core\Actions\CreateData;
 use exface\Core\DataTypes\TimeDataType;
 use exface\Core\DataTypes\DateTimeDataType;
+use exface\UI5Facade\Exceptions\UI5ExportUnsupportedActionException;
+use exface\Core\Interfaces\WidgetInterface;
+use exface\Core\Widgets\Data;
+use exface\UI5Facade\Exceptions\UI5ExportUnsupportedWidgetException;
 
 /**
  * 
@@ -53,9 +57,41 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
 {
     private $element = null;
     
+    private $useConnectionCredentials = false;
+    
     public function __construct(UI5AbstractElement $element)
     {
-        $this->element = $element;    
+        $this->element = $element; 
+        
+        $facadeConfig = $element->getFacade()->getConfig();
+        if ($facadeConfig->hasOption('WEBAPP_EXPORT.USE_CONNECTION_CREDENTIALS')) {
+            $this->useConnectionCredentials = $facadeConfig->getOption('WEBAPP_EXPORT.USE_CONNECTION_CREDENTIALS');
+        }
+        
+        $this->checkWidgetExportable($element->getWidget());
+    }
+    
+    /**
+     * 
+     * @param WidgetInterface $widget
+     * @throws UI5ExportUnsupportedWidgetException
+     */
+    protected function checkWidgetExportable(WidgetInterface $widget)
+    {
+        switch (true) {
+            case ($widget instanceof Data):
+                foreach ($widget->getColumns() as $col) {
+                    if ($col->hasFooter()) {
+                        throw new UI5ExportUnsupportedWidgetException($widget, 'Cannot export data widgets with column footers!');
+                    }
+                }
+                break;
+        }
+    }
+    
+    protected function getUseConnectionCredentials() : bool
+    {
+        return $this->useConnectionCredentials;
     }
     
     public function getElement() : UI5AbstractElement
@@ -65,38 +101,45 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
     
     public function buildJsServerRequest(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
-        $test = '';
         switch (true) {
-            case $action instanceof ExportXLSX:
-                return "console.log('oParams:', {$oParamsJs});";
-            case $action instanceof ExportCSV:
-                return "console.log('oParams:', {$oParamsJs});";
-            case $action instanceof ReadPrefill:
+            case get_class($action) === ReadPrefill::class:
                 return $this->buildJsPrefillLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
-            case $action instanceof ReadData:
+            case get_class($action) === ReadData::class:
                 return $this->buildJsDataLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
-            case $action instanceof CallOData2Operation:
+            case get_class($action) === CallOData2Operation::class:
                 return $this->buildJsCallFunctionImport($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
-            case $action instanceof DeleteObject:
+            case get_class($action) === DeleteObject::class:
                 return $this->buildJsDataDelete($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
-            case $action instanceof UpdateData:
-                return $this->buildJsDataUpdate($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
-            case $action instanceof CreateData:
-                return $this->buildJsDataUpdate($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
-            case $action instanceof SaveData:
-                return $this->buildJsDataUpdate($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
+            case get_class($action) === UpdateData::class:
+                return $this->buildJsDataWrite($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
+            case get_class($action) === CreateData::class:
+                return $this->buildJsDataWrite($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
+            case get_class($action) === SaveData::class:
+                return $this->buildJsDataWrite($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             default:
+                // FIXME #fiori-export throw new UI5ExportUnsupportedActionException('Action "' . $action->getAliasWithNamespace() . '" cannot be used with Fiori export!');
                 return <<<JS
-console.log('oParams:', '{$action->getName()}');
-console.log('oParams:', {$oParamsJs});
+
+console.error('Unsupported action {$action->getAliasWithNamespace()}', {$oParamsJs});
 
 JS;
-                //throw new FacadeLogicError('TODO');
         }
         
         return '';
     }
     
+    /**
+     * 
+     * TODO check if filtering over relations an throw a JS error
+     * IDEA add support for sparse fieldsets ($select URL parameter) and check for relations there
+     * 
+     * @param string $oModelJs
+     * @param string $oParamsJs
+     * @param string $onModelLoadedJs
+     * @param string $onErrorJs
+     * @param string $onOfflineJs
+     * @return string
+     */
     protected function buildJsDataLoader(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
         $widget = $this->getElement()->getWidget();
@@ -126,6 +169,15 @@ JS;
         $dateAttributes = json_encode($dateAttributes);
         $timeAttributes = json_encode($timeAttributes);
         
+        $opIS = EXF_COMPARATOR_IS;
+        $opISNOT = EXF_COMPARATOR_IS_NOT;
+        $opEQ = EXF_COMPARATOR_EQUALS;
+        $opNE = EXF_COMPARATOR_EQUALS_NOT;
+        $opLT = EXF_COMPARATOR_LESS_THAN;
+        $opLE = EXF_COMPARATOR_LESS_THAN_OR_EQUALS;
+        $opGT = EXF_COMPARATOR_GREATER_THAN;
+        $opGE = EXF_COMPARATOR_GREATER_THAN_OR_EQUALS;
+        
         return <<<JS
             console.log('oParams:', {$oParamsJs});
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});  
@@ -151,28 +203,28 @@ JS;
                 var conditions = {$oParamsJs}.data.filters.conditions               
                 for (var i = 0; i < conditions.length; i++) {
                     switch (conditions[i].comparator) {
-                        case '=':
+                        case '{$opIS}':
                             var oOperator = "Contains";
                             break;
-                        case '!=':
+                        case '{$opISNOT}':
                             var oOperator = "NotContains";
                             break;
-                        case '==':
+                        case '{$opEQ}':
                             var oOperator = "EQ";
                             break;                            
-                        case '!==':
+                        case '{$opNE}':
                             var oOperator = "NE";
                             break;
-                        case '<':
+                        case '{$opLT}':
                             var oOperator = "LT";
                             break;
-                        case '<=':
+                        case '{$opLE}':
                             var oOperator = "LE";
                             break;
-                        case '>':
+                        case '{$opGT}':
                             var oOperator = "GT";
                             break;
-                        case '>=':
+                        case '{$opGE}':
                             var oOperator ="GE";
                             break;
                         default:
@@ -217,16 +269,13 @@ JS;
             
             if (oDataReadFiltersSearch.length !== 0) {
                 var tempFilter = new sap.ui.model.Filter({filters: oDataReadFiltersSearch, and: true})
-                var test = tempFilter instanceof sap.ui.model.Filter;
                 oDataReadFiltersArray.push(tempFilter);
             }
             if (oDataReadFiltersQuickSearch.length !== 0) {
                 var tempFilter2 = new sap.ui.model.Filter({filters: oDataReadFiltersQuickSearch, and: false})
-                var test2 = tempFilter2 instanceof sap.ui.model.Filter;
                 oDataReadFiltersArray.push(tempFilter2);
             }
             if (oDataReadFiltersArray.length !== 0) {
-                var test3 = oDataReadFiltersArray.every (filter => filter instanceof sap.ui.model.Filter)
                 var combinedFilter = new sap.ui.model.Filter({
                     filters: oDataReadFiltersArray,
                     and: true
@@ -362,7 +411,10 @@ JS;
                     {$onModelLoadedJs}
                     {$this->getElement()->buildJsBusyIconHide()}
                 },
-                error: {$onErrorJs}
+                error: function(oError){
+                    {$onErrorJs}
+                    {$this->buildJsResponseErrorHandling('oError')}
+                }
             });
                 
 JS;
@@ -388,8 +440,6 @@ JS;
 
 JS;
         $onModelLoadedJs = $takeFirstRowOnly . $onModelLoadedJs;
-        
-        $onErrorJs = "function() { " . $onErrorJs . "}";
         
         return <<<JS
         
@@ -428,8 +478,10 @@ JS;
         $params = [];
         $params['serviceUrl'] = rtrim($connection->getUrl(), "/") . '/';
         if ($connection->getUser()) {
-            $params['user'] = $connection->getUser();
-            $params['password'] = $connection->getPassword();
+            if ($this->getUseConnectionCredentials() === true) {
+                $params['user'] = $connection->getUser();
+                $params['password'] = $connection->getPassword();
+            }
             $params['withCredentials'] = true;
             //$params['headers'] = ['Authorization' => 'Basic TU9WX0RFVjpzY2h1ZXJlcjVh'];
         }
@@ -460,9 +512,8 @@ JS;
         return $localFilterAliases;
     }
     
-    protected function buildJsDataUpdate(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
+    protected function buildJsDataWrite(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
-        // TODO
         $widget = $this->getElement()->getWidget();
         $object = $widget->getMetaObject();
         $uidAttribute = $object->getUidAttributeAlias();
@@ -479,7 +530,10 @@ JS;
             
             oDataModel.create("/{$object->getDataAddress()}", oData, {
                 success: {$onModelLoadedJs},
-                error: {$onErrorJs}
+                error: function(oError) {
+                    {$onErrorJs}
+                    {$this->buildJsResponseErrorHandling('oError')}
+                }
             });
 
 JS;
@@ -506,7 +560,10 @@ JS;
 
             oDataModel.update("/{$object->getDataAddress()}(" + oDataUid+ ")", oData, {
                 success: {$onModelLoadedJs},
-                error: {$onErrorJs}
+                error: function(oError) {
+                    {$onErrorJs}
+                    {$this->buildJsResponseErrorHandling('oError')}
+                }
             });
 
 JS;
@@ -516,45 +573,52 @@ JS;
             console.log('Params: ',{$oParamsJs})
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
             //oDataModel.setUseBatch(false);
-            var data = {$oParamsJs}.data.rows[0];            
-            var oData = {};
-            Object.keys(data).forEach(key => {
-                if (data[key] != "") {
-                    var type = {$attributesType}[key];
-                    switch (type) {
-                        case 'Edm.DateTimeOffset':
-                            var d = new Date(data[key]);
-                            var date = d.toISOString();
-                            var datestring = date.replace(/\.[0-9]{3}/, '');
-                            oData[key] = datestring;
-                            break;
-                        case 'Edm.DateTime':
-                            var d = new Date(data[key]);
-                            var date = d.toISOString();
-                            var datestring = date.substring(0,19);
-                            oData[key] = datestring;
-                            break;                        
-                        case 'Edm.Time':
-                            var d = data[key];
-                            var timeParts = d.split(':');
-                            if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
-                                timeParts[3] = "00";
-                            }
-                            for (var i = 0; i < timeParts.length; i++) {
-                                timeParts[i] = ('0'+(timeParts[i])).slice(-2);
-                            }                            
-                            var timeString = "PT" + timeParts[0] + "H" + timeParts[1] + "M" + timeParts[3] + "S";
-                            oData[key] = timeString;
-                            break;
-                        case 'Edm.Decimal':
-                            oData[key] = data[key].toString();
-                            break; 
-                        default:
-                            oData[key] = data[key];
+            for (var i = 0; i < {$oParamsJs}.data.rows.length; i++) {
+                var data = {$oParamsJs}.data.rows[i];            
+                var oData = {};
+                Object.keys(data).forEach(key => {
+                    if (data[key] != "") {
+                        var type = {$attributesType}[key];
+                        switch (type) {
+                            case 'Edm.DateTimeOffset':
+                                //var rawDate = data[key];                        
+                                //jQuery.sap.require("sap.ui.core.format.DateFormat");
+                                //var oDateFormat = sap.ui.core.format.DateFormat.getDateTimeInstance({pattern: "yyyy-MM-dd HH:mm:ss"}); 
+                                //var d = oDateFormat.format(rawDate);
+                                //console.log('Datum: ', d);
+                                var d = new Date(data[key]);
+                                var date = d.toISOString();
+                                var datestring = date.replace(/\.[0-9]{3}/, '');
+                                oData[key] = datestring;
+                                break;
+                            case 'Edm.DateTime':
+                                var d = new Date(data[key]);                            
+                                var date = d.toISOString();
+                                var datestring = date.substring(0,19);
+                                oData[key] = datestring;
+                                break;                        
+                            case 'Edm.Time':
+                                var d = data[key];
+                                var timeParts = d.split(':');
+                                if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
+                                    timeParts[3] = "00";
+                                }
+                                for (var i = 0; i < timeParts.length; i++) {
+                                    timeParts[i] = ('0'+(timeParts[i])).slice(-2);
+                                }                            
+                                var timeString = "PT" + timeParts[0] + "H" + timeParts[1] + "M" + timeParts[3] + "S";
+                                oData[key] = timeString;
+                                break;
+                            case 'Edm.Decimal':
+                                oData[key] = data[key].toString();
+                                break; 
+                            default:
+                                oData[key] = data[key];
+                        }
                     }
-                }
-            });
-            {$serverCall}
+                });
+                {$serverCall}
+            }
 
 JS;
     }
@@ -570,54 +634,59 @@ JS;
             console.log($oParamsJs)
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
             //oDataModel.setUseBatch(false);
-            var data = {$oParamsJs}.data.rows[0];
-            if ('{$uidAttribute}' in data) {
-                var oDataUid = data.{$uidAttribute};
-                var type = '{$uidAttributeType}';
-                switch (type) {
-                    case 'Edm.Guid':
-                        oDataUid = "guid" + "'" + oDataUid + "'";
-                        break;
-                    case 'Edm.Binary':
-                        oDataUid = "binary" + "'" + oDataUid + "'";
-                        break;
-                    case 'Edm.DateTimeOffset':
-                        var d = new Date(oDataUid);
-                        var date = d.toISOString();
-                        var datestring = date.replace(/\.[0-9]{3}/, '');
-                        oDataUid = "'" + datestring + "'";
-                        break;
-                    case 'Edm.DateTime':
-                        var d = new Date(oDataUid);
-                        var date = d.toISOString();
-                        var datestring = date.substring(0,19);
-                        oDataUid = "'" + datestring + "'";
-                        break;                        
-                    case 'Edm.Time':
-                        var d = oDataUid;
-                        var timeParts = d.split(':');
-                        if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
-                            timeParts[3] = "00";
-                        }
-                        for (var i = 0; i < timeParts.length; i++) {
-                            timeParts[i] = ('0'+(timeParts[i])).slice(-2);
-                        }                            
-                        var timeString = "PT" + timeParts[0] + "H" + timeParts[1] + "M" + timeParts[3] + "S";
-                        oDataUid = "'" + timeString + "'";
-                        break;
-                    case 'Edm.Decimal':
-                        oDataUid = "'" + oDataUid.toString() + "'";
-                        break;
-                    default:
-                        oDataUid = "'" + oDataUid + "'";
+            for (var i = 0; i < {$oParamsJs}.data.rows.length; i++) {
+                var data = {$oParamsJs}.data.rows[i];
+                if ('{$uidAttribute}' in data) {
+                    var oDataUid = data.{$uidAttribute};
+                    var type = '{$uidAttributeType}';
+                    switch (type) {
+                        case 'Edm.Guid':
+                            oDataUid = "guid" + "'" + oDataUid + "'";
+                            break;
+                        case 'Edm.Binary':
+                            oDataUid = "binary" + "'" + oDataUid + "'";
+                            break;
+                        case 'Edm.DateTimeOffset':
+                            var d = new Date(oDataUid);
+                            var date = d.toISOString();
+                            var datestring = date.replace(/\.[0-9]{3}/, '');
+                            oDataUid = "'" + datestring + "'";
+                            break;
+                        case 'Edm.DateTime':
+                            var d = new Date(oDataUid);
+                            var date = d.toISOString();
+                            var datestring = date.substring(0,19);
+                            oDataUid = "'" + datestring + "'";
+                            break;                        
+                        case 'Edm.Time':
+                            var d = oDataUid;
+                            var timeParts = d.split(':');
+                            if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
+                                timeParts[3] = "00";
+                            }
+                            for (var i = 0; i < timeParts.length; i++) {
+                                timeParts[i] = ('0'+(timeParts[i])).slice(-2);
+                            }                            
+                            var timeString = "PT" + timeParts[0] + "H" + timeParts[1] + "M" + timeParts[3] + "S";
+                            oDataUid = "'" + timeString + "'";
+                            break;
+                        case 'Edm.Decimal':
+                            oDataUid = "'" + oDataUid.toString() + "'";
+                            break;
+                        default:
+                            oDataUid = "'" + oDataUid + "'";
+                    }
+                } else {
+                    var oDataUid = '';
                 }
-            } else {
-                var oDataUid = '';
+                oDataModel.remove("/{$object->getDataAddress()}(" + oDataUid + ")" , {
+                    success: {$onModelLoadedJs},
+                    error: function(oError) {
+                        {$onErrorJs}
+                        {$this->buildJsResponseErrorHandling('oError')}
+                    }
+                });
             }
-            oDataModel.remove("/{$object->getDataAddress()}(" + oDataUid+ ")" , {
-                success: {$onModelLoadedJs},
-                error: {$onErrorJs}
-            });
 
 JS;
         
@@ -625,7 +694,6 @@ JS;
     
     protected function buildJsCallFunctionImport(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
-        // TODO
         $widget = $this->getElement()->getWidget();
         $object = $widget->getMetaObject();
         $parameters = $action->getParameters();
@@ -653,6 +721,7 @@ JS;
 
             var oDataActionParams = {};
             if ({$oParamsJs}.data.rows.length !== 0) {
+                var callAction = true;
                 if (requiredParams[0] !== undefined) {
                     for (var i = 0; i < requiredParams.length; i++) {
                         var param = requiredParams[i];
@@ -662,19 +731,44 @@ JS;
                             oDataActionParams[param] = defaultValues[param];
                         } else {
                             oDataActionParams[param] = "";
-                            console.log('WARNING: No value given for required parameter: ', param);
+                            callAction = false;
+                            console.error('No value given for required parameter: ', param);
+                            {$this->getElement()->buildJsShowError('No value given for required parameter', 'ERROR')}
                         }
                     }
+                }
+                if (callAction === true) {
+                    oDataModel.callFunction('/{$action->getServiceName()}', {
+                        urlParameters: oDataActionParams,
+                        success: {$onModelLoadedJs},
+                        error: function(oError) { 
+                            {$onErrorJs}
+                            {$this->buildJsResponseErrorHandling('oError')}
+                        }
+                    });
                 }
             } else {
                 console.log('No row selected!');
             }
-            oDataModel.callFunction('/{$action->getServiceName()}', {
-                urlParameters: oDataActionParams,
-                success: {$onModelLoadedJs},
-                error: {$onErrorJs}
-            });
             
 JS;
+    }
+    
+    protected function buildJsResponseErrorHandling(string $oErrorJs = 'oError') : string
+    {
+        return <<<JS
+        
+        var response = {};
+        try {
+            response = $.parseJSON(oError.responseText);
+            var errorText = response.error.message.value;
+        } catch (e) {
+            var errorText = '<p> No Error description send! </p>';
+        }
+        {$this->getElement()->buildJsShowError('errorText', "{$oErrorJs}.statusCode + ' ' + {$oErrorJs}.statusText")}
+        {$this->getElement()->buildJsBusyIconHide()}
+
+JS;
+        
     }
 }

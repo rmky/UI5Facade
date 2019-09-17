@@ -365,22 +365,6 @@ JS;
 
 JS;
 								
-        $onErrorJs = <<<JS
-                           
-                    function(oError){                            
-                        var response = {};
-						try {
-							response = $.parseJSON(oError.responseText);
-                            var errorText ='<p>' +  response.error.message.value + '<p>';
-						} catch (e) {
-							var errorText = 'No Error description send!';
-						}
-                        {$this->buildJsShowError('errorText', 'oError.statusCode + " " + oError.statusText')}
-                        {$this->buildJsBusyIconHide()}
-                    }
-						
-JS;
-                        
         $onOfflineJs = '';
         
         $doAction = $this->getServerAdapter()->buildJsServerRequest(
@@ -388,7 +372,7 @@ JS;
             'oModel',
             'params',
             $onModelLoadedJs,
-            $onErrorJs,
+            '',
             $onOfflineJs
         );		
 		
@@ -416,83 +400,3 @@ JS;
     }
 }
     
-/*    protected function buildJsClickCallServerAction(ActionInterface $action, AbstractJqueryElement $input_element)
-    {
-        $serverAdapter = $this->getServerAdapter();
-        if ($serverAdapter instanceof UI5FacadeServerAdapter) {
-            return $this->buildJsClickCallServerActionViaTrait($action, $input_element);
-        }
-        
-        $widget = $this->getWidget();
-        
-        $oParamsJs = '';
-        $onModelLoadedJs = '';
-        
-        $headers = ! empty($this->getAjaxHeaders()) ? 'headers: ' . json_encode($this->getAjaxHeaders()) . ',' : '';
-        
-        $output = $this->buildJsRequestDataCollector($action, $input_element);
-        $output .= "
-                console.log('Aktion: ', '{$widget->getActionAlias()}');
-				if (" . $input_element->buildJsValidator() . ") {
-					" . $this->buildJsBusyIconShow() . "
-                    var oModel = new sap.ui.model.json.JSONModel();
-					$.ajax({
-						type: 'POST',
-						url: '" . $this->getAjaxUrl() . "',
-                        {$headers}
-						data: {
-							action: '" . $widget->getActionAlias() . "',
-							resource: '" . $widget->getPage()->getAliasWithNamespace() . "',
-							element: '" . $widget->getId() . "',
-							object: '" . $widget->getMetaObject()->getId() . "',
-							data: requestData
-						},
-						success: function(data, textStatus, jqXHR) {
-                            if (typeof data === 'object') {
-                                response = data;
-                            } else {
-                                var response = {};
-								try {
-									response = $.parseJSON(data);
-								} catch (e) {
-									response.error = data;
-								}
-                            }
-		                   	if (response.success){
-								" . $this->buildJsCloseDialog($widget, $input_element) . "
-								" . $this->buildJsInputRefresh($widget, $input_element) . "
-		                       	" . $this->buildJsBusyIconHide() . "
-		                       	$('#" . $this->getId() . "').trigger('" . $action->getAliasWithNamespace() . ".action.performed', [requestData, '" . $input_element->getId() . "']);
-								if (response.success || response.undoURL){
-		                       		" . $this->buildJsShowMessageSuccess("response.success + (response.undoable ? ' <a href=\"" . $this->buildJsUndoUrl($action, $input_element) . "\" style=\"display:block; float:right;\">UNDO</a>' : '')") . "
-									if(response.redirect){
-										if (response.redirect.indexOf('target=_blank') !== 0) {
-											window.open(response.redirect.replace('target=_blank',''), '_newtab');
-										}
-										else {
-											window.location.href = response.redirect;
-										}
-                   					}
-								}
-                                {$this->buildJsOnSuccessScript()}
-		                    } else {
-								" . $this->buildJsBusyIconHide() . "
-								" . $this->buildJsShowMessageError('response.error', '"Server error"') . "
-		                    }
-						},
-						error: function(jqXHR, textStatus, errorThrown){
-							" . $this->buildJsShowError('jqXHR.responseText', 'jqXHR.status + " " + jqXHR.statusText') . "
-							" . $this->buildJsBusyIconHide() . "
-						}
-					});
-                    
-				} else {
-					" . $input_element->buildJsValidationError() . "
-				}
-			";
-                                        
-        return $output;
-        
-        // insert at line 409: {$serverAdapter->buildJsServerRequest($action, 'oModel', $oParamsJs, $onModelLoadedJs)}
-    }
-}*/

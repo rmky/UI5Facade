@@ -479,11 +479,8 @@ JS;
     {
         $widget = $this->getWidget();
         
-        //$adapterclass = $this->getFacade()->getConfig()->getOption("DEFAULT_SERVER_ADAPTER_CLASS");
-        $adapterclass = $this->getFacade()->getConfig()->getOption("WEBAPP_EXPORT.SERVER_ADAPTER_CLASS");
+        $adapterclass = $this->getFacade()->getConfig()->getOption("DEFAULT_SERVER_ADAPTER_CLASS");
         $adapter = new $adapterclass($this);
-        //$adapter = new UI5FacadeServerAdapter($this);
-        //$adapter = new OData2ServerAdapter($this);
         
         if ($widget instanceof iCanPreloadData && $widget->isPreloadDataEnabled()) {
             $adapter = new PreloadServerAdapter($this, $adapter);

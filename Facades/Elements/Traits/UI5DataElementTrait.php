@@ -413,33 +413,12 @@ JS;
     {
         $widget = $this->getWidget();
         
-        $serverAdapter = $this->getServerAdapter();
-        if ($serverAdapter instanceof OData2ServerAdapter) {                    
-            $onErrorJs = <<<JS
-            
-                function(oError){
-                    var response = {};
-					try {
-						response = $.parseJSON(oError.responseText);
-                        var errorText ='<p>' +  response.error.message.value + '<p>';
-					} catch (e) {
-						var errorText = 'No Error description send!';
-					}
-                    {$this->buildJsShowError('errorText', 'oError.statusCode + " " + oError.statusText')}
-                    {$this->buildJsBusyIconHide()}
-                }
-                        
-JS;
-        } else {
-            $onErrorJs = '';
-        }
-        
         $doLoad = $this->getServerAdapter()->buildJsServerRequest(
             $widget->getLazyLoadingAction(),
             'oModel',
             'params',
             $this->buildJsDataLoaderOnLoaded('oModel'),
-            $onErrorJs,
+            '',
             $this->buildJsOfflineHint('oTable')
         );
         

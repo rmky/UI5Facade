@@ -253,6 +253,9 @@ sap.ui.define([
 					return oDialog;
 					
 				default:
+					if (sContentType === 'string') {
+						sBody = '<p class="sapUiSmallMargin">' + sBody + '</p>';
+					}
 					return this.showHtmlInDialog(sTitle, sBody, 'Error');
 			}
 		},

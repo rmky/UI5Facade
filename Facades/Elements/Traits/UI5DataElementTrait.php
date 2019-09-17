@@ -13,6 +13,7 @@ use exface\Core\Interfaces\Widgets\iHaveColumns;
 use exface\Core\Interfaces\Widgets\iCanPreloadData;
 use exface\UI5Facade\Facades\UI5Facade;
 use exface\UI5Facade\Facades\Interfaces\UI5ServerAdapterInterface;
+use exface\UI5Facade\Facades\Elements\ServerAdapters\OData2ServerAdapter;
 
 /**
  * This trait helps wrap thrid-party data widgets (like charts, image galleries, etc.) in 
@@ -412,21 +413,26 @@ JS;
     {
         $widget = $this->getWidget();
         
-        $onErrorJs = <<<JS
-        
-                    function(oError){
-                        var response = {};
-						try {
-							response = $.parseJSON(oError.responseText);
-                            var errorText ='<p>' +  response.error.message.value + '<p>';
-						} catch (e) {
-							var errorText = 'No Error description send!';
-						}
-                        {$this->buildJsShowError('errorText', 'oError.statusCode + " " + oError.statusText')}
-                        {$this->buildJsBusyIconHide()}
-                    }
-                    
+        $serverAdapter = $this->getServerAdapter();
+        if ($serverAdapter instanceof OData2ServerAdapter) {                    
+            $onErrorJs = <<<JS
+            
+                function(oError){
+                    var response = {};
+					try {
+						response = $.parseJSON(oError.responseText);
+                        var errorText ='<p>' +  response.error.message.value + '<p>';
+					} catch (e) {
+						var errorText = 'No Error description send!';
+					}
+                    {$this->buildJsShowError('errorText', 'oError.statusCode + " " + oError.statusText')}
+                    {$this->buildJsBusyIconHide()}
+                }
+                        
 JS;
+        } else {
+            $onErrorJs = '';
+        }
         
         $doLoad = $this->getServerAdapter()->buildJsServerRequest(
             $widget->getLazyLoadingAction(),

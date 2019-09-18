@@ -349,9 +349,8 @@ JS;
         
         $onModelLoadedJs = <<<JS
 
-                        function(data, oResponse) {
-                            console.log(oResponse);                            
-		                   	if (oResponse.statusCode === "200" || oResponse.statusCode === "201" || oResponse.statusCode === "204"){
+                        function(data, oResponse) {                          
+		                   	if (oResponse !== undefined && (oResponse.statusCode === "200" || oResponse.statusCode === "201" || oResponse.statusCode === "204")){
 								{$this->buildJsCloseDialog($widget, $input_element)}
 								{$this->buildJsInputRefresh($widget, $input_element)}
 		                       	{$this->buildJsBusyIconHide()}

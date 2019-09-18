@@ -59,13 +59,28 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
     
     private $useConnectionCredentials = false;
     
+    private $useBatchWrites = false;
+    
+    private $useBatchDeletes = false;
+    
+    private $useBatchFunctionImports = false;
+    
     public function __construct(UI5AbstractElement $element)
     {
         $this->element = $element; 
         
         $facadeConfig = $element->getFacade()->getConfig();
-        if ($facadeConfig->hasOption('WEBAPP_EXPORT.USE_CONNECTION_CREDENTIALS')) {
-            $this->useConnectionCredentials = $facadeConfig->getOption('WEBAPP_EXPORT.USE_CONNECTION_CREDENTIALS');
+        if ($facadeConfig->hasOption('WEBAPP_EXPORT.ODATA.USE_CONNECTION_CREDENTIALS')) {
+            $this->useConnectionCredentials = $facadeConfig->getOption('WEBAPP_EXPORT.ODATA.USE_CONNECTION_CREDENTIALS');
+        }
+        if ($facadeConfig->hasOption('WEBAPP_EXPORT.ODATA.USE_BATCH_DELETES')) {
+            $this->setUseBatchDeletes($facadeConfig->getOption('WEBAPP_EXPORT.ODATA.USE_BATCH_DELETES'));
+        }
+        if ($facadeConfig->hasOption('WEBAPP_EXPORT.ODATA.USE_BATCH_WRITES')) {
+            $this->setUseBatchWrites($facadeConfig->getOption('WEBAPP_EXPORT.ODATA.USE_BATCH_WRITES'));
+        }
+        if ($facadeConfig->hasOption('WEBAPP_EXPORT.ODATA.USE_BATCH_FUNCTION_IMPORTS')) {
+            $this->setUseBatchFunctionImports($facadeConfig->getOption('WEBAPP_EXPORT.ODATA.USE_BATCH_FUNCTION_IMPORTS'));
         }
         
         $this->checkWidgetExportable($element->getWidget());
@@ -108,7 +123,7 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
     }
     
     /**
-     * returns based on the given action the correct server request javascript code for that action
+     * Based on the given action returns the correct server request javascript code for that action
      * 
      * @param ActionInterface $action
      * @param string $oModelJs
@@ -581,16 +596,12 @@ JS;
         }
         $attributesType = json_encode($attributesType);
         $uidAttributeType = $object->getUidAttribute()->getDataAddressProperty('odata_type');
+        $bUseBatchJs = $this->getUseBatchWrites() ? 'true' : 'false';
+        
         if ($action instanceof CreateData) {
             $serverCall = <<<JS
             
-            oDataModel.create("/{$object->getDataAddress()}", oData, {
-                success: {$onModelLoadedJs},
-                error: function(oError) {
-                    {$onErrorJs}
-                    {$this->buildJsResponseErrorHandling('oError')}
-                }
-            });
+            oDataModel.create("/{$object->getDataAddress()}", oData, mParameters);
 
 JS;
         }
@@ -614,13 +625,7 @@ JS;
                 var oDataUid = '';
             }
 
-            oDataModel.update("/{$object->getDataAddress()}(" + oDataUid+ ")", oData, {
-                success: {$onModelLoadedJs},
-                error: function(oError) {
-                    {$onErrorJs}
-                    {$this->buildJsResponseErrorHandling('oError')}
-                }
-            });
+            oDataModel.update("/{$object->getDataAddress()}(" + oDataUid+ ")", oData, mParameters);
 
 JS;
         }
@@ -628,8 +633,11 @@ JS;
         return <<<JS
             console.log('Params: ',{$oParamsJs})
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
-            //oDataModel.setUseBatch(false);
-            for (var i = 0; i < {$oParamsJs}.data.rows.length; i++) {
+            oDataModel.setUseBatch({$bUseBatchJs});
+            var mParameters = {};
+            mParameters.groupId = "batchGroup";
+            var rowCount = {$oParamsJs}.data.rows.length;
+            for (var i = 0; i < rowCount; i++) {
                 var data = {$oParamsJs}.data.rows[i];            
                 var oData = {};
                 Object.keys(data).forEach(key => {
@@ -674,10 +682,15 @@ JS;
                             default:
                                 oData[key] = data[key];
                         }
+                    } else {
+                        oData[key] = data[key];
                     }
                 });
+                console.log('oData: ',oData)
                 {$serverCall}
             }
+
+            {$this->buildJsSendServerRequest('oDataModel', $bUseBatchJs, $onModelLoadedJs, $onErrorJs)};
 
 JS;
     }
@@ -697,12 +710,17 @@ JS;
         $object = $widget->getMetaObject();
         $uidAttribute = $object->getUidAttributeAlias();
         $uidAttributeType = $object->getUidAttribute()->getDataAddressProperty('odata_type');
+        $bUseBatchJs = $this->getUseBatchDeletes() ? 'true' : 'false';
         
         return <<<JS
             console.log($oParamsJs)
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
-            //oDataModel.setUseBatch(false);
-            for (var i = 0; i < {$oParamsJs}.data.rows.length; i++) {
+            oDataModel.setUseBatch({$bUseBatchJs});
+            var mParameters = {};
+            mParameters.groupId = "batchGroup";
+            var rowCount = {$oParamsJs}.data.rows.length;
+
+            for (var i = 0; i < rowCount; i++) {
                 var data = {$oParamsJs}.data.rows[i];
                 if ('{$uidAttribute}' in data) {
                     var oDataUid = data.{$uidAttribute};
@@ -746,15 +764,11 @@ JS;
                     }
                 } else {
                     var oDataUid = '';
-                }
-                oDataModel.remove("/{$object->getDataAddress()}(" + oDataUid + ")" , {
-                    success: {$onModelLoadedJs},
-                    error: function(oError) {
-                        {$onErrorJs}
-                        {$this->buildJsResponseErrorHandling('oError')}
-                    }
-                });
+                }                
+                oDataModel.remove("/{$object->getDataAddress()}(" + oDataUid + ")", mParameters);
             }
+
+            {$this->buildJsSendServerRequest('oDataModel', $bUseBatchJs, $onModelLoadedJs, $onErrorJs)};
 
 JS;
         
@@ -795,74 +809,82 @@ JS;
             $attributesType->$key= $attr->getDataAddressProperty('odata_type');
         }
         $attributesType = json_encode($attributesType);
+        $bUseBatchJs = $this->getUseBatchFunctionImports() ? 'true' : 'false';
         
         
         return <<<JS
 
             console.log('Params: ',$oParamsJs);
+            console.log('Batch: ',$bUseBatchJs);
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
+            oDataModel.setUseBatch({$bUseBatchJs});
             var requiredParams = {$requiredParams};
             var defaultValues = {$defaultValues};
-
+            var mParameters = {};
+            mParameters.groupId = "batchGroup";
+            var callActions = true;
             var oDataActionParams = {};
-            if ({$oParamsJs}.data.rows.length !== 0) {
-                var callAction = true;
-                if (requiredParams[0] !== undefined) {
-                    for (var i = 0; i < requiredParams.length; i++) {
-                        var param = requiredParams[i];
-                        if ({$oParamsJs}.data.rows[0][param] != undefined && {$oParamsJs}.data.rows[0][param] != "") {                           
-                            var type = {$attributesType}[param];
-                            var value = {$oParamsJs}.data.rows[0][param];
-                            switch (type) {
-                                case 'Edm.DateTimeOffset':
-                                    var d = new Date(value);
-                                    var date = d.toISOString();
-                                    var datestring = date.replace(/\.[0-9]{3}/, '');
-                                    oDataActionParams[param] = datestring;
-                                    break;
-                                case 'Edm.DateTime':
-                                    var d = new Date(value);                            
-                                    var date = d.toISOString();
-                                    var datestring = date.substring(0,19);
-                                    oDataActionParams[param] = datestring;
-                                    break;                        
-                                case 'Edm.Time':
-                                    var d = value;
-                                    var timeParts = d.split(':');
-                                    if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
-                                        timeParts[3] = "00";
-                                    }
-                                    for (var i = 0; i < timeParts.length; i++) {
-                                        timeParts[i] = ('0'+(timeParts[i])).slice(-2);
-                                    }                            
-                                    var timeString = "PT" + timeParts[0] + "H" + timeParts[1] + "M" + timeParts[3] + "S";
-                                    oDataActionParams[param] = timeString;
-                                    break;
-                                case 'Edm.Decimal':
-                                    oDataActionParams[param] = value.toString();
-                                    break; 
-                                default:
-                                    oDataActionParams[param] = value;
+            var rowCount = {$oParamsJs}.data.rows.length;
+
+            if (rowCount !== 0) {                
+                for (var j = 0; j < rowCount; j++) {
+                    var addAction = true;
+                    if (requiredParams[0] !== undefined) {
+                        for (var i = 0; i < requiredParams.length; i++) {
+                            var param = requiredParams[i];
+                            if ({$oParamsJs}.data.rows[j][param] != undefined && {$oParamsJs}.data.rows[j][param] != "") {                           
+                                var type = {$attributesType}[param];
+                                var value = {$oParamsJs}.data.rows[j][param];
+                                switch (type) {
+                                    case 'Edm.DateTimeOffset':
+                                        var d = new Date(value);
+                                        var date = d.toISOString();
+                                        var datestring = date.replace(/\.[0-9]{3}/, '');
+                                        oDataActionParams[param] = datestring;
+                                        break;
+                                    case 'Edm.DateTime':
+                                        var d = new Date(value);                            
+                                        var date = d.toISOString();
+                                        var datestring = date.substring(0,19);
+                                        oDataActionParams[param] = datestring;
+                                        break;                        
+                                    case 'Edm.Time':
+                                        var d = value;
+                                        var timeParts = d.split(':');
+                                        if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
+                                            timeParts[3] = "00";
+                                        }
+                                        for (var i = 0; i < timeParts.length; i++) {
+                                            timeParts[i] = ('0'+(timeParts[i])).slice(-2);
+                                        }                            
+                                        var timeString = "PT" + timeParts[0] + "H" + timeParts[1] + "M" + timeParts[3] + "S";
+                                        oDataActionParams[param] = timeString;
+                                        break;
+                                    case 'Edm.Decimal':
+                                        oDataActionParams[param] = value.toString();
+                                        break; 
+                                    default:
+                                        oDataActionParams[param] = value;
+                                }
+                            } else if (defaultValues.hasOwnProperty(param)) {
+                                oDataActionParams[param] = defaultValues[param];
+                            } else {
+                                oDataActionParams[param] = "";
+                                addAction = false;
+                                callActions = false;
+                                console.error('No value given for required parameter: ', param);
+                                {$this->getElement()->buildJsShowError('"No value given for parameter:  " + param + " - at selected row: " + j', '"ERROR"')}
+                                {$this->getElement()->buildJsBusyIconHide()}
                             }
-                        } else if (defaultValues.hasOwnProperty(param)) {
-                            oDataActionParams[param] = defaultValues[param];
-                        } else {
-                            oDataActionParams[param] = "";
-                            callAction = false;
-                            console.error('No value given for required parameter: ', param);
-                            {$this->getElement()->buildJsShowError('"No value given for parameter:  " + param', '"ERROR"')}
                         }
                     }
+                    if (addAction === true) {                        
+                        mParameters.urlParameters = oDataActionParams;
+                        oDataModel.callFunction('/{$action->getServiceName()}', mParameters);
+                    }
                 }
-                if (callAction === true) {
-                    oDataModel.callFunction('/{$action->getServiceName()}', {
-                        urlParameters: oDataActionParams,
-                        success: {$onModelLoadedJs},
-                        error: function(oError) { 
-                            {$onErrorJs}
-                            {$this->buildJsResponseErrorHandling('oError')}
-                        }
-                    });
+                if (callActions === true) {                    
+                    {$this->buildJsSendServerRequest('oDataModel', $bUseBatchJs, $onModelLoadedJs, $onErrorJs)};
                 }
             } else {                
                 {$this->getElement()->buildJsShowError('"No row selected!"', '"ERROR"')}
@@ -893,5 +915,101 @@ JS;
 
 JS;
         
+    }
+    
+    protected function buildJsSendServerRequest (string $oDataModelJs, string $bUseBatchJs, string $onModelLoadedJs, string $onErrorJs) : string
+    {
+        return <<<JS
+
+            {$oDataModelJs}.setDeferredGroups(["batchGroup"]);
+            {$oDataModelJs}.submitChanges({
+                groupId: "batchGroup",
+                success: function(oData) {
+                    console.log(oData);                       
+                   	if ({$bUseBatchJs}) {
+                        if (Object.getOwnPropertyNames(oData).length === 0) {
+                            {$this->getElement()->buildJsShowError('"ERROR 77GBGFQ: Unexpected empty response to a batch request"', '"Unknown server error"')}
+                            {$this->getElement()->buildJsBusyIconHide()}
+                        } else {
+                            //TODO
+                            {$this->getElement()->buildJsBusyIconHide()}
+                        }    
+                    } else {
+                        {$onModelLoadedJs}
+                    }
+                },
+                error: function(oError) {
+                    if ({$bUseBatchJs}) {
+                    
+                    }
+                    {$onErrorJs}
+                    {$this->buildJsResponseErrorHandling('oError')}
+                }
+            });
+
+JS;
+    }
+    
+    /**
+     * 
+     * @return bool
+     */
+    protected function getUseBatchDeletes() : bool
+    {
+        return $this->useBatchDeletes;
+    }
+    
+    /**
+     * Set if OData2ServerAdapter should use batch to send delete requests or should send each request seperately
+     * 
+     * @param bool $trueOrFalse
+     * @return OData2ServerAdapter
+     */
+    public function setUseBatchDeletes(bool $trueOrFalse) : OData2ServerAdapter
+    {
+        $this->useBatchDeletes = $trueOrFalse;
+        return $this;
+    }
+    
+    /**
+     *
+     * @return bool
+     */
+    protected function getUseBatchWrites() : bool
+    {
+        return $this->useBatchWrites;
+    }
+    
+    /**
+     * Set if OData2ServerAdapter should use batch to send write requests or should send each request seperately
+     *
+     * @param bool $trueOrFalse
+     * @return OData2ServerAdapter
+     */
+    public function setUseBatchWrites(bool $trueOrFalse) : OData2ServerAdapter
+    {
+        $this->useBatchWrites = $trueOrFalse;
+        return $this;
+    }
+    
+    /**
+     *
+     * @return bool
+     */
+    protected function getUseBatchFunctionImports() : bool
+    {
+        return $this->useBatchFunctionImports;
+    }
+    
+    /**
+     * Set if OData2ServerAdapter should use batch to send delete requests or should send each request seperately
+     *
+     * @param bool $trueOrFalse
+     * @return OData2ServerAdapter
+     */
+    public function setUseBatchFunctionImports(bool $trueOrFalse) : OData2ServerAdapter
+    {
+        $this->useBatchFunctionImports = $trueOrFalse;
+        return $this;
     }
 }

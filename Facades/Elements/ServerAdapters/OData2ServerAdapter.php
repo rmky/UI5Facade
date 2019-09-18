@@ -633,10 +633,25 @@ JS;
         return <<<JS
             console.log('Params: ',{$oParamsJs})
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
+            var aResponses = [];
+            var rowCount = {$oParamsJs}.data.rows.length;
+            
             oDataModel.setUseBatch({$bUseBatchJs});
             var mParameters = {};
             mParameters.groupId = "batchGroup";
-            var rowCount = {$oParamsJs}.data.rows.length;
+            mParameters.success = function(oData) {
+                console.log('Success Response: ', oData);
+                aResponses.push(oData);
+                if (aResponses.length === rowCount) {
+                    {$onModelLoadedJs}
+                }
+            };
+            mParameters.error = function(oError) { 
+                console.log('update error'); 
+                aResponses.push(oError);
+                {$this->buildJsResponseErrorHandling('oError')} 
+            };
+            
             for (var i = 0; i < rowCount; i++) {
                 var data = {$oParamsJs}.data.rows[i];            
                 var oData = {};
@@ -686,7 +701,6 @@ JS;
                         oData[key] = data[key];
                     }
                 });
-                console.log('oData: ',oData)
                 {$serverCall}
             }
 
@@ -716,8 +730,21 @@ JS;
             console.log($oParamsJs)
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
             oDataModel.setUseBatch({$bUseBatchJs});
+            var aResponses = [];
             var mParameters = {};
             mParameters.groupId = "batchGroup";
+            mParameters.success = function(oData) {
+                console.log('Success Response: ', oData);
+                aResponses.push(oData);
+                if (aResponses.length === rowCount) {
+                    {$onModelLoadedJs}
+                }
+            };
+            mParameters.error = function(oError) { 
+                console.log('update error'); 
+                aResponses.push(oError);
+                {$this->buildJsResponseErrorHandling('oError')} 
+            };
             var rowCount = {$oParamsJs}.data.rows.length;
 
             for (var i = 0; i < rowCount; i++) {
@@ -822,6 +849,7 @@ JS;
             var defaultValues = {$defaultValues};
             var mParameters = {};
             mParameters.groupId = "batchGroup";
+            var aResponses = [];
             var callActions = true;
             var oDataActionParams = {};
             var rowCount = {$oParamsJs}.data.rows.length;
@@ -880,6 +908,20 @@ JS;
                     }
                     if (addAction === true) {                        
                         mParameters.urlParameters = oDataActionParams;
+                                                           
+                        mParameters.groupId = "batchGroup";
+                        mParameters.success = function(oData) {
+                            console.log('Success Response: ', oData);
+                            aResponses.push(oData);
+                            if (aResponses.length === rowCount) {
+                                {$onModelLoadedJs}
+                            }
+                        };
+                        mParameters.error = function(oError) { 
+                            console.log('update error'); 
+                            aResponses.push(oError);
+                            {$this->buildJsResponseErrorHandling('oError')} 
+                        };
                         oDataModel.callFunction('/{$action->getServiceName()}', mParameters);
                     }
                 }
@@ -905,7 +947,7 @@ JS;
         
         var response = {};
         try {
-            response = $.parseJSON(oError.responseText);
+            response = $.parseJSON({$oErrorJs}.responseText);
             var errorText = response.error.message.value;
         } catch (e) {
             var errorText = '<p> No Error description send! </p>';
@@ -924,20 +966,6 @@ JS;
             {$oDataModelJs}.setDeferredGroups(["batchGroup"]);
             {$oDataModelJs}.submitChanges({
                 groupId: "batchGroup",
-                success: function(oData) {
-                    console.log(oData);                       
-                   	if ({$bUseBatchJs}) {
-                        if (Object.getOwnPropertyNames(oData).length === 0) {
-                            {$this->getElement()->buildJsShowError('"ERROR 77GBGFQ: Unexpected empty response to a batch request"', '"Unknown server error"')}
-                            {$this->getElement()->buildJsBusyIconHide()}
-                        } else {
-                            //TODO
-                            {$this->getElement()->buildJsBusyIconHide()}
-                        }    
-                    } else {
-                        {$onModelLoadedJs}
-                    }
-                },
                 error: function(oError) {
                     if ({$bUseBatchJs}) {
                     

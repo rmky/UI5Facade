@@ -1,0 +1,107 @@
+{
+    "object_alias": "exface.Core.MESSAGE",
+    "columns": [
+        {
+            "name": "CREATED_ON",
+            "attribute_alias": "CREATED_ON"
+        },
+        {
+            "name": "MODIFIED_ON",
+            "attribute_alias": "MODIFIED_ON"
+        },
+        {
+            "name": "CREATED_BY_USER",
+            "attribute_alias": "CREATED_BY_USER"
+        },
+        {
+            "name": "MODIFIED_BY_USER",
+            "attribute_alias": "MODIFIED_BY_USER"
+        },
+        {
+            "name": "UID",
+            "attribute_alias": "UID"
+        },
+        {
+            "name": "APP",
+            "attribute_alias": "APP"
+        },
+        {
+            "name": "CODE",
+            "attribute_alias": "CODE"
+        },
+        {
+            "name": "TITLE",
+            "attribute_alias": "TITLE"
+        },
+        {
+            "name": "DESCRIPTION",
+            "attribute_alias": "DESCRIPTION"
+        },
+        {
+            "name": "HINT",
+            "attribute_alias": "HINT"
+        },
+        {
+            "name": "TYPE",
+            "attribute_alias": "TYPE"
+        },
+        {
+            "name": "DOCS",
+            "attribute_alias": "DOCS"
+        }
+    ],
+    "rows": [
+        {
+            "CREATED_ON": "2019-09-17 16:48:29",
+            "MODIFIED_ON": "2019-09-17 16:48:29",
+            "CREATED_BY_USER": "0x11e9545e8e69e0d8b95b00505689aada",
+            "MODIFIED_BY_USER": "0x11e9545e8e69e0d8b95b00505689aada",
+            "UID": "0x11e9d95a538b086fb0618c04ba002958",
+            "APP": "0x11e837e87a640bfd91380205857feb80",
+            "CODE": "77FTNCB",
+            "TITLE": "Widget cannot be exported",
+            "DESCRIPTION": "The Fiori exports a selection of widget options.",
+            "HINT": "",
+            "TYPE": "ERROR",
+            "DOCS": ""
+        },
+        {
+            "CREATED_ON": "2019-09-18 15:53:15",
+            "MODIFIED_ON": "2019-09-18 15:53:15",
+            "CREATED_BY_USER": "0x11e9545e8e69e0d8b95b00505689aada",
+            "MODIFIED_BY_USER": "0x11e9545e8e69e0d8b95b00505689aada",
+            "UID": "0x11e9da1baa8cb6eba62d8c04ba002958",
+            "APP": "0x11e837e87a640bfd91380205857feb80",
+            "CODE": "77GBGFQ",
+            "TITLE": "Unexpected empty response to a batch request",
+            "DESCRIPTION": "This error indicates, that a $batch request to an OData service produced an empty or unparsable error. See the logs in the data source (e.g. SAP).\n\nIn SAP NetWeaver OData services, that do not suppoert $batch requests with multiple operations, produce an error message, that cannot be parsed by UI5 and, thus, results in an unknonw\/empty error.",
+            "HINT": "Check if the backend supports OData $batch requests with multiple operations",
+            "TYPE": "ERROR",
+            "DOCS": ""
+        }
+    ],
+    "totals_rows": [],
+    "filters": {
+        "operator": "AND",
+        "conditions": [
+            {
+                "expression": "APP",
+                "comparator": "=",
+                "value": "0x11e837e87a640bfd91380205857feb80",
+                "object_alias": "exface.Core.MESSAGE"
+            }
+        ]
+    },
+    "rows_limit": null,
+    "rows_offset": 0,
+    "sorters": [
+        {
+            "attribute_alias": "CREATED_ON",
+            "direction": "ASC"
+        },
+        {
+            "attribute_alias": "UID",
+            "direction": "ASC"
+        }
+    ]
+}

@@ -35,7 +35,7 @@ class PreloadServerAdapter implements UI5ServerAdapterInterface
                 return $this->buildJsDataLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onOfflineJs);
         }
         
-        return '';
+        return $this->getFallbackAdapter()->buildJsServerRequest($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onOfflineJs);
     }
     
     protected function buildJsDataLoader(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onOfflineJs = '') : string

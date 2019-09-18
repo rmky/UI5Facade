@@ -16,11 +16,21 @@ class UI5FacadeServerAdapter implements UI5ServerAdapterInterface
         $this->element = $element;
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5ServerAdapterInterface::getElement()
+     */
     public function getElement() : UI5AbstractElement
     {
         return $this->element;
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5ServerAdapterInterface::buildJsServerRequest()
+     */
     public function buildJsServerRequest(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
         switch (true) {
@@ -28,9 +38,53 @@ class UI5FacadeServerAdapter implements UI5ServerAdapterInterface
                 return $this->buildJsPrefillLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             case $action instanceof ReadData:
                 return $this->buildJsDataLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
+            default:
+                return $this->buildJsClickCallServerAction($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
         }
+    }
+    
+    protected function buildJsClickCallServerAction(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
+    {
+        $headers = ! empty($this->getElement()->getAjaxHeaders()) ? 'headers: ' . json_encode($this->getElement()->getAjaxHeaders()) . ',' : '';
         
-        return '';
+        return <<<JS
+
+							$.ajax({
+								type: 'POST',
+								url: '{$this->getElement()->getAjaxUrl()}',
+                                {$headers}
+								data: {$oParamsJs},
+								success: function(data, textStatus, jqXHR) {
+                                    if (typeof data === 'object') {
+                                        response = data;
+                                    } else {
+                                        var response = {};
+    									try {
+    										response = $.parseJSON(data);
+    									} catch (e) {
+    										response.error = data;
+    									}
+                                    }
+				                   	if (response.success){
+										{$onModelLoadedJs}
+				                    } else {
+										{$this->getElement()->buildJsBusyIconHide()}
+										{$this->getElement()->buildJsShowMessageError('response.error', '"Server error"')}
+                                        {$onErrorJs}
+				                    }
+								},
+								error: function(jqXHR, textStatus, errorThrown){
+									{$this->getElement()->buildJsBusyIconHide()}
+                                    {$onErrorJs}
+                                    if (navigator.onLine === false) {
+                                        {$onOfflineJs}
+                                    } else {
+                                        {$this->getElement()->getController()->buildJsComponentGetter()}.showAjaxErrorDialog(jqXHR)
+                                    }
+								}
+							});
+                                        
+JS;
     }
     
     protected function buildJsDataLoader(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string

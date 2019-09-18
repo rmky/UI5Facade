@@ -340,40 +340,30 @@ JS;
     
     protected function buildJsClickCallServerAction(ActionInterface $action, AbstractJqueryElement $input_element)
     {
-        $serverAdapter = $this->getServerAdapter();
-        if ($serverAdapter instanceof UI5FacadeServerAdapter) {
-            return $this->buildJsClickCallServerActionViaTrait($action, $input_element);
-        }
-        
         $widget = $this->getWidget();
         
         $onModelLoadedJs = <<<JS
 
-                        function(data, oResponse) {                          
-		                   	if (oResponse !== undefined && (oResponse.statusCode === "200" || oResponse.statusCode === "201" || oResponse.statusCode === "204")){
 								{$this->buildJsCloseDialog($widget, $input_element)}
 								{$this->buildJsInputRefresh($widget, $input_element)}
 		                       	{$this->buildJsBusyIconHide()}
 		                       	$('#{$this->getId()}').trigger('{$action->getAliasWithNamespace()}.action.performed', [requestData, '{$input_element->getId()}']);
 								{$this->buildJsOnSuccessScript()}
-		                    } else {
-								{$this->buildJsBusyIconHide()}
-								{$this->buildJsShowMessageError('"Internal Server Error"', '"Server error"')}
-		                    }
-						}
 
+                                /* TODO redirects do not work in UI5 that easily. Additionally server adapters don't return any response variable.
+                                if (response.success || response.undoURL){
+		                       		{$this->buildJsShowMessageSuccess("response.success + (response.undoable ? ' <a href=\"" . $this->buildJsUndoUrl($action, $input_element) . "\" style=\"display:block; float:right;\">UNDO</a>' : '')")}
+									if(response.redirect){
+										if (response.redirect.indexOf('target=_blank') !== 0) {
+											window.open(response.redirect.replace('target=_blank',''), '_newtab');
+										}
+										else {
+											window.location.href = response.redirect;
+										}
+                   					}
+								}
+                                */
 JS;
-								
-        $onOfflineJs = '';
-        
-        $doAction = $this->getServerAdapter()->buildJsServerRequest(
-            $action,
-            'oModel',
-            'params',
-            $onModelLoadedJs,
-            '',
-            $onOfflineJs
-        );		
 		
         $output = $this->buildJsRequestDataCollector($action, $input_element);
         $output .= <<<JS
@@ -388,7 +378,7 @@ JS;
 							object: "{$widget->getMetaObject()->getId()}",
 							data: requestData
 					}
-                    {$doAction}	    
+                    {$this->getServerAdapter()->buildJsServerRequest($action, 'oModel', 'params', $onModelLoadedJs, '', '')}	    
 				} else {
 					{$input_element->buildJsValidationError()}
 				}

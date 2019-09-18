@@ -89,16 +89,35 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
         }
     }
     
+    /**
+     * 
+     * @return bool
+     */
     protected function getUseConnectionCredentials() : bool
     {
         return $this->useConnectionCredentials;
     }
     
+    /**
+     * 
+     * @return UI5AbstractElement
+     */
     public function getElement() : UI5AbstractElement
     {
         return $this->element;
     }
     
+    /**
+     * returns based on the given action the correct server request javascript code for that action
+     * 
+     * @param ActionInterface $action
+     * @param string $oModelJs
+     * @param string $oParamsJs
+     * @param string $onModelLoadedJs
+     * @param string $onErrorJs
+     * @param string $onOfflineJs
+     * @return string
+     */
     public function buildJsServerRequest(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
         switch (true) {
@@ -420,6 +439,16 @@ JS;
 JS;
     }
 
+    /**
+     * 
+     * @param string $oModelJs
+     * @param string $oParamsJs
+     * @param string $onModelLoadedJs
+     * @param string $onErrorJs
+     * @param string $onOfflineJs
+     * @throws FacadeLogicError
+     * @return string
+     */
     protected function buildJsPrefillLoader(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
         $object = $this->getElement()->getMetaObject();
@@ -462,11 +491,22 @@ JS;
 JS;
     }
     
+    /**
+     * 
+     * @param MetaAttributeInterface $attr
+     * @return bool
+     */
     protected function needsLocalFiltering(MetaAttributeInterface $attr) : bool
     {
         return BooleanDataType::cast($attr->getDataAddressProperty('filter_locally')) ?? false;
     }
            
+    /**
+     * 
+     * @param MetaObjectInterface $object
+     * @throws FacadeLogicError
+     * @return string
+     */
     protected function getODataModelParams(MetaObjectInterface $object) : string
     {
         $connection = $object->getDataConnection();
@@ -495,6 +535,12 @@ JS;
         return json_encode($params);
     }
     
+    /**
+     * 
+     * @param MetaObjectInterface $object
+     * @throws FacadeLogicError
+     * @return array
+     */
     protected function getAttributeAliasesForLocalFilters(MetaObjectInterface $object) : array
     {
         $localFilterAliases = [];
@@ -512,6 +558,16 @@ JS;
         return $localFilterAliases;
     }
     
+    /**
+     * 
+     * @param ActionInterface $action
+     * @param string $oModelJs
+     * @param string $oParamsJs
+     * @param string $onModelLoadedJs
+     * @param string $onErrorJs
+     * @param string $onOfflineJs
+     * @return string
+     */
     protected function buildJsDataWrite(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
         $widget = $this->getElement()->getWidget();
@@ -581,18 +637,21 @@ JS;
                         var type = {$attributesType}[key];
                         switch (type) {
                             case 'Edm.DateTimeOffset':
-                                //var rawDate = data[key];                        
-                                //jQuery.sap.require("sap.ui.core.format.DateFormat");
-                                //var oDateFormat = sap.ui.core.format.DateFormat.getDateTimeInstance({pattern: "yyyy-MM-dd HH:mm:ss"}); 
-                                //var d = oDateFormat.format(rawDate);
-                                //console.log('Datum: ', d);
+                                //console.log('RawDate: ',data[key]);
+                                //var oDateFormat = sap.ui.core.format.DateFormat.getDateTimeInstance();
+                                //var d = oDateFormat.format(data[key]);
                                 var d = new Date(data[key]);
+                                console.log('Datum: ',d)
                                 var date = d.toISOString();
                                 var datestring = date.replace(/\.[0-9]{3}/, '');
                                 oData[key] = datestring;
                                 break;
                             case 'Edm.DateTime':
-                                var d = new Date(data[key]);                            
+                                //console.log('RawDate: ',data[key]);
+                                //var oDateFormat = sap.ui.core.format.DateFormat.getDateTimeInstance();
+                                //var d = oDateFormat.format(data[key]);
+                                var d = new Date(data[key]);
+                                console.log('Datum: ',d)                            
                                 var date = d.toISOString();
                                 var datestring = date.substring(0,19);
                                 oData[key] = datestring;
@@ -623,6 +682,15 @@ JS;
 JS;
     }
     
+    /**
+     * 
+     * @param string $oModelJs
+     * @param string $oParamsJs
+     * @param string $onModelLoadedJs
+     * @param string $onErrorJs
+     * @param string $onOfflineJs
+     * @return string
+     */
     protected function buildJsDataDelete(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
         $widget = $this->getElement()->getWidget();
@@ -692,6 +760,16 @@ JS;
         
     }
     
+    /**
+     * 
+     * @param ActionInterface $action
+     * @param string $oModelJs
+     * @param string $oParamsJs
+     * @param string $onModelLoadedJs
+     * @param string $onErrorJs
+     * @param string $onOfflineJs
+     * @return string
+     */
     protected function buildJsCallFunctionImport(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
         $widget = $this->getElement()->getWidget();
@@ -710,6 +788,13 @@ JS;
         }
         $requiredParams = json_encode($requiredParams);
         $defaultValues = json_encode($defaultValues);
+        $attributes = $object->getAttributes();
+        $attributesType = (object)array();
+        foreach ($attributes as $attr) {
+            $key = $attr->getAlias();
+            $attributesType->$key= $attr->getDataAddressProperty('odata_type');
+        }
+        $attributesType = json_encode($attributesType);
         
         
         return <<<JS
@@ -725,15 +810,47 @@ JS;
                 if (requiredParams[0] !== undefined) {
                     for (var i = 0; i < requiredParams.length; i++) {
                         var param = requiredParams[i];
-                        if ({$oParamsJs}.data.rows[0][requiredParams[i]] != undefined && {$oParamsJs}.data.rows[0][requiredParams[i]] != "") {
-                            oDataActionParams[param] = {$oParamsJs}.data.rows[0][requiredParams[i]];
+                        if ({$oParamsJs}.data.rows[0][param] != undefined && {$oParamsJs}.data.rows[0][param] != "") {                           
+                            var type = {$attributesType}[param];
+                            var value = {$oParamsJs}.data.rows[0][param];
+                            switch (type) {
+                                case 'Edm.DateTimeOffset':
+                                    var d = new Date(value);
+                                    var date = d.toISOString();
+                                    var datestring = date.replace(/\.[0-9]{3}/, '');
+                                    oDataActionParams[param] = datestring;
+                                    break;
+                                case 'Edm.DateTime':
+                                    var d = new Date(value);                            
+                                    var date = d.toISOString();
+                                    var datestring = date.substring(0,19);
+                                    oDataActionParams[param] = datestring;
+                                    break;                        
+                                case 'Edm.Time':
+                                    var d = value;
+                                    var timeParts = d.split(':');
+                                    if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
+                                        timeParts[3] = "00";
+                                    }
+                                    for (var i = 0; i < timeParts.length; i++) {
+                                        timeParts[i] = ('0'+(timeParts[i])).slice(-2);
+                                    }                            
+                                    var timeString = "PT" + timeParts[0] + "H" + timeParts[1] + "M" + timeParts[3] + "S";
+                                    oDataActionParams[param] = timeString;
+                                    break;
+                                case 'Edm.Decimal':
+                                    oDataActionParams[param] = value.toString();
+                                    break; 
+                                default:
+                                    oDataActionParams[param] = value;
+                            }
                         } else if (defaultValues.hasOwnProperty(param)) {
                             oDataActionParams[param] = defaultValues[param];
                         } else {
                             oDataActionParams[param] = "";
                             callAction = false;
                             console.error('No value given for required parameter: ', param);
-                            {$this->getElement()->buildJsShowError('No value given for required parameter', 'ERROR')}
+                            {$this->getElement()->buildJsShowError('"No value given for parameter:  " + param', '"ERROR"')}
                         }
                     }
                 }
@@ -747,13 +864,19 @@ JS;
                         }
                     });
                 }
-            } else {
-                console.log('No row selected!');
+            } else {                
+                {$this->getElement()->buildJsShowError('"No row selected!"', '"ERROR"')}
+                {$this->getElement()->buildJsBusyIconHide()}
             }
             
 JS;
     }
     
+    /**
+     * 
+     * @param string $oErrorJs
+     * @return string
+     */
     protected function buildJsResponseErrorHandling(string $oErrorJs = 'oError') : string
     {
         return <<<JS

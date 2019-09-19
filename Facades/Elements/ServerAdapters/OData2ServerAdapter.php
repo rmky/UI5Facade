@@ -48,10 +48,6 @@ use exface\UI5Facade\Exceptions\UI5ExportUnsupportedWidgetException;
  * due to the fact, that the "read+1" pagination would significantly increase the complexity
  * of the adapter logic.
  * 
- * - for now QuickSearch must only include filters that are filtered locally as there seems to be an issue
- * with the way the URL parameters are build using "substringof()". Either the oData Service needs to support
- * the substring() function or there is another problem, the issue needs some more digging into
- *
  */
 class OData2ServerAdapter implements UI5ServerAdapterInterface
 {
@@ -65,6 +61,10 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
     
     private $useBatchFunctionImports = false;
     
+    /**
+     * 
+     * @param UI5AbstractElement $element
+     */
     public function __construct(UI5AbstractElement $element)
     {
         $this->element = $element; 
@@ -154,7 +154,7 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
                 // FIXME #fiori-export throw new UI5ExportUnsupportedActionException('Action "' . $action->getAliasWithNamespace() . '" cannot be used with Fiori export!');
                 return <<<JS
 
-console.error('Unsupported action {$action->getAliasWithNamespace()}', {$oParamsJs});
+        console.error('Unsupported action {$action->getAliasWithNamespace()}', {$oParamsJs});
 
 JS;
         }
@@ -213,7 +213,7 @@ JS;
         $opGE = EXF_COMPARATOR_GREATER_THAN_OR_EQUALS;
         
         return <<<JS
-            console.log('oParams:', {$oParamsJs});
+
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});  
             var oDataReadParams = {};
             var oDataReadFiltersSearch = [];
@@ -404,17 +404,17 @@ JS;
                                     continue;
                                 }
                                 switch (cond.comparator) {
-                                    case '==':
+                                    case '{$opEQ}':
                                         resultRows = resultRows.filter(row => {
                                             return row[cond.expression] == cond.value
                                         });
                                         break;
-                                    case '!==':
+                                    case '{$opNE}':
                                         resultRows = resultRows.filter(row => {
                                             return row[cond.expression] !== cond.value
                                         });
                                         break;
-                                    case '!=':
+                                    case '{$opISNOT}':
                                         var val = cond.value.toString().toLowerCase();
                                         resultRows = resultRows.filter(row => {
                                             if (row[cond.expression] === undefined) return true;
@@ -447,7 +447,7 @@ JS;
                 },
                 error: function(oError){
                     {$onErrorJs}
-                    {$this->buildJsResponseErrorHandling('oError')}
+                    {$this->buildJsServerResponseError('oError')}
                 }
             });
                 
@@ -468,11 +468,11 @@ JS;
     {
         $object = $this->getElement()->getMetaObject();
         if ($object->hasUidAttribute() === false) {
-            throw new FacadeLogicError('TODO');
+            throw new FacadeLogicError("Object has no UidAttribute: {$object}");
         } else {
             $uidAttr = $object->getUidAttribute();
         }
-        
+                
         $takeFirstRowOnly = <<<JS
 
             if (Object.keys({$oModelJs}.getData()).length !== 0) {
@@ -484,6 +484,7 @@ JS;
 
 JS;
         $onModelLoadedJs = $takeFirstRowOnly . $onModelLoadedJs;
+        $opEQ = EXF_COMPARATOR_EQUALS;
         
         return <<<JS
         
@@ -495,7 +496,7 @@ JS;
             {$oParamsJs}.data.filters = {
                 conditions: [
                     {
-                        comparator: "==",
+                        comparator: "{$opEQ}",
                         expression: "{$uidAttr->getAlias()}",
                         object_alias: "{$object->getAliasWithNamespace()}",
                         value: oFirstRow["{$object->getUidAttribute()->getAlias()}"]
@@ -561,7 +562,7 @@ JS;
         $localFilterAliases = [];
         $dummyQueryBuilder = QueryBuilderFactory::createForObject($object);
         if (! $dummyQueryBuilder instanceof OData2JsonUrlBuilder) {
-            throw new FacadeLogicError('TODO');
+            throw new FacadeLogicError("Unsupported QueryBuilder used: {$dummyQueryBuilder}");
         }
         foreach ($object->getAttributes()->getAll() as $attr) {
             $filterCondition = ConditionFactory::createFromExpressionString($object, $attr->getAlias(), '');
@@ -631,26 +632,14 @@ JS;
         }
         
         return <<<JS
-            console.log('Params: ',{$oParamsJs})
+
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
+            oDataModel.setUseBatch({$bUseBatchJs});
             var aResponses = [];
             var rowCount = {$oParamsJs}.data.rows.length;
-            
-            oDataModel.setUseBatch({$bUseBatchJs});
             var mParameters = {};
             mParameters.groupId = "batchGroup";
-            mParameters.success = function(oData) {
-                console.log('Success Response: ', oData);
-                aResponses.push(oData);
-                if (aResponses.length === rowCount) {
-                    {$onModelLoadedJs}
-                }
-            };
-            mParameters.error = function(oError) { 
-                console.log('update error'); 
-                aResponses.push(oError);
-                {$this->buildJsResponseErrorHandling('oError')} 
-            };
+            {$this->buildJsServerResponseHandling($onModelLoadedJs, 'mParameters', 'aResponses', 'rowCount')}
             
             for (var i = 0; i < rowCount; i++) {
                 var data = {$oParamsJs}.data.rows[i];            
@@ -660,21 +649,13 @@ JS;
                         var type = {$attributesType}[key];
                         switch (type) {
                             case 'Edm.DateTimeOffset':
-                                //console.log('RawDate: ',data[key]);
-                                //var oDateFormat = sap.ui.core.format.DateFormat.getDateTimeInstance();
-                                //var d = oDateFormat.format(data[key]);
                                 var d = new Date(data[key]);
-                                console.log('Datum: ',d)
                                 var date = d.toISOString();
                                 var datestring = date.replace(/\.[0-9]{3}/, '');
                                 oData[key] = datestring;
                                 break;
                             case 'Edm.DateTime':
-                                //console.log('RawDate: ',data[key]);
-                                //var oDateFormat = sap.ui.core.format.DateFormat.getDateTimeInstance();
-                                //var d = oDateFormat.format(data[key]);
-                                var d = new Date(data[key]);
-                                console.log('Datum: ',d)                            
+                                var d = new Date(data[key]);                       
                                 var date = d.toISOString();
                                 var datestring = date.substring(0,19);
                                 oData[key] = datestring;
@@ -704,7 +685,7 @@ JS;
                 {$serverCall}
             }
 
-            {$this->buildJsSendServerRequest('oDataModel', $bUseBatchJs, $onModelLoadedJs, $onErrorJs)};
+            {$this->buildJsServerSendRequest('oDataModel', $bUseBatchJs, $onModelLoadedJs, $onErrorJs)};
 
 JS;
     }
@@ -727,26 +708,15 @@ JS;
         $bUseBatchJs = $this->getUseBatchDeletes() ? 'true' : 'false';
         
         return <<<JS
-            console.log($oParamsJs)
+
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
             oDataModel.setUseBatch({$bUseBatchJs});
+            var rowCount = {$oParamsJs}.data.rows.length;
             var aResponses = [];
             var mParameters = {};
             mParameters.groupId = "batchGroup";
-            mParameters.success = function(oData) {
-                console.log('Success Response: ', oData);
-                aResponses.push(oData);
-                if (aResponses.length === rowCount) {
-                    {$onModelLoadedJs}
-                }
-            };
-            mParameters.error = function(oError) { 
-                console.log('update error'); 
-                aResponses.push(oError);
-                {$this->buildJsResponseErrorHandling('oError')} 
-            };
-            var rowCount = {$oParamsJs}.data.rows.length;
-
+            {$this->buildJsServerResponseHandling($onModelLoadedJs, 'mParameters', 'aResponses', 'rowCount')}
+            
             for (var i = 0; i < rowCount; i++) {
                 var data = {$oParamsJs}.data.rows[i];
                 if ('{$uidAttribute}' in data) {
@@ -795,7 +765,7 @@ JS;
                 oDataModel.remove("/{$object->getDataAddress()}(" + oDataUid + ")", mParameters);
             }
 
-            {$this->buildJsSendServerRequest('oDataModel', $bUseBatchJs, $onModelLoadedJs, $onErrorJs)};
+            {$this->buildJsServerSendRequest('oDataModel', $bUseBatchJs, $onModelLoadedJs, $onErrorJs)};
 
 JS;
         
@@ -841,18 +811,17 @@ JS;
         
         return <<<JS
 
-            console.log('Params: ',$oParamsJs);
-            console.log('Batch: ',$bUseBatchJs);
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
             oDataModel.setUseBatch({$bUseBatchJs});
             var requiredParams = {$requiredParams};
             var defaultValues = {$defaultValues};
             var mParameters = {};
-            mParameters.groupId = "batchGroup";
             var aResponses = [];
             var callActions = true;
             var oDataActionParams = {};
             var rowCount = {$oParamsJs}.data.rows.length;
+            mParameters.groupId = "batchGroup";
+            {$this->buildJsServerResponseHandling($onModelLoadedJs, 'mParameters', 'aResponses', 'rowCount')}
 
             if (rowCount !== 0) {                
                 for (var j = 0; j < rowCount; j++) {
@@ -908,25 +877,11 @@ JS;
                     }
                     if (addAction === true) {                        
                         mParameters.urlParameters = oDataActionParams;
-                                                           
-                        mParameters.groupId = "batchGroup";
-                        mParameters.success = function(oData) {
-                            console.log('Success Response: ', oData);
-                            aResponses.push(oData);
-                            if (aResponses.length === rowCount) {
-                                {$onModelLoadedJs}
-                            }
-                        };
-                        mParameters.error = function(oError) { 
-                            console.log('update error'); 
-                            aResponses.push(oError);
-                            {$this->buildJsResponseErrorHandling('oError')} 
-                        };
                         oDataModel.callFunction('/{$action->getServiceName()}', mParameters);
                     }
                 }
                 if (callActions === true) {                    
-                    {$this->buildJsSendServerRequest('oDataModel', $bUseBatchJs, $onModelLoadedJs, $onErrorJs)};
+                    {$this->buildJsServerSendRequest('oDataModel', $bUseBatchJs, $onModelLoadedJs, $onErrorJs)};
                 }
             } else {                
                 {$this->getElement()->buildJsShowError('"No row selected!"', '"ERROR"')}
@@ -938,28 +893,13 @@ JS;
     
     /**
      * 
-     * @param string $oErrorJs
+     * @param string $oDataModelJs
+     * @param string $bUseBatchJs
+     * @param string $onModelLoadedJs
+     * @param string $onErrorJs
      * @return string
      */
-    protected function buildJsResponseErrorHandling(string $oErrorJs = 'oError') : string
-    {
-        return <<<JS
-        
-        var response = {};
-        try {
-            response = $.parseJSON({$oErrorJs}.responseText);
-            var errorText = response.error.message.value;
-        } catch (e) {
-            var errorText = '<p> No Error description send! </p>';
-        }
-        {$this->getElement()->buildJsShowError('errorText', "{$oErrorJs}.statusCode + ' ' + {$oErrorJs}.statusText")}
-        {$this->getElement()->buildJsBusyIconHide()}
-
-JS;
-        
-    }
-    
-    protected function buildJsSendServerRequest (string $oDataModelJs, string $bUseBatchJs, string $onModelLoadedJs, string $onErrorJs) : string
+    protected function buildJsServerSendRequest (string $oDataModelJs, string $bUseBatchJs, string $onModelLoadedJs, string $onErrorJs) : string
     {
         return <<<JS
 
@@ -967,15 +907,61 @@ JS;
             {$oDataModelJs}.submitChanges({
                 groupId: "batchGroup",
                 error: function(oError) {
-                    if ({$bUseBatchJs}) {
-                    
-                    }
                     {$onErrorJs}
-                    {$this->buildJsResponseErrorHandling('oError')}
+                    {$this->buildJsServerResponseError('oError')}
                 }
             });
 
 JS;
+    }
+
+    /**
+     * 
+     * @param string $onModelLoadedJs
+     * @param string $mParameters
+     * @param string $aResponses
+     * @param string $rowCount
+     * @return string
+     */
+    protected function buildJsServerResponseHandling (string $onModelLoadedJs, string $mParameters = 'mParameters', string $aResponses = 'aResponses', string $rowCount = 'rowCount') :string
+    {
+        return <<<JS
+
+            {$mParameters}.success = function(oData) {
+                {$aResponses}.push(oData);
+                if ({$aResponses}.length === {$rowCount}) {
+                    {$onModelLoadedJs}
+                }
+            };
+            {$mParameters}.error = function(oError) { 
+                {$aResponses}.push(oError);
+                {$this->buildJsServerResponseError('oError')} 
+            };
+
+JS;
+    }
+    
+    /**
+     *
+     * @param string $oErrorJs
+     * @return string
+     */
+    protected function buildJsServerResponseError(string $oErrorJs = 'oError') : string
+    {
+        return <<<JS
+        
+                var response = {};
+                try {
+                    response = $.parseJSON({$oErrorJs}.responseText);
+                    var errorText = response.error.message.value;
+                } catch (e) {
+                    var errorText = '<p> No Error description send! </p>';
+                }
+                {$this->getElement()->buildJsShowError('errorText', "{$oErrorJs}.statusCode + ' ' + {$oErrorJs}.statusText")}
+                {$this->getElement()->buildJsBusyIconHide()}
+                
+JS;
+                
     }
     
     /**

@@ -468,7 +468,7 @@ JS;
     {
         $object = $this->getElement()->getMetaObject();
         if ($object->hasUidAttribute() === false) {
-            throw new FacadeLogicError("Object has no UidAttribute: {$object}");
+            throw new FacadeLogicError('No Uid attribute found for object "' . $object->getName() . '" (' . $object->getAliasWithNamespace() . ')!');
         } else {
             $uidAttr = $object->getUidAttribute();
         }
@@ -562,7 +562,7 @@ JS;
         $localFilterAliases = [];
         $dummyQueryBuilder = QueryBuilderFactory::createForObject($object);
         if (! $dummyQueryBuilder instanceof OData2JsonUrlBuilder) {
-            throw new FacadeLogicError("Unsupported QueryBuilder used: {$dummyQueryBuilder}");
+            throw new FacadeLogicError('Unsupported QueryBuilder used for object "' . $object->getName() . '" (' . $object->getAliasWithNamespace() . ')!');
         }
         foreach ($object->getAttributes()->getAll() as $attr) {
             $filterCondition = ConditionFactory::createFromExpressionString($object, $attr->getAlias(), '');
@@ -632,7 +632,7 @@ JS;
         }
         
         return <<<JS
-
+            console.log('Params: ', {$oParamsJs});
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
             oDataModel.setUseBatch({$bUseBatchJs});
             var aResponses = [];
@@ -684,7 +684,7 @@ JS;
                 });
                 {$serverCall}
             }
-
+            console.log('oData ', oData);
             {$this->buildJsServerSendRequest('oDataModel', $bUseBatchJs, $onModelLoadedJs, $onErrorJs)};
 
 JS;

@@ -448,29 +448,6 @@ JS;
         );
         return $js;
     }
-    
-    /*
-     * 
-     * 
-     * 			$.ajax({
-                url: "{$this->getAjaxUrl()}",
-                type: "POST",
-				data: data,
-                success: function(response, textStatus, jqXHR) {
-                    {$this->buildJsPrefillLoaderSuccess('response', $oViewJs, $oViewModelJs)}
-                },
-                error: function(jqXHR, textStatus, errorThrown){
-                    oViewModel.setProperty('/_prefill/pending', false);
-                    {$this->buildJsBusyIconHide()}
-                    if (navigator.onLine === false) {
-                        {$offlineError}
-                    } else {
-                        {$this->getController()->buildJsComponentGetter()}.showAjaxErrorDialog(jqXHR)
-                    }
-                }
-			})
-     * 
-     */
                         
     protected function buildJsPrefillLoaderSuccess(string $responseJs = 'response', string $oViewJs = 'oView', string $oViewModelJs = 'oViewModel') : string
     {

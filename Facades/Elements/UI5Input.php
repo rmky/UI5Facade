@@ -17,25 +17,13 @@ class UI5Input extends UI5Value
     use JqueryInputValidationTrait;
     
     /**
-     * 
-     * {@inheritDoc}
-     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::init()
-     */
-    protected function init()
-    {
-        parent::init();
-        
-        // Register an onChange-Script on the element linked by a disable condition.
-        $this->registerDisableConditionAtLinkedElement();
-    }
-    
-    /**
      *
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsConstructor()
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
+        $this->registerConditionalBehaviors();
         return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl($oControllerJs));
     }
     
@@ -221,6 +209,36 @@ JS;
     public function buildJsValueSetterMethod($valueJs)
     {
         return parent::buildJsValueSetterMethod($valueJs) . '.fireChange({value: ' . $valueJs . '})';
+    }
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsEnabler()
+     */
+    public function buildJsEnabler()
+    {
+        return "sap.ui.getCore().byId('{$this->getId()}').setEnabled(true)";
+    }
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsDisabler()
+     */
+    public function buildJsDisabler()
+    {
+        return "sap.ui.getCore().byId('{$this->getId()}').setEnabled(false)";
+    }
+    
+    protected function registerConditionalBehaviors()
+    {
+        $contoller = $this->getController();
+        // Register conditional reactions
+        $this->registerDisableConditionAtLinkedElement();
+        $contoller->addOnInitScript($this->buildJsDisableConditionInitializer());
+        
+        return;
     }
 }
 ?>

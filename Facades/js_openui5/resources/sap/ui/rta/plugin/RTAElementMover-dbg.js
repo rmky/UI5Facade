@@ -35,7 +35,7 @@ function(
 	 * The RTAElementMover is responsible for the RTA specific adaptation of element movements.
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @private
@@ -94,7 +94,7 @@ function(
 	 * Check if the element is editable for the move
 	 * @param  {sap.ui.dt.Overlay}  oOverlay The overlay being moved or the aggregation overlay
 	 * @param  {boolean} bOnRegistration if embedded, false if not
-	 * @return {Promise.<boolean>} promise with true value if editable
+	 * @return {promise.<boolean>} promise with true value if editable
 	 */
 	function fnIsValidForMove(oOverlay, bOnRegistration) {
 		var	oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
@@ -165,7 +165,7 @@ function(
 			return Promise.resolve(false);
 		}
 		// moveChangeHandler information is always located on the relevant container
-		return this.oBasePlugin.hasChangeHandler(oMoveAction.changeType, oRelevantContainer);
+		return this.oBasePlugin.hasChangeHandler(oMoveAction.changeType, oRelevantContainer, true);
 	}
 
 	/**
@@ -174,8 +174,8 @@ function(
 	 * @private
 	 */
 	ElementMover.prototype._getMoveAction = function(oOverlay) {
-		var oParentAggregationDtMetadata;
-		var oParentAggregationOverlay = oOverlay.getParentAggregationOverlay();
+		var oParentAggregationDtMetadata,
+			oParentAggregationOverlay = oOverlay.getParentAggregationOverlay();
 		if (oParentAggregationOverlay) {
 			oParentAggregationDtMetadata = oParentAggregationOverlay.getDesignTimeMetadata();
 		}
@@ -205,7 +205,7 @@ function(
 	/**
 	 * Checks drop ability for aggregation overlays
 	 * @param  {sap.ui.dt.Overlay} oAggregationOverlay aggregation overlay object
-	 * @return {Promise.<boolean>} Promise with true value if aggregation overlay is droppable or false value if not.
+	 * @return {promise.<boolean>} Promise with true value if aggregation overlay is droppable or false value if not.
 	 * @override
 	 */
 	RTAElementMover.prototype.checkTargetZone = function(oAggregationOverlay, oOverlay, bOverlayNotInDom) {
@@ -219,12 +219,6 @@ function(
 				var oMovedElement = oMovedOverlay.getElement();
 				var oTargetOverlay = oAggregationOverlay.getParent();
 				var oMovedRelevantContainer = oMovedOverlay.getRelevantContainer();
-
-				// the element or the parent overlay might be destroyed or not available
-				if (!oMovedElement || !oTargetOverlay) {
-					return false;
-				}
-
 				var oTargetElement = oTargetOverlay.getElement();
 				var oAggregationDtMetadata = oAggregationOverlay.getDesignTimeMetadata();
 
@@ -258,7 +252,7 @@ function(
 	/**
 	 * Checks if move is available on relevantcontainer
 	 * @param  {sap.ui.dt.Overlay} oOverlay overlay object
-	 * @return {Promise.<boolean>} Promise with true value if move available on relevantContainer.
+	 * @return {promise.<boolean>} Promise with true value if move available on relevantContainer.
 	 */
 	RTAElementMover.prototype.isMoveAvailableOnRelevantContainer = function(oOverlay) {
 		var oChangeHandlerRelevantElement;
@@ -271,7 +265,7 @@ function(
 			if (!this.oBasePlugin.hasStableId(oRelevantOverlay)) {
 				return Promise.resolve(false);
 			}
-			return this.oBasePlugin.hasChangeHandler(oMoveAction.changeType, oChangeHandlerRelevantElement);
+			return this.oBasePlugin.hasChangeHandler(oMoveAction.changeType, oChangeHandlerRelevantElement, true);
 		}
 		return Promise.resolve(false);
 	};
@@ -279,7 +273,7 @@ function(
 	/**
 	 * Checks if move is available for child overlays
 	 * @param  {sap.ui.dt.ElementOverlay} oOverlay overlay object
-	 * @return {Promise.<boolean>} Promise with true value if move available for at least one child overlay.
+	 * @return {promise.<boolean>} Promise with true value if move available for at least one child overlay.
 	 */
 	RTAElementMover.prototype.isMoveAvailableForChildren = function(oOverlay) {
 		var oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
@@ -325,7 +319,8 @@ function(
 		delete oSource.index;
 		delete oTarget.index;
 
-		var sVariantManagementReference = this.oBasePlugin.getVariantManagementReference(oMovedOverlay);
+		var oMoveAction = this._getMoveAction(oMovedOverlay);
+		var sVariantManagementReference = this.oBasePlugin.getVariantManagementReference(oMovedOverlay, oMoveAction, true);
 
 		return this.getCommandFactory().getCommandFor(oRelevantContainer, "Move", {
 			movedElements : [{

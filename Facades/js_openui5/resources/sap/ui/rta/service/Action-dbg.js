@@ -21,7 +21,7 @@ sap.ui.define([
 	 * @author SAP SE
 	 * @experimental Since 1.58
 	 * @since 1.58
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @private
 	 * @ui5-restricted
 	 *
@@ -180,7 +180,7 @@ sap.ui.define([
 				 *
 				 * @name sap.ui.rta.service.Action.get
 				 * @param {string|string[]} vControlIds - Control ID or an array of IDs to get actions for
-				 * @returns {Promise.<sap.ui.rta.service.Action.ActionObject[]>} List of available actions wrapped in a promise
+				 * @returns {promise.<sap.ui.rta.service.Action.ActionObject[]>} List of available actions wrapped in a promise
 				 * @public
 				 * @function
 				 */
@@ -192,7 +192,7 @@ sap.ui.define([
 				 * @name sap.ui.rta.service.Action.execute
 				 * @param {string|string[]} vControlIds - Control ID or an array of IDs to get actions for
 				 * @param {string} sActionId - Action ID to be executed on the specified controls
-				 * @returns {Promise.<any>} Result of the operation wrapped in a promise.
+				 * @returns {promise.<any>} Result of the operation wrapped in a promise.
 				 * @public
 				 * @function
 				 */

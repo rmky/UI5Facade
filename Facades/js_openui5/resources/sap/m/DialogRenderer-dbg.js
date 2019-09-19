@@ -104,8 +104,7 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "sap/ui/core/library"],
 			}
 
 			oRm.writeAccessibilityState(oControl, {
-				role: sRole,
-				modal: true
+				role: sRole
 			});
 
 			if (oControl._forceDisableScrolling) {

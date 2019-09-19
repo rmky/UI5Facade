@@ -46,7 +46,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -460,6 +460,28 @@ sap.ui.define([
 			this._updateDomSrc(this._getDensityAwareSrc());
 			this.$().removeClass("sapMNoImg");
 		}
+	};
+
+	Image.prototype.setSrc = function(sSrc) {
+		if (sSrc === this.getSrc()) {
+			return this;
+		}
+
+		this.setProperty("src", sSrc, true);
+
+		var oDomRef = this.getDomRef();
+		if (oDomRef) {
+			this._updateDomSrc(this._getDensityAwareSrc());
+		}
+
+		return this;
+	};
+
+	Image.prototype.setActiveSrc = function(sActiveSrc) {
+		if (!sActiveSrc) {
+			sActiveSrc = "";
+		}
+		return this.setProperty("activeSrc", sActiveSrc, true);
 	};
 
 	Image.prototype.attachPress = function() {

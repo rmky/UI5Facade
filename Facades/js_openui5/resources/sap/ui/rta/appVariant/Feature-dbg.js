@@ -8,75 +8,104 @@ sap.ui.define([
 	"sap/ui/fl/Utils",
 	"sap/ui/rta/appVariant/AppVariantUtils",
 	"sap/ui/core/BusyIndicator",
-	"sap/base/util/UriParameters",
-	"sap/ui/fl/registry/Settings",
-	"sap/ui/fl/descriptorRelated/api/DescriptorVariantFactory",
-	"sap/base/util/merge"
+	"sap/ui/thirdparty/jquery",
+	"sap/base/util/UriParameters"
 ], function(
 	FlexUtils,
 	AppVariantUtils,
 	BusyIndicator,
-	UriParameters,
-	Settings,
-	DescriptorVariantFactory,
-	merge
+	jQuery,
+	UriParameters
 ) {
 	"use strict";
 
-	var oAppVariantOverviewDialog;
-	var oAppVariantManager;
-	var oRootControlRunningApp;
-	var oCommandSerializer;
-	var _oldUnloadHandler;
+	var oAppVariantOverviewDialog,
+		oAppVariantManager,
+		oRootControlRunningApp,
+		oCommandSerializer,
+		oChosenAppVariantDescriptor,
+		oDescriptorVariantSaveClosure,
+		oDescriptorVariantDeleteClosure,
+		_oldUnloadHandler;
 
 	var fnGetDescriptor = function() {
 		return FlexUtils.getAppDescriptor(oRootControlRunningApp);
 	};
 
-	var fnGetFlexSettings = function() {
-		return Settings.getInstance();
+	var fnTriggerCreateDescriptor = function(oAppVariantData) {
+		return oAppVariantManager.createDescriptor(oAppVariantData).then(function(oDescriptorVariant) {
+			if (oDescriptorVariant) {
+				oDescriptorVariantSaveClosure = null;
+				oDescriptorVariantSaveClosure = jQuery.extend({}, oDescriptorVariant);
+				return oDescriptorVariantSaveClosure;
+			}
+			return Promise.reject();
+		});
+	};
+
+	var fnTriggerCreateDescriptorForDeletion = function(sAppVariantId) {
+		return AppVariantUtils.createDeletion(sAppVariantId).then(function(oDescriptorVariant) {
+			if (oDescriptorVariant) {
+				oDescriptorVariantDeleteClosure = null;
+				oDescriptorVariantDeleteClosure = jQuery.extend({}, oDescriptorVariant);
+				return oDescriptorVariantDeleteClosure;
+			}
+			return Promise.reject();
+		});
+	};
+
+	var fnTriggerSaveAppVariantToLREP = function(oDescriptorVariant) {
+		BusyIndicator.show();
+		return oAppVariantManager.saveAppVariantToLREP(oDescriptorVariant);
+	};
+
+	var fnS4HanaAddBrowserCloseWarning = function(bCurrentlyAdapting) {
+		var sMessageKey = bCurrentlyAdapting ? "MSG_DO_NOT_CLOSE_BROWSER_CURRENTLY_ADAPTING" : "MSG_DO_NOT_CLOSE_BROWSER";
+		_oldUnloadHandler = window.onbeforeunload;
+		window.onbeforeunload = AppVariantUtils.handleBeforeUnloadEvent;
+		return AppVariantUtils.showMessage(sMessageKey);
 	};
 
 	var fnS4HanaRemoveBrowserCloseWarning = function() {
 		window.onbeforeunload = _oldUnloadHandler;
 	};
 
-	var fnTriggerCatalogAssignment = function(sAppVariantId, sReferenceAppId) {
-		return oAppVariantManager.triggerCatalogPublishing(sAppVariantId, sReferenceAppId, true);
+	var fnTriggerCatalogAssignment = function() {
+		return oAppVariantManager.triggerCatalogPublishing(oDescriptorVariantSaveClosure, true);
 	};
 
-	var fnTriggerCatalogUnAssignment = function(sAppVariantId) {
-		return oAppVariantManager.triggerCatalogPublishing(sAppVariantId, null, false);
+	var fnTriggerCatalogUnAssignment = function() {
+		return oAppVariantManager.triggerCatalogPublishing(oDescriptorVariantDeleteClosure, false);
 	};
 
-	var fnReloadOverviewDialog = function(bIsS4HanaOnPremise, sCurrentLayer) {
+	var fnReloadOverviewDialog = function(bIsS4HanaOnPremise) {
 		if (oAppVariantOverviewDialog) {
 			AppVariantUtils.closeOverviewDialog();
-			return this.onGetOverview(true, sCurrentLayer);
+			return this.onGetOverview(true);
 		} else if (!oAppVariantOverviewDialog && bIsS4HanaOnPremise) {
 			// in case of S/4HANA on Premise
 			BusyIndicator.hide();
-			return this.onGetOverview(true, sCurrentLayer);
+			return this.onGetOverview(true);
 		}
 		return Promise.resolve();
 	};
 
-	var fnTriggerActionFlow = function(bSaveAsTriggeredFromRtaToolbar, bIsS4HanaCloud, sCurrentLayer) {
-		return bSaveAsTriggeredFromRtaToolbar ? AppVariantUtils.navigateToFLPHomepage() : fnReloadOverviewDialog.call(this, !bIsS4HanaCloud, sCurrentLayer);
+	var fnTriggerActionFlow = function(bSaveAsTriggeredFromRtaToolbar, bIsS4HanaCloud) {
+		return bSaveAsTriggeredFromRtaToolbar ? AppVariantUtils.navigateToFLPHomepage() : fnReloadOverviewDialog.call(this, !bIsS4HanaCloud);
 	};
 
-	var fnTriggerPollingTileCreation = function(oResult, sAppVariantId) {
+	var fnTriggerPollingTileCreation = function(oResult, sAppVarId) {
 		// In case of S/4HANA Cloud, oResult is filled from catalog assignment call
 		if (oResult && oResult.response && oResult.response.IAMId) {
-			return oAppVariantManager.notifyKeyUserWhenPublishingIsReady(oResult.response.IAMId, sAppVariantId, true);
+			return oAppVariantManager.notifyKeyUserWhenPublishingIsReady(oResult.response.IAMId, sAppVarId, true);
 		}
 		return Promise.resolve();
 	};
 
-	var fnTriggerPollingTileDeletion = function(oResult, sAppVariantId) {
+	var fnTriggerPollingTileDeletion = function(oResult, sAppVarId) {
 		// In case of S/4HANA Cloud, oResult is filled from catalog unassignment call, do polling only if inProgress === true
 		if (oResult && oResult.response && oResult.response.IAMId && oResult.response.inProgress) {
-			return oAppVariantManager.notifyKeyUserWhenPublishingIsReady(oResult.response.IAMId, sAppVariantId, false);
+			return oAppVariantManager.notifyKeyUserWhenPublishingIsReady(oResult.response.IAMId, sAppVarId, false);
 		}
 		return Promise.resolve();
 	};
@@ -90,7 +119,7 @@ sap.ui.define([
 
 	return {
 		// To see the overview of app variants, a key user has created from an app
-		onGetOverview: function(bAsKeyUser, sLayer) {
+		onGetOverview : function(bAsKeyUser) {
 			var oDescriptor = fnGetDescriptor();
 
 			return new Promise(function(resolve) {
@@ -101,8 +130,7 @@ sap.ui.define([
 					if (!oAppVariantOverviewDialog) {
 						oAppVariantOverviewDialog = new AppVariantOverviewDialog({
 							idRunningApp: oDescriptor["sap.app"].id,
-							isOverviewForKeyUser: bAsKeyUser,
-							layer: sLayer
+							isOverviewForKeyUser: bAsKeyUser
 						});
 					}
 
@@ -125,13 +153,16 @@ sap.ui.define([
 		 * When this method returns <code>false</code>, an app variant overview is shown only for a key user.
 		 */
 		isOverviewExtended: function() {
-			var oUriParams = UriParameters.fromQuery(window.location.search);
-			var sMode = oUriParams.get("sap-ui-xx-app-variant-overview-extended");
-			if (!sMode) {
+			var oUriParams = new UriParameters(window.location.href);
+			if (!oUriParams.get("sap-ui-xx-app-variant-overview-extended")) {
 				return false;
 			}
 
-			return sMode.toLowerCase() === 'true';
+			var aMode = oUriParams.get("sap-ui-xx-app-variant-overview-extended", true);
+			if (aMode && aMode.length) {
+				var sMode = aMode[0].toLowerCase();
+				return sMode === 'true';
+			}
 		},
 		isManifestSupported: function() {
 			var oDescriptor = fnGetDescriptor();
@@ -155,7 +186,7 @@ sap.ui.define([
 		 * When the current layer is 'CUSTOMER'.
 		 * When it is not a standalone app runing on Neo Cloud.
 		 */
-		isPlatFormEnabled: function(oRootControl, sCurrentLayer, oLrepSerializer) {
+		isPlatFormEnabled : function(oRootControl, sCurrentLayer, oLrepSerializer) {
 			oRootControlRunningApp = oRootControl;
 			oCommandSerializer = oLrepSerializer;
 
@@ -184,34 +215,29 @@ sap.ui.define([
 		 * @returns {Promise} Resolved promise with an app variant descriptor
 		 * @description Getting here an app variant descriptor from the layered repository.
 		 */
-		getAppVariantDescriptor: function(oRootControl) {
+		getAppVariantDescriptor : function(oRootControl) {
 			oRootControlRunningApp = oRootControl;
 			var oDescriptor = fnGetDescriptor();
 			if (oDescriptor["sap.app"] && oDescriptor["sap.app"].id) {
-				return DescriptorVariantFactory.loadAppVariant(oDescriptor["sap.app"].id, false);
+				return AppVariantUtils.getDescriptorFromLREP(oDescriptor["sap.app"].id);
 			}
 			return Promise.resolve(false);
 		},
 		/**
 		 * @param {boolean} bSaveAsTriggeredFromRtaToolbar - Boolean value which tells if 'Save As' is triggered from the UI adaptation header bar
-		 * @param {string} sCurrentLayer - Current working layer
-		 * @param {Object} oSelectedAppVariant - Contains the selected app variant from app variant overview dialog
+		 * @param {boolean} bCopyUnsavedChanges - Boolean value which tells if the UI changes needs to be copied
 		 * @returns {Promise} Resolved promise
 		 * @description Creates the app variant when 'Save As' is triggered from the UI adaptation header bar.
 		 * When 'Save As' triggered from the UI adaptation header bar, we set both flags <code>bSaveAsTriggeredFromRtaToolbar</code> and <code>bCopyUnsavedChanges</code> equal to <code>true</code>.
-		 * The flag <code>bCopyUnsavedChanges</code> is <code>true</code> if a key user presses 'Save As' from the running app entry in the app variant overview dialog.
 		 */
-		onSaveAs: function(bSaveAsTriggeredFromRtaToolbar, sCurrentLayer, oSelectedAppVariant) {
-			var bIsS4HanaCloud;
-			var aAllInlineChanges = [];
-			var bCopyUnsavedChanges = false;
-			var oAppVariantSaveClosure;
-			var oDescriptor = fnGetDescriptor();
+		onSaveAsFromRtaToolbar : function(bSaveAsTriggeredFromRtaToolbar, bCopyUnsavedChanges) {
+			var oDescriptor, bIsS4HanaCloud;
 
-			if (oSelectedAppVariant && oSelectedAppVariant["sap.app"].id === oDescriptor["sap.app"].id) {
-				bCopyUnsavedChanges = true;
-				oDescriptor = merge({}, oSelectedAppVariant);
-				oSelectedAppVariant = null;
+			if (bSaveAsTriggeredFromRtaToolbar) {
+				oDescriptor = fnGetDescriptor();
+			} else {
+				oDescriptor = jQuery.extend(true, {}, oChosenAppVariantDescriptor);
+				oChosenAppVariantDescriptor = null;
 			}
 
 			return new Promise(function(resolve) {
@@ -219,40 +245,12 @@ sap.ui.define([
 					return oAppVariantManager.processSaveAsDialog(oDescriptor, bSaveAsTriggeredFromRtaToolbar);
 				};
 
-				var fnCreateInlineChanges = function(oAppVariantSpecificData) {
-					BusyIndicator.show();
-					return oAppVariantManager.createAllInlineChanges(oAppVariantSpecificData);
-				};
-
-				var fnAddChangesToPersistence = function(aChanges) {
-					aAllInlineChanges = aChanges.slice();
-					return AppVariantUtils.addChangesToPersistence(aChanges, oRootControlRunningApp);
-				};
-
-				var fnCreateAppVariant = function() {
-					var sAppVariantId = AppVariantUtils.getNewAppVariantId();
-					// Based on the key user provided info, app variant descriptor is created
-					return oAppVariantManager.createAppVariant(sAppVariantId)
-						.catch(function(oError) {
-							var sMessageKey = oError.messageKey;
-							if (!sMessageKey) {
-								sMessageKey = "MSG_SAVE_APP_VARIANT_FAILED";
-							}
-
-							// Since the saving of app variant failed, the descriptor inline changes which were created internally specific to the app variant, will now be removed from persistence
-							if (oError.saveAsFailed) {
-								AppVariantUtils.removeChangesFromPersistence(aAllInlineChanges, oRootControlRunningApp);
-							}
-							return AppVariantUtils.catchErrorDialog(oError, sMessageKey, sAppVariantId);
-						});
-				};
-
-				var fnClearRTACommandStack = function(oAppVariant) {
-					oAppVariantSaveClosure = null;
-					oAppVariantSaveClosure = merge({}, oAppVariant.response);
-
-					// If there are any unsaved changes, should be taken away for the new created app variant
-					return oAppVariantManager.clearRTACommandStack(bCopyUnsavedChanges);
+				var fnTriggerCopyUnsavedChangesToLREP = function() {
+					if (bCopyUnsavedChanges) {
+						// If there are any unsaved changes, should be taken away for the new created app variant
+						return oAppVariantManager.copyUnsavedChangesToLREP(oDescriptorVariantSaveClosure.getId(), bCopyUnsavedChanges);
+					}
+					return Promise.resolve();
 				};
 
 				var fnResetDirtyFlag = function() {
@@ -263,12 +261,11 @@ sap.ui.define([
 					}
 				};
 
-				var fnTriggerSuccessMessage = function(oSettings) {
+				var fnTriggerSuccessMessage = function() {
 					fnResetDirtyFlag();
-					bIsS4HanaCloud = AppVariantUtils.isS4HanaCloud(oSettings);
 					// Shows the success message and closes the current app (if 'Save As' triggered from UI adaptation toolbar)
 					// or opens the app variant overview list (if 'Save As' triggered from App variant overview List)
-					var oSuccessInfo = AppVariantUtils.buildSuccessInfo(oAppVariantSaveClosure.id, bSaveAsTriggeredFromRtaToolbar, bIsS4HanaCloud);
+					var oSuccessInfo = AppVariantUtils.buildSuccessInfo(oDescriptorVariantSaveClosure, bSaveAsTriggeredFromRtaToolbar);
 					return oAppVariantManager.showSuccessMessage(oSuccessInfo);
 				};
 
@@ -277,104 +274,95 @@ sap.ui.define([
 					return oAppVariantManager.showSuccessMessage(oSuccessInfo);
 				};
 
+
 				var fnTriggerPlatformDependentFlow = function() {
 					BusyIndicator.show();
-
+					bIsS4HanaCloud = AppVariantUtils.isS4HanaCloud(oDescriptorVariantSaveClosure.getSettings());
 					if (bIsS4HanaCloud) {
-						return fnTriggerCatalogAssignment(oAppVariantSaveClosure.id, oAppVariantSaveClosure.reference)
-							.then(function(oResult) {
-								BusyIndicator.hide();
-								return fnTriggerActionFlow.call(this, bSaveAsTriggeredFromRtaToolbar, null, sCurrentLayer).then(function() {
-									bSaveAsTriggeredFromRtaToolbar = false;
-									return fnTriggerPollingTileCreation(oResult, oAppVariantSaveClosure.id)
-										.then(fnShowCatalogAssignmentSuccessMessage);
-								});
-							}.bind(this));
+						return fnTriggerCatalogAssignment()
+								.then(function(oResult) {
+									BusyIndicator.hide();
+									return fnTriggerActionFlow.call(this, bSaveAsTriggeredFromRtaToolbar).then(function() {
+										bSaveAsTriggeredFromRtaToolbar = false;
+										return fnTriggerPollingTileCreation(oResult, oDescriptorVariantSaveClosure.getId())
+											.then(fnShowCatalogAssignmentSuccessMessage);
+									});
+								}.bind(this));
 					}
-					BusyIndicator.hide();
-					return fnTriggerActionFlow.call(this, bSaveAsTriggeredFromRtaToolbar, bIsS4HanaCloud, sCurrentLayer);
+					return Promise.resolve();
 				};
 
 				sap.ui.require(["sap/ui/rta/appVariant/AppVariantManager"], function(AppVariantManager) {
 					if (!oAppVariantManager) {
 						oAppVariantManager = new AppVariantManager({
-							rootControl: oRootControlRunningApp,
-							commandSerializer: oCommandSerializer,
-							layer: sCurrentLayer
+							rootControl : oRootControlRunningApp,
+							commandSerializer : oCommandSerializer
 						});
 					}
 
 					return fnProcessSaveAsDialog()
-						.then(fnCreateInlineChanges) // Create the inline changes for application variant
-						.then(fnAddChangesToPersistence) // Adds the descriptor inline changes to the persistence
-						.then(fnCreateAppVariant) // Creates the application variant and saves it to the layered repository
-						.then(fnClearRTACommandStack)
-						.then(fnGetFlexSettings)
-						.then(fnTriggerSuccessMessage)
-						.then(fnTriggerPlatformDependentFlow.bind(this)).then(resolve)
-						.catch(function(oError) {
-							if (!oError) {
-								// Cancelling Save As Dialog
-								return false;
-							}
-							return fnTriggerActionFlow.call(this, null, bIsS4HanaCloud, sCurrentLayer).then(resolve);
-						}.bind(this));
+					.then(fnTriggerCreateDescriptor)
+					.then(fnTriggerSaveAppVariantToLREP)
+					.then(fnTriggerCopyUnsavedChangesToLREP)
+					.then(fnTriggerSuccessMessage)
+					.then(fnTriggerPlatformDependentFlow.bind(this))
+					.finally(function() {
+						return fnTriggerActionFlow.call(this, bSaveAsTriggeredFromRtaToolbar, bIsS4HanaCloud).then(resolve);
+					}.bind(this));
 				}.bind(this));
 			}.bind(this));
 		},
 		/**
-		 * @param {string} sAppVariantId - Application variant ID
+		 * @param {object} oAppVariantDescriptor - Contains the app variant desciptor
+		 * @param {boolean} bSaveAsTriggeredFromRtaToolbar - Boolean value which tells if 'Save As' is triggered from the UI adaptation header bar
+		 * @returns {Promise} Resolved promise
+		 * @description Creates the app variant when 'Save As' is triggered from the app variant overview dialog.
+		 * When 'Save As' triggered from the app variant overview dialog, we set flag <code>bSaveAsTriggeredFromRtaToolbar</code> equal to <code>false</code>.
+		 * The flag <code>bCopyUnsavedChanges</code> is <code>true</code> if a key user presses 'Save As' from the running app entry in the app variant overview dialog.
+		 */
+		onSaveAsFromOverviewDialog : function(oAppVariantDescriptor, bSaveAsTriggeredFromRtaToolbar) {
+			var bCopyUnsavedChanges = false;
+
+			var oDescriptor = fnGetDescriptor();
+
+			if (oAppVariantDescriptor["sap.app"].id === oDescriptor["sap.app"].id) {
+				bCopyUnsavedChanges = true;
+			}
+
+			oChosenAppVariantDescriptor = jQuery.extend(true, {}, oAppVariantDescriptor);
+			oAppVariantDescriptor = null;
+
+			return this.onSaveAsFromRtaToolbar(bSaveAsTriggeredFromRtaToolbar, bCopyUnsavedChanges);
+		},
+		/**
+		 * @param {string} sAppVarId - Application variant ID
 		 * @param {boolean} bCurrentlyAdapting - Boolean value which tells if the running application is currently being adapted
-		 * @param {string} sCurrentLayer - Current working layer
 		 * @returns {Promise} Resolved promise
 		 * @description Triggers a delete operation of the app variant.
 		 */
-		onDeleteFromOverviewDialog: function(sAppVariantId, bCurrentlyAdapting, sCurrentLayer) {
+		onDeleteFromOverviewDialog : function(sAppVarId, bCurrentlyAdapting) {
 			var bIsS4HanaCloud;
 			return new Promise(function(resolve) {
 				sap.ui.require(["sap/ui/rta/appVariant/AppVariantManager"], function(AppVariantManager) {
 					if (!oAppVariantManager) {
 						oAppVariantManager = new AppVariantManager({
-							rootControl: oRootControlRunningApp,
-							commandSerializer: oCommandSerializer,
-							layer: sCurrentLayer
+							rootControl : oRootControlRunningApp,
+							commandSerializer : oCommandSerializer
 						});
 					}
 
-					var fnDeleteAppVariant = function() {
-						return oAppVariantManager.deleteAppVariant(sAppVariantId)
-							.catch(function(oError) {
-								var sMessageKey = oError.messageKey;
-								if (!sMessageKey) {
-									sMessageKey = "MSG_DELETE_APP_VARIANT_FAILED";
-								}
-								return AppVariantUtils.catchErrorDialog(oError, sMessageKey, sAppVariantId);
-							});
+					var fnTriggerDeletion = function() {
+						return AppVariantUtils.triggerDeleteAppVariantFromLREP(oDescriptorVariantDeleteClosure);
 					};
 
-					var fnDeleteSuccessMessage = function() {
-						AppVariantUtils.closeOverviewDialog();
-						var oSuccessInfo = AppVariantUtils.buildDeleteSuccessMessage(sAppVariantId);
-						return oAppVariantManager.showSuccessMessage(oSuccessInfo);
-					};
-
-					var fnS4HanaAddBrowserCloseWarning = function() {
-						var sMessageKey = bCurrentlyAdapting ? "MSG_DO_NOT_CLOSE_BROWSER_CURRENTLY_ADAPTING" : "MSG_DO_NOT_CLOSE_BROWSER";
-						_oldUnloadHandler = window.onbeforeunload;
-						window.onbeforeunload = AppVariantUtils.handleBeforeUnloadEvent;
-						return AppVariantUtils.showMessage(sMessageKey);
-					};
-
-					var fnTriggerS4HanaPolling = function(oSettings) {
-						bIsS4HanaCloud = AppVariantUtils.isS4HanaCloud(oSettings);
+					var fnTriggerS4HanaPolling = function() {
+						bIsS4HanaCloud = AppVariantUtils.isS4HanaCloud(oDescriptorVariantDeleteClosure.getSettings());
 						if (bIsS4HanaCloud) {
-							return fnS4HanaAddBrowserCloseWarning()
-								.then(function() {
-									return fnTriggerCatalogUnAssignment(sAppVariantId);
-								})
+							return fnS4HanaAddBrowserCloseWarning(bCurrentlyAdapting)
+								.then(fnTriggerCatalogUnAssignment)
 								.then(function(oResult) {
-									return fnReloadOverviewDialog.call(this, null, sCurrentLayer).then(function() {
-										return fnTriggerPollingTileDeletion(oResult, sAppVariantId);
+									return fnReloadOverviewDialog.call(this).then(function() {
+										return fnTriggerPollingTileDeletion(oResult, oDescriptorVariantDeleteClosure.getId());
 									});
 								}.bind(this));
 						}
@@ -387,7 +375,7 @@ sap.ui.define([
 							fnS4HanaRemoveBrowserCloseWarning();
 						}
 						BusyIndicator.hide();
-						return fnReloadOverviewDialog.call(this, null, bIsS4HanaCloud, sCurrentLayer).then(resolve);
+						return fnReloadOverviewDialog.call(this).then(resolve);
 					};
 
 					if (bCurrentlyAdapting) {
@@ -395,14 +383,10 @@ sap.ui.define([
 						AppVariantUtils.navigateToFLPHomepage();
 					}
 
-					return fnGetFlexSettings()
+					return fnTriggerCreateDescriptorForDeletion(sAppVarId)
 						.then(fnTriggerS4HanaPolling.bind(this))
-						.then(fnDeleteAppVariant)
-						.then(fnDeleteSuccessMessage)
-						.then(fnTriggerS4HanaRefresh.bind(this))
-						.catch(function() {
-							return fnTriggerActionFlow.call(this, null, bIsS4HanaCloud, sCurrentLayer).then(resolve);
-						}.bind(this));
+						.then(fnTriggerDeletion)
+						.finally(fnTriggerS4HanaRefresh.bind(this));
 				}.bind(this));
 			}.bind(this));
 		}

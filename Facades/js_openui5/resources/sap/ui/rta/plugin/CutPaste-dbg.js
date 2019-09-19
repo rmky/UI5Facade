@@ -31,7 +31,7 @@ function(
 	 * @extends sap.ui.dt.plugin.CutPaste
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @private
@@ -171,31 +171,31 @@ function(
 	 * @return {object[]} - array of the items with required data
 	 */
 	CutPaste.prototype.getMenuItems = function (aElementOverlays) {
-		var aMenuItems = [];
-		var oCutMenuItem = {
-			id: 'CTX_CUT',
-			text: sap.ui.getCore().getLibraryResourceBundle('sap.ui.rta').getText('CTX_CUT'),
-			handler: function (aElementOverlays) {
-				return this.cut(aElementOverlays[0]);
-			}.bind(this),
-			enabled: function (aElementOverlays) {
-				return aElementOverlays.length === 1;
+		var aMenuItems = [],
+			oCutMenuItem = {
+				id: 'CTX_CUT',
+				text: sap.ui.getCore().getLibraryResourceBundle('sap.ui.rta').getText('CTX_CUT'),
+				handler: function (aElementOverlays) {
+					return this.cut(aElementOverlays[0]);
+				}.bind(this),
+				enabled: function (aElementOverlays) {
+					return aElementOverlays.length === 1;
+				},
+				rank: 70,
+				icon: "sap-icon://scissors"
 			},
-			rank: 70,
-			icon: "sap-icon://scissors"
-		};
-		var oPasteMenuItem = {
-			id: 'CTX_PASTE',
-			text: sap.ui.getCore().getLibraryResourceBundle('sap.ui.rta').getText('CTX_PASTE'),
-			handler: function (aElementOverlays) {
-				return this.paste(aElementOverlays[0]);
-			}.bind(this),
-			enabled: function (aElementOverlays) {
-				return this.isElementPasteable(aElementOverlays[0]);
-			}.bind(this),
-			rank: 80,
-			icon: "sap-icon://paste"
-		};
+			oPasteMenuItem = {
+				id: 'CTX_PASTE',
+				text: sap.ui.getCore().getLibraryResourceBundle('sap.ui.rta').getText('CTX_PASTE'),
+				handler: function (aElementOverlays) {
+					return this.paste(aElementOverlays[0]);
+				}.bind(this),
+				enabled: function (aElementOverlays) {
+					return this.isElementPasteable(aElementOverlays[0]);
+				}.bind(this),
+				rank: 80,
+				icon: "sap-icon://paste"
+			};
 
 		if (this.isAvailable(aElementOverlays)) {
 			aMenuItems.push(oCutMenuItem, oPasteMenuItem);

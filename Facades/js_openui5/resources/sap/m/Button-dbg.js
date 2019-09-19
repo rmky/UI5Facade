@@ -68,7 +68,7 @@ sap.ui.define([
 	 * @mixes sap.ui.core.ContextMenuSupport
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -85,7 +85,7 @@ sap.ui.define([
 			/**
 			 * Determines the text of the <code>Button</code>.
 			 */
-			text : {type : "string", group : "Misc", defaultValue: "" },
+			text : {type : "string", group : "Misc", defaultValue : null},
 
 			/**
 			 * Defines the <code>Button</code> type.
@@ -107,7 +107,7 @@ sap.ui.define([
 			 * Defines the icon to be displayed as graphical element within the <code>Button</code>.
 			 * It can be an image or an icon from the icon font.
 			 */
-			icon : {type : "sap.ui.core.URI", group : "Appearance", defaultValue: "" },
+			icon : {type : "sap.ui.core.URI", group : "Appearance", defaultValue : null},
 
 			/**
 			 * Determines whether the icon is displayed before the text.
@@ -176,7 +176,6 @@ sap.ui.define([
 
 	Button.prototype.init = function() {
 		this._onmouseenter = this._onmouseenter.bind(this);
-		this._buttonPressed = false;
 	};
 
 	/**
@@ -204,7 +203,7 @@ sap.ui.define([
 	Button.prototype.onBeforeRendering = function() {
 		this._bRenderActive = this._bActive;
 
-		this.$().off("mouseenter", this._onmouseenter);
+		this.$().on("mouseenter", this._onmouseenter);
 	};
 
 	/*
@@ -237,7 +236,7 @@ sap.ui.define([
 		// change the source only when the first finger is on the control, the
 		// following fingers doesn't affect
 		if (oEvent.targetTouches.length === 1) {
-			this._buttonPressed = true;
+
 			// set active button state
 			this._activeButton();
 		}
@@ -259,7 +258,6 @@ sap.ui.define([
 	 * @private
 	 */
 	Button.prototype.ontouchend = function(oEvent) {
-		this._buttonPressed = oEvent.originalEvent && oEvent.originalEvent.buttons & 1;
 
 		// set inactive button state
 		this._inactiveButton();
@@ -278,7 +276,7 @@ sap.ui.define([
 	 * @private
 	 */
 	Button.prototype.ontouchcancel = function() {
-		this._buttonPressed = false;
+
 		// set inactive button state
 		this._inactiveButton();
 	};
@@ -314,7 +312,7 @@ sap.ui.define([
 	 */
 	Button.prototype.onkeydown = function(oEvent) {
 
-		if (oEvent.which === KeyCodes.SPACE || oEvent.which === KeyCodes.ENTER || oEvent.which === KeyCodes.ESCAPE || oEvent.which === KeyCodes.SHIFT) {
+		if (oEvent.which === KeyCodes.SPACE || oEvent.which === KeyCodes.ENTER || oEvent.which === KeyCodes.ESCAPE) {
 
 			if (oEvent.which === KeyCodes.SPACE || oEvent.which === KeyCodes.ENTER) {
 				// mark the event for components that needs to know if the event was handled by the button
@@ -332,15 +330,12 @@ sap.ui.define([
 				this._bPressedSpace = true;
 			}
 
-			// set inactive state of the button and marked ESCAPE or SHIFT as pressed only if SPACE was pressed before it
-			if (this._bPressedSpace) {
-				if (oEvent.which === KeyCodes.SHIFT || oEvent.which === KeyCodes.ESCAPE) {
-					this._bPressedEscapeOrShift = true;
-					// set inactive button state
-					this._inactiveButton();
-				}
+			// set inactive state of the button and marked ESCAPE as pressed only if SPACE was pressed before it
+			if (this._bPressedSpace && oEvent.which === KeyCodes.ESCAPE) {
+				this._bPressedEscape = true;
+				// set inactive button state
+				this._inactiveButton();
 			}
-
 		} else {
 			if (this._bPressedSpace) {
 				oEvent.preventDefault();
@@ -366,7 +361,7 @@ sap.ui.define([
 		}
 
 		if (oEvent.which === KeyCodes.SPACE) {
-			if (!this._bPressedEscapeOrShift) {
+			if (!this._bPressedEscape) {
 				// mark the event for components that needs to know if the event was handled by the button
 				oEvent.setMarked();
 
@@ -374,14 +369,14 @@ sap.ui.define([
 				this._inactiveButton();
 				this.firePress({/* no parameters */});
 			} else {
-				this._bPressedEscapeOrShift = false;
+				this._bPressedEscape = false;
 			}
 			this._bPressedSpace = false;
 		}
 	};
 
 	Button.prototype._onmouseenter = function(oEvent) {
-		if (this._buttonPressed && oEvent.originalEvent && oEvent.originalEvent.buttons & 1) {
+		if (oEvent.originalEvent && oEvent.originalEvent.buttons & 1) {
 			this._activeButton();
 		}
 	};
@@ -456,27 +451,25 @@ sap.ui.define([
 	 * @private
 	 */
 	Button.prototype._getImage = function(sImgId, sSrc, sActiveSrc, bIconDensityAware) {
-		var bIsIconURI = IconPool.isIconURI(sSrc),
-			bIconFirst;
 
-		// check if image control type and src match - destroy it, if they don't
-		if (this._image instanceof sap.m.Image && bIsIconURI ||
-			this._image instanceof sap.ui.core.Icon && !bIsIconURI) {
+		// check if image source has changed - if yes destroy and reset image control
+		if (this._image && (this._image.getSrc() !== sSrc)) {
 			this._image.destroy();
 			this._image = undefined;
 		}
 
 		// update or create image control
-		bIconFirst = this.getIconFirst();
+		var oImage = this._image;
+		var bIconFirst = this.getIconFirst();
 
-		if (this._image) {
-			this._image.setSrc(sSrc);
-			if (this._image instanceof sap.m.Image) {
-				this._image.setActiveSrc(sActiveSrc);
-				this._image.setDensityAware(bIconDensityAware);
+		if (!!oImage) {
+			oImage.setSrc(sSrc);
+			if (oImage instanceof sap.m.Image) {
+				oImage.setActiveSrc(sActiveSrc);
+				oImage.setDensityAware(bIconDensityAware);
 			}
 		} else {
-			this._image = IconPool.createControlByURI({
+			oImage = IconPool.createControlByURI({
 				id: sImgId,
 				src : sSrc,
 				activeSrc : sActiveSrc,
@@ -489,12 +482,13 @@ sap.ui.define([
 		}
 
 		// add style classes to the object
-		this._image.addStyleClass("sapMBtnIcon");
+		oImage.addStyleClass("sapMBtnIcon");
 
 		// check and set absolute position depending on icon and icon position
-		this._image.toggleStyleClass("sapMBtnIconLeft", bIconFirst);
-		this._image.toggleStyleClass("sapMBtnIconRight", !bIconFirst);
+		oImage.toggleStyleClass("sapMBtnIconLeft", bIconFirst);
+		oImage.toggleStyleClass("sapMBtnIconRight", !bIconFirst);
 
+		this._image = oImage;
 		return this._image;
 	};
 
@@ -545,6 +539,59 @@ sap.ui.define([
 		}
 
 		return bUnstyled;
+	};
+
+	/**
+	 * Property setter for the text
+	 *
+	 * @param {string} sText - new value of the Text attribute
+	 * @return {sap.m.Button} this to allow method chaining
+	 * @public
+	 */
+	Button.prototype.setText = function(sText) {
+		var sValue = this.getText();
+
+		if (sText === null || sText === undefined) {
+			sText = "";
+		}
+
+		if (sValue !== sText) {
+			var oDomRef = this.getDomRef("BDI-content") || this.getDomRef("content");
+			var bShouldSupressRendering = !!oDomRef;
+
+			// Render control if element is not available in the DOM
+			this.setProperty("text", sText, bShouldSupressRendering);
+
+			if (bShouldSupressRendering) {
+				// Get text to have the type conversation for non-string values done by the framework
+				sText = this.getText();
+				oDomRef.textContent = sText;
+				this.$("inner").toggleClass("sapMBtnText", !!sText);
+			}
+		}
+
+		return this;
+	};
+
+	/**
+	 * Property setter for the icon
+	 *
+	 * @param {sap.ui.core.URI} sIcon - new value of the Icon property
+	 * @return {sap.m.Button} this to allow method chaining
+	 * @public
+	 */
+	Button.prototype.setIcon = function(sIcon) {
+		var sValue = this.getIcon() || "";
+		sIcon = sIcon || "";
+
+		if (sValue !== sIcon) {
+			var bSupressRendering = !!sValue && !!sIcon && IconPool.isIconURI(sIcon) === IconPool.isIconURI(sValue);
+			this.setProperty("icon", sIcon, bSupressRendering);
+			if (bSupressRendering && this._image) {
+				this._image.setSrc(sIcon);
+			}
+		}
+		return this;
 	};
 
 	/**

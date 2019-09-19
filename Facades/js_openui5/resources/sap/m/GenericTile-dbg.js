@@ -60,7 +60,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @since 1.34.0
 	 *
 	 * @public
@@ -999,7 +999,7 @@ sap.ui.define([
 			case library.LoadState.Failed:
 				return sAriaText + "\n" + this._oFailedText.getText();
 			default :
-				if (sAriaText.trim().length === 0) { // If the string is empty or just whitespace, IE renders an empty tooltip (e.g. "" + "\n" + "")
+				if (jQuery.trim(sAriaText).length === 0) { // If the string is empty or just whitespace, IE renders an empty tooltip (e.g. "" + "\n" + "")
 					return "";
 				} else {
 					return sAriaText;
@@ -1087,7 +1087,7 @@ sap.ui.define([
 	 */
 	GenericTile.prototype._isTooltipSuppressed = function () {
 		var sTooltip = this.getTooltip_Text();
-		if (sTooltip && sTooltip.length > 0 && sTooltip.trim().length === 0) {
+		if (sTooltip && sTooltip.length > 0 && jQuery.trim(sTooltip).length === 0) {
 			return true;
 		} else {
 			return false;

@@ -19,9 +19,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 	 *
 	 * @namespace
 	 */
-	var InputBaseRenderer = {
-		apiVersion: 2
-	};
+	var InputBaseRenderer = {};
 
 	/**
 	 * Renders the HTML for the given control, using the provided {@link sap.ui.core.RenderManager}.
@@ -38,29 +36,32 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 			aEndIcons = oControl.getAggregation("_endIcon") || [],
 			aVisibleBeginIcons, aVisibleEndIcons;
 
-		oRm.openStart("div", oControl);
+		oRm.write("<div");
+		oRm.writeControlData(oControl);
 
 		// outer styles
 		this.addOuterStyles(oRm, oControl);
 
 		this.addControlWidth(oRm, oControl);
 
+		oRm.writeStyles();
+
 		// outer classes
-		oRm.class("sapMInputBase");
+		oRm.addClass("sapMInputBase");
 		this.addPaddingClass(oRm, oControl);
 		this.addCursorClass(oRm, oControl);
 		this.addOuterClasses(oRm, oControl);
 
 		if (!oControl.getEnabled()) {
-			oRm.class("sapMInputBaseDisabled");
+			oRm.addClass("sapMInputBaseDisabled");
 		}
 
 		if (!oControl.getEditable()) {
-			oRm.class("sapMInputBaseReadonly");
+			oRm.addClass("sapMInputBaseReadonly");
 		}
 
 		if (sValueState !== ValueState.None) {
-			oRm.class("sapMInputBaseState");
+			oRm.addClass("sapMInputBaseState");
 		}
 
 		if (aBeginIcons.length) {
@@ -69,7 +70,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 				return oIcon.getVisible();
 			});
 
-			aVisibleBeginIcons.length && oRm.class("sapMInputBaseHasBeginIcons");
+			aVisibleBeginIcons.length && oRm.addClass("sapMInputBaseHasBeginIcons");
 		}
 
 		if (aEndIcons.length) {
@@ -78,39 +79,44 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 				return oIcon.getVisible();
 			});
 
-			aVisibleEndIcons.length && oRm.class("sapMInputBaseHasEndIcons");
+			aVisibleEndIcons.length && oRm.addClass("sapMInputBaseHasEndIcons");
 		}
+
+		oRm.writeClasses();
 
 		// outer attributes
 		this.writeOuterAttributes(oRm, oControl);
 		var sTooltip = oControl.getTooltip_AsString();
 
 		if (sTooltip) {
-			oRm.attr("title", sTooltip);
+			oRm.writeAttributeEscaped("title", sTooltip);
 		}
 
-		oRm.openEnd();
+		oRm.write(">");
 
-		oRm.openStart("div", oControl.getId() + "-content");
-		oRm.class("sapMInputBaseContentWrapper");
+		oRm.write('<div ');
+		oRm.writeAttribute("id", oControl.getId() + "-content");
+		oRm.addClass("sapMInputBaseContentWrapper");
 
 		// check disable and readonly
 		if (!oControl.getEnabled()) {
-			oRm.class("sapMInputBaseDisabledWrapper");
+			oRm.addClass("sapMInputBaseDisabledWrapper");
 
 		} else if (!oControl.getEditable()) {
-			oRm.class("sapMInputBaseReadonlyWrapper");
+			oRm.addClass("sapMInputBaseReadonlyWrapper");
 		}
 
 		if (sValueState !== ValueState.None) {
 			this.addValueStateClasses(oRm, oControl);
 		}
 
+		oRm.writeClasses();
 		// some controls need to have accessibility attributes applied one level up than the input
 		this.writeAccAttributes(oRm, oControl);
 		this.addWrapperStyles(oRm, oControl);
 
-		oRm.openEnd();
+		oRm.writeStyles();
+		oRm.write('>');
 
 		if (aBeginIcons.length) {
 			this.writeIcons(oRm, aBeginIcons);
@@ -121,30 +127,33 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 		// start inner
 		this.openInputTag(oRm, oControl);
 
+		// inner attributes
+		this.writeInnerId(oRm, oControl);
+
 		// write the name of input
 		if (oControl.getName()) {
-			oRm.attr("name", oControl.getName());
+			oRm.writeAttributeEscaped("name", oControl.getName());
 		}
 
 		// let the browser handle placeholder
 		if (!oControl.bShowLabelAsPlaceholder && oControl._getPlaceholder()) {
-			oRm.attr("placeholder", oControl._getPlaceholder());
+			oRm.writeAttributeEscaped("placeholder", oControl._getPlaceholder());
 		}
 
 		// check if there is a maxLength property
 		if (oControl.getMaxLength && oControl.getMaxLength() > 0) {
-			oRm.attr("maxlength", oControl.getMaxLength());
+			oRm.writeAttribute("maxlength", oControl.getMaxLength());
 		}
 		if (!oControl.getEnabled()) {
-			oRm.attr("disabled", "disabled");
+			oRm.writeAttribute("disabled", "disabled");
 
 		} else if (!oControl.getEditable()) {
-			oRm.attr("readonly", "readonly");
+			oRm.writeAttribute("readonly", "readonly");
 
 		}
 		// check if textDirection property is not set to default "Inherit" and add "dir" attribute
 		if (sTextDir != TextDirection.Inherit) {
-			oRm.attr("dir", sTextDir.toLowerCase());
+			oRm.writeAttribute("dir", sTextDir.toLowerCase());
 		}
 
 		this.writeInnerValue(oRm, oControl);
@@ -158,29 +167,35 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 			if (sTooltip) {
 
 				// fill tooltip to mozilla validation flag too, to display it in validation error case too
-				oRm.attr("x-moz-errormessage", sTooltip);
+				oRm.writeAttributeEscaped("x-moz-errormessage", sTooltip);
 			} else {
 
 				// if no tooltip use blank text for mozilla validation text
-				oRm.attr("x-moz-errormessage", " ");
+				oRm.writeAttribute("x-moz-errormessage", " ");
 			}
 		}
 
 		this.writeInnerAttributes(oRm, oControl);
 
 		// inner classes
-		oRm.class("sapMInputBaseInner");
+		oRm.addClass("sapMInputBaseInner");
 
 		this.addInnerClasses(oRm, oControl);
+		oRm.writeClasses();
 
 		// write text-align
-		oRm.style("text-align", sTextAlign);
+		if (sTextAlign) {
+			oRm.addStyle("text-align", sTextAlign);
+		}
 		this.addInnerStyles(oRm, oControl);
-		this.endInputTag(oRm, oControl);
+		oRm.writeStyles();
+		oRm.write(">");
 
 		// finish inner
 		this.writeInnerContent(oRm, oControl);
 		this.closeInputTag(oRm, oControl);
+
+
 
 		// write the end icons after the inner part
 		if (aEndIcons.length) {
@@ -188,7 +203,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 		}
 
 		// close wrapper div
-		oRm.close("div");
+		oRm.write('</div>');
 
 		// for backward compatibility
 		this.writeDecorations(oRm, oControl);
@@ -200,7 +215,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 		}
 
 		// finish outer
-		oRm.close("div");
+		oRm.write("</div>");
 	};
 
 	/**
@@ -248,12 +263,14 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 	InputBaseRenderer.renderAriaLabelledBy = function(oRm, oControl) {
 		var sAnnouncement = this.getLabelledByAnnouncement(oControl);
 		if (sAnnouncement) {
-			oRm.openStart("span", oControl.getId() + "-labelledby");
-			oRm.attr("aria-hidden", "true");
-			oRm.class("sapUiInvisibleText");
-			oRm.openEnd();
-			oRm.text(sAnnouncement.trim());
-			oRm.close("span");
+			oRm.write("<span");
+			oRm.writeAttribute("id", oControl.getId() + "-labelledby");
+			oRm.writeAttribute("aria-hidden", "true");
+			oRm.addClass("sapUiInvisibleText");
+			oRm.writeClasses();
+			oRm.write(">");
+			oRm.writeEscaped(sAnnouncement.trim());
+			oRm.write("</span>");
 		}
 	};
 
@@ -291,12 +308,14 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 	InputBaseRenderer.renderAriaDescribedBy = function(oRm, oControl) {
 		var sAnnouncement = this.getDescribedByAnnouncement(oControl);
 		if (sAnnouncement) {
-			oRm.openStart("span", oControl.getId() + "-describedby");
-			oRm.attr("aria-hidden", "true");
-			oRm.class("sapUiInvisibleText");
-			oRm.openEnd();
-			oRm.text(sAnnouncement.trim());
-			oRm.close("span");
+			oRm.write("<span");
+			oRm.writeAttribute("id", oControl.getId() + "-describedby");
+			oRm.writeAttribute("aria-hidden", "true");
+			oRm.addClass("sapUiInvisibleText");
+			oRm.writeClasses();
+			oRm.write(">");
+			oRm.writeEscaped(sAnnouncement.trim());
+			oRm.write("</span>");
 		}
 	};
 
@@ -346,7 +365,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 	 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered.
 	 */
 	InputBaseRenderer.writeAccessibilityState = function(oRm, oControl) {
-		oRm.accessibilityState(oControl, this.getAccessibilityState(oControl));
+		oRm.writeAccessibilityState(oControl, this.getAccessibilityState(oControl));
 	};
 
 	/**
@@ -356,17 +375,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 	 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered.
 	 */
 	InputBaseRenderer.openInputTag = function(oRm, oControl) {
-		oRm.voidStart("input", oControl.getId() + "-" + this.getInnerSuffix());
-	};
-
-	/**
-	 * Ends opened input tag.
-	 *
-	 * @param {sap.ui.core.RenderManager} oRm The RenderManager that can be used for writing to the render output buffer.
-	 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered.
-	 */
-	InputBaseRenderer.endInputTag = function(oRm, oControl) {
-		oRm.voidEnd();
+		oRm.write("<input");
 	};
 
 	/**
@@ -376,7 +385,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 	 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered.
 	 */
 	InputBaseRenderer.writeInnerValue = function(oRm, oControl) {
-		oRm.attr("value", oControl.getValue());
+		oRm.writeAttributeEscaped("value", oControl.getValue());
 	};
 
 	/**
@@ -395,7 +404,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 	 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered.
 	 */
 	InputBaseRenderer.addPaddingClass = function(oRm, oControl) {
-		oRm.class("sapMInputBaseHeightMargin");
+		oRm.addClass("sapMInputBaseHeightMargin");
 	};
 
 	/**
@@ -414,10 +423,12 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 	 */
 	InputBaseRenderer.addControlWidth = function(oRm, oControl) {
 		if (!oControl.getProperty('width')) {
-			oRm.class("sapMInputBaseNoWidth");
+			oRm.addClass("sapMInputBaseNoWidth");
 		}
 
-		oRm.style("width", oControl.getWidth());
+		if (oControl.getWidth()) {
+			oRm.addStyle("width", oControl.getWidth());
+		}
 	};
 
 	/**
@@ -459,7 +470,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 	 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered.
 	 */
 	InputBaseRenderer.addWrapperStyles = function(oRm, oControl) {
-		oRm.style("width", "100%");
+		oRm.addStyle("width", "100%");
 	};
 
 	/**
@@ -502,12 +513,15 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 	 * @param {string} sPosition An aggregation from which the icon should be rendered - begin or end.
 	 */
 	InputBaseRenderer.writeIcons = function (oRm, aIcons) {
-		oRm.openStart("div");
-		oRm.attr("tabindex", "-1");
-		oRm.class("sapMInputBaseIconContainer");
-		oRm.openEnd();
-		aIcons.forEach(oRm.renderControl, oRm);
-		oRm.close("div");
+		oRm.write("<div");
+		oRm.writeAttribute("tabindex", "-1");
+		oRm.addClass("sapMInputBaseIconContainer");
+		oRm.writeClasses();
+		oRm.write(">");
+		aIcons.forEach(function (oIcon) {
+			oRm.renderControl(oIcon);
+		});
+		oRm.write("</div>");
 	};
 
 	/**
@@ -554,17 +568,18 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/Device'],
 	 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered.
 	 */
 	InputBaseRenderer.addValueStateClasses = function(oRm, oControl) {
-		oRm.class("sapMInputBaseContentWrapperState");
-		oRm.class("sapMInputBaseContentWrapper" + oControl.getValueState());
+		oRm.addClass("sapMInputBaseContentWrapperState");
+		oRm.addClass("sapMInputBaseContentWrapper" + oControl.getValueState());
 	};
 
 	/**
-	 * Defines the ID suffix of the inner element
+	 * Write the id of the inner input
 	 *
-	 * @returns {string} The inner element ID suffix.
+	 * @param {sap.ui.core.RenderManager} oRm The RenderManager that can be used for writing to the render output buffer.
+	 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered.
 	 */
-	InputBaseRenderer.getInnerSuffix = function() {
-		return "inner";
+	InputBaseRenderer.writeInnerId = function(oRm, oControl) {
+		oRm.writeAttribute("id", oControl.getId() + "-inner");
 	};
 
 	return InputBaseRenderer;

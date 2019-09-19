@@ -74,7 +74,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -611,14 +611,7 @@ function(
 			id: this.getId() + "-selectMulti",
 			activeHandling: false,
 			selected: this.getSelected()
-		}).addStyleClass("sapMLIBSelectM").setParent(this, null, true).setTabIndex(-1).addEventDelegate({
-			onkeydown: function (oEvent) {
-				this.informList("KeyDown", oEvent);
-			},
-			onkeyup: function (oEvent) {
-				this.informList("KeyUp", oEvent);
-			}
-		}, this).attachSelect(function(oEvent) {
+		}).addStyleClass("sapMLIBSelectM").setParent(this, null, true).setTabIndex(-1).attachSelect(function(oEvent) {
 			var bSelected = oEvent.getParameter("selected");
 			this.setSelected(bSelected);
 			this.informList("Select", bSelected);
@@ -1149,36 +1142,6 @@ function(
 				}
 			}
 		}
-
-		if (oEvent.srcControl !== this) {
-			return;
-		}
-
-		this.informList("KeyDown", oEvent);
-	};
-
-	ListItemBase.prototype.onkeyup = function(oEvent) {
-		if (oEvent.isMarked() || oEvent.srcControl !== this) {
-			return;
-		}
-
-		this.informList("KeyUp", oEvent);
-	};
-
-	ListItemBase.prototype.onsapupmodifiers = function(oEvent) {
-		if (oEvent.isMarked() || oEvent.srcControl !== this) {
-			return;
-		}
-
-		this.informList("UpDownModifiers", oEvent, -1);
-	};
-
-	ListItemBase.prototype.onsapdownmodifiers = function(oEvent) {
-		if (oEvent.isMarked() || oEvent.srcControl !== this) {
-			return;
-		}
-
-		this.informList("UpDownModifiers", oEvent, 1);
 	};
 
 	/**

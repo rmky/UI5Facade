@@ -140,7 +140,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IShrinkable
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -1665,8 +1665,8 @@ sap.ui.define([
 	 * This method refreshes the internal model for thr FacetList. It should be called everytime when the model
 	 * of FacetFilter is changed and update to the FacetList is needed
 	 *
-	 * @private
-	 * @ui5-restricted hpa.cei.mkt.cal -> FacetFilter.controller -> OnDisplayRefreshed
+	 * @protected
+	 * @sap-restricted hpa.cei.mkt.cal -> FacetFilter.controller -> OnDisplayRefreshed
 	 * @returns {sap.m.FacetFilter}
 	 */
 	FacetFilter.prototype.refreshFacetList = function () {

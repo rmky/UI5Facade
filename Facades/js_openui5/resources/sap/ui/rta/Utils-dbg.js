@@ -34,7 +34,7 @@ function(
 	 * @class Utility functionality to work with controls, e.g. iterate through aggregations, find parents, etc.
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @private
 	 * @static
@@ -70,7 +70,7 @@ function(
 		if (sLayer === "USER") {
 			Utils._sRtaStyleClassName = "";
 		} else if (FlexUtils.getLayerIndex(sLayer) > -1) {
-			Utils._sRtaStyleClassName = "sapUiRTABorder";
+			Utils._sRtaStyleClassName = "sapContrast sapContrastPlus";
 		}
 	};
 
@@ -409,7 +409,7 @@ function(
 		var iIndex;
 		if (fnGetIndex && typeof fnGetIndex === "function") {
 			// fnGetIndex usually comes from designtime metadata, so aggregation name is clear and available in it
-			iIndex = fnGetIndex(oParentElement, oChildElement);
+			iIndex = fnGetIndex.call(null, oParentElement, oChildElement);
 		} else {
 			var oMetadata = oParentElement.getMetadata();
 			var oAggregation = oMetadata.getAggregation(sAggregationName);
@@ -634,7 +634,6 @@ function(
 	 * @return {Object} returns new object
 	 */
 	Utils.omit = function (oObject, vPropertyName) {
-		// TODO: Similar functionality also exists in sap.ui.rta.Utils. Use a common location.
 		var oNewObject = Object.assign({}, oObject);
 		var aPropertyPaths = DtUtil.castArray(vPropertyName);
 		aPropertyPaths.forEach(function (sProperty) {
@@ -653,9 +652,9 @@ function(
 	 */
 	Utils.checkSourceTargetBindingCompatibility = function(oSource, oTarget, oModel) {
 		oModel = oModel || oSource.getModel();
-		var mSourceBindings = BindingsExtractor.collectBindingPaths(oSource, oModel);
-		var sSourceContextBindingPath;
-		var sTargetContextBindingPath;
+		var mSourceBindings = BindingsExtractor.collectBindingPaths(oSource, oModel),
+			sSourceContextBindingPath,
+			sTargetContextBindingPath;
 		// check source control for property binding
 		if (mSourceBindings.bindingPaths.length === 0) {
 			return true;

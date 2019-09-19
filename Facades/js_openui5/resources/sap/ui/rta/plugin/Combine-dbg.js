@@ -21,7 +21,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @since 1.46
@@ -40,14 +40,14 @@ sap.ui.define([
 	/**
 	 * Check if the given overlay is editable.
 	 * @param {sap.ui.dt.ElementOverlay} oOverlay - Overlay to be checked for editable
-	 * @returns {Promise.<boolean>|boolean} <code>true</code> when editable wrapped in a promise.
+	 * @returns {promise.<boolean>|boolean} <code>true</code> when editable wrapped in a promise.
 	 * @private
 	 */
 	Combine.prototype._isEditable = function (oOverlay) {
 		var oCombineAction = this.getAction(oOverlay);
 		if (!oOverlay.isRoot() && oCombineAction && oCombineAction.changeType && oCombineAction.changeOnRelevantContainer) {
 			var oRelevantContainer = oOverlay.getRelevantContainer();
-			return this.hasChangeHandler(oCombineAction.changeType, oRelevantContainer)
+			return this.hasChangeHandler(oCombineAction.changeType, oRelevantContainer, true)
 				.then(function(bHasChangeHandler) {
 					return bHasChangeHandler &&
 						this.hasStableId(oOverlay) &&
@@ -166,7 +166,8 @@ sap.ui.define([
 			return oElementOverlay.getElement();
 		});
 		var oDesignTimeMetadata = oCombineElementOverlay.getDesignTimeMetadata();
-		var sVariantManagementReference = this.getVariantManagementReference(oCombineElementOverlay);
+		var oCombineAction = this.getAction(oCombineElementOverlay);
+		var sVariantManagementReference = this.getVariantManagementReference(oCombineElementOverlay, oCombineAction);
 
 		return this.getCommandFactory().getCommandFor(
 			oCombineElement,

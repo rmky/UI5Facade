@@ -89,7 +89,7 @@ sap.ui.define([
 	 * @alias sap.m.SuggestionsPopover
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 */
 	var SuggestionsPopover = EventProvider.extend("sap.m.SuggestionsPopover", /** @lends sap.m.SuggestionsPopover.prototype */ {
 
@@ -878,7 +878,7 @@ sap.ui.define([
 				width: "100%",
 				enableBusyIndicator: false,
 				rememberSelections : false,
-				itemPress: function (oEvent) {
+				selectionChange: function (oEvent) {
 					if (Device.system.desktop) {
 						oInput.focus();
 					}
@@ -989,8 +989,8 @@ sap.ui.define([
 	 * @param {Array<HTMLElement>} aItemsDomRef DOM elements on which formatting would be applied
 	 * @param {string} sInputValue Text to highlight
 	 * @param {boolean} bWordMode Whether to highlight single string or to highlight each string that starts with space + sInputValue
-	 * @ui5-restricted
 	 * @protected
+	 * @sap-restricted
 	 */
 	SuggestionsPopover.prototype.highlightSuggestionItems = function (aItemsDomRef, sInputValue, bWordMode) {
 		var i;
@@ -1029,7 +1029,6 @@ sap.ui.define([
 			oPopover.attachAfterOpen(this._handleTypeAhead, this);
 		}
 
-		oPopover.attachAfterOpen(this._setSelectedSuggestionItem, this);
 		oPopover.attachAfterClose(this._finalizeAutocomplete, this);
 
 		this._oInputDelegate = {
@@ -1052,7 +1051,6 @@ sap.ui.define([
 			sValue = oInput.getValue();
 
 		this._oProposedItem = null;
-		this._sProposedItemText = null;
 		this._sTypedInValue = sValue;
 
 		if (!this._bDoTypeAhead || sValue === "") {
@@ -1104,25 +1102,6 @@ sap.ui.define([
 				setTimeout(function () {
 					oInput.selectText(sValue.length, sNewValue.length);
 				}, 0);
-			}
-		}
-	};
-
-	/**
-	 * Sets matched selected item in the suggestion popover
-	 *
-	 * @private
-	 */
-	SuggestionsPopover.prototype._setSelectedSuggestionItem = function () {
-		var aFilteredItems;
-
-		if (this._oList) {
-			aFilteredItems = this._oList.getItems();
-			for (var i = 0; i < aFilteredItems.length; i++) {
-				if ((aFilteredItems[i]._oItem || aFilteredItems[i]) === this._oProposedItem) { // for list || for table
-					aFilteredItems[i].setSelected(true);
-					break;
-				}
 			}
 		}
 	};

@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["./library", "sap/ui/core/Core", "sap/ui/Device", "sap/ui/core/InvisibleText", "sap/ui/core/InvisibleRenderer"],
-	function(library, Core, Device, InvisibleText, InvisibleRenderer) {
+sap.ui.define(["./library", "sap/ui/Device", "sap/ui/core/InvisibleText", "sap/ui/core/InvisibleRenderer"],
+	function(library, Device, InvisibleText, InvisibleRenderer) {
 	"use strict";
 
 
@@ -21,9 +21,7 @@ sap.ui.define(["./library", "sap/ui/core/Core", "sap/ui/Device", "sap/ui/core/In
 	 *
 	 * @namespace
 	 */
-	var ListItemBaseRenderer = {
-		apiVersion: 2
-	};
+	var ListItemBaseRenderer = {};
 
 	ListItemBaseRenderer.renderInvisible = function(rm, oLI) {
 		InvisibleRenderer.render(rm, oLI, oLI.TagName);
@@ -42,11 +40,11 @@ sap.ui.define(["./library", "sap/ui/core/Core", "sap/ui/Device", "sap/ui/core/In
 			return;
 		}
 
-		rm.openStart("div");
-		rm.class("sapMLIBHighlight");
-		rm.class("sapMLIBHighlight" + sHighlight);
-		rm.openEnd();
-		rm.close("div");
+		rm.write("<div");
+		rm.addClass("sapMLIBHighlight");
+		rm.addClass("sapMLIBHighlight" + sHighlight);
+		rm.writeClasses();
+		rm.write("></div>");
 	};
 
 	ListItemBaseRenderer.isModeMatched = function(sMode, iOrder) {
@@ -85,7 +83,8 @@ sap.ui.define(["./library", "sap/ui/core/Core", "sap/ui/Device", "sap/ui/core/In
 		oModeControl.removeStyleClass("sapMLIBSelectAnimation sapMLIBUnselectAnimation");
 
 		// determine whether animation is necessary or not
-		if (!Core.getConfiguration().getAnimation() || !oLI.getListProperty("modeAnimationOn")) {
+		if (!sap.ui.getCore().getConfiguration().getAnimation() ||
+			!oLI.getListProperty("modeAnimationOn")) {
 			return;
 		}
 
@@ -119,12 +118,15 @@ sap.ui.define(["./library", "sap/ui/core/Core", "sap/ui/Device", "sap/ui/core/In
 	};
 
 	ListItemBaseRenderer.renderCounterContent = function(rm, oLI, iCounter) {
-		rm.openStart("div", oLI.getId() + "-counter");
-		rm.attr("aria-label", Core.getLibraryResourceBundle("sap.m").getText("LIST_ITEM_COUNTER", iCounter));
-		rm.class("sapMLIBCounter");
-		rm.openEnd();
-		rm.text(iCounter);
-		rm.close("div");
+		rm.write("<div");
+		rm.writeAttribute("id", oLI.getId() + "-counter");
+		var sAriaLabel = sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("LIST_ITEM_COUNTER", iCounter);
+		rm.writeAttribute("aria-label", sAriaLabel);
+		rm.addClass("sapMLIBCounter");
+		rm.writeClasses();
+		rm.write(">");
+		rm.write(iCounter);
+		rm.write("</div>");
 	};
 
 	/**
@@ -149,7 +151,7 @@ sap.ui.define(["./library", "sap/ui/core/Core", "sap/ui/Device", "sap/ui/core/In
 	 * @protected
 	 */
 	ListItemBaseRenderer.openItemTag = function(rm, oLI) {
-		rm.openStart(oLI.TagName, oLI);
+		rm.write("<" + oLI.TagName);
 	};
 
 	/**
@@ -160,17 +162,17 @@ sap.ui.define(["./library", "sap/ui/core/Core", "sap/ui/Device", "sap/ui/core/In
 	 * @protected
 	 */
 	ListItemBaseRenderer.closeItemTag = function(rm, oLI) {
-		rm.close(oLI.TagName);
+		rm.write("</" + oLI.TagName + ">");
 	};
 
 	ListItemBaseRenderer.renderTabIndex = function(rm, oLI) {
-		rm.attr("tabindex", "-1");
+		rm.writeAttribute("tabindex", "-1");
 	};
 
 	ListItemBaseRenderer.renderTooltip = function(rm, oLI) {
 		var sTooltip = oLI.getTooltip_AsString();
 		if (sTooltip) {
-			rm.attr("title", sTooltip);
+			rm.writeAttributeEscaped("title", sTooltip);
 		}
 	};
 
@@ -183,7 +185,7 @@ sap.ui.define(["./library", "sap/ui/core/Core", "sap/ui/Device", "sap/ui/core/In
 	 */
 	ListItemBaseRenderer.addFocusableClasses = function(rm, oLI) {
 		if (Device.system.desktop) {
-			rm.class("sapMLIBFocusable");
+			rm.addClass("sapMLIBFocusable");
 			this.addLegacyOutlineClass(rm, oLI);
 		}
 	};
@@ -197,7 +199,7 @@ sap.ui.define(["./library", "sap/ui/core/Core", "sap/ui/Device", "sap/ui/core/In
 	 */
 	ListItemBaseRenderer.addLegacyOutlineClass = function(rm, oLI) {
 		if (Device.browser.msie || Device.browser.edge) {
-			rm.class("sapMLIBLegacyOutline");
+			rm.addClass("sapMLIBLegacyOutline");
 		}
 	};
 
@@ -358,9 +360,11 @@ sap.ui.define(["./library", "sap/ui/core/Core", "sap/ui/Device", "sap/ui/core/In
 	};
 
 	ListItemBaseRenderer.renderLIContentWrapper = function(rm, oLI) {
-		rm.openStart("div", oLI.getId() + "-content").class("sapMLIBContent").openEnd();
+		rm.write('<div class="sapMLIBContent"');
+		rm.writeAttribute("id", oLI.getId() + "-content");
+		rm.write(">");
 		this.renderLIContent(rm, oLI);
-		rm.close("div");
+		rm.write('</div>');
 	};
 
 
@@ -374,6 +378,7 @@ sap.ui.define(["./library", "sap/ui/core/Core", "sap/ui/Device", "sap/ui/core/In
 	 * @public
 	 */
 	ListItemBaseRenderer.render = function(rm, oLI) {
+
 		// render invisible placeholder
 		if (!oLI.getVisible()) {
 			this.renderInvisible(rm, oLI);
@@ -382,24 +387,25 @@ sap.ui.define(["./library", "sap/ui/core/Core", "sap/ui/Device", "sap/ui/core/In
 
 		// start
 		this.openItemTag(rm, oLI);
+		rm.writeControlData(oLI);
 
 		// classes
-		rm.class("sapMLIB");
-		rm.class("sapMLIB-CTX");
-		rm.class("sapMLIBShowSeparator");
-		rm.class("sapMLIBType" + oLI.getType());
+		rm.addClass("sapMLIB");
+		rm.addClass("sapMLIB-CTX");
+		rm.addClass("sapMLIBShowSeparator");
+		rm.addClass("sapMLIBType" + oLI.getType());
 
 		if (Device.system.desktop && oLI.isActionable()) {
-			rm.class("sapMLIBActionable");
-			rm.class("sapMLIBHoverable");
+			rm.addClass("sapMLIBActionable");
+			rm.addClass("sapMLIBHoverable");
 		}
 
 		if (oLI.getSelected()) {
-			rm.class("sapMLIBSelected");
+			rm.addClass("sapMLIBSelected");
 		}
 
 		if (oLI.getListProperty("showUnread") && oLI.getUnread()) {
-			rm.class("sapMLIBUnread");
+			rm.addClass("sapMLIBUnread");
 		}
 
 		this.addFocusableClasses(rm, oLI);
@@ -409,14 +415,16 @@ sap.ui.define(["./library", "sap/ui/core/Core", "sap/ui/Device", "sap/ui/core/In
 		this.renderTabIndex(rm, oLI);
 
 		// handle accessibility states
-		if (Core.getConfiguration().getAccessibility()) {
-			rm.accessibilityState(oLI, this.getAccessibilityState(oLI));
+		if (sap.ui.getCore().getConfiguration().getAccessibility()) {
+			rm.writeAccessibilityState(oLI, this.getAccessibilityState(oLI));
 		}
 
 		// item attributes hook
 		this.renderLIAttributes(rm, oLI);
 
-		rm.openEnd();
+		rm.writeClasses();
+		rm.writeStyles();
+		rm.write(">");
 
 		this.renderContentFormer(rm, oLI);
 		this.renderLIContentWrapper(rm, oLI);

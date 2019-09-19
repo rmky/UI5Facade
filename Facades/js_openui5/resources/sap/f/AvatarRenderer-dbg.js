@@ -15,9 +15,6 @@ sap.ui.define(["sap/f/library", "sap/base/security/encodeCSS"],
 		// shortcut for sap.f.AvatarType
 		var AvatarType = library.AvatarType;
 
-		// shortcut for sap.f.AvatarColor
-		var AvatarColor = library.AvatarColor;
-
 		/**
 		 * <code>Avatar</code> renderer.
 		 * @author SAP SE
@@ -49,11 +46,10 @@ sap.ui.define(["sap/f/library", "sap/base/security/encodeCSS"],
 				aLabelledBy = oAvatar.getAriaLabelledBy(),
 				aDescribedBy = oAvatar.getAriaDescribedBy(),
 				sAriaLabelTooltip = sTooltip && sInitials ? sDefaultTooltip + " " + sTooltip : sDefaultTooltip,
-				sAriaLabelInitials = sInitials ? sDefaultTooltip + " " + sInitials : sDefaultTooltip;
+				sAriLabelInitials = sInitials ? sDefaultTooltip + " " + sInitials : sDefaultTooltip;
 
 			oRm.openStart("span", oAvatar);
 			oRm.class(sAvatarClass);
-			AvatarRenderer.addBackgroundColorClass(oRm, oAvatar);
 			oRm.class(sAvatarClass + sDisplaySize);
 			oRm.class(sAvatarClass + sActualDisplayType);
 			oRm.class(sAvatarClass + sDisplayShape);
@@ -65,20 +61,13 @@ sap.ui.define(["sap/f/library", "sap/base/security/encodeCSS"],
 			} else {
 				oRm.attr("role", "img");
 			}
-			if (oAvatar.getShowBorder()) {
-				oRm.class("sapFAvatarBorder");
-			}
 			if (sDisplaySize === AvatarSize.Custom) {
 				oRm.style("width", sCustomDisplaySize);
 				oRm.style("height", sCustomDisplaySize);
 				oRm.style("font-size", sCustomFontSize);
 			}
-			if (sTooltip) {
-				oRm.attr("title", sTooltip);
-				oRm.attr("aria-label",sAriaLabelTooltip);
-			} else {
-				oRm.attr("aria-label",sAriaLabelInitials);
-			}
+			oRm.attr("title", sTooltip);
+			oRm.attr("aria-label", sTooltip ? sAriaLabelTooltip : sAriLabelInitials);
 			// aria-labelledby references
 			if (aLabelledBy && aLabelledBy.length > 0) {
 				oRm.attr("aria-labelledby", aLabelledBy.join(" "));
@@ -110,22 +99,6 @@ sap.ui.define(["sap/f/library", "sap/base/security/encodeCSS"],
 				oRm.openStart("span").class(sAvatarClass + "MagnifyingGlass").openEnd().close("span");
 			}
 			oRm.close("span");
-		};
-
-		AvatarRenderer.addBackgroundColorClass = function (oRm, oAvatar) {
-			var sBackgroundAccent = oAvatar.getBackgroundColor(),
-				aKeys;
-
-			if (oAvatar.getBackgroundColor() === AvatarColor.Random) {
-				aKeys = Object.keys(AvatarColor);
-				aKeys.splice(aKeys.indexOf(AvatarColor.Random), 1);
-
-				// Picking a random Accent property from the AvatarColor enum
-				// << 0 truncates the digits after the decimal (it's the same as Math.trunc())
-				sBackgroundAccent = AvatarColor[aKeys[aKeys.length * Math.random() << 0]];
-			}
-
-			oRm.class("sapFAvatarColor" + sBackgroundAccent);
 		};
 
 		return AvatarRenderer;

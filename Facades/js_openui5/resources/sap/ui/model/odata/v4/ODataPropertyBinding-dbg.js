@@ -56,7 +56,7 @@ sap.ui.define([
 	 * @mixes sap.ui.model.odata.v4.ODataBinding
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#hasPendingChanges as #hasPendingChanges
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#isInitial as #isInitial
@@ -161,14 +161,6 @@ sap.ui.define([
 	 * @since 1.37.0
 	 */
 
-	/**
-	 * @override
-	 * @see sap.ui.model.odata.v4.ODataBinding#adjustPredicate
-	 */
-	ODataPropertyBinding.prototype.adjustPredicate = function () {
-		// nothing to do here
-	};
-
 	// See class documentation
 	// @override
 	// @public
@@ -243,7 +235,9 @@ sap.ui.define([
 			this.bHasDeclaredType = !!vType;
 		}
 		if (arguments.length < 4) {
-			vValue = this.oCachePromise.then(function (oCache) {
+			// Use Promise to become async so that only the latest sync call to checkUpdateInternal
+			// wins
+			vValue = Promise.resolve(this.oCachePromise.then(function (oCache) {
 				var sDataPath, sMetaPath;
 
 				if (oCache) {
@@ -253,7 +247,7 @@ sap.ui.define([
 							that.fireDataRequested();
 						}, that);
 				}
-				if (!that.sReducedPath || that.bRelative && !that.oContext) {
+				if (that.bRelative && !that.oContext) {
 					// binding is unresolved or context was reset by another call to
 					// checkUpdateInternal
 					return undefined;
@@ -263,7 +257,7 @@ sap.ui.define([
 					oCallToken.forceUpdate = false;
 				}
 				if (!bIsMeta) { // relative data binding
-					return that.oContext.fetchValue(that.sReducedPath, that);
+					return that.oContext.fetchValue(that.sPath, that);
 				} // else: metadata binding
 				sDataPath = that.sPath.slice(0, iHashHash);
 				sMetaPath = that.sPath.slice(iHashHash + 2);
@@ -294,20 +288,11 @@ sap.ui.define([
 					return that.vValue;
 				}
 				mParametersForDataReceived = {error : oError};
-			});
+			}));
 			if (sResolvedPath && !this.bHasDeclaredType && this.sInternalType !== "any"
 					&& !bIsMeta) {
 				vType = oMetaModel.fetchUI5Type(sResolvedPath);
 			}
-			if (oCallToken.forceUpdate && vValue.isFulfilled()) {
-				if (vType && vType.isFulfilled && vType.isFulfilled()) {
-					this.setType(vType.getResult(), this.sInternalType);
-				}
-				this.vValue = vValue.getResult();
-			}
-			// Use Promise to become async so that only the latest sync call to checkUpdateInternal
-			// wins
-			vValue = Promise.resolve(vValue);
 		}
 		return SyncPromise.all([vValue, vType]).then(function (aResults) {
 			var oType = aResults[1],
@@ -409,24 +394,6 @@ sap.ui.define([
 	 */
 	ODataPropertyBinding.prototype.getValue = function () {
 		return this.vValue;
-	};
-
-	/**
-	 * Requests the value of the property binding.
-	 *
-	 * @returns {Promise}
-	 *   A promise resolving with the resulting value or <code>undefined</code> if it could not be
-	 *   determined
-	 *
-	 * @public
-	 * @since 1.69
-	 */
-	ODataPropertyBinding.prototype.requestValue = function () {
-		var that = this;
-
-		return Promise.resolve(this.checkUpdateInternal().then(function () {
-			return that.getValue();
-		}));
 	};
 
 	/**
@@ -713,7 +680,7 @@ sap.ui.define([
 		}
 
 		if (this.vValue !== vValue) {
-			oGroupLock = that.lockGroup(sGroupId || this.getUpdateGroupId(), true);
+			oGroupLock = that.lockGroup(sGroupId, true);
 			this.oCachePromise.then(function (oCache) {
 				if (oCache) {
 					reportError(new Error("Cannot set value on this binding as it is not relative"

@@ -33,10 +33,7 @@ sap.ui.define([
 	"use strict";
 
 	// shortcut for sap.m.SelectType
-	var SelectType = library.SelectType,
-
-		// shortcut for sap.m.BreadCrumbsSeparatorStyle
-		SeparatorStyle = library.BreadcrumbsSeparatorStyle;
+	var SelectType = library.SelectType;
 
 	/**
 	 * Constructor for a new <code>Breadcrumbs</code>.
@@ -54,7 +51,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -74,16 +71,7 @@ sap.ui.define([
 				 * Determines the text of current/last element in the Breadcrumbs path.
 				 * @since 1.34
 				 */
-				currentLocationText: {type: "string", group: "Behavior", defaultValue: null},
-				/**
-				 * Determines the visual style of the separator between the <code>Breadcrumbs</code> elements.
-				 * @since 1.69
-				 */
-				separatorStyle: {
-					type: "sap.m.BreadcrumbsSeparatorStyle",
-					group: "Appearance",
-					defaultValue: SeparatorStyle.Slash
-				}
+				currentLocationText: {type: "string", group: "Behavior", defaultValue: null}
 			},
 			aggregations: {
 

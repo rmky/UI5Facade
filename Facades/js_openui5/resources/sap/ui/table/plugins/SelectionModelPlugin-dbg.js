@@ -6,12 +6,10 @@
 sap.ui.define([
 	'sap/ui/model/SelectionModel',
 	'./SelectionPlugin',
-	"../TableUtils",
 	'../library'
 ], function(
 	SelectionModel,
 	SelectionPlugin,
-	TableUtils,
 	library
 ) {
 
@@ -24,38 +22,31 @@ sap.ui.define([
 	 *
 	 * @class Implements the selection methods for a Table
 	 * @extends sap.ui.table.plugins.SelectionPlugin
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.plugins.SelectionModelPlugin
 	 */
-	var SelectionModelPlugin = SelectionPlugin.extend("sap.ui.table.plugins.SelectionModelPlugin", {
-		metadata: {
-			library: "sap.ui.table",
-			events: {
-				/**
-				 * This event is fired when the selection is changed.
-				 */
-				selectionChange: {
-					parameters: {
-						/**
-						 * Array of indices whose selection has been changed (either selected or deselected)
-						 */
-						indices: {type: "int[]"},
+	var SelectionModelPlugin = SelectionPlugin.extend("sap.ui.table.plugins.SelectionModelPlugin", {metadata: {
+		events: {
+			/**
+			 * This event is fired when the selection is changed.
+			 */
+			selectionChange: {
+				parameters: {
+					/**
+					 * Array of indices whose selection has been changed (either selected or deselected)
+					 */
+					indices: {type: "int[]"},
 
-						/**
-						 * Indicates whether the Select All function is used to select rows.
-						 */
-						selectAll: {type: "boolean"}
-					}
+					/**
+					 * Indicates whether the Select All function is used to select rows.
+					 */
+					selectAll: {type: "boolean"}
 				}
 			}
-		},
-		constructor: function(oTable) {
-			this._oTable = oTable;
-			SelectionPlugin.call(this);
 		}
-	});
+	}});
 
 	/**
 	 * Initialization of the SelectionModelPlugin
@@ -75,47 +66,13 @@ sap.ui.define([
 	SelectionModelPlugin.prototype.exit = function() {
 		var oBinding = this._getBinding();
 		if (oBinding) {
-			oBinding.detachChange(this._onBindingChange, this);
+			oBinding.detachEvent("change", this._onBindingChange);
 		}
 		if (this.oSelectionModel) {
 			this.oSelectionModel.destroy();
 			this.oSelectionModel = null;
 		}
 		SelectionPlugin.prototype.exit.call(this);
-	};
-
-	SelectionModelPlugin.prototype.getRenderConfig = function() {
-		return {
-			headerSelector: {
-				type: "toggle",
-				visible: TableUtils.hasSelectAll(this._oTable)
-			}
-		};
-	};
-
-	/**
-	 * This hook is called by the table when the header selector is pressed.
-	 *
-	 * @private
-	 */
-	SelectionModelPlugin.prototype.onHeaderSelectorPress = function() {
-		if (this.getRenderConfig().headerSelector.visible) {
-			this._oTable._toggleSelectAll();
-		}
-	};
-
-	/**
-	 * This hook is called by the table when the "select all" keyboard shortcut is pressed.
-	 *
-	 * @param {string} sType Type of the keyboard shortcut.
-	 * @private
-	 */
-	SelectionModelPlugin.prototype.onKeyboardShortcut = function(sType) {
-		if (sType === "toggle") {
-			this._oTable._toggleSelectAll();
-		} else if (sType === "clear") {
-			this.clearSelection();
-		}
 	};
 
 	/**

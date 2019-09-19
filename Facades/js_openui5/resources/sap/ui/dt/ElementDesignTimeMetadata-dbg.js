@@ -28,7 +28,7 @@ function(
 	 * @extends sap.ui.dt.DesignTimeMetadata
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @private
@@ -182,7 +182,7 @@ function(
 	ElementDesignTimeMetadata.prototype.getAggregationDescription = function(sAggregationName, oElement) {
 		var vChildNames = this.getAggregation(sAggregationName).childNames;
 		if (typeof vChildNames === "function") {
-			vChildNames = vChildNames(oElement);
+			vChildNames = vChildNames.call(null, oElement);
 		}
 		if (vChildNames) {
 			return {
@@ -195,7 +195,7 @@ function(
 	ElementDesignTimeMetadata.prototype.getName = function(oElement) {
 		var vName = this.getData().name;
 		if (typeof vName === "function") {
-			vName = vName(oElement);
+			vName = vName.call(null, oElement);
 		}
 		if (vName) {
 			return {

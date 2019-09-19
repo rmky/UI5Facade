@@ -10,8 +10,7 @@ sap.ui.define([
 	"sap/ui/model/json/JSONModel",
 	"sap/ui/layout/form/SimpleForm",
 	"sap/m/Label",
-	"sap/m/Text",
-	"./StatisticRenderer"
+	"sap/m/Text"
 ], function (
 	Control,
 	JSONModel,
@@ -32,7 +31,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @private

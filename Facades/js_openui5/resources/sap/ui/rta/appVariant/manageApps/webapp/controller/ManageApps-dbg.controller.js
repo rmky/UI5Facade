@@ -28,17 +28,11 @@ sap.ui.define([
 ) {
 	"use strict";
 
-	var _sIdRunningApp;
-	var _bKeyUser;
-	var _sLayer;
-	var sModulePath;
-	var oI18n;
-
+	var _sIdRunningApp, _bKeyUser, sModulePath, oI18n;
 	return Controller.extend("sap.ui.rta.appVariant.manageApps.webapp.controller.ManageApps", {
 		onInit: function() {
 			_sIdRunningApp = this.getOwnerComponent().getIdRunningApp();
 			_bKeyUser = this.getOwnerComponent().getIsOverviewForKeyUser();
-			_sLayer = this.getOwnerComponent().getLayer();
 
 			if (!oI18n) {
 				this._createResourceBundle();
@@ -159,8 +153,8 @@ sap.ui.define([
 		},
 
 		onMenuAction: function(oEvent) {
-			var oItem = oEvent.getParameter("item");
-			var sItemPath = "";
+			var oItem = oEvent.getParameter("item"),
+				sItemPath = "";
 
 			while (oItem instanceof sap.m.MenuItem) {
 				sItemPath = oItem.getText() + " > " + sItemPath;
@@ -200,8 +194,7 @@ sap.ui.define([
 						semanticObject : sSemanticObject,
 						action : sAction
 					},
-					params: oParams,
-					writeHistory : false
+					params: oParams
 				};
 
 				RuntimeAuthoring.enableRestart("CUSTOMER");
@@ -223,7 +216,7 @@ sap.ui.define([
 			BusyIndicator.show();
 			return AppVariantOverviewUtils.getDescriptor(sDescriptorUrl).then(function(oAppVariantDescriptor) {
 				BusyIndicator.hide();
-				return RtaAppVariantFeature.onSaveAs(false, _sLayer, oAppVariantDescriptor);
+				return RtaAppVariantFeature.onSaveAsFromOverviewDialog(oAppVariantDescriptor, false);
 			});
 		},
 
@@ -247,7 +240,7 @@ sap.ui.define([
 
 			return AppVariantUtils.showRelevantDialog(oInfo)
 				.then(function() {
-					return RtaAppVariantFeature.onDeleteFromOverviewDialog(sAppVarId, bCurrentlyAdapting, _sLayer);
+					return RtaAppVariantFeature.onDeleteFromOverviewDialog(sAppVarId, bCurrentlyAdapting);
 				}).catch(function() {
 					return true;
 				});

@@ -21,7 +21,7 @@ function() {
 	 */
 	SinglePlanningCalendarRenderer.render = function(oRm, oCalendar){
 		var oHeader = oCalendar._getHeader(),
-			oGrid = oCalendar._getCurrentGrid();
+			oGrid = oCalendar._getGrid();
 
 		oRm.write("<div");
 		oRm.writeControlData(oCalendar);

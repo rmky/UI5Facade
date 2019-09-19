@@ -23,7 +23,7 @@ function (Log, jQuery, URI) {
 	 * @name sap.ui.support.WindowCommunicationBus
 	 * @memberof sap.ui.support
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @private
 	 */
 	var CommunicationBus = {

@@ -20,7 +20,7 @@ sap.ui.define([
 	 * Note: Do not access the function of this helper directly but via <code>sap.ui.table.TableUtils.Grouping...</code>
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @namespace
 	 * @alias sap.ui.table.TableGrouping
 	 * @private
@@ -135,7 +135,7 @@ sap.ui.define([
 			// invalid. The table will validate it in its next update cycle, which happens asynchronously.
 			// As of now, this is the required behavior for some features, but leads to failure here. Therefore, the length is requested from the
 			// binding directly.
-			var iTotalRowCount = oTable._getTotalRowCount();
+			var iTotalRowCount = oTable._getTotalRowCount(true);
 
 			var aValidSortedIndices = aIndices.filter(function(iIndex) {
 				// Only indices of existing, expandable/collapsible nodes must be considered. Otherwise there might be no change event on the final

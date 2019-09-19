@@ -107,7 +107,7 @@ sap.ui.define([
 	 * @mixes sap.ui.model.odata.v4.ODataParentBinding
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#getRootBinding as #getRootBinding
 	 * @borrows sap.ui.model.odata.v4.ODataBinding#hasPendingChanges as #hasPendingChanges
@@ -187,57 +187,29 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataContextBinding.prototype._delete = function (oGroupLock, sEditUrl) {
-		// In case the context binding has an empty path, the respective context in the parent
-		// needs to be removed as well. As there could be more levels of bindings pointing to the
-		// same entity, first go up the binding hierarchy and find the context pointing to the same
-		// entity in the highest level binding.
-		// In case that top binding is a list binding, perform the deletion from there but use the
-		// ETag of this binding.
-		// In case the top binding is a context binding, perform the deletion from here but destroy
-		// the context(s) in that uppermost binding. Note that no data may be available in the
-		// uppermost context binding and hence the deletion would not work there, BCP 1980308439.
-		var oEmptyPathParentContext = this._findEmptyPathParentContext(this.oElementContext),
-			oEmptyPathParentBinding = oEmptyPathParentContext.getBinding();
+		var that = this;
 
-		// In case the uppermost parent reached with empty paths is a list binding, delete there.
-		if (!oEmptyPathParentBinding.execute) {
-			return this.fetchValue("", undefined, true).then(function (oEntity) {
-				// In the Cache, the request is generated with a reference to the entity data
-				// first. So, hand over the complete entity to have the ETag of the correct binding
-				// in the request.
-				return oEmptyPathParentContext._delete(oGroupLock, oEntity);
-			});
-			// fetchValue will fail if the entity has not been read. The same happens with the
-			// deleteFromCache call below. In Context#delete the error is reported.
+		// a context binding without path can simply delegate to its parent context.
+		if (this.sPath === "" && this.oContext.delete) {
+			return this.oContext._delete(oGroupLock);
 		}
 
-		return this.deleteFromCache(oGroupLock, sEditUrl, "", undefined, function () {
-			oEmptyPathParentBinding._destroyContextAfterDelete();
+		return this.deleteFromCache(oGroupLock, sEditUrl, "", function () {
+			that.oElementContext.destroy();
+			that.oElementContext = null;
+			if (that.oReturnValueContext) {
+				that.oReturnValueContext.destroy();
+				that.oReturnValueContext = null;
+			}
+			that._fireChange({reason : ChangeReason.Remove});
 		});
-	};
-
-	/**
-	 * Destroys the element context and, if available, the return value context, and fires a
-	 * change. The method is called by #_delete, possibly at another context binding for the same
-	 * entity, after the successful deletion in the back-end.
-	 *
-	 * @private
-	 */
-	ODataContextBinding.prototype._destroyContextAfterDelete = function () {
-		this.oElementContext.destroy();
-		this.oElementContext = null;
-		if (this.oReturnValueContext) {
-			this.oReturnValueContext.destroy();
-			this.oReturnValueContext = null;
-		}
-		this._fireChange({reason : ChangeReason.Remove});
 	};
 
 	/**
 	 * Calls the OData operation that corresponds to this operation binding.
 	 *
 	 * @param {sap.ui.model.odata.v4.lib._GroupLock} oGroupLock
-	 *   A lock for the group ID to be used for the request
+	 *   A lock for the group ID to be used for the request; defaults to this binding's group ID
 	 * @returns {Promise}
 	 *   A promise that is resolved without data or a return value context when the operation call
 	 *   succeeded, or rejected with an instance of <code>Error</code> in case of failure. A return
@@ -265,6 +237,7 @@ sap.ui.define([
 			return that.refreshDependentBindings("", oGroupLock.getGroupId(), true);
 		}
 
+		oGroupLock.setGroupId(this.getGroupId());
 		oPromise = oMetaModel.fetchObject(oMetaModel.getMetaPath(sResolvedPath) + "/@$ui5.overload")
 			.then(function (aOperationMetadata) {
 				var fnGetEntity, iIndex, sPath;
@@ -354,18 +327,6 @@ sap.ui.define([
 			});
 
 		return Promise.resolve(oPromise);
-	};
-
-	/**
-	 * @override
-	 * @see sap.ui.model.odata.v4.ODataBinding#adjustPredicate
-	 */
-	ODataContextBinding.prototype.adjustPredicate = function (sTransientPredicate, sPredicate) {
-		if (this.oElementContext) {
-			this.oElementContext.adjustPredicate(sTransientPredicate, sPredicate);
-		}
-		// this.oReturnValueContext cannot have the transient predicate; it results from execute,
-		// but execute is not possible with a transient predicate
 	};
 
 	/**
@@ -464,7 +425,7 @@ sap.ui.define([
 	 */
 
 	/**
-	 * The 'dataRequested' event is fired directly after data has been requested from a back-end.
+	 * The 'dataRequested' event is fired directly after data has been requested from a backend.
 	 * It is only fired for GET requests. The 'dataRequested' event is to be used by
 	 * applications, for example to switch on a busy indicator. Registered event handlers are
 	 * called without parameters. In case of a deferred operation binding, 'dataRequested' is not
@@ -480,10 +441,10 @@ sap.ui.define([
 	 */
 
 	/**
-	 * The 'patchCompleted' event is fired when the back-end has responded to the last PATCH
-	 * request for this binding. If there is more than one PATCH request in a $batch, the event is
-	 * fired only once. Only bindings using an own data service request fire a 'patchCompleted'
-	 * event. For each 'patchSent' event, a 'patchCompleted' event is fired.
+	 * The 'patchCompleted' event is fired when the backend has responded to the last PATCH request
+	 * for this binding. If there is more than one PATCH request in a $batch, the event is fired
+	 * only once. Only bindings using an own data service request fire a 'patchCompleted' event.
+	 * For each 'patchSent' event, a 'patchCompleted' event is fired.
 	 *
 	 * @param {sap.ui.base.Event} oEvent The event object
 	 * @param {sap.ui.model.odata.v4.ODataContextBinding} oEvent.getSource() This binding
@@ -499,7 +460,7 @@ sap.ui.define([
 
 	/**
 	 * The 'patchSent' event is fired when the first PATCH request for this binding is sent to the
-	 * back-end. If there is more than one PATCH request in a $batch, the event is fired only once.
+	 * backend. If there is more than one PATCH request in a $batch, the event is fired only once.
 	 * Only bindings using an own data service request fire a 'patchSent' event. For each
 	 * 'patchSent' event, a 'patchCompleted' event is fired.
 	 *
@@ -785,7 +746,9 @@ sap.ui.define([
 					if (bCached) {
 						oGroupLock = _GroupLock.$cached;
 					} else {
-						oGroupLock = that.oReadGroupLock || that.lockGroup();
+						// Unless there is an expected read, a lock is not required here,
+						// only set the group ID
+						oGroupLock = that.lockGroup(that.getGroupId(), that.oReadGroupLock);
 						that.oReadGroupLock = undefined;
 					}
 					return that.resolveRefreshPromise(
@@ -1084,37 +1047,6 @@ sap.ui.define([
 		}
 		return oContext && this.refreshReturnValueContext(oContext, sGroupId)
 			|| this.refreshInternal("", sGroupId, true, true);
-	};
-
-	/**
-	 * Returns a promise on the value for the given path relative to this binding. The function
-	 * allows access to the complete data the binding points to (if <code>sPath</code> is "") or
-	 * any part thereof. The data is a JSON structure as described in
-	 * <a
-	 * href="http://docs.oasis-open.org/odata/odata-json-format/v4.0/odata-json-format-v4.0.html">
-	 * "OData JSON Format Version 4.0"</a>.
-	 * Note that the function clones the result. Modify values via
-	 * {@link sap.ui.model.odata.v4.Context#setProperty}.
-	 *
-	 * If you want {@link #requestObject} to read fresh data, call
-	 * <code>oBinding.refresh()</code> first.
-	 *
-	 * @param {string} [sPath=""]
-	 *   A relative path within the JSON structure
-	 * @returns {Promise}
-	 *   A promise on the requested value; in case there is no bound context this promise resolves
-	 *   with <code>undefined</code>
-	 * @throws {Error}
-	 *   If the context's root binding is suspended
-	 *
-	 * @public
-	 * @see sap.ui.model.odata.v4.ODataContext#requestObject
-	 * @since 1.69
-	 */
-	ODataContextBinding.prototype.requestObject = function (sPath) {
-		return this.oElementContext
-			? this.oElementContext.requestObject(sPath)
-			: Promise.resolve();
 	};
 
 	/**

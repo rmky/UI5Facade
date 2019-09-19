@@ -132,7 +132,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.ODataType
 	 * @public
 	 * @since 1.27.0
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 */
 	var DateTimeBase = ODataType.extend("sap.ui.model.odata.type.DateTimeBase", {
 			constructor : function (oFormatOptions, oConstraints) {
@@ -153,8 +153,8 @@ sap.ui.define([
 	 *   The value to be formatted, which is represented in the model as a <code>Date</code>
 	 *   instance (OData V2)
 	 * @param {string} sTargetType
-	 *   The target type, may be "any", "object" (since 1.69.0), "string", or a type with one of
-	 *   these types as its {@link sap.ui.base.DataType#getPrimitiveType primitive type}.
+	 *   The target type, may be "any", "string", or a type with one of these types as its
+	 *   {@link sap.ui.base.DataType#getPrimitiveType primitive type}.
 	 *   See {@link sap.ui.model.odata.type} for more information.
 	 * @returns {Date|string}
 	 *   The formatted output value in the target type; <code>undefined</code> or <code>null</code>
@@ -171,30 +171,28 @@ sap.ui.define([
 			return null;
 		}
 		switch (this.getPrimitiveType(sTargetType)) {
-			case "any":
-			case "object":
-				return oValue;
-			case "string":
-				if (!(oValue instanceof Date)) {
-					throw new FormatException("Illegal " + this.getName() + " value: " + oValue);
-				}
-				return getFormatter(this).format(oValue);
-			default:
-				throw new FormatException("Don't know how to format " + this.getName() + " to "
-					+ sTargetType);
+		case "any":
+			return oValue;
+		case "string":
+			if (!(oValue instanceof Date)) {
+				throw new FormatException("Illegal " + this.getName() + " value: " + oValue);
+			}
+			return getFormatter(this).format(oValue);
+		default:
+			throw new FormatException("Don't know how to format " + this.getName() + " to "
+				+ sTargetType);
 		}
 	};
 
 	/**
 	 * Parses the given value to a <code>Date</code> instance (OData V2).
 	 *
-	 * @param {string|Date} vValue
+	 * @param {string} sValue
 	 *   The value to be parsed; the empty string and <code>null</code> are parsed to
 	 *   <code>null</code>
 	 * @param {string} sSourceType
-	 *   The source type (the expected type of <code>vValue</code>), must be
-	 *   "object" (since 1.69.0), "string", or a type with one of these types as its
-	 *   {@link sap.ui.base.DataType#getPrimitiveType primitive type}.
+	 *   The source type (the expected type of <code>sValue</code>), must be "string", or a type
+	 *   with "string" as its {@link sap.ui.base.DataType#getPrimitiveType primitive type}.
 	 *   See {@link sap.ui.model.odata.type} for more information.
 	 * @returns {Date}
 	 *   The parsed value
@@ -205,24 +203,22 @@ sap.ui.define([
 	 * @public
 	 * @since 1.27.0
 	 */
-	DateTimeBase.prototype.parseValue = function (vValue, sSourceType) {
+	DateTimeBase.prototype.parseValue = function (sValue, sSourceType) {
 		var oResult;
 
-		if (vValue === null || vValue === "") {
+		if (sValue === null || sValue === "") {
 			return null;
 		}
 		switch (this.getPrimitiveType(sSourceType)) {
-			case "object":
-				return vValue;
-			case "string":
-				oResult = getFormatter(this).parse(vValue);
-				if (!oResult) {
-					throw new ParseException(getErrorMessage(this));
-				}
-				return oResult;
-			default:
-				throw new ParseException("Don't know how to parse " + this.getName() + " from "
-					+ sSourceType);
+		case "string":
+			oResult = getFormatter(this).parse(sValue);
+			if (!oResult) {
+				throw new ParseException(getErrorMessage(this));
+			}
+			return oResult;
+		default:
+			throw new ParseException("Don't know how to parse " + this.getName() + " from "
+				+ sSourceType);
 		}
 	};
 

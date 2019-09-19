@@ -23,7 +23,7 @@ sap.ui.define(['sap/ui/core/IconPool', './MenuItemBase', './library'],
 	 * @extends sap.ui.unified.MenuItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @since 1.21.0
 	 *
 	 * @constructor
@@ -58,13 +58,11 @@ sap.ui.define(['sap/ui/core/IconPool', './MenuItemBase', './library'],
 	IconPool.insertFontFaceStyle(); //Ensure Icon Font is loaded
 
 	MenuItem.prototype.render = function(oRenderManager, oItem, oMenu, oInfo){
-		var rm = oRenderManager,
-			oSubMenu = oItem.getSubmenu(),
-			bIsEnabled = oItem.getEnabled();
-
+		var rm = oRenderManager;
+		var oSubMenu = oItem.getSubmenu();
 		rm.write("<li");
 
-		if (oItem.getVisible() && bIsEnabled) {
+		if (oItem.getVisible() && oItem.getEnabled()) {
 			rm.writeAttribute("tabindex", "0");
 		}
 
@@ -82,10 +80,6 @@ sap.ui.define(['sap/ui/core/IconPool', './MenuItemBase', './library'],
 		}
 
 		rm.writeAttribute("class", sClass);
-		if (!bIsEnabled) {
-			rm.writeAttribute("disabled", "disabled");
-		}
-
 		if (oItem.getTooltip_AsString()) {
 			rm.writeAttributeEscaped("title", oItem.getTooltip_AsString());
 		}
@@ -95,7 +89,7 @@ sap.ui.define(['sap/ui/core/IconPool', './MenuItemBase', './library'],
 		if (oInfo.bAccessible) {
 			rm.writeAccessibilityState(oItem, {
 				role: "menuitem",
-				disabled: null, // Prevent aria-disabled as a disabled attribute is enough
+				disabled: !oMenu.checkEnabled(oItem),
 				posinset: oInfo.iItemNo,
 				setsize: oInfo.iTotalItems,
 				labelledby: {value: /*oMenu.getId() + "-label " + */this.getId() + "-txt " + this.getId() + "-scuttxt", append: true}

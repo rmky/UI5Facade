@@ -49,7 +49,7 @@ sap.ui.define([
 		// match a CSS url
 		var rCssUrl = /url[\s]*\('?"?([^\'")]*)'?"?\)/;
 
-		var bUseInlineParameters = UriParameters.fromQuery(window.location.search).get("sap-ui-xx-no-inline-theming-parameters") !== "true";
+		var bUseInlineParameters = new UriParameters(window.location.href).get("sap-ui-xx-no-inline-theming-parameters") !== "true";
 
 		function resetParameters() {
 			mParameters = null;
@@ -318,7 +318,7 @@ sap.ui.define([
 		 * Returns the scopes from current theming parameters.
 		 *
 		 * @private
-		 * @ui5-restricted sap.ui.core
+		 * @sap-restricted sap.ui.core
 		 * @param {boolean} [bAvoidLoading] Whether loading of parameters should be avoided
 		 * @return {array} Scope names
 		 */
@@ -340,7 +340,7 @@ sap.ui.define([
 		 * root elements.
 		 *
 		 * @private
-		 * @ui5-restricted sap.viz
+		 * @sap-restricted sap.viz
 		 * @param {object} oElement element/control instance
 		 * @return {Array.<Array.<string>>} Two dimensional array with scopes in bottom up order
 		 */

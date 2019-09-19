@@ -36,7 +36,7 @@ sap.ui.define([
 	 * @public
 	 * @class
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @since 1.9.2
 	 * @alias sap.ui.core.ComponentMetadata
 	 * @extends sap.ui.base.ManagedObjectMetadata
@@ -142,7 +142,7 @@ sap.ui.define([
 	 *
 	 * @param {object} oManifestJson manifest object (will be modified internally!)
 	 * @private
-	 * @ui5-restricted sap.ui.core.Component
+	 * @sap-restricted sap.ui.core.Component
 	 */
 	ComponentMetadata.prototype._applyManifest = function(oManifestJson) {
 		// Make sure to not create the manifest object twice!

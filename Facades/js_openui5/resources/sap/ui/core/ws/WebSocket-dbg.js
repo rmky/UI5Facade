@@ -26,7 +26,7 @@ sap.ui.define([
 	 * @class Basic WebSocket class.
 	 * @extends sap.ui.base.EventProvider
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @alias sap.ui.core.ws.WebSocket
 	 */
 	var WebSocket = EventProvider.extend("sap.ui.core.ws.WebSocket", /** @lends sap.ui.core.ws.WebSocket.prototype */ {
@@ -95,7 +95,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * The <code>open</code> event is fired, when the connection was successfully opened.
+	 * The 'open' event is fired, when the connection was successfully opened.
 	 *
 	 * @name sap.ui.core.ws.WebSocket#open
 	 * @event
@@ -106,22 +106,17 @@ sap.ui.define([
 	 */
 
 	/**
-	 * Attaches event handler <code>fnFunction</code> to the {@link #event:open open} event of this
-	 * <code>sap.ui.core.ws.WebSocket</code>.
-	 *
-	 * When called, the context of the event handler (its <code>this</code>) will be bound to <code>oListener</code>
-	 * if specified, otherwise it will be bound to this <code>sap.ui.core.ws.WebSocket</code> itself.
+	 * Attach event-handler <code>fnFunction</code> to the 'open' event of this <code>sap.ui.core.ws.WebSocket</code>.<br>
 	 *
 	 * @param {object}
-	 *            [oData] An application-specific payload object that will be passed to the event handler
-	 *            along with the event object when firing the event
+	 *            [oData] The object, that should be passed along with the event-object when firing the event.
 	 * @param {function}
-	 *            fnFunction The function to be called, when the event occurs
+	 *            fnFunction The function to call, when the event occurs. This function will be called on the
+	 *            oListener-instance (if present) or in a 'static way'.
 	 * @param {object}
-	 *            [oListener] Context object to call the event handler with. Defaults to this
-	 *            <code>WebSocket</code> itself
+	 *            [oListener] Object on which to call the given function. If empty, this WebSocket is used.
 	 *
-	 * @returns {sap.ui.core.ws.WebSocket} Reference to <code>this</code> in order to allow method chaining
+	 * @return {sap.ui.core.ws.WebSocket} <code>this</code> to allow method chaining
 	 * @public
 	 */
 	WebSocket.prototype.attachOpen = function(oData, fnFunction, oListener) {
@@ -130,16 +125,15 @@ sap.ui.define([
 	};
 
 	/**
-	 * Detaches event handler <code>fnFunction</code> from the {@link #event:open open} event of this
-	 * <code>sap.ui.core.ws.WebSocket</code>.
+	 * Detach event-handler <code>fnFunction</code> from the 'open' event of this <code>sap.ui.core.ws.WebSocket</code>.<br>
 	 *
-	 * The passed function and listener object must match the ones used for event registration.
+	 * The passed function and listener object must match the ones previously used for event registration.
 	 *
 	 * @param {function}
-	 *            fnFunction The function to call, when the event occurs
+	 *            fnFunction The function to call, when the event occurs.
 	 * @param {object}
-	 *            [oListener] Context object on which the given function had to be called
-	 * @returns {sap.ui.core.ws.WebSocket} Reference to <code>this</code> in order to allow method chaining
+	 *            oListener Object on which the given function had to be called.
+	 * @return {sap.ui.core.ws.WebSocket} <code>this</code> to allow method chaining
 	 * @public
 	 */
 	WebSocket.prototype.detachOpen = function(fnFunction, oListener) {
@@ -148,20 +142,20 @@ sap.ui.define([
 	};
 
 	/**
-	 * Fires event {@link #event:open open} to attached listeners.
+	 * Fire event 'open' to attached listeners.
 	 *
-	 * @param {object} [oParameters] Parameters to pass along with the event
-	 * @returns {sap.ui.core.ws.WebSocket} Reference to <code>this</code> in order to allow method chaining
+	 * @param {object} [mArguments] the arguments to pass along with the event.
+	 * @return {sap.ui.core.ws.WebSocket} <code>this</code> to allow method chaining
 	 * @protected
 	 */
-	WebSocket.prototype.fireOpen = function(oParameters) {
-		this.fireEvent("open", oParameters);
+	WebSocket.prototype.fireOpen = function(mArguments) {
+		this.fireEvent("open", mArguments);
 		return this;
 	};
 
 
 	/**
-	 * The <code>close</code> event is fired, when the connection was closed.
+	 * The 'close' event is fired, when the connection was closed.
 	 *
 	 * @name sap.ui.core.ws.WebSocket#close
 	 * @event
@@ -175,22 +169,17 @@ sap.ui.define([
 	 */
 
 	/**
-	 * Attaches event handler <code>fnFunction</code> to the {@link #event:close close} event of this
-	 * <code>sap.ui.core.ws.WebSocket</code>.
-	 *
-	 * When called, the context of the event handler (its <code>this</code>) will be bound to <code>oListener</code>
-	 * if specified, otherwise it will be bound to this <code>sap.ui.core.ws.WebSocket</code> itself.
+	 * Attach event-handler <code>fnFunction</code> to the 'close' event of this <code>sap.ui.core.ws.WebSocket</code>.<br>
 	 *
 	 * @param {object}
-	 *            [oData] An application-specific payload object that will be passed to the event handler
-	 *            along with the event object when firing the event
+	 *            [oData] The object, that should be passed along with the event-object when firing the event.
 	 * @param {function}
-	 *            fnFunction The function to be called, when the event occurs
+	 *            fnFunction The function to call, when the event occurs. This function will be called on the
+	 *            oListener-instance (if present) or in a 'static way'.
 	 * @param {object}
-	 *            [oListener] Context object to call the event handler with. Defaults to this
-	 *            <code>WebSocket</code> itself
+	 *            [oListener] Object on which to call the given function. If empty, this WebSocket is used.
 	 *
-	 * @returns {sap.ui.core.ws.WebSocket} Reference to <code>this</code> in order to allow method chaining
+	 * @return {sap.ui.core.ws.WebSocket} <code>this</code> to allow method chaining
 	 * @public
 	 */
 	WebSocket.prototype.attachClose = function(oData, fnFunction, oListener) {
@@ -199,16 +188,15 @@ sap.ui.define([
 	};
 
 	/**
-	 * Detaches event handler <code>fnFunction</code> from the {@link #event:close close} event of this
-	 * <code>sap.ui.core.ws.WebSocket</code>.
+	 * Detach event-handler <code>fnFunction</code> from the 'close' event of this <code>sap.ui.core.ws.WebSocket</code>.<br>
 	 *
-	 * The passed function and listener object must match the ones used for event registration.
+	 * The passed function and listener object must match the ones previously used for event registration.
 	 *
 	 * @param {function}
-	 *            fnFunction The function to call, when the event occurs
+	 *            fnFunction The function to call, when the event occurs.
 	 * @param {object}
-	 *            [oListener] Context object on which the given function had to be called
-	 * @returns {sap.ui.core.ws.WebSocket} Reference to <code>this</code> in order to allow method chaining
+	 *            oListener Object on which the given function had to be called.
+	 * @return {sap.ui.core.ws.WebSocket} <code>this</code> to allow method chaining
 	 * @public
 	 */
 	WebSocket.prototype.detachClose = function(fnFunction, oListener) {
@@ -217,23 +205,23 @@ sap.ui.define([
 	};
 
 	/**
-	 * Fires event {@link #event:close close} to attached listeners.
+	 * Fire event 'close' to attached listeners.
 	 *
-	 * @param {object} [oParameters] Parameters to pass along with the event
-	 * @param {string} [oParameters.code] Close code provided by the server
-	 * @param {string} [oParameters.reason] Reason from server for closing the connection
-	 * @param {string} [oParameters.wasClean] Indicates whether the connection was cleanly closed or not
-	 * @returns {sap.ui.core.ws.WebSocket} Reference to <code>this</code> in order to allow method chaining
+	 * @param {object} [mArguments] the arguments to pass along with the event.
+	 * @param {string} [mArguments.code] Close code provided by the server.
+	 * @param {string} [mArguments.reason] Reason from server for closing the connection.
+	 * @param {string} [mArguments.wasClean] Indicates whether the connection was cleanly closed or not.
+	 * @return {sap.ui.core.ws.WebSocket} <code>this</code> to allow method chaining
 	 * @protected
 	 */
-	WebSocket.prototype.fireClose = function(oParameters) {
-		this.fireEvent("close", oParameters);
+	WebSocket.prototype.fireClose = function(mArguments) {
+		this.fireEvent("close", mArguments);
 		return this;
 	};
 
 
 	/**
-	 * The <code>error</code> event is fired, when an error occurred.
+	 * The 'error' event is fired, when an error occurred.
 	 *
 	 * @name sap.ui.core.ws.WebSocket#error
 	 * @event
@@ -244,22 +232,17 @@ sap.ui.define([
 	 */
 
 	/**
-	 * Attaches event handler <code>fnFunction</code> to the {@link #event:error error} event of this
-	 * <code>sap.ui.core.ws.WebSocket</code>.
-	 *
-	 * When called, the context of the event handler (its <code>this</code>) will be bound to <code>oListener</code>
-	 * if specified, otherwise it will be bound to this <code>sap.ui.core.ws.WebSocket</code> itself.
+	 * Attach event-handler <code>fnFunction</code> to the 'error' event of this <code>sap.ui.core.ws.WebSocket</code>.<br>
 	 *
 	 * @param {object}
-	 *            [oData] An application-specific payload object that will be passed to the event handler
-	 *            along with the event object when firing the event
+	 *            [oData] The object, that should be passed along with the event-object when firing the event.
 	 * @param {function}
-	 *            fnFunction The function to be called, when the event occurs
+	 *            fnFunction The function to call, when the event occurs. This function will be called on the
+	 *            oListener-instance (if present) or in a 'static way'.
 	 * @param {object}
-	 *            [oListener] Context object to call the event handler with. Defaults to this
-	 *            <code>WebSocket</code> itself
+	 *            [oListener] Object on which to call the given function. If empty, this WebSocket is used.
 	 *
-	 * @returns {sap.ui.core.ws.WebSocket} Reference to <code>this</code> in order to allow method chaining
+	 * @return {sap.ui.core.ws.WebSocket} <code>this</code> to allow method chaining
 	 * @public
 	 */
 	WebSocket.prototype.attachError = function(oData, fnFunction, oListener) {
@@ -268,16 +251,15 @@ sap.ui.define([
 	};
 
 	/**
-	 * Detaches event handler <code>fnFunction</code> from the {@link #event:error error} event of this
-	 * <code>sap.ui.core.ws.WebSocket</code>.
+	 * Detach event-handler <code>fnFunction</code> from the 'error' event of this <code>sap.ui.core.ws.WebSocket</code>.<br>
 	 *
-	 * The passed function and listener object must match the ones used for event registration.
+	 * The passed function and listener object must match the ones previously used for event registration.
 	 *
 	 * @param {function}
-	 *            fnFunction The function to call, when the event occurs
+	 *            fnFunction The function to call, when the event occurs.
 	 * @param {object}
-	 *            [oListener] Context object on which the given function had to be called
-	 * @returns {sap.ui.core.ws.WebSocket} Reference to <code>this</code> in order to allow method chaining
+	 *            oListener Object on which the given function had to be called.
+	 * @return {sap.ui.core.ws.WebSocket} <code>this</code> to allow method chaining
 	 * @public
 	 */
 	WebSocket.prototype.detachError = function(fnFunction, oListener) {
@@ -286,19 +268,19 @@ sap.ui.define([
 	};
 
 	/**
-	 * Fires event {@link #event:error error} to attached listeners.
+	 * Fire event 'error' to attached listeners.
 	 *
-	 * @param {object} [oParameters] Parameters to pass along with the event
-	 * @returns {sap.ui.core.ws.WebSocket} Reference to <code>this</code> in order to allow method chaining
+	 * @param {object} [mArguments] the arguments to pass along with the event.
+	 * @return {sap.ui.core.ws.WebSocket} <code>this</code> to allow method chaining
 	 * @protected
 	 */
-	WebSocket.prototype.fireError = function(oParameters) {
-		this.fireEvent("error", oParameters);
+	WebSocket.prototype.fireError = function(mArguments) {
+		this.fireEvent("error", mArguments);
 		return this;
 	};
 
 	/**
-	 * The <code>message</code> event is fired, when a message was received.
+	 * The 'message' event is fired, when a message was received.
 	 *
 	 * @name sap.ui.core.ws.WebSocket#message
 	 * @event
@@ -310,22 +292,17 @@ sap.ui.define([
 	 */
 
 	/**
-	 * Attaches event handler <code>fnFunction</code> to the {@link #event:message message} event of this
-	 * <code>sap.ui.core.ws.WebSocket</code>.
-	 *
-	 * When called, the context of the event handler (its <code>this</code>) will be bound to <code>oListener</code>
-	 * if specified, otherwise it will be bound to this <code>sap.ui.core.ws.WebSocket</code> itself.
+	 * Attach event-handler <code>fnFunction</code> to the 'message' event of this <code>sap.ui.core.ws.WebSocket</code>.<br>
 	 *
 	 * @param {object}
-	 *            [oData] An application-specific payload object that will be passed to the event handler
-	 *            along with the event object when firing the event
+	 *            [oData] The object, that should be passed along with the event-object when firing the event.
 	 * @param {function}
-	 *            fnFunction The function to be called, when the event occurs
+	 *            fnFunction The function to call, when the event occurs. This function will be called on the
+	 *            oListener-instance (if present) or in a 'static way'.
 	 * @param {object}
-	 *            [oListener] Context object to call the event handler with. Defaults to this
-	 *            <code>WebSocket</code> itself
+	 *            [oListener] Object on which to call the given function. If empty, this WebSocket is used.
 	 *
-	 * @returns {sap.ui.core.ws.WebSocket} Reference to <code>this</code> in order to allow method chaining
+	 * @return {sap.ui.core.ws.WebSocket} <code>this</code> to allow method chaining
 	 * @public
 	 */
 	WebSocket.prototype.attachMessage = function(oData, fnFunction, oListener) {
@@ -334,16 +311,15 @@ sap.ui.define([
 	};
 
 	/**
-	 * Detaches event handler <code>fnFunction</code> from the {@link #event:message message} event of this
-	 * <code>sap.ui.core.ws.WebSocket</code>.
+	 * Detach event-handler <code>fnFunction</code> from the 'message' event of this <code>sap.ui.core.ws.WebSocket</code>.<br>
 	 *
-	 * The passed function and listener object must match the ones used for event registration.
+	 * The passed function and listener object must match the ones previously used for event registration.
 	 *
 	 * @param {function}
-	 *            fnFunction The function to call, when the event occurs
+	 *            fnFunction The function to call, when the event occurs.
 	 * @param {object}
-	 *            [oListener] Context object on which the given function had to be called
-	 * @returns {sap.ui.core.ws.WebSocket} Reference to <code>this</code> in order to allow method chaining
+	 *            oListener Object on which the given function had to be called.
+	 * @return {sap.ui.core.ws.WebSocket} <code>this</code> to allow method chaining
 	 * @public
 	 */
 	WebSocket.prototype.detachMessage = function(fnFunction, oListener) {
@@ -352,24 +328,24 @@ sap.ui.define([
 	};
 
 	/**
-	 * Fires event {@link #event:message message} to attached listeners.
+	 * Fire event 'message' to attached listeners.
 	 *
-	 * @param {object} [oParameters] Parameters to pass along with the event
-	 * @param {string} [oParameters.data] Received data from the server
-	 * @returns {sap.ui.core.ws.WebSocket} Reference to <code>this</code> in order to allow method chaining
+	 * @param {object} [mArguments] the arguments to pass along with the event.
+	 * @param {string} [mArguments.data] Received data from the server.
+	 * @return {sap.ui.core.ws.WebSocket} <code>this</code> to allow method chaining
 	 * @protected
 	 */
-	WebSocket.prototype.fireMessage = function(oParameters) {
-		this.fireEvent("message", oParameters);
+	WebSocket.prototype.fireMessage = function(mArguments) {
+		this.fireEvent("message", mArguments);
 		return this;
 	};
 
 	// Private Methods
 	/**
-	 * Resolves the full WebSocket-URL from an absolute or relative URL.
+	 * Resolves a the full WebSocket-Url from an absolute or relative url.
 	 *
-	 * @param {string} sUrl input URL
-	 * @return {string} sFullUrl full URL which can be used for the ws-connection
+	 * @param {string} sUrl input url
+	 * @return {string} sFullUrl full url which can be used for the ws-connection
 	 * @private
 	 */
 	WebSocket.prototype._resolveFullUrl = function(sUrl) {
@@ -396,7 +372,7 @@ sap.ui.define([
 	/**
 	 * Opens the connection and binds the event-handlers.
 	 *
-	 * @param {string} sUrl	URL for WebSocket
+	 * @param {string} sUrl	url for WebSocket
 	 * @param {array} [aProtocols] array of protocols as strings, a single protocol as a string
 	 * @private
 	 */
@@ -456,13 +432,13 @@ sap.ui.define([
 
 	// Public Methods
 	/**
-	 * Sends a message.
-	 *
+	 * Sends a message.<br>
+	 * <br>
 	 * If the connection is not yet opened, the message will be queued and sent
 	 * when the connection is established.
 	 *
 	 * @param {string} sMessage Message to send
-	 * @returns {sap.ui.core.ws.WebSocket} Reference to <code>this</code> in order to allow method chaining
+	 * @return {sap.ui.core.ws.WebSocket} <code>this</code> to allow method chaining
 	 * @public
 	 */
 	WebSocket.prototype.send = function(sMessage) {
@@ -483,10 +459,9 @@ sap.ui.define([
 	/**
 	 * Closes the connection.
 	 *
-	 * @param {int} [iCode] Status code that explains why the connection is closed. Must either be 1000, or
-	 *                      between 3000 and 4999 (default 1000)
+	 * @param {int} [iCode] Status code that explains why the connection is closed. Must be either 1000, or between 3000 and 4999 (default 1000)
 	 * @param {string} [sReason] Closing reason as a string
-	 * @returns {sap.ui.core.ws.WebSocket} Reference to <code>this</code> in order to allow method chaining
+	 * @return {sap.ui.core.ws.WebSocket} <code>this</code> to allow method chaining
 	 * @public
 	 */
 	WebSocket.prototype.close = function(iCode, sReason) {

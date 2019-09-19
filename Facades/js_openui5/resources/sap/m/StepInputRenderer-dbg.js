@@ -10,36 +10,34 @@ sap.ui.define([], function () {
 	 * <code>StepInput renderer</code>
 	 * @namespace
 	 */
-	var StepInputRenderer = {
-		apiVersion: 2
-	};
+	var StepInputRenderer = {};
 
-	StepInputRenderer.render = function (oRm, oControl) {
-		var oInput = oControl._getInput(),
-			sWidth = oControl.getWidth(),
-			bEnabled = oControl.getEnabled(),
-			bEditable = oControl.getEditable(),
-			sValueState = oControl.getValueState();
 
-		oRm.openStart("div", oControl);
-		if (bEnabled && bEditable) {
-			oRm.attr("tabindex", "-1");
-		}
+		StepInputRenderer.render = function (oRm, oControl) {
+			var oInput = oControl._getInput(),
+				sWidth = oControl.getWidth(),
+				bEnabled = oControl.getEnabled(),
+				bEditable = oControl.getEditable();
 
-		oRm.style("width", sWidth);
-		oRm.class("sapMStepInput");
-		oRm.class("sapMStepInput-CTX");
-		!bEnabled && oRm.class("sapMStepInputReadOnly");
-		!bEditable && oRm.class("sapMStepInputNotEditable");
-		if (sValueState === "Error" || sValueState === "Warning") {
-			oRm.class("sapMStepInput" + sValueState);
-		}
-		oRm.openEnd();
+			oRm.write("<div ");
+			if (bEnabled && bEditable) {
+				oRm.write("tabindex='-1'");
+			}
 
-		oRm.renderControl(oInput);
+			oRm.addStyle("width", sWidth);
+			oRm.writeStyles();
+			oRm.writeControlData(oControl);
+			oRm.addClass("sapMStepInput");
+			oRm.addClass("sapMStepInput-CTX");
+			!bEnabled && oRm.addClass("sapMStepInputReadOnly");
+			!bEditable && oRm.addClass("sapMStepInputNotEditable");
+			oRm.writeClasses();
+			oRm.write(">");
 
-		oRm.close("div");
-	};
+			oRm.renderControl(oInput);
+
+			oRm.write("</div>");
+		};
 
 	return StepInputRenderer;
 

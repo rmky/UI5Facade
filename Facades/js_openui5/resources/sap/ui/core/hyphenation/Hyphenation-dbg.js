@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
 */
 
-sap.ui.define(["sap/ui/base/ManagedObject", "sap/base/Log", "sap/base/util/deepEqual", "sap/ui/core/Locale", "sap/ui/core/LocaleData"],
-function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
+sap.ui.define(["jquery.sap.global", "sap/ui/base/ManagedObject", "sap/base/Log", "sap/ui/core/Locale", "sap/ui/core/LocaleData"],
+function (jQuery, ManagedObject, Log, Locale, LocaleData) {
 	"use strict";
 
 	/**
@@ -122,7 +122,6 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 	var oHyphenateMethods = {};
 	var oPromisesForLang = {};
 	var aLanguagesQueue = [];
-	var mLanguageConfigs = {};
 
 	/**
 	 * Calls Hyphenopoly to initialize a language.
@@ -200,7 +199,7 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 			"leftmin": 3, // The minimum of chars to remain on the old line.
 			"rightmin": 3,// The minimum of chars to go on the new line
 			"compound": "all", // factory-made -> fac-tory-[ZWSP]made
-			"path": sap.ui.require.toUrl("sap/ui/thirdparty/hyphenopoly")
+			"path": jQuery.sap.getResourcePath("sap/ui/thirdparty/hyphenopoly")
 		};
 
 		// we are passing only 3 properties to hyphenopoly: hyphen, exceptions and minWordLength
@@ -466,7 +465,7 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 	 * @see {@link topic:6322164936f047de941ec522b95d7b70 Hyphenation for Text Controls}
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @hideconstructor
 	 * @public
 	 * @since 1.60
@@ -736,13 +735,6 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 		 */
 		var oConfig = prepareConfig(sLanguage, oConfig);
 
-		var bConfigChanged = true;
-		if (mLanguageConfigs[sLanguage] && deepEqual(mLanguageConfigs[sLanguage], oConfig)) {
-			bConfigChanged = false;
-		}
-
-		mLanguageConfigs[sLanguage] = oConfig;
-
 		if (oThirdPartySupportedLanguages[sLanguage]) {
 			if (!oHyphenationInstance.bIsInitialized && !oHyphenationInstance.bLoading) {
 
@@ -759,12 +751,9 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 				return oPromisesForLang[sLanguage];
 
 			} else if (this.isLanguageInitialized(sLanguage)) {
-				// Reinitialize only if the config has changed.
-				if (bConfigChanged) {
-					oPromisesForLang[sLanguage] = new Promise(function (resolve) {
-						reInitializeLanguage(sLanguage, oConfig, resolve);
-					});
-				}
+				oPromisesForLang[sLanguage] = new Promise(function (resolve, reject) {
+					reInitializeLanguage(sLanguage, oConfig, resolve);
+				});
 			} else {
 					oPromisesForLang[sLanguage] = new Promise(function (resolve, reject) {
 						if (!oHyphenationInstance.bIsInitialized) {

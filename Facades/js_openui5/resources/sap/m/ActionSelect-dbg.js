@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.m.ActionSelect.
-sap.ui.define(['./Select', 'sap/ui/core/InvisibleText', 'sap/ui/core/Core', './ActionSelectRenderer'],
-	function(Select, InvisibleText, Core, ActionSelectRenderer) {
+sap.ui.define(['./Select', 'sap/ui/core/InvisibleText', './library', './ActionSelectRenderer'],
+	function(Select, InvisibleText, library, ActionSelectRenderer) {
 		"use strict";
 
 		/**
@@ -20,7 +20,7 @@ sap.ui.define(['./Select', 'sap/ui/core/InvisibleText', 'sap/ui/core/Core', './A
 		 * @extends sap.m.Select
 		 *
 		 * @author SAP SE
-		 * @version 1.70.0
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @public
@@ -66,16 +66,17 @@ sap.ui.define(['./Select', 'sap/ui/core/InvisibleText', 'sap/ui/core/Core', './A
 		};
 
 		/**
-		 * Add additional content to Select's SimpleFixFlex flexContent aggregation.
+		 * Add additional content.
 		 *
 		 * @override
 		 * @private
 		 */
-		ActionSelect.prototype.addContentToFlex = function() {
-			var oSimpleFixFlex = this.getSimpleFixFlex();
+		ActionSelect.prototype.addContent = function() {
+			var oCore = sap.ui.getCore(),
+				oPicker = this.getPicker();
 
 			this.getButtons().forEach(function(sButtonId) {
-				oSimpleFixFlex.addFlexContent(Core.byId(sButtonId));
+				oPicker.addContent(oCore.byId(sButtonId));
 			});
 		};
 
@@ -116,15 +117,15 @@ sap.ui.define(['./Select', 'sap/ui/core/InvisibleText', 'sap/ui/core/Core', './A
 		 * @public
 		 */
 		ActionSelect.prototype.removeButton = function(vButton) {
-			var oSimpleFixFlex = this.getSimpleFixFlex();
+			var oPicker = this.getPicker();
 
-			if (oSimpleFixFlex) {
+			if (oPicker) {
 
 				if (typeof vButton === "number") {
 					vButton = this.getButtons()[vButton];
 				}
 
-				oSimpleFixFlex.removeFlexContent(vButton);
+				oPicker.removeContent(vButton);
 			}
 
 			return this.removeAssociation("buttons", vButton);
@@ -137,11 +138,11 @@ sap.ui.define(['./Select', 'sap/ui/core/InvisibleText', 'sap/ui/core/Core', './A
 		 * @public
 		 */
 		ActionSelect.prototype.removeAllButtons = function() {
-			var oSimpleFixFlex = this.getSimpleFixFlex();
+			var oPicker = this.getPicker();
 
-			if (oSimpleFixFlex) {
+			if (oPicker) {
 				this.getButtons().forEach(function(sButtonId) {
-					oSimpleFixFlex.removeFlexContent(Core.byId(sButtonId));
+					oPicker.removeContent(sButtonId);
 				});
 			}
 
@@ -172,8 +173,8 @@ sap.ui.define(['./Select', 'sap/ui/core/InvisibleText', 'sap/ui/core/Core', './A
 
 			if (oPicker && oPicker.isOpen() && aButtons.length > 0) {
 				for (i = aButtons.length - 1; i >= 0; i--) {
-					if (Core.byId(aButtons[i]).getEnabled()) {
-						Core.byId(aButtons[i]).focus();
+					if (sap.ui.getCore().byId(aButtons[i]).getEnabled()) {
+						sap.ui.getCore().byId(aButtons[i]).focus();
 						oEvent.preventDefault();
 						break;
 					}
@@ -203,8 +204,8 @@ sap.ui.define(['./Select', 'sap/ui/core/InvisibleText', 'sap/ui/core/Core', './A
 
 			if (oPicker && oPicker.isOpen() && aButtons.length > 0) {
 				for (i = 0; i < aButtons.length; i++) {
-					if (Core.byId(aButtons[i]).getEnabled()) {
-						Core.byId(aButtons[i]).focus();
+					if (sap.ui.getCore().byId(aButtons[i]).getEnabled()) {
+						sap.ui.getCore().byId(aButtons[i]).focus();
 						oEvent.preventDefault();
 						break;
 					}
@@ -223,7 +224,7 @@ sap.ui.define(['./Select', 'sap/ui/core/InvisibleText', 'sap/ui/core/Core', './A
 			// Keep focus on Action Select's input field if does not go to
 			// the buttons in Action sheet part of the ActionSelect
 			var aButtons = this.getButtons();
-			var bKeepFocus = (aButtons.indexOf(oEvent.relatedControlId) === -1);
+			var bKeepFocus = (aButtons.indexOf(oEvent.relatedControlId) == -1);
 
 			if (bKeepFocus) {
 				Select.prototype.onsapfocusleave.apply(this, arguments);
@@ -278,7 +279,7 @@ sap.ui.define(['./Select', 'sap/ui/core/InvisibleText', 'sap/ui/core/Core', './A
 			if (!this._sTutorMessageId) {
 				this._sTutorMessageId = this._getTutorMessageId();
 				this._oTutorMessageText = new InvisibleText(this._sTutorMessageId, {
-					text: Core.getLibraryResourceBundle("sap.m").getText("ACTION_SELECT_TUTOR_MESSAGE")
+					text: sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("ACTION_SELECT_TUTOR_MESSAGE")
 				}).toStatic();
 			}
 

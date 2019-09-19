@@ -62,7 +62,6 @@ var scadHighlightRules = function() {
         "keyword": "module|if|else|for",
         "constant.language": "NULL"
     }, "identifier");
-
     this.$rules = {
         "start" : [
             {
@@ -404,7 +403,8 @@ oop.inherits(Mode, TextMode);
 }).call(Mode.prototype);
 
 exports.Mode = Mode;
-});                (function() {
+});
+                (function() {
                     ace.require(["ace/mode/scad"], function(m) {
                         if (typeof module == "object" && typeof exports == "object" && module) {
                             module.exports = m;

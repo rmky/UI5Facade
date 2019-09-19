@@ -6,10 +6,10 @@
 
 sap.ui.define([
 	"sap/ui/fl/changeHandler/Base",
-	"sap/base/Log"
+	"sap/ui/fl/Utils"
 ], function(
 	Base,
-	Log
+	Utils
 ) {
 	"use strict";
 
@@ -19,7 +19,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.changeHandler.BaseRename
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @experimental Since 1.46
 	 */
 	var BaseRename = {
@@ -58,7 +58,7 @@ sap.ui.define([
 						return true;
 					}
 
-					Log.error("Change does not contain sufficient information to be applied: [" + oChangeDefinition.layer + "]" + oChangeDefinition.namespace + "/" + oChangeDefinition.fileName + "." + oChangeDefinition.fileType);
+					Utils.log.error("Change does not contain sufficient information to be applied: [" + oChangeDefinition.layer + "]" + oChangeDefinition.namespace + "/" + oChangeDefinition.fileName + "." + oChangeDefinition.fileType);
 					//however subsequent changes should be applied
 				},
 
@@ -83,7 +83,7 @@ sap.ui.define([
 						return true;
 					}
 
-					Log.error("Change doesn't contain sufficient information to be reverted. Most Likely the Change didn't go through applyChange.");
+					Utils.log.error("Change doesn't contain sufficient information to be reverted. Most Likely the Change didn't go through applyChange.");
 				},
 
 				/**

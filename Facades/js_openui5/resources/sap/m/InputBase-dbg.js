@@ -62,7 +62,7 @@ function(
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -229,30 +229,22 @@ function(
 	 */
 
 	InputBase.prototype.handleInput = function(oEvent) {
-
-		// IE 10+ fires the input event when an input field with a native placeholder is focused
-		// IE fires the input event when it is put (rendered) in the dom and it has a non-ASCII character
-		if (this._bIgnoreNextInput ||
-			this._bIgnoreNextInputNonASCII) {
-
+		// ie 10+ fires the input event when an input field with a native placeholder is focused
+		if (this._bIgnoreNextInput) {
 			this._bIgnoreNextInput = false;
-			this._bIgnoreNextInputNonASCII = false;
-
 			oEvent.setMarked("invalid");
-
 			return;
 		}
 
 		this._bIgnoreNextInput = false;
-		this._bIgnoreNextInputNonASCII = false;
 
-		// IE fires input event from read-only fields
+		// ie11 fires input event from read-only fields
 		if (!this.getEditable()) {
 			oEvent.setMarked("invalid");
 			return;
 		}
 
-		// IE fires input event whenever placeholder attribute is changed
+		// ie11 fires input event whenever placeholder attribute is changed
 		if (document.activeElement !== oEvent.target &&
 			Device.browser.msie && this.getValue() === this._lastValue) {
 			oEvent.setMarked("invalid");
@@ -332,10 +324,9 @@ function(
 
 	InputBase.prototype.onBeforeRendering = function() {
 
-		// Ignore the input event which is raised by MS Internet Explorer when it has a non-ASCII character
+		// Ignore the input event which is raised by MS Internet Explorer when non-ASCII characters are typed in// TODO remove after 1.62 version
 		if (Device.browser.msie && Device.browser.version > 9 && !/^[\x00-\x7F]*$/.test(this.getValue())){// TODO remove after 1.62 version
-			this._bIgnoreNextInputNonASCII = true;
-			this._oDomRefBeforeRendering = this.getDomRef();
+			this._bIgnoreNextInput = true;
 		}
 
 		if (this._bCheckDomValue && !this.bRenderingPhase) {
@@ -361,12 +352,6 @@ function(
 			this.$("inner").val(this._sDomValue);
 		}
 
-		// IE fires the input event when it is put (rendered) in the dom and it has a non-ASCII character
-		//
-		// If the semantic rendering is used and the input is invalidated, the input DOM element might be kept.
-		// In this case don't make the next oninput event invalid
-		this._bIgnoreNextInputNonASCII = this._bIgnoreNextInputNonASCII && this._oDomRefBeforeRendering !== this.getDomRef();
-
 		// now dom value is up-to-date
 		this._bCheckDomValue = false;
 
@@ -381,7 +366,6 @@ function(
 		}
 
 		this._oValueStateMessage = null;
-		this._oDomRefBeforeRendering = null;
 	};
 
 	/* =========================================================== */
@@ -414,7 +398,7 @@ function(
 			!this._getInputValue() &&
 			this._getInputElementTagName() === "INPUT"; // Make sure that we are applying this fix only for input html elements
 
-		this.addStyleClass("sapMFocus");
+		this.$().toggleClass("sapMFocus", true);
 
 		// open value state message popup when focus is in the input
 		this.openValueStateMessage();
@@ -428,7 +412,7 @@ function(
 	 */
 	InputBase.prototype.onfocusout = function(oEvent) {
 		this.bFocusoutDueRendering = this.bRenderingPhase;
-		this.removeStyleClass("sapMFocus");
+		this.$().toggleClass("sapMFocus", false);
 
 		// because dom is replaced during the rendering
 		// onfocusout event is triggered probably focus goes to the document
@@ -1046,6 +1030,63 @@ function(
 
 	InputBase.prototype.getIdForLabel = function() {
 		return this.getId() + "-inner";
+	};
+
+	InputBase.prototype.setTooltip = function(vTooltip) {
+		var oDomRef = this.getDomRef();
+
+		this._refreshTooltipBaseDelegate(vTooltip);
+		this.setAggregation("tooltip", vTooltip, true);
+
+		if (!oDomRef) {
+			return this;
+		}
+
+		var sTooltip = this.getTooltip_AsString();
+
+		if (sTooltip) {
+			oDomRef.setAttribute("title", sTooltip);
+		} else {
+			oDomRef.removeAttribute("title");
+		}
+
+		if (sap.ui.getCore().getConfiguration().getAccessibility()) {
+
+			var oDescribedByDomRef = this.getDomRef("describedby"),
+				sAnnouncement = this.getRenderer().getDescribedByAnnouncement(this),
+				sDescribedbyId = this.getId() + "-describedby",
+				sAriaDescribedByAttr = "aria-describedby",
+				oFocusDomRef = this.getFocusDomRef(),
+				sAriaDescribedby = oFocusDomRef.getAttribute(sAriaDescribedByAttr);
+
+			if (!oDescribedByDomRef && sAnnouncement) {
+				oDescribedByDomRef = document.createElement("span");
+				oDescribedByDomRef.id = sDescribedbyId;
+				oDescribedByDomRef.setAttribute("aria-hidden", "true");
+				oDescribedByDomRef.className = "sapUiInvisibleText";
+
+				if (this.getAriaDescribedBy) {
+					oFocusDomRef.setAttribute(sAriaDescribedByAttr, (this.getAriaDescribedBy().join(" ") + " " + sDescribedbyId).trim());
+				} else {
+					oFocusDomRef.setAttribute(sAriaDescribedByAttr, sDescribedbyId);
+				}
+
+				oDomRef.appendChild(oDescribedByDomRef);
+			} else if (oDescribedByDomRef && !sAnnouncement) {
+				oDescribedByDomRef.parentNode.removeChild(oDescribedByDomRef);
+				var sDescribedByDomRefId = oDescribedByDomRef.id;
+
+				if (sAriaDescribedby && sDescribedByDomRefId) {
+					oFocusDomRef.setAttribute(sAriaDescribedByAttr, sAriaDescribedby.replace(sDescribedByDomRefId, "").trim());
+				}
+			}
+
+			if (oDescribedByDomRef) {
+				oDescribedByDomRef.textContent = sAnnouncement;
+			}
+		}
+
+		return this;
 	};
 
 	/**

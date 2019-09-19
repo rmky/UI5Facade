@@ -12,11 +12,9 @@ sap.ui.define([
 	'sap/ui/model/Filter',
 	'./FacetFilterListRenderer',
 	'./FacetFilterItem',
-	"sap/base/Log",
-	"sap/ui/model/FilterOperator",
-	"sap/ui/model/FilterType"
+	"sap/base/Log"
 ],
-	function(List, library, ChangeReason, Filter, FacetFilterListRenderer, FacetFilterItem, Log, FilterOperator, FilterType) {
+	function(List, library, ChangeReason, Filter, FacetFilterListRenderer, FacetFilterItem, Log) {
 	"use strict";
 
 
@@ -52,7 +50,7 @@ sap.ui.define([
 	 * be closed.
 	 *
 	 * @extends sap.m.List
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -591,25 +589,25 @@ sap.ui.define([
 					var aBindingParts = this.getBindingInfo("items").template.getBindingInfo("text").parts;
 					var path = aBindingParts[0].path;
 					if (path || path === "") { // path="" will be resolved relativelly to the parent, i.e. actual path will match the parent's one.
-						var oUserFilter = new Filter(path, FilterOperator.Contains, sSearchVal);
+						var oUserFilter = new Filter(path, sap.ui.model.FilterOperator.Contains, sSearchVal);
 						var aUserFilters = [oUserFilter];
 
 						// Add Filters for every parts from the model except the first one because the array is already
 						// predefined with a first item the first binding part
 						for (var i = 1; i < aBindingParts.length; i++) {
-							aUserFilters.push(new Filter(aBindingParts[i].path, FilterOperator.Contains, sSearchVal));
+							aUserFilters.push(new Filter(aBindingParts[i].path, sap.ui.model.FilterOperator.Contains, sSearchVal));
 						}
 
 						if (this.getEnableCaseInsensitiveSearch() && isODataModel(oBinding.getModel())){
 							//notice the single quotes wrapping the value from the UI control!
 							var sEncodedString = "'" + String(sSearchVal).replace(/'/g, "''") + "'";
 							sEncodedString = sEncodedString.toLowerCase();
-							oUserFilter = new Filter("tolower(" + path + ")", FilterOperator.Contains, sEncodedString);
+							oUserFilter = new Filter("tolower(" + path + ")", sap.ui.model.FilterOperator.Contains, sEncodedString);
 							aUserFilters = [oUserFilter];
 							// Add Filters for every parts from the model except the first one because the array is already
 							// predefined with a first item the first binding part
 							for (var i = 1; i < aBindingParts.length; i++) {
-								aUserFilters.push(new Filter("tolower(" + aBindingParts[i].path + ")", FilterOperator.Contains, sSearchVal));
+								aUserFilters.push(new Filter("tolower(" + aBindingParts[i].path + ")", sap.ui.model.FilterOperator.Contains, sSearchVal));
 							}
 						}
 						var oPartsFilters = new Filter(aUserFilters, false);
@@ -626,10 +624,10 @@ sap.ui.define([
 								}
 							}
 						}
-						oBinding.filter(oFinalFilter, FilterType.Control);
+						oBinding.filter(oFinalFilter, sap.ui.model.FilterType.Control);
 					}
 				} else {
-					oBinding.filter([], FilterType.Control);
+					oBinding.filter([], sap.ui.model.FilterType.Control);
 				}
 			} else {
 				Log.warning("No filtering performed", "The list must be defined with a binding for search to work",

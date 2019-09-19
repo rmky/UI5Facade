@@ -6,7 +6,7 @@
 
 // Provides class sap.ui.core.support.Plugin
 sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery", "sap/base/util/uid"],
-	function(BaseObject, jQuery, uid) {
+	function(BaseObject, jQueryDOM, uid) {
 	"use strict";
 
 
@@ -17,9 +17,9 @@ sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery", "sap/base/util/
 	 *
 	 * @abstract
 	 * @extends sap.ui.base.Object
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @private
-	 * @ui5-restricted
+	 * @sap-restricted
 	 * @alias sap.ui.core.support.Plugin
 	 */
 	var Plugin = BaseObject.extend("sap.ui.core.support.Plugin", {
@@ -42,7 +42,7 @@ sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery", "sap/base/util/
 	 *
 	 * @param {sap.ui.core.support.Support} oSupportStub the support stub
 	 * @private
-	 * @ui5-restricted
+	 * @sap-restricted
 	 */
 	Plugin.prototype.init = function(oSupportStub){
 		for (var i = 0; i < this._aEventIds.length; i++) {
@@ -61,7 +61,7 @@ sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery", "sap/base/util/
 	 *
 	 * @param {sap.ui.core.support.Support} oSupportStub the support stub
 	 * @private
-	 * @ui5-restricted
+	 * @sap-restricted
 	 */
 	Plugin.prototype.exit = function(oSupportStub){
 		for (var i = 0; i < this._aEventIds.length; i++) {
@@ -79,7 +79,7 @@ sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery", "sap/base/util/
 	 *
 	 * @return {string} the id
 	 * @private
-	 * @ui5-restricted
+	 * @sap-restricted
 	 */
 	Plugin.prototype.getId = function(){
 		return this._id;
@@ -91,7 +91,7 @@ sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery", "sap/base/util/
 	 *
 	 * @return {string} the title
 	 * @private
-	 * @ui5-restricted
+	 * @sap-restricted
 	 */
 	Plugin.prototype.getTitle = function(){
 		return this._title;
@@ -110,7 +110,7 @@ sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery", "sap/base/util/
 	 *
 	 * @return {boolean} whether this plugin instance can run in the tool window
 	 * @private
-	 * @ui5-restricted
+	 * @sap-restricted
 	 */
 	Plugin.prototype.isToolPlugin = function(){
 		return true;
@@ -129,7 +129,7 @@ sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery", "sap/base/util/
 	 *
 	 * @return {boolean} whether this plugin instance can run in the application window
 	 * @private
-	 * @ui5-restricted
+	 * @sap-restricted
 	 */
 	Plugin.prototype.isAppPlugin = function(){
 		return true;
@@ -144,7 +144,7 @@ sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery", "sap/base/util/
 	 *
 	 * @return {boolean} true if the plugin instance runs in the tool window, otherwise false
 	 * @private
-	 * @ui5-restricted
+	 * @sap-restricted
 	 */
 	Plugin.prototype.runsAsToolPlugin = function(){
 		return this._bIsToolPlugin;
@@ -164,11 +164,11 @@ sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery", "sap/base/util/
 	 * @param {string} [sSuffix] ID suffix to get a jQuery object for
 	 * @return {jQuery} The jQuery wrapped plugin's DOM reference
 	 * @private
-	 * @ui5-restricted
+	 * @sap-restricted
 	 */
 	Plugin.prototype.$ = function(sSuffix){
 		if (this.isToolPlugin()) {
-			var jRef = jQuery(document.getElementById(sSuffix ? this.getId() + "-" + sSuffix : this.getId()));
+			var jRef = jQueryDOM(document.getElementById(sSuffix ? this.getId() + "-" + sSuffix : this.getId()));
 			if (jRef.length == 0 && !sSuffix) {
 				jRef = jQuery("<DIV/>", {id:this.getId()});
 				jRef.appendTo(jQuery(".sapUiSupportCntnt"));
@@ -189,7 +189,7 @@ sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery", "sap/base/util/
 	 *
 	 * @param {string} sCssResourcePath Resource name of a CSS file, but without the '.css' extension
 	 * @private
-	 * @ui5-restricted
+	 * @sap-restricted
 	 */
 	Plugin.prototype.addStylesheet = function(sCssResourcePath) {
 		if (!sCssResourcePath) {
@@ -209,7 +209,7 @@ sap.ui.define(['sap/ui/base/Object', "sap/ui/thirdparty/jquery", "sap/base/util/
 	 *
 	 * @return {boolean} whether the plugin is currently active or not
 	 * @private
-	 * @ui5-restricted
+	 * @sap-restricted
 	 */
 	Plugin.prototype.isActive = function(){
 		return this._bActive;

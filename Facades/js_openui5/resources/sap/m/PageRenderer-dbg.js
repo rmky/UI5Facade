@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/m/library"],
-	function(library) {
+sap.ui.define([],
+	function() {
 	"use strict";
 
 
@@ -100,11 +100,6 @@ sap.ui.define(["sap/m/library"],
 			oRm.write("<" + sSubHeaderTag);
 			oRm.addClass("sapMPageSubHeader");
 			oRm.writeAccessibilityState(oPage, oPage._formatLandmarkInfo(oLandmarkInfo, "SubHeader"));
-
-			if (oSubHeader.getDesign() == library.ToolbarDesign.Info) {
-				oRm.addClass("sapMPageSubHeaderInfoBar");
-			}
-
 			oRm.writeClasses();
 			oRm.write(">");
 			this.renderBarControl(oRm, oPage, oSubHeader, {

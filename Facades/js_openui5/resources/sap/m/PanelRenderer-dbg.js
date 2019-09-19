@@ -3,8 +3,8 @@
  * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(["sap/m/library", "sap/ui/Device"],
-	function(library, Device) {
+sap.ui.define(["sap/m/library"],
+	function(library) {
 	"use strict";
 
 	// shortcut for sap.m.ToolbarDesign
@@ -92,13 +92,13 @@ sap.ui.define(["sap/m/library", "sap/ui/Device"],
 			oRm.renderControl(oHeaderTBar);
 
 		} else if (sHeaderText || bIsExpandable) {
-			oRm.write("<h2");
+			oRm.write("<h1");
 			oRm.addClass("sapMPanelHdr");
 			oRm.writeClasses();
 			oRm.writeAttribute("id", oControl.getId() + "-header");
 			oRm.write(">");
 			oRm.writeEscaped(sHeaderText);
-			oRm.write("</h2>");
+			oRm.write("</h1>");
 		}
 
 		if (bIsExpandable) {
@@ -141,7 +141,7 @@ sap.ui.define(["sap/m/library", "sap/ui/Device"],
 
 		oRm.writeClasses();
 
-		if (Device.browser.firefox) {
+		if (sap.ui.Device.browser.firefox) {
 			// ensure that the content is not included in the tab chain
 			// this happens in FF, when we have a scrollable content
 			oRm.writeAttribute('tabindex', '-1');

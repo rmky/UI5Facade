@@ -33,7 +33,7 @@ sap.ui.define([
 	 *
 	 * @author SAP SE
 	 * @version
-	 * 1.70.0
+	 * 1.68.1
 	 *
 	 * @public
 	 * @since 1.37.0
@@ -292,7 +292,7 @@ sap.ui.define([
 	 */
 
 	/**
-	 * The <code>success</code> event is fired, whenever a source has been successfully (loaded,) parsed and merged into the
+	 * The 'success' event is fired, whenever a source has been successfully (loaded,) parsed and merged into the
 	 * annotation data.
 	 *
 	 * @name sap.ui.model.v2.ODataAnnotations#success
@@ -304,25 +304,17 @@ sap.ui.define([
 	 */
 
 	/**
-	 * Attaches the given callback to the {@link #event:success success} event, which is fired whenever a source has been successfully
+	 * Attaches the given callback to the <code>success</code> event, which is fired whenever a source has been successfully
 	 * (loaded,) parsed and merged into the annotation data.
-	 *
 	 * The following parameters will be set on the event object that is given to the callback function:
 	 *   <code>source</code> - A map containing the properties <code>type</code> - containing either "url" or "xml" - and <code>data</code> containing
 	 *              the data given as source, either a URL or an XML string depending on how the source was added.
 	 *
-	 * When called, the context of the event handler (its <code>this</code>) will be bound to <code>oListener</code>
-	 * if specified, otherwise it will be bound to this <code>sap.ui.model.odata.v2.ODataAnnotations</code> itself.
-	 *
-	 * @param {object}
-	 *            [oData] An application-specific payload object that will be passed to the event handler
-	 *            along with the event object when firing the event
-	 * @param {function}
-	 *            fnFunction The function to be called, when the event occurs
-	 * @param {object}
-	 *            [oListener] Context object to call the event handler with, defaults to this
-	 *            <code>ODataAnnotations</code> itself
-	 * @returns {sap.ui.model.odata.v2.ODataAnnotations} Reference to <code>this</code> to allow method chaining
+	 * @param {object} [oData] The object, that should be passed along with the event-object when firing the event.
+	 * @param {function} fnFunction The event callback. This function will be called in the context of the oListener
+	 *        object if given as the next argument.
+	 * @param {object} [oListener] Object to use as context of the callback. If empty, the global context is used.
+	 * @return {sap.ui.model.odata.v2.ODataAnnotations} <code>this</code>-reference to allow method chaining.
 	 * @public
 	 */
 	ODataAnnotations.prototype.attachSuccess = function(oData, fnFunction, oListener) {
@@ -331,12 +323,11 @@ sap.ui.define([
 
 	/**
 	 * Detaches the given callback from the <code>success</code> event.
+	 * The passed function and listener object must match the ones previously used for attaching to the event.
 	 *
-	 * The passed function and listener object must match the ones used for event registration.
-	 *
-	 * @param {function} fnFunction The function to be called, when the event occurs
-	 * @param {object} [oListener] Context object on which the given function had to be called
-	 * @returns {sap.ui.model.odata.v2.ODataAnnotations} Reference to <code>this</code> to allow method chaining
+	 * @param {function} fnFunction The event callback previously used with {@link sap.ui.model.odata.v2.ODataAnnotations#attachSuccess}.
+	 * @param {object} [oListener] The same (if any) context object that was used when attaching to the <code>success</code> event.
+	 * @return {sap.ui.model.odata.v2.ODataAnnotations} <code>this</code>-reference to allow method chaining.
 	 * @public
 	 */
 	ODataAnnotations.prototype.detachSuccess = function(fnFunction, oListener) {
@@ -344,46 +335,27 @@ sap.ui.define([
 	};
 
 	/**
-	 * Parameters of the <code>error</code> event.
+	 * Parameters of the <code>error</code> event
 	 *
 	 * @typedef {map} sap.ui.model.odata.v2.ODataAnnotations.errorParameters
-	 * @property {Error} result The error that occurred. Also contains the properties from {@link sap.ui.model.odata.v2.ODataAnnotations.Source}
+	 * @property {Error} result The error that occurred. Also contains the properties from sap.ui.model.odata.v2.ODataAnnotations.Source
 	 *           that could be filled up to that point
 	 * @public
 	 */
 
 	/**
-	 * The <code>error</code> event is fired, whenever a source cannot be loaded, parsed or merged into the annotation data.
-	 *
-	 * @name sap.ui.model.v2.ODataAnnotations#error
-	 * @event
-	 * @param {sap.ui.base.Event} oEvent
-	 * @param {sap.ui.base.EventProvider} oEvent.getSource
-	 * @param {sap.ui.model.odata.v2.ODataAnnotations.errorParameters} oEvent.getParameters
-	 * @public
-	 */
-
-	/**
-	 * Attaches the given callback to the {@link #event:error error} event, which is fired whenever a source cannot be loaded, parsed or
+	 * Attaches the given callback to the <code>error</code> event, which is fired whenever a source cannot be loaded, parsed or
 	 * merged into the annotation data.
-	 *
 	 * The following parameters will be set on the event object that is given to the callback function:
 	 *   <code>source</code> - A map containing the properties <code>type</code> - containing either "url" or "xml" - and <code>data</code> containing
 	 *              the data given as source, either a URL or an XML string depending on how the source was added.
 	 *   <code>error</code>  - An Error object describing the problem that occurred
 	 *
-	 * When called, the context of the event handler (its <code>this</code>) will be bound to <code>oListener</code>
-	 * if specified, otherwise it will be bound to this <code>sap.ui.model.odata.v2.ODataAnnotations</code> itself.
-	 *
-	 * @param {object}
-	 *            [oData] An application-specific payload object that will be passed to the event handler
-	 *            along with the event object when firing the event
-	 * @param {function}
-	 *            fnFunction The function to be called, when the event occurs
-	 * @param {object}
-	 *            [oListener] Context object to call the event handler with, defaults to this
-	 *            <code>ODataAnnotations</code> itself
-	 * @returns {sap.ui.model.odata.v2.ODataAnnotations} Reference to <code>this</code> to allow method chaining
+	 * @param {object} [oData] The object, that should be passed along with the event-object when firing the event.
+	 * @param {function} fnFunction The event callback. This function will be called in the context of the oListener
+	 *        object if given as the next argument.
+	 * @param {object} [oListener] Object to use as context of the callback. If empty, the global context is used.
+	 * @return {sap.ui.model.odata.v2.ODataAnnotations} <code>this</code>-reference to allow method chaining
 	 * @public
 	 */
 	ODataAnnotations.prototype.attachError = function(oData, fnFunction, oListener) {
@@ -392,12 +364,11 @@ sap.ui.define([
 
 	/**
 	 * Detaches the given callback from the <code>error</code> event.
+	 * The passed function and listener object must match the ones previously used for attaching to the event.
 	 *
-	 * The passed function and listener object must match the ones used for event registration.
-	 *
-	 * @param {function} fnFunction The function to be called, when the event occurs
-	 * @param {object} [oListener] Context object on which the given function had to be called
-	 * @returns {sap.ui.model.odata.v2.ODataAnnotations} Reference to <code>this</code> to allow method chaining
+	 * @param {function} fnFunction The event callback previously used with {@link sap.ui.model.odata.v2.ODataAnnotations#attachError}.
+	 * @param {object} [oListener] The same (if any) context object that was used when attaching to the <code>error</code> event.
+	 * @return {sap.ui.model.odata.v2.ODataAnnotations} <code>this</code>-reference to allow method chaining.
 	 * @public
 	 */
 	ODataAnnotations.prototype.detachError = function(fnFunction, oListener) {
@@ -405,7 +376,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Parameters of the <code>loaded</code> event.
+	 * Parameters of the <code>loaded</code> event
 	 *
 	 * @typedef {map} sap.ui.model.odata.v2.ODataAnnotations.loadedParameters
 	 * @property {sap.ui.model.odata.v2.ODataAnnotations.Source[]|Error[]|any} result An array of results and Errors
@@ -414,37 +385,17 @@ sap.ui.define([
 	 * @public
 	 */
 
-	/**
-	 * The <code>loaded</code> event is fired, when all annotations from a group of sources have been
-	 * (loaded,) parsed and merged successfully.
-	 *
-	 * @name sap.ui.model.v2.ODataAnnotations#loaded
-	 * @event
-	 * @param {sap.ui.base.Event} oEvent
-	 * @param {sap.ui.base.EventProvider} oEvent.getSource
-	 * @param {sap.ui.model.odata.v2.ODataAnnotations.loadedParameters} oEvent.getParameters
-	 * @public
-	 */
-
 	 /**
-	 * Attaches the given callback to the {@link #event:loaded loaded} event.
-	 *
-	 * This event is fired when all annotations from a group of sources was successfully (loaded,) parsed and merged.
+	 * Attaches the given callback to the <code>loaded</code> event. This event is fired when all annotations from a group of
+	 * sources was successfully (loaded,) parsed and merged.
 	 * The parameter <code>result</code> will be set on the event argument and contains an array of all loaded sources as well
 	 * as Errors in the order in which they had been added.
 	 *
-	 * When called, the context of the event handler (its <code>this</code>) will be bound to <code>oListener</code>
-	 * if specified, otherwise it will be bound to this <code>sap.ui.model.odata.v2.ODataAnnotations</code> itself.
-	 *
-	 * @param {object}
-	 *            [oData] An application-specific payload object that will be passed to the event handler
-	 *            along with the event object when firing the event
-	 * @param {function}
-	 *            fnFunction The function to be called, when the event occurs
-	 * @param {object}
-	 *            [oListener] Context object to call the event handler with, defaults to this
-	 *            <code>ODataAnnotations</code> itself
-	 * @returns {sap.ui.model.odata.v2.ODataAnnotations} Reference to <code>this</code> to allow method chaining
+	 * @param {object} [oData] The object, that should be passed along with the event-object when firing the event.
+	 * @param {function} fnFunction The event callback. This function will be called in the context of the oListener
+	 *        object if given as the next argument.
+	 * @param {object} [oListener] Object to use as context of the callback. If empty, the global context is used.
+	 * @return {sap.ui.model.odata.v2.ODataAnnotations} <code>this</code>-reference to allow method chaining
 	 * @public
 	 */
 	ODataAnnotations.prototype.attachLoaded = function(oData, fnFunction, oListener) {
@@ -453,12 +404,11 @@ sap.ui.define([
 
 	/**
 	 * Detaches the given callback from the <code>loaded</code> event.
+	 * The passed function and listener object must match the ones previously used for attaching to the event.
 	 *
-	 * The passed function and listener object must match the ones used for event registration.
-	 *
-	 * @param {function} fnFunction The function to be called, when the event occurs
-	 * @param {object} [oListener] Context object on which the given function had to be called
-	 * @returns {sap.ui.model.odata.v2.ODataAnnotations} Reference to <code>this</code> to allow method chaining
+	 * @param {function} fnFunction The event callback previously used with {@link sap.ui.model.odata.v2.ODataAnnotations#attachLoaded}.
+	 * @param {object} [oListener] The same (if any) context object that was used when attaching to the <code>error</code> event.
+	 * @return {sap.ui.model.odata.v2.ODataAnnotations} <code>this</code>-reference to allow method chaining.
 	 * @public
 	 */
 	ODataAnnotations.prototype.detachLoaded = function(fnFunction, oListener) {
@@ -466,45 +416,16 @@ sap.ui.define([
 	};
 
 	/**
-	 * Parameters of the <code>failed</code> event.
-	 *
-	 * @typedef {map} sap.ui.model.odata.v2.ODataAnnotations.failedParameters
-	 * @property {Error[]} result An array of Errors (@see sap.ui.model.v2.ODataAnnotations#error) that occurred while
-	 *           loading a group of annotations
-	 * @public
-	 */
-
-	/**
-	 * The <code>failed</code> event is fired when at least one annotation from a group of sources was not
-	 * successfully (loaded,) parsed or merged.
-	 *
-	 * @name sap.ui.model.v2.ODataAnnotations#failed
-	 * @event
-	 * @param {sap.ui.base.Event} oEvent
-	 * @param {sap.ui.base.EventProvider} oEvent.getSource
-	 * @param {sap.ui.model.odata.v2.ODataAnnotations.failedParameters} oEvent.getParameters
-	 * @public
-	 */
-
-	/**
-	 * Attaches the given callback to the {@link #event:failed failed} event.
-	 *
-	 * This event is fired when at least one annotation from a group of sources was not successfully (loaded,) parsed or merged.
+	 * Attaches the given callback to the <code>failed</code> event. This event is fired when at least one annotation from a group
+	 * of sources was not successfully (loaded,) parsed or merged.
 	 * The parameter <code>result</code> will be set on the event argument and contains an array of Errors in the order in which
 	 * the sources had been added.
 	 *
-	 * When called, the context of the event handler (its <code>this</code>) will be bound to <code>oListener</code>
-	 * if specified, otherwise it will be bound to this <code>sap.ui.model.odata.v2.ODataAnnotations</code> itself.
-	 *
-	 * @param {object}
-	 *            [oData] An application-specific payload object that will be passed to the event handler
-	 *            along with the event object when firing the event
-	 * @param {function}
-	 *            fnFunction The function to be called, when the event occurs
-	 * @param {object}
-	 *            [oListener] Context object to call the event handler with, defaults to this
-	 *            <code>ODataAnnotations</code> itself
-	 * @returns {sap.ui.model.odata.v2.ODataAnnotations} Reference to <code>this</code> to allow method chaining
+	 * @param {object} [oData] The object, that should be passed along with the event-object when firing the event.
+	 * @param {function} fnFunction The event callback. This function will be called in the context of the oListener
+	 *        object if given as the next argument.
+	 * @param {object} [oListener] Object to use as context of the callback. If empty, the global context is used.
+	 * @return {sap.ui.model.odata.v2.ODataAnnotations} <code>this</code>-reference to allow method chaining
 	 * @public
 	 */
 	ODataAnnotations.prototype.attachFailed = function(oData, fnFunction, oListener) {
@@ -513,12 +434,11 @@ sap.ui.define([
 
 	/**
 	 * Detaches the given callback from the <code>failed</code> event.
+	 * The passed function and listener object must match the ones previously used for attaching to the event.
 	 *
-	 * The passed function and listener object must match the ones used for event registration.
-	 *
-	 * @param {function} fnFunction The function to be called, when the event occurs
-	 * @param {object} [oListener] Context object on which the given function had to be called
-	 * @returns {sap.ui.model.odata.v2.ODataAnnotations} Reference to <code>this</code> to allow method chaining
+	 * @param {function} fnFunction The event callback previously used with {@link sap.ui.model.odata.v2.ODataAnnotations#attachFailed}.
+	 * @param {object} [oListener] The same (if any) context object that was used when attaching to the <code>error</code> event.
+	 * @return {sap.ui.model.odata.v2.ODataAnnotations} <code>this</code>-reference to allow method chaining.
 	 * @public
 	 */
 	ODataAnnotations.prototype.detachFailed = function(fnFunction, oListener) {
@@ -526,25 +446,17 @@ sap.ui.define([
 	};
 
 	/**
-	 * Attaches the given callback to the <code>someLoaded</code> event.
+	 * This event exists for compatibility with the old Annotation loader
+	 * Attaches the given callback to the <code>someLoaded</code> event. This event is fired when at least one annotation from a
+	 * group of sources was successfully (loaded,) parsed and merged.
+	 * The parameter <code>result</code> will be set on the event argument and contains an array of all loaded sources as well
+	 * as Errors in the order in which they had been added.
 	 *
-	 * This event exists for compatibility with the old annotation loader. It is fired when at least one annotation
-	 * from a group of sources was successfully (loaded,) parsed and merged.
-	 * The parameter <code>result</code> will be set on the event argument and contains an array of all loaded
-	 * sources as well as Errors in the order in which they had been added.
-	 *
-	 * When called, the context of the event handler (its <code>this</code>) will be bound to <code>oListener</code>
-	 * if specified, otherwise it will be bound to this <code>sap.ui.model.odata.v2.ODataAnnotations</code> itself.
-	 *
-	 * @param {object}
-	 *            [oData] An application-specific payload object that will be passed to the event handler
-	 *            along with the event object when firing the event
-	 * @param {function}
-	 *            fnFunction The function to be called, when the event occurs
-	 * @param {object}
-	 *            [oListener] Context object to call the event handler with, defaults to this
-	 *            <code>ODataAnnotations</code> itself
-	 * @returns {sap.ui.model.odata.v2.ODataAnnotations} Reference to <code>this</code> to allow method chaining
+	 * @param {object} [oData] The object, that should be passed along with the event-object when firing the event.
+	 * @param {function} fnFunction The event callback. This function will be called in the context of the oListener
+	 *        object if given as the next argument.
+	 * @param {object} [oListener] Object to use as context of the callback. If empty, the global context is used.
+	 * @return {sap.ui.model.odata.v2.ODataAnnotations} <code>this</code>-reference to allow method chaining
 	 * @public
 	 */
 	ODataAnnotations.prototype.attachSomeLoaded = function(oData, fnFunction, oListener) {
@@ -553,12 +465,11 @@ sap.ui.define([
 
 	/**
 	 * Detaches the given callback from the <code>someLoaded</code> event.
+	 * The passed function and listener object must match the ones previously used for attaching to the event.
 	 *
-	 * The passed function and listener object must match the ones used for event registration.
-	 *
-	 * @param {function} fnFunction The function to be called, when the event occurs
-	 * @param {object} [oListener] Context object on which the given function had to be called
-	 * @returns {sap.ui.model.odata.v2.ODataAnnotations} Reference to <code>this</code> to allow method chaining
+	 * @param {function} fnFunction The event callback previously used with {@link sap.ui.model.odata.v2.ODataAnnotations#attachSomeLoaded}.
+	 * @param {object} [oListener] The same (if any) context object that was used when attaching to the <code>error</code> event.
+	 * @return {sap.ui.model.odata.v2.ODataAnnotations} <code>this</code>-reference to allow method chaining.
 	 * @public
 	 */
 	ODataAnnotations.prototype.detachSomeLoaded = function(fnFunction, oListener) {
@@ -566,25 +477,17 @@ sap.ui.define([
 	};
 
 	/**
-	 * Attaches the given callback to the <code>allFailed</code> event.
+	 * This event exists for compatibility with the old Annotation loader
+	 * Attaches the given callback to the <code>allFailed</code> event. This event is fired when no annotation from a group of
+	 * sources was successfully (loaded,) parsed and merged.
+	 * The parameter <code>result</code> will be set on the event argument and contains an array of Errors in the order in which
+	 * the sources had been added.
 	 *
-	 * This event exists for compatibility with the old Annotation loader. It is fired when no annotation from a group
-	 * of sources was successfully (loaded,) parsed and merged.
-	 * The parameter <code>result</code> will be set on the event argument and contains an array of Errors in the order
-	 * in which the sources had been added.
-	 *
-	 * When called, the context of the event handler (its <code>this</code>) will be bound to <code>oListener</code>
-	 * if specified, otherwise it will be bound to this <code>sap.ui.model.odata.v2.ODataAnnotations</code> itself.
-	 *
-	 * @param {object}
-	 *            [oData] An application-specific payload object that will be passed to the event handler
-	 *            along with the event object when firing the event
-	 * @param {function}
-	 *            fnFunction The function to be called, when the event occurs
-	 * @param {object}
-	 *            [oListener] Context object to call the event handler with, defaults to this
-	 *            <code>ODataAnnotations</code> itself
-	 * @returns {sap.ui.model.odata.v2.ODataAnnotations} Reference to <code>this</code> to allow method chaining
+	 * @param {object} [oData] The object, that should be passed along with the event-object when firing the event.
+	 * @param {function} fnFunction The event callback. This function will be called in the context of the oListener
+	 *        object if given as the next argument.
+	 * @param {object} [oListener] Object to use as context of the callback. If empty, the global context is used.
+	 * @return {sap.ui.model.odata.v2.ODataAnnotations} <code>this</code>-reference to allow method chaining
 	 * @public
 	 */
 	ODataAnnotations.prototype.attachAllFailed = function(oData, fnFunction, oListener) {
@@ -593,27 +496,36 @@ sap.ui.define([
 
 	/**
 	 * Detaches the given callback from the <code>allFailed</code> event.
+	 * The passed function and listener object must match the ones previously used for attaching to the event.
 	 *
-	 * The passed function and listener object must match the ones used for event registration.
-	 *
-	 * @param {function} fnFunction The function to be called, when the event occurs
-	 * @param {object} [oListener] Context object on which the given function had to be called
-	 * @returns {sap.ui.model.odata.v2.ODataAnnotations} Reference to <code>this</code> to allow method chaining
+	 * @param {function} fnFunction The event callback previously used with {@link sap.ui.model.odata.v2.ODataAnnotations#attachFailed}.
+	 * @param {object} [oListener] The same (if any) context object that was used when attaching to the <code>error</code> event.
+	 * @return {sap.ui.model.odata.v2.ODataAnnotations} <code>this</code>-reference to allow method chaining.
 	 * @public
 	 */
 	ODataAnnotations.prototype.detachAllFailed = function(fnFunction, oListener) {
 		return this.detachEvent("allFailed", fnFunction, oListener);
 	};
 
+	/**
+	 * Parameters of the <code>failed</code> event
+	 *
+	 * @typedef {map} sap.ui.model.odata.v2.ODataAnnotations.failedParameters
+	 * @property {Error[]} result An array of Errors (@see sap.ui.model.v2.ODataAnnotations#error) that occurred while
+	 *           loading a group of annotations
+	 * @public
+	 */
+
+
 
 	////////////////////////////////////////////////// Private Methods /////////////////////////////////////////////////
 
 	/**
-	 * Fires the <code>success</code> event whenever a source has successfully been (loaded,) parsed and merged into the annotation
+	 * Fires the <code>success</code> event whenever a source has sucessfull been (loaded,) parsed and merged into the annotation
 	 * data.
 	 *
-	 * @param {map} mResult The filled source-map of the successful loading and parsing
-	 * @returns {sap.ui.model.odata.v2.ODataAnnotations} Reference to <code>this</code> to allow method chaining
+	 * @param {map} mResult The filled source-map of the successfull loading and parsing
+	 * @return {sap.ui.model.odata.v2.ODataAnnotations} Returns <code>this</code> to allow method chaining.
 	 * @private
 	 */
 	ODataAnnotations.prototype._fireSuccess = function(mResult) {

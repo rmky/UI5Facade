@@ -5,25 +5,8 @@
  */
 
 // Provides control sap.ui.unified.ColorPickerPopover
-sap.ui.define([
-	'sap/ui/core/Control',
-	'sap/ui/Device',
-	'sap/m/Button',
-	'sap/m/ResponsivePopover',
-	'./ColorPicker',
-	'./library',
-	'sap/m/library',
-	"sap/ui/thirdparty/jquery"
-], function (
-	Control,
-	Device,
-	Button,
-	ResponsivePopover,
-	ColorPicker,
-	library,
-	mLibrary,
-	jQuery
-) {
+sap.ui.define(['sap/ui/core/Control', 'sap/ui/Device', 'sap/m/Button', 'sap/m/ResponsivePopover', './ColorPicker', './library', 'sap/m/library'],
+	function (Control, Device, Button, ResponsivePopover, ColorPicker, library, mLibrary) {
 		"use strict";
 
 		// shortcut for PlacementType
@@ -44,7 +27,7 @@ sap.ui.define([
 		 * A thin wrapper over {@link sap.ui.unified.ColorPicker} allowing the latter to be used in a popover.
 		 *
 		 * @extends sap.ui.core.Control
-		 * @version 1.70.0
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @public

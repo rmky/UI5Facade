@@ -11,7 +11,6 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "sap/ui/core/InvisibleText"],
 
 	// shortcut for sap.m.FacetFilterType
 	var FacetFilterType = library.FacetFilterType;
-	var ListMode = library.ListMode;
 
 
 	/**
@@ -194,35 +193,25 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "sap/ui/core/InvisibleText"],
 
 
 		for (i = 0; i < iLength; i++) {
-			// add button only if the list is not empty
-			// this applies only if we have Simple type of facet, Personalization flag is true and we have multiSelect mode of the list
-			var bLight = (oControl.getType() === FacetFilterType.Light),
-				bPersonalization = oControl.getShowPersonalization(),
-				bSingleSelectMaster = (aLists[i].getMode() === ListMode.SingleSelectMaster),
-				bListItems = aLists[i].getItems().length > 0,
-				bAddButton = bLight || !bPersonalization || bSingleSelectMaster || bListItems;
+			oButton = oControl._getButtonForList(aLists[i]);
 
-			if (bAddButton) {
-				oButton = oControl._getButtonForList(aLists[i]);
+			//remove all previous InvisibleText(s) related to the positioning
+			aOldAriaDescribedBy = oButton.removeAllAriaDescribedBy();
+			aOldAriaDescribedBy.forEach(destroyItem);
 
-				//remove all previous InvisibleText(s) related to the positioning
-				aOldAriaDescribedBy = oButton.removeAllAriaDescribedBy();
-				aOldAriaDescribedBy.forEach(destroyItem);
+			//get current position
+			sPosition = sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("FACETFILTERLIST_ARIA_POSITION", [(i + 1), iLength]);
+			oAccText = new InvisibleText( {text: sFacetFilterText + " " + sPosition}).toStatic();
+			oControl._aOwnedLabels.push(oAccText.getId());
+			oButton.addAriaDescribedBy(oAccText);
+			aNewAriaDescribedBy.push(oAccText.getId());
 
-				//get current position
-				sPosition = sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("FACETFILTERLIST_ARIA_POSITION", [(i + 1), iLength]);
-				oAccText = new InvisibleText( {text: sFacetFilterText + " " + sPosition}).toStatic();
-				oControl._aOwnedLabels.push(oAccText.getId());
-				oButton.addAriaDescribedBy(oAccText);
-				aNewAriaDescribedBy.push(oAccText.getId());
-
-				if (oControl.getShowPersonalization()) {
-					oButton.addAriaDescribedBy(FacetFilterRenderer.getAriaAnnouncement("ARIA_REMOVE"));
-				}
-				oRm.renderControl(oButton);
-				if (oControl.getShowPersonalization()) {
-					oRm.renderControl(oControl._getFacetRemoveIcon(aLists[i]));
-				}
+			if (oControl.getShowPersonalization()) {
+				oButton.addAriaDescribedBy(FacetFilterRenderer.getAriaAnnouncement("ARIA_REMOVE"));
+			}
+			oRm.renderControl(oButton);
+			if (oControl.getShowPersonalization()) {
+				oRm.renderControl(oControl._getFacetRemoveIcon(aLists[i]));
 			}
 		}
 		//needed because of FacetFilterRenderer.getAriaDescribedBy

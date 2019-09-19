@@ -62,23 +62,19 @@ margin: 0px;\
 background: #f0f0f0;\
 }";
 dom.importCssString(cssText);
+module.exports.overlayPage = function overlayPage(editor, contentElement, top, right, bottom, left) {
+    top = top ? 'top: ' + top + ';' : '';
+    bottom = bottom ? 'bottom: ' + bottom + ';' : '';
+    right = right ? 'right: ' + right + ';' : '';
+    left = left ? 'left: ' + left + ';' : '';
 
-module.exports.overlayPage = function overlayPage(editor, contentElement, callback) {
     var closer = document.createElement('div');
+    var contentContainer = document.createElement('div');
 
     function documentEscListener(e) {
         if (e.keyCode === 27) {
-            close();
+            closer.click();
         }
-    }
-
-    function close() {
-        if (!closer) return;
-        document.removeEventListener('keydown', documentEscListener);
-        closer.parentNode.removeChild(closer);
-        editor.focus();
-        closer = null;
-        callback && callback();
     }
 
     closer.style.cssText = 'margin: 0; padding: 0; ' +
@@ -86,20 +82,34 @@ module.exports.overlayPage = function overlayPage(editor, contentElement, callba
         'z-index: 9990; ' +
         'background-color: rgba(0, 0, 0, 0.3);';
     closer.addEventListener('click', function() {
-        close();
+        document.removeEventListener('keydown', documentEscListener);
+        closer.parentNode.removeChild(closer);
+        editor.focus();
+        closer = null;
     });
     document.addEventListener('keydown', documentEscListener);
 
-    contentElement.addEventListener('click', function (e) {
+    contentContainer.style.cssText = top + right + bottom + left;
+    contentContainer.addEventListener('click', function(e) {
         e.stopPropagation();
     });
 
-    closer.appendChild(contentElement);
+    var wrapper = dom.createElement("div");
+    wrapper.style.position = "relative";
+    
+    var closeButton = dom.createElement("div");
+    closeButton.className = "ace_closeButton";
+    closeButton.addEventListener('click', function() {
+        closer.click();
+    });
+    
+    wrapper.appendChild(closeButton);
+    contentContainer.appendChild(wrapper);
+    
+    contentContainer.appendChild(contentElement);
+    closer.appendChild(contentContainer);
     document.body.appendChild(closer);
     editor.blur();
-    return {
-        close: close
-    };
 };
 
 });
@@ -152,7 +162,7 @@ ace.define("ace/ext/keybinding_menu",["require","exports","module","ace/editor",
 
             el.id = 'kbshortcutmenu';
             el.innerHTML = '<h1>Keyboard Shortcuts</h1>' + commands + '</div>';
-            overlayPage(editor, el);
+            overlayPage(editor, el, '0', '0', '0', null);
         }
     }
     module.exports.init = function(editor) {
@@ -168,7 +178,8 @@ ace.define("ace/ext/keybinding_menu",["require","exports","module","ace/editor",
         }]);
     };
 
-});                (function() {
+});
+                (function() {
                     ace.require(["ace/ext/keybinding_menu"], function(m) {
                         if (typeof module == "object" && typeof exports == "object" && module) {
                             module.exports = m;

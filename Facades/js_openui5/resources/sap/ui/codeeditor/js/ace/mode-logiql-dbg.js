@@ -5,7 +5,6 @@ var oop = require("../lib/oop");
 var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 
 var LogiQLHighlightRules = function() {
-
     this.$rules = { start: 
        [ { token: 'comment.block',
            regex: '/\\*',
@@ -307,7 +306,8 @@ oop.inherits(Mode, TextMode);
 }).call(Mode.prototype);
 
 exports.Mode = Mode;
-});                (function() {
+});
+                (function() {
                     ace.require(["ace/mode/logiql"], function(m) {
                         if (typeof module == "object" && typeof exports == "object" && module) {
                             module.exports = m;

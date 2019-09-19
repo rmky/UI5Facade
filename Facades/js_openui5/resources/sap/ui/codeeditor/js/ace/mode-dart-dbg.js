@@ -103,7 +103,6 @@ var c_cppHighlightRules = function() {
           + /(\.((-?\d+)|\*(-?\d+\$)?)?)?/.source // precision
           + /(hh|h|ll|l|j|t|z|q|L|vh|vl|v|hv|hl)?/.source // length modifier
           + /(\[[^"\]]+\]|[diouxXDOUeEfFgGaACcSspn%])/.source; // conversion type
-
     this.$rules = { 
         "start" : [
             {
@@ -519,17 +518,11 @@ var DartHighlightRules = function() {
         "storage.type.primitive.dart": storageType
     }, "identifier");
 
-    var stringfill = [{
-        token : "constant.language.escape",
-        regex : /\\./
-    }, {
-        token : "text",
-        regex : /\$(?:\w+|{[^"'}]+})?/
-    }, {
+    var stringfill = {
         defaultToken : "string"
-    }];
-
-    this.$rules = {
+    };
+    this.$rules = 
+        {
     "start": [
         {
             token : "comment",
@@ -642,34 +635,30 @@ var DartHighlightRules = function() {
     "qdoc" : [
         {
             token : "string",
-            regex : "'''",
+            regex : ".*?'''",
             next : "start"
-        }
-    ].concat(stringfill),
+        }, stringfill],
 
     "qqdoc" : [
         {
             token : "string",
-            regex : '"""',
+            regex : '.*?"""',
             next : "start"
-        }
-    ].concat(stringfill),
+        }, stringfill],
 
     "qstring" : [
         {
             token : "string",
-            regex : "'|$",
+            regex : "[^\\\\']*(?:\\\\.[^\\\\']*)*'",
             next : "start"
-        }
-    ].concat(stringfill),
+        }, stringfill],
 
     "qqstring" : [
         {
             token : "string",
-            regex : '"|$',
+            regex : '[^\\\\"]*(?:\\\\.[^\\\\"]*)*"',
             next : "start"
-        }
-    ].concat(stringfill)
+        }, stringfill]
 };
 
     this.embedRules(DocCommentHighlightRules, "doc-",
@@ -703,7 +692,8 @@ oop.inherits(Mode, CMode);
 }).call(Mode.prototype);
 
 exports.Mode = Mode;
-});                (function() {
+});
+                (function() {
                     ace.require(["ace/mode/dart"], function(m) {
                         if (typeof module == "object" && typeof exports == "object" && module) {
                             module.exports = m;

@@ -4,11 +4,7 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define([
-	"sap/base/Log"
-], function(
-	Log
-) {
+sap.ui.define(["sap/ui/fl/Utils"], function(Utils) {
 	"use strict";
 
 	/**
@@ -21,16 +17,16 @@ sap.ui.define([
 	 * @alias sap.ui.fl.registry.ChangeRegistryItem
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @experimental Since 1.27.0
 	 *
 	 */
 	var ChangeRegistryItem = function(mParam) {
 		if (!mParam.changeTypeMetadata) {
-			Log.error("sap.ui.fl.registry.ChangeRegistryItem: ChangeTypeMetadata required");
+			Utils.log.error("sap.ui.fl.registry.ChangeRegistryItem: ChangeTypeMetadata required");
 		}
 		if (!mParam.controlType) {
-			Log.error("sap.ui.fl.registry.ChangeRegistryItem: ControlType required");
+			Utils.log.error("sap.ui.fl.registry.ChangeRegistryItem: ControlType required");
 		}
 
 		this._changeTypeMetadata = mParam.changeTypeMetadata;

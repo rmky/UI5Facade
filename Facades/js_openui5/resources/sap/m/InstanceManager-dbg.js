@@ -13,15 +13,11 @@ sap.ui.define(["sap/base/assert", "sap/base/Log", "sap/ui/thirdparty/jquery"],
 	 * Provides methods to manage instances. This is specifically designed for managing the opened Popover, Dialog, ActionSheet,
 	 * and it's possible to close all of the opened Popover, Dialog, ActionSheet in history handling.
 	 *
-	 * Example:
+	 * As <code>InstanceManager</code> is a static class, a <code>jQuery.sap.require("sap.m.InstanceManager");</code> statement
+	 * must be explicitly executed before the class can be used. Example:
 	 * <pre>
-	 *   sap.ui.define([
-	 *      "sap/m/InstanceManager"
-	 *   ], function(InstanceManager) {
-	 *     ...
-	 *     InstanceManager.closeAllPopovers();
-	 *     ...
-	 *   });
+	 *   jQuery.sap.require("sap.m.InstanceManager");
+	 *   sap.m.InstanceManager.closeAllPopovers();
 	 * </pre>
 	 *
 	 * @namespace

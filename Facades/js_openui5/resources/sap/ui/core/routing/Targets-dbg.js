@@ -309,7 +309,7 @@ sap.ui.define([
 
 				// temporarily: for checking the url param
 				function checkUrl() {
-					if (UriParameters.fromQuery(window.location.search).get("sap-ui-xx-asyncRouting") === "true") {
+					if (new UriParameters(window.location.href).get("sap-ui-xx-asyncRouting") === "true") {
 						Log.warning("Activation of async view loading in routing via url parameter is only temporarily supported and may be removed soon", "Targets");
 						return true;
 					}
@@ -369,7 +369,7 @@ sap.ui.define([
 			/**
 			 * Creates a view and puts it in an aggregation of the specified control.
 			 *
-			 * @param {string|string[]} vTargets Key of the target as specified in the {@link #constructor}. To display multiple targets you may also pass an array of keys.
+			 * @param {string|string[]} vTargets the key of the target as specified in the {@link #constructor}. To display multiple targets you may also pass an array of keys.
 			 * @param {object} [oData] an object that will be passed to the display event in the data property. If the target has parents, the data will also be passed to them.
 			 * @param {string} [sTitleTarget] the name of the target from which the title option is taken for firing the {@link sap.ui.core.routing.Targets#event:titleChanged titleChanged} event
 			 * @public
@@ -420,14 +420,11 @@ sap.ui.define([
 			},
 
 			/**
-			 * Creates a target by using the given name and options.
+			 * Creates a target by using the given name and options. If there's already a target with the same name exists, the existing target is kept from being overwritten and an error log will be written to the development console.
 			 *
-			 * If there's already a target with the same name, the existing target is not overwritten and
-			 * an error log will be written to the console.
-			 *
-			 * @param {string} sName Name of a target
-			 * @param {object} oTarget Options of a target. The option names are the same as the ones in "oOptions.targets.anyName" of {@link #constructor}.
-			 * @returns {sap.ui.core.routing.Targets} Reference to <code>this</code> in order to allow method chaining
+			 * @param {string} sName the name of a target
+			 * @param {object} oTarget the options of a target. The option names are the same as the ones in "oOptions.targets.anyName" of {@link #constructor}.
+			 * @returns {sap.ui.core.routing.Targets} Targets itself for method chaining
 			 * @public
 			 *
 			 */
@@ -446,7 +443,7 @@ sap.ui.define([
 			},
 
 			/**
-			 * Will be fired when a target is displayed.
+			 * Will be fired when a target is displayed
 			 *
 			 * Could be triggered by calling the display function or by the {@link sap.ui.core.routing.Router} when a target is referenced in a matching route.
 			 *
@@ -464,22 +461,13 @@ sap.ui.define([
 			 */
 
 			/**
-			 * Attaches event handler <code>fnFunction</code> to the {@link #event:display display} event of this
-			 * <code>sap.ui.core.routing.Targets</code>.
+			 * Attach event-handler <code>fnFunction</code> to the 'display' event of this <code>sap.ui.core.routing.Targets</code>.<br/>
+			 * @param {object} [oData] The object, that should be passed along with the event-object when firing the event.
+			 * @param {function} fnFunction The function to call, when the event occurs. This function will be called on the
+			 * oListener-instance (if present) or in a 'static way'.
+			 * @param {object} [oListener] Object on which to call the given function.
 			 *
-			 * When called, the context of the event handler (its <code>this</code>) will be bound to <code>oListener</code>
-			 * if specified, otherwise it will be bound to this <code>sap.ui.core.routing.Targets</code> itself.
-			 *
-			 * @param {object}
-			 *            [oData] An application-specific payload object that will be passed to the event handler
-			 *            along with the event object when firing the event
-			 * @param {function}
-			 *            fnFunction The function to be called, when the event occurs
-			 * @param {object}
-			 *            [oListener] Context object to call the event handler with. Defaults to this
-			 *            <code>sap.ui.core.routing.Targets</code> itself
-			 *
-			 * @returns {sap.ui.core.routing.Targets} Reference to <code>this</code> in order to allow method chaining
+			 * @return {sap.ui.core.routing.Targets} <code>this</code> to allow method chaining
 			 * @public
 			 */
 			attachDisplay : function(oData, fnFunction, oListener) {
@@ -487,14 +475,13 @@ sap.ui.define([
 			},
 
 			/**
-			 * Detaches event handler <code>fnFunction</code> from the {@link #event:display display} event of this
-			 * <code>sap.ui.core.routing.Targets</code>.
+			 * Detach event-handler <code>fnFunction</code> from the 'display' event of this <code>sap.ui.core.routing.Targets</code>.<br/>
 			 *
-			 * The passed function and listener object must match the ones used for event registration.
+			 * The passed function and listener object must match the ones previously used for event registration.
 			 *
-			 * @param {function} fnFunction The function to be called, when the event occurs
-			 * @param {object} [oListener] Context object on which the given function had to be called
-			 * @returns {sap.ui.core.routing.Targets} Reference to <code>this</code> in order to allow method chaining
+			 * @param {function} fnFunction The function to call, when the event occurs.
+			 * @param {object} oListener Object on which the given function had to be called.
+			 * @return {sap.ui.core.routing.Targets} <code>this</code> to allow method chaining
 			 * @public
 			 */
 			detachDisplay : function(fnFunction, oListener) {
@@ -502,30 +489,25 @@ sap.ui.define([
 			},
 
 			/**
-			 * Fires event {@link #event:created created} to attached listeners.
+			 * Fire event created to attached listeners.
 			 *
-			 * @param {object} [oParameters] Parameters to pass along with the event
-			 * @returns {sap.ui.core.routing.Targets} Reference to <code>this</code> in order to allow method chaining
+			 * @param {object} [mArguments] the arguments to pass along with the event.
+			 * @return {sap.ui.core.routing.Targets} <code>this</code> to allow method chaining
 			 * @public
 			 */
-			fireDisplay : function(oParameters) {
-				return this.fireEvent(this.M_EVENTS.DISPLAY, oParameters);
+			fireDisplay : function(mArguments) {
+				return this.fireEvent(this.M_EVENTS.DISPLAY, mArguments);
 			},
 
 			/**
 			 * Will be fired when the title of the "TitleTarget" has been changed.
 			 *
+			 * <pre>
 			 * A "TitleTarget" is resolved as the following:
-			 * <ol>
-			 *  <li>When the {@link sap.ui.core.routing.Targets#display display} is called with only one target,
-			 *      the "TitleTarget" is resolved with this target when its {@link sap.ui.core.routing.Targets#constructor title}
-			 *      options is set.</li>
-			 *  <li>When the {@link sap.ui.core.routing.Targets#display display} is called with more than one target, the
-			 *      "TitleTarget" is resolved by default with the first target which has a
-			 *      {@link sap.ui.core.routing.Targets#constructor title} option.</li>
-			 *  <li>When the <code>sTitleTarget</code> parameter of {@link sap.ui.core.routing.Targets#display display} is given,
-			 *      this specific target is then used as the "TitleTarget".</li>
-			 * </ol>
+			 *  1. When the {@link sap.ui.core.routing.Targets#display|display} is called with only one target, the "TitleTarget" is resolved with this target when its {@link sap.ui.core.routing.Targets#constructor|title} options is set.
+			 *  2. When the {@link sap.ui.core.routing.Targets#display|display} is called with more than one target, the "TitleTarget" is resolved by default with the first target which has a {@link sap.ui.core.routing.Targets#constructor|title} option.
+			 *  3. When the 'sTitleTarget' parameter of {@link sap.ui.core.routing.Targets#display|display} is given, this specific target is then used as the "TitleTarget".
+			 * </pre>
 			 *
 			 * @name sap.ui.core.routing.Targets#titleChanged
 			 * @event
@@ -538,22 +520,13 @@ sap.ui.define([
 			 */
 
 			/**
- 			 * Attaches event handler <code>fnFunction</code> to the {@link #event:titleChanged titleChanged} event of
- 			 * this <code>sap.ui.core.routing.Targets</code>.
+ 			 * Attach event-handler <code>fnFunction</code> to the 'titleChanged' event of this <code>sap.ui.core.routing.Targets</code>.<br/>
+ 			 * @param {object} [oData] The object, that should be passed along with the event-object when firing the event.
+ 			 * @param {function} fnFunction The function to call, when the event occurs. This function will be called on the
+ 			 * oListener-instance (if present) or in a 'static way'.
+ 			 * @param {object} [oListener] Object on which to call the given function.
  			 *
- 			 * When called, the context of the event handler (its <code>this</code>) will be bound to <code>oListener</code>
- 			 * if specified, otherwise it will be bound to this <code>sap.ui.core.routing.Targets</code> itself.
- 			 *
- 			 * @param {object}
- 			 *            [oData] An application-specific payload object that will be passed to the event handler
- 			 *            along with the event object when firing the event
- 			 * @param {function}
- 			 *            fnFunction The function to be called, when the event occurs
- 			 * @param {object}
- 			 *            [oListener] Context object to call the event handler with. Defaults to this
- 			 *            <code>sap.ui.core.routing.Targets</code> itself
- 			 *
- 			 * @returns {sap.ui.core.routing.Targets} Reference to <code>this</code> in order to allow method chaining
+ 			 * @return {sap.ui.core.routing.Targets} <code>this</code> to allow method chaining
  			 * @public
  			 */
 			attachTitleChanged : function(oData, fnFunction, oListener) {
@@ -562,22 +535,21 @@ sap.ui.define([
 			},
 
 			/**
-			 * Detaches event handler <code>fnFunction</code> from the {@link #event:titleChanged titleChanged} event of this
-			 * <code>sap.ui.core.routing.Targets</code>.
+			 * Detach event-handler <code>fnFunction</code> from the 'titleChanged' event of this <code>sap.ui.core.routing.Targets</code>.<br/>
 			 *
-			 * The passed function and listener object must match the ones used for event registration.
+			 * The passed function and listener object must match the ones previously used for event registration.
 			 *
-			 * @param {function} fnFunction The function to be called, when the event occurs
-			 * @param {object} [oListener] Context object on which the given function had to be called
-			 * @returns {sap.ui.core.routing.Targets} Reference to <code>this</code> in order to allow method chaining
+			 * @param {function} fnFunction The function to call, when the event occurs.
+			 * @param {object} oListener Object on which the given function had to be called.
+			 * @return {sap.ui.core.routing.Targets} <code>this</code> to allow method chaining
 			 * @public
 			 */
 			detachTitleChanged : function(fnFunction, oListener) {
 				return this.detachEvent(this.M_EVENTS.TITLE_CHANGED, fnFunction, oListener);
 			},
 
-			fireTitleChanged : function(oParameters) {
-				return this.fireEvent(this.M_EVENTS.TITLE_CHANGED, oParameters);
+			fireTitleChanged : function(mArguments) {
+				return this.fireEvent(this.M_EVENTS.TITLE_CHANGED, mArguments);
 			},
 
 			M_EVENTS : {
@@ -645,8 +617,7 @@ sap.ui.define([
 			},
 
 			/**
-			 * Hook to distinguish between the router and an application calling this.
-			 *
+			 * hook to distinguish between the router and an application calling this
 			 * @private
 			 * @param {any} [vData] an object that will be passed to the display event in the data property.
 			 * @name sap.ui.core.routing.Targets#_display

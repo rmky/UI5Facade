@@ -13,9 +13,7 @@ sap.ui.define([
 	"sap/ui/base/ManagedObject",
 	"sap/base/util/includes",
 	"sap/ui/fl/variants/VariantManagement",
-	"sap/ui/fl/variants/util/URLHandler",
 	"sap/ui/core/Component",
-	"sap/base/Log",
 	"sap/ui/thirdparty/jquery"
 ], function(
 	Utils,
@@ -26,9 +24,7 @@ sap.ui.define([
 	ManagedObject,
 	includes,
 	VariantManagement,
-	URLHandler,
 	Component,
-	Log,
 	jQuery
 ) {
 	"use strict";
@@ -41,7 +37,7 @@ sap.ui.define([
 	 * @author SAP SE
 	 * @experimental Since 1.56
 	 * @since 1.56
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @private
 	 * @ui5-restricted
 	 */
@@ -73,10 +69,12 @@ sap.ui.define([
 			var oAppComponent = Utils.getAppComponentForControl(oControl);
 			var oFlexController = FlexControllerFactory.createForControl(oAppComponent);
 			var oRootControl = oAppComponent.getRootControl();
+			var oView = Utils.getViewForControl(oControl);
 			var oVariantModel = oAppComponent.getModel(Utils.VARIANT_MODEL_NAME);
 
 			var mParams = {
 				rootControl : oRootControl,
+				view : oView,
 				variantModel : oVariantModel,
 				variantManagement : {},
 				flexController: oFlexController
@@ -134,8 +132,8 @@ sap.ui.define([
 			var oVariantModel = oAppComponent instanceof Component ? oAppComponent.getModel(Utils.VARIANT_MODEL_NAME) : undefined;
 			if (!oVariantModel) {
 				//technical parameters are not updated, only URL hash is updated
-				URLHandler._setTechnicalURLParameterValues(undefined, aUrlParameters, /*bSilent*/ true);
-				return Log.warning("Variant model could not be found on the provided control");
+				Utils.setTechnicalURLParameterValues(undefined, VARIANT_TECHNICAL_PARAMETER_NAME, aUrlParameters);
+				return Utils.log.warning("Variant model could not be found on the provided control");
 			}
 
 			//check if variant for the passed variant management control is present
@@ -150,10 +148,10 @@ sap.ui.define([
 			}
 
 			//both technical parameters and URL hash updated
-			oVariantModel.updateEntry({
+			oVariantModel.updateHasherEntry({
 				parameters: aUrlParameters,
 				updateURL: true,
-				updateHashEntry: true
+				component: oAppComponent
 			});
 		},
 
@@ -204,7 +202,7 @@ sap.ui.define([
 				return oVariantModel.updateCurrentVariant(sVariantManagementReference, sVariantReference, oAppComponent);
 			})
 			["catch"](function (oError) {
-				Log.error(oError);
+				Utils.log.error(oError);
 				return Promise.reject(oError);
 			});
 		},
@@ -348,7 +346,7 @@ sap.ui.define([
 		},
 
 		_reject: function (sMessage) {
-			Log.error(sMessage);
+			Utils.log.error(sMessage);
 			return Promise.reject(sMessage);
 		},
 
@@ -415,7 +413,7 @@ sap.ui.define([
 		saveChanges: function(aChanges, oManagedObject) {
 			if (!(oManagedObject instanceof ManagedObject)) {
 				var sErrorMessage = "A valid sap.ui.base.ManagedObject instance is required as a parameter";
-				Log.error(sErrorMessage);
+				Utils.log.error(sErrorMessage);
 				return Promise.reject(sErrorMessage);
 			}
 			var mParameters = ControlPersonalizationAPI._determineParameters(oManagedObject);
@@ -443,7 +441,7 @@ sap.ui.define([
 			try {
 				return !!this._getVariantManagement(oControl);
 			} catch (oError) {
-				Log.error(oError.message);
+				Utils.log.error(oError.message);
 				return false;
 			}
 		}

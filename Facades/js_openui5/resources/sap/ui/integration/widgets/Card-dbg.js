@@ -7,7 +7,7 @@ sap.ui.define([
 	"sap/ui/thirdparty/jquery",
 	"sap/ui/core/Core",
 	"sap/ui/core/Control",
-	"sap/ui/integration/util/Manifest",
+	"sap/ui/integration/util/CardManifest",
 	"sap/ui/integration/util/ServiceManager",
 	"sap/base/Log",
 	"sap/f/cards/DataProviderFactory",
@@ -18,9 +18,8 @@ sap.ui.define([
 	"sap/m/VBox",
 	"sap/ui/core/Icon",
 	"sap/m/Text",
-	"sap/ui/model/json/JSONModel",
+	'sap/ui/model/json/JSONModel',
 	"sap/ui/model/resource/ResourceModel",
-	"sap/base/util/LoaderExtensions",
 	"sap/f/CardRenderer",
 	"sap/f/library",
 	"sap/ui/integration/library"
@@ -41,7 +40,6 @@ sap.ui.define([
 	Text,
 	JSONModel,
 	ResourceModel,
-	LoaderExtensions,
 	CardRenderer,
 	fLibrary,
 	library
@@ -120,7 +118,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @public
 	 * @constructor
 	 * @see {@link topic:5b46b03f024542ba802d99d67bc1a3f4 Cards}
@@ -178,16 +176,6 @@ sap.ui.define([
 					type: "sap.ui.integration.CardDataMode",
 					group: "Behavior",
 					defaultValue: CardDataMode.Active
-				},
-
-				/**
-				 * Defines the base URL of the Card Manifest. It should be used when manifest property is an object instead of a URL.
-				 * @experimental Since 1.70
-				 * @since 1.70
-				 */
-				baseUrl: {
-					type: "sap.ui.core.URI",
-					defaultValue: null
 				}
 			},
 			aggregations: {
@@ -260,6 +248,7 @@ sap.ui.define([
 	 */
 	Card.prototype.init = function () {
 		this.setModel(new JSONModel(), "parameters");
+		this._initReadyState();
 		this.setBusyIndicatorDelay(0);
 	};
 
@@ -297,7 +286,8 @@ sap.ui.define([
 	 * @private
 	 */
 	Card.prototype.onBeforeRendering = function () {
-		var sConfig = this.getHostConfigurationId();
+		var sConfig = this.getHostConfigurationId(),
+			oParameters = this.getParameters();
 
 		if (this.getDataMode() !== CardDataMode.Active) {
 			return;
@@ -307,73 +297,11 @@ sap.ui.define([
 			this.addStyleClass(sConfig.replace(/-/g, "_"));
 		}
 
-		if (this._bApplyManifest) {
+		if (this._oCardManifest && this._bApplyManifest) {
+			this._oCardManifest.processParameters(oParameters);
+			this._applyManifestSettings();
 			this._bApplyManifest = false;
-			var vManifest = this.getManifest();
-
-			this._clearReadyState();
-			this._initReadyState();
-
-			if (!vManifest) {
-				// Destroy the manifest when null/undefined/empty string are passed
-				this.destroyManifest();
-			} else {
-				this.createManifest(vManifest, this.getBaseUrl());
-			}
 		}
-	};
-
-	Card.prototype.setManifest = function (vValue) {
-		this.setProperty("manifest", vValue);
-		this._bApplyManifest = true;
-		return this;
-	};
-
-	Card.prototype.setParameters = function (vValue) {
-		this.setProperty("parameters", vValue);
-		this._bApplyManifest = true;
-		return this;
-	};
-
-	/**
-	 * Instantiates a Card Manifest.
-	 *
-	 * @param {Object|string} vManifest The manifest URL or the manifest JSON.
-	 * @param {string} sBaseUrl The base URL of the manifest.
-	 */
-	Card.prototype.createManifest = function (vManifest, sBaseUrl) {
-		var mOptions = {};
-		if (typeof vManifest === "string") {
-			mOptions.manifestUrl = vManifest;
-			vManifest = null;
-		}
-
-		this.setBusy(true);
-		this._oCardManifest = new CardManifest("sap.card", vManifest, sBaseUrl);
-		this._oCardManifest
-			.load(mOptions)
-			.then(this._applyManifest.bind(this))
-			.catch(this._applyManifest.bind(this));
-	};
-
-	/**
-	 * Prepares the manifest and applies all settings.
-	 */
-	Card.prototype._applyManifest = function () {
-		var oParameters = this.getParameters();
-
-		this._registerManifestModulePath();
-
-		if (this._oCardManifest && this._oCardManifest.getResourceBundle()) {
-			var oResourceModel = new ResourceModel({
-				bundle: this._oCardManifest.getResourceBundle()
-			});
-			oResourceModel.enhance(Core.getLibraryResourceBundle("sap.ui.integration"));
-			this.setModel(oResourceModel, "i18n");
-		}
-
-		this._oCardManifest.processParameters(oParameters);
-		this._applyManifestSettings();
 	};
 
 	/**
@@ -406,23 +334,19 @@ sap.ui.define([
 	 * @experimental Since 1.65. The API might change.
 	 */
 	Card.prototype.refresh = function () {
-		if (this.getDataMode() === CardDataMode.Active) {
+		if (this._oCardManifest && this.getDataMode() === CardDataMode.Active) {
 			this._clearReadyState();
 			this._initReadyState();
-			this.destroyManifest();
 			this._bApplyManifest = true;
 			this.invalidate();
 		}
 	};
 
-	Card.prototype.exit = function () {
-		this.destroyManifest();
-	};
-
 	/**
-	 * Destroys everything configured by the manifest.
+	 * Called on destroying the control
+	 * @private
 	 */
-	Card.prototype.destroyManifest = function () {
+	Card.prototype.exit = function () {
 		if (this._oCardManifest) {
 			this._oCardManifest.destroy();
 			this._oCardManifest = null;
@@ -443,28 +367,39 @@ sap.ui.define([
 			this._oTemporaryContent.destroy();
 			this._oTemporaryContent = null;
 		}
-
-		this.destroyAggregation("_header");
-		this.destroyAggregation("_content");
-
 		this._aReadyPromises = null;
 	};
 
 	/**
-	 * Registers the manifest ID as a module path.
+	 * Overwrites setter for card manifest.
+	 *
+	 * @public
+	 * @param {string|Object} vValue The manifest object or its URL.
+	 * @returns {sap.ui.integration.widgets.Card} Pointer to the control instance to allow method chaining.
 	 */
-	Card.prototype._registerManifestModulePath = function () {
-		if (!this._oCardManifest) {
-			return;
+	Card.prototype.setManifest = function (vValue) {
+		this.setBusy(true);
+		this.setProperty("manifest", vValue);
+
+		if (typeof vValue === "string" && vValue !== "") {
+			this._oCardManifest = new CardManifest();
+			this._oCardManifest.load({ manifestUrl: vValue }).then(function () {
+				if (this._oCardManifest && this._oCardManifest.getResourceBundle()) {
+					var oResourceModel = new ResourceModel({
+						bundle: this._oCardManifest.getResourceBundle()
+					});
+					oResourceModel.enhance(Core.getLibraryResourceBundle("sap.ui.integration"));
+					this.setModel(oResourceModel, "i18n");
+				}
+				this._bApplyManifest = true;
+				this.invalidate();
+			}.bind(this));
+		} else if (typeof vValue === "object" && !jQuery.isEmptyObject(vValue)) {
+			this._bApplyManifest = true;
+			this._oCardManifest = new CardManifest(vValue);
 		}
 
-		var sAppId = this._oCardManifest.get("/sap.app/id");
-		if (sAppId) {
-			LoaderExtensions.registerResourcePath(sAppId.replace(/\./g, "/"), this._oCardManifest.getUrl());
-			this.getModel("parameters").setProperty("/appId", sAppId);
-		} else {
-			Log.error("Card sap.app/id entry in the manifest is mandatory");
-		}
+		return this;
 	};
 
 	/**
@@ -479,6 +414,21 @@ sap.ui.define([
 			return jQuery.extend(true, {}, vValue);
 		}
 		return vValue;
+	};
+
+	/**
+	 * Overwrites setter for card params.
+	 *
+	 * @public
+	 * @param {Object} vValue oParameters Parameters set in the card trough parameters property.
+	 * @returns {sap.ui.integration.widgets.Card} Pointer to the control instance to allow method chaining.
+	 */
+	Card.prototype.setParameters = function (vValue) {
+		this._bApplyManifest = true;
+		this.setBusy(true);
+		this.setProperty("parameters", vValue);
+
+		return this;
 	};
 
 	/**

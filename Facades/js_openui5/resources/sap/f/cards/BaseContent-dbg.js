@@ -24,7 +24,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @private
@@ -33,7 +33,6 @@ sap.ui.define([
 	 */
 	var BaseContent = Control.extend("sap.f.cards.BaseContent", {
 		metadata: {
-			library: "sap.f",
 			aggregations: {
 
 				/**
@@ -159,12 +158,10 @@ sap.ui.define([
 			return this;
 		}
 
-		var oList = this.getInnerList(),
-			maxItems = oConfiguration.maxItems;
-		if (oList && maxItems) {
+		var oList = this.getInnerList();
+		if (oList && oConfiguration.maxItems) {
 			oList.setGrowing(true);
-			//If pass trough parameters maxItems is a string
-			oList.setGrowingThreshold(parseInt(maxItems));
+			oList.setGrowingThreshold(oConfiguration.maxItems);
 			oList.addStyleClass("sapFCardMaxItems");
 		}
 
@@ -205,9 +202,9 @@ sap.ui.define([
 		if (this._oDataProvider) {
 			this._oDataProvider.destroy();
 		}
-		if (this._oDataProviderFactory) {
-			this._oDataProvider = this._oDataProviderFactory.create(oDataSettings, this._oServiceManager);
-		}
+
+		this._oDataProvider = this._oDataProviderFactory.create(oDataSettings, this._oServiceManager);
+
 		if (this._oDataProvider) {
 			this.setBusy(true);
 
@@ -241,14 +238,15 @@ sap.ui.define([
 	 */
 	function _bind(sAggregation, oControl, oBindingInfo) {
 		var oBindingContext = this.getBindingContext(),
+			oModel = this.getModel("parameters"),
 			oAggregation = oControl.getAggregation(sAggregation);
 
 		if (oBindingContext) {
 			oBindingInfo.path = oBindingContext.getPath();
 			oControl.bindAggregation(sAggregation, oBindingInfo);
 
-			if (this.getModel("parameters") && oAggregation) {
-				this.getModel("parameters").setProperty("/visibleItems", oAggregation.length);
+			if (oModel && oAggregation) {
+				oModel.setProperty("/visibleItems", oAggregation.length);
 			}
 
 			if (!this._mObservers[sAggregation]) {
@@ -256,11 +254,11 @@ sap.ui.define([
 					if (oChanges.name === sAggregation && (oChanges.mutation === "insert" || oChanges.mutation === "remove")) {
 						var oAggregation = oControl.getAggregation(sAggregation);
 						var iLength = oAggregation ? oAggregation.length : 0;
-						if (this.getModel("parameters")) {
-							this.getModel("parameters").setProperty("/visibleItems", iLength);
+						if (oModel) {
+							oModel.setProperty("/visibleItems", iLength);
 						}
 					}
-				}.bind(this));
+				});
 				this._mObservers[sAggregation].observe(oControl, { aggregations: [sAggregation] });
 			}
 		}

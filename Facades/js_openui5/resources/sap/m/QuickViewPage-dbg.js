@@ -29,8 +29,7 @@ sap.ui.define([
 	'sap/ui/Device',
 	'sap/ui/layout/form/ResponsiveGridLayout',
 	'./QuickViewPageRenderer',
-	"sap/base/security/encodeURL",
-	"sap/ui/dom/jquery/Focusable" // jQuery Plugin "firstFocusableDomRef"
+	"sap/base/security/encodeURL"
 ],
 	function(
 		library,
@@ -89,7 +88,7 @@ sap.ui.define([
 			* @extends sap.ui.core.Control
 			*
 			* @author SAP SE
-			* @version 1.70.0
+			* @version 1.68.1
 			*
 			* @constructor
 			* @public
@@ -163,19 +162,6 @@ sap.ui.define([
 									type: "string",
 									group: "Misc",
 									defaultValue: ""
-								},
-
-								/**
-								 * Defines the fallback icon displayed in case of wrong image src or loading issues.
-								 *
-								 * <b>Note</b> Accepted values are only icons from the SAP icon font.
-								 *
-								 * @since 1.69
-								 */
-								fallbackIcon: {
-									type: "sap.ui.core.URI",
-									group: "Appearance",
-									defaultValue: null
 								}
 							},
 							defaultAggregation: "groups",
@@ -342,7 +328,6 @@ sap.ui.define([
 					bIsInsideQuickView = oParent instanceof Control && oParent.isA('sap.m.QuickView');
 
 				// add tabindex=0, so the content can be scrolled with the keyboard
-				// jQuery Plugin "firstFocusableDomRef"
 				if (bIsInsideQuickView && !this._oPage.$().firstFocusableDomRef()) {
 					this._oPage.$('cont').attr('tabindex', 0);
 				}
@@ -413,8 +398,6 @@ sap.ui.define([
 			 */
 			QuickViewPage.prototype._getPageHeaderContent = function() {
 				var oIcon,
-					oFallbackIcon,
-					sFallbackIcon = this.getFallbackIcon(),
 					oVLayout = new VerticalLayout(),
 					oHLayout = new HorizontalLayout(),
 					sIcon = this.getIcon(),
@@ -428,30 +411,24 @@ sap.ui.define([
 
 				if (sIcon) {
 					if (this.getIcon().indexOf("sap-icon") == 0) {
-						oIcon = this._createIcon(sIcon, !sTitleUrl, sTitle);
+						oIcon = new Icon({
+							src: sIcon,
+							decorative: !sTitleUrl,
+							useIconTooltip: false,
+							tooltip: sTitle
+						});
 					} else {
 						oIcon = new Image({
 							src: sIcon,
 							decorative: false,
 							tooltip: sTitle
-						}).addStyleClass("sapUiIcon sapMQuickViewPageImage");
-
-						if (IconPool.isIconURI(sFallbackIcon)) {
-							oFallbackIcon = this._createIcon(sFallbackIcon, !sTitleUrl, sTitle);
-							oFallbackIcon.addStyleClass("sapMQuickViewThumbnail sapMQuickViewPageFallbackIconHidden");
-							oIcon.attachError(this._onImageLoadError.bind(this));
-							oHLayout.addContent(oFallbackIcon);
-						}
+						}).addStyleClass("sapUiIcon");
 					}
 
 					oIcon.addStyleClass("sapMQuickViewThumbnail");
 
 					if (sTitleUrl) {
 						oIcon.attachPress(this._crossApplicationNavigation(this));
-
-						if (oFallbackIcon) {
-							oFallbackIcon.attachPress(this._crossApplicationNavigation(this));
-						}
 					}
 
 					oHLayout.addContent(oIcon);
@@ -488,23 +465,6 @@ sap.ui.define([
 				oHLayout.addContent(oVLayout);
 
 				return oHLayout;
-			};
-
-			/**
-			 * @param {string} sIconSrc The source of the icon.
-			 * @param {boolean} bDecorative Whether the icon is decorative or not.
-			 * @param {string} sTooltip The tooltip of the icon.
-			 *
-			 * @returns {sap.ui.core.Icon} New Icon instance.
-			 * @private
-			 */
-			QuickViewPage.prototype._createIcon = function (sIconSrc, bDecorative, sTooltip) {
-				return new Icon({
-					src: sIconSrc,
-					decorative: bDecorative,
-					useIconTooltip: false,
-					tooltip: sTooltip
-				});
 			};
 
 			/**
@@ -747,28 +707,6 @@ sap.ui.define([
 					return oParent;
 				}
 				return null;
-			};
-
-			/**
-			 * Handler for loading failures of the icon.
-			 * In such cases show the fallback icon, if given.
-			 *
-			 * @param {jQuery.Event} oEvent The event object.
-			 * @private
-			 */
-			QuickViewPage.prototype._onImageLoadError = function (oEvent) {
-				var FALLBACK_ICON_INDEX = 0,
-					oFallbackIcon = this._mPageContent.header.getContent()[FALLBACK_ICON_INDEX],
-					oFailedImage = oEvent.getSource(),
-					bRestoreFocus = document.activeElement === oFailedImage.getDomRef();
-
-				oFallbackIcon.$().removeClass("sapMQuickViewPageFallbackIconHidden");
-				oFailedImage.$().addClass("sapMQuickViewPageFailedImage");
-
-				// if before hiding the image it was the activeElement move the focus to the fallback icon
-				if (bRestoreFocus) {
-					oFallbackIcon.focus();
-				}
 			};
 
 			return QuickViewPage;

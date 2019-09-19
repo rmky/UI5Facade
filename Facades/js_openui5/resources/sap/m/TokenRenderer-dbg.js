@@ -30,10 +30,10 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/InvisibleText"],
 	 * @param {sap.ui.core.Control} oControl an object representation of the control that should be rendered
 	 */
 	TokenRenderer.render = function(oRm, oControl){
-		var sTooltip = oControl._getTooltip(oControl, oControl.getEditable() && oControl.getProperty("editableParent")),
+		var sTooltip = oControl._getTooltip(oControl, oControl.getEditable()),
 			aAccDescribebyValues = [], // additional accessibility attributes
 			oAccAttributes = {
-				role: "option"
+				role: "listitem"
 			};
 
 		// write the HTML into the render manager
@@ -55,7 +55,7 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/InvisibleText"],
 		// ARIA attributes
 		aAccDescribebyValues.push(InvisibleText.getStaticId("sap.m", "TOKEN_ARIA_LABEL"));
 
-		if (oControl.getEditable() && oControl.getProperty("editableParent")) {
+		if (oControl.getEditable()) {
 			aAccDescribebyValues.push(InvisibleText.getStaticId("sap.m", "TOKEN_ARIA_DELETABLE"));
 		}
 

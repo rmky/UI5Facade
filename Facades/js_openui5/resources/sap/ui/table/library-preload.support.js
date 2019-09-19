@@ -21,8 +21,9 @@ sap.ui.predefine('sap/ui/table/library.support',[
 
 	// shortcuts
 	var Categories = SupportLib.Categories, // Accessibility, Performance, Memory, ...
-		Severity = SupportLib.Severity;	// Hint, Warning, Error
+		Severity = SupportLib.Severity,	// Hint, Warning, Error
 		//Audiences = SupportLib.Audiences; // Control, Internal, Application
+		VisibleRowCountMode = TableLib.VisibleRowCountMode;
 	var MessageType = coreLibrary.MessageType;
 
 	var oLib = {
@@ -306,7 +307,7 @@ sap.ui.predefine('sap/ui/table/library.support',[
 
 			for (var i = 0; i < aTables.length; i++) {
 				var aVisibleRows = aTables[i].getRows();
-				var iExpectedRowHeight = aTables[i]._getBaseRowHeight();
+				var iExpectedRowHeight = aTables[i]._getDefaultRowHeight();
 				var bUnexpectedRowHeightDetected = false;
 
 				for (var j = 0; j < aVisibleRows.length; j++) {
@@ -377,15 +378,13 @@ sap.ui.predefine('sap/ui/table/library.support',[
 			}
 
 			function checkConfiguration(oTable, oDynamicPage) {
-				if (oTable._getRowMode().isA("sap.ui.table.rowmodes.AutoRowMode") && !oDynamicPage.getFitContent()) {
+				if (oTable.getVisibleRowCountMode() === VisibleRowCountMode.Auto && !oDynamicPage.getFitContent()) {
 					SupportHelper.reportIssue(oIssueManager,
-						"A table with an auto row mode is placed inside a sap.f.DynamicPage with fitContent=\"false\"",
+						"A table with visibleRowCountMode=\"Auto\" is placed inside a sap.f.DynamicPage with fitContent=\"false\"",
 						Severity.High, oTable.getId());
-				} else if ((oTable._getRowMode().isA("sap.ui.table.rowmodes.FixedRowMode")
-							|| oTable._getRowMode().isA("sap.ui.table.rowmodes.InteractiveRowMode"))
-						   && oDynamicPage.getFitContent()) {
+				} else if (oTable.getVisibleRowCountMode() !== VisibleRowCountMode.Auto && oDynamicPage.getFitContent()) {
 					SupportHelper.reportIssue(oIssueManager,
-						"A table with a fixed or interactive row mode is placed inside a sap.f.DynamicPage with fitContent=\"true\"",
+						"A table with visibleRowCountMode=\"Fixed|Interactive\" is placed inside a sap.f.DynamicPage with fitContent=\"true\"",
 						Severity.Low, oTable.getId());
 				}
 			}
@@ -422,6 +421,27 @@ sap.ui.predefine('sap/ui/table/library.support',[
 							"Only one MultiSelectionPlugin can be applied to the table",
 							Severity.High, oTable.getId());
 					}
+				}
+			}
+		}
+	});
+
+	createRule({
+		id: "BindingLengthParameter",
+		categories: [Categories.Usage],
+		title: "Binding length parameter",
+		description: "The binding length parameter can only be applied to the table when the visibleRowCountMode is Fixed.",
+		resolution: "Set the visibleRowCountMode of the table to Fixed (oTable.setVisibleRowCountMode(\"Fixed\"))",
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			var aTables = SupportHelper.find(oScope, true, "sap.ui.table.Table");
+
+			for (var i = 0; i < aTables.length; i++) {
+				var oTable = aTables[i];
+				var oBindingInfo = oTable.getBindingInfo("rows");
+				if (oBindingInfo && oBindingInfo.length && oTable.getVisibleRowCountMode() !== VisibleRowCountMode.Fixed) {
+					SupportHelper.reportIssue(oIssueManager,
+						"The binding length parameter only works when visibleRowCountMode is Fixed.",
+						Severity.Medium, oTable.getId());
 				}
 			}
 		}

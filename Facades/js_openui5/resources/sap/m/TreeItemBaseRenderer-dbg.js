@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["./ListItemBaseRenderer", "sap/ui/core/Renderer"],
+sap.ui.define(['./ListItemBaseRenderer', 'sap/ui/core/Renderer'],
 	function(ListItemBaseRenderer, Renderer) {
 	"use strict";
 
@@ -13,25 +13,24 @@ sap.ui.define(["./ListItemBaseRenderer", "sap/ui/core/Renderer"],
 	 * @namespace
 	 */
 	var TreeItemBaseRenderer = Renderer.extend(ListItemBaseRenderer);
-	TreeItemBaseRenderer.apiVersion = 2;
 
 	TreeItemBaseRenderer.renderLIAttributes = function(rm, oLI) {
-		rm.class("sapMTreeItemBase");
+		rm.addClass("sapMTreeItemBase");
 
 		if (!oLI.isTopLevel()) {
-			rm.class("sapMTreeItemBaseChildren");
+			rm.addClass("sapMTreeItemBaseChildren");
 		}
 		if (oLI.isLeaf()) {
-			rm.class("sapMTreeItemBaseLeaf");
+			rm.addClass("sapMTreeItemBaseLeaf");
 		} else {
-			rm.attr("aria-expanded", oLI.getExpanded());
+			rm.writeAttribute("aria-expanded", oLI.getExpanded());
 		}
 
 		var iIndentation = oLI._getPadding();
 		if (sap.ui.getCore().getConfiguration().getRTL()){
-			rm.style("padding-right", iIndentation + "rem");
+			rm.addStyle("padding-right", iIndentation + "rem");
 		} else {
-			rm.style("padding-left", iIndentation + "rem");
+			rm.addStyle("padding-left", iIndentation + "rem");
 		}
 
 	};

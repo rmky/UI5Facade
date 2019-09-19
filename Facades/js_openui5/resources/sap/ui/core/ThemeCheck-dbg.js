@@ -8,11 +8,12 @@
 sap.ui.define([
 	'sap/ui/Device',
 	'sap/ui/base/Object',
+	'sap/ui/thirdparty/URI',
 	"sap/base/Log",
 	"sap/ui/dom/includeStylesheet",
 	"sap/ui/thirdparty/jquery"
 ],
-	function(Device, BaseObject, Log, includeStylesheet, jQuery) {
+	function(Device, BaseObject, URI, Log, includeStylesheet, jQuery) {
 	"use strict";
 
 

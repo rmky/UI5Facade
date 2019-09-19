@@ -25,7 +25,7 @@ sap.ui.define(["sap/ui/base/ManagedObject", "sap/base/Log"],
 		 * Resolves a binding syntax based on a provided model and path.
 		 *
 		 * @author SAP SE
-		 * @version 1.70.0
+		 * @version 1.68.1
 		 *
 		 * @private
 		 * @alias sap.f.cards.BindingResolver

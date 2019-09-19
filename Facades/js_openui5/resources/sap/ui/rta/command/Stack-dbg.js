@@ -26,7 +26,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -72,11 +72,9 @@ sap.ui.define([
 			var sAppName = sap.ui.fl.Utils.getAppDescriptor(oComponent)["sap.app"].id;
 			var mPropertyBag = {
 				oComponent : oComponent,
-				appName : sAppName,
-				selector: oControl,
-				invalidateCache: false
+				appName : sAppName
 			};
-			return PersistenceWriteAPI._getUIChanges(mPropertyBag)
+			return PersistenceWriteAPI.getUIChanges(Object.assign({}, mPropertyBag, {invalidateCache: false, managedObject: oControl}))
 			.then(function(aChanges) {
 				var mChanges = {};
 				aChanges.forEach(function(oChange) {

@@ -9,10 +9,9 @@ sap.ui.define([
 	'./Core',
 	'./Component',
 	'sap/base/Log',
-	'sap/base/util/ObjectPath',
-	"sap/base/util/isEmptyObject"
+	'sap/base/util/ObjectPath'
 ],
-	function(jQuery, Core, Component, Log, ObjectPath, isEmptyObject) {
+	function(jQuery, Core, Component, Log, ObjectPath) {
 	"use strict";
 
 
@@ -74,7 +73,7 @@ sap.ui.define([
 		 * gets removed again.
 		 *
 		 * @author SAP SE
-		 * @version 1.70.0
+		 * @version 1.68.1
 		 * @constructor
 		 * @private
 		 * @since 1.15.1
@@ -246,7 +245,7 @@ sap.ui.define([
 						mSettings = oConfig[sViewName];
 					}
 				});
-				return !isEmptyObject(mSettings);
+				return !jQuery.isEmptyObject(mSettings);
 			}
 
 		};

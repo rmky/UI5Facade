@@ -11,8 +11,7 @@ sap.ui.define([
 	'sap/ui/model/FormatException',
 	'sap/ui/model/ParseException',
 	'sap/ui/model/ValidateException',
-	"sap/ui/thirdparty/jquery",
-	"sap/base/util/isEmptyObject"
+	"sap/ui/thirdparty/jquery"
 ],
 	function(
 		NumberFormat,
@@ -20,8 +19,7 @@ sap.ui.define([
 		FormatException,
 		ParseException,
 		ValidateException,
-		jQuery,
-		isEmptyObject
+		jQuery
 	) {
 	"use strict";
 
@@ -35,7 +33,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.CompositeType
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @public
 	 * @param {object} [oFormatOptions] Formatting options. For a list of all available options, see {@link sap.ui.core.format.NumberFormat#constructor NumberFormat}.
@@ -185,7 +183,7 @@ sap.ui.define([
 		var oSourceOptions = this.oFormatOptions.source;
 		this.oOutputFormat = NumberFormat.getCurrencyInstance(this.oFormatOptions);
 		if (oSourceOptions) {
-			if (isEmptyObject(oSourceOptions)) {
+			if (jQuery.isEmptyObject(oSourceOptions)) {
 				oSourceOptions = {
 					groupingEnabled: false,
 					groupingSeparator: ",",

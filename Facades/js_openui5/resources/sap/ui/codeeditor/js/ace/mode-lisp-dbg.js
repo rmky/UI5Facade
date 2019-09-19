@@ -16,7 +16,6 @@ var LispHighlightRules = function() {
         "constant.language": constantLanguage,
         "support.function": supportFunctions
     }, "identifier", true);
-
     this.$rules = 
         {
     "start": [
@@ -102,7 +101,8 @@ oop.inherits(Mode, TextMode);
 }).call(Mode.prototype);
 
 exports.Mode = Mode;
-});                (function() {
+});
+                (function() {
                     ace.require(["ace/mode/lisp"], function(m) {
                         if (typeof module == "object" && typeof exports == "object" && module) {
                             module.exports = m;

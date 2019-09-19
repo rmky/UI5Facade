@@ -25,7 +25,7 @@ sap.ui.define([
 	 * @class The Settings allows trigger change of settings operations on the overlay
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -111,32 +111,31 @@ sap.ui.define([
 	Settings.prototype._handleFlexChangeCommand = function(mChange, aSelectedOverlays, oCompositeCommand) {
 		var mChangeSpecificData = mChange.changeSpecificData;
 		var sVariantManagementReference;
-		// temporarily support both
-		var vSelector = mChange.selectorElement || mChange.selectorControl;
+		var vSelectorControl = mChange.selectorControl;
 		var sControlType;
 		var oControl;
 
-		if (vSelector.controlType) {
-			sControlType = vSelector.controlType;
+		if (vSelectorControl.controlType) {
+			sControlType = vSelectorControl.controlType;
 		} else {
-			oControl = vSelector;
+			oControl = vSelectorControl;
 		}
 
-		return this._getChangeHandler(mChangeSpecificData.changeType, oControl, sControlType)
-			.then(function(oChangeHandler) {
-				if (aSelectedOverlays[0].getVariantManagement && oChangeHandler && oChangeHandler.revertChange) {
-					sVariantManagementReference = aSelectedOverlays[0].getVariantManagement();
-				}
-				return this.getCommandFactory().getCommandFor(
-					vSelector,
-					"settings",
-					mChangeSpecificData,
-					undefined,
-					sVariantManagementReference);
-			}.bind(this))
-			.then(function(oSettingsCommand) {
-				return oCompositeCommand.addCommand(oSettingsCommand);
-			});
+		var oChangeHandler = this._getChangeHandler(mChangeSpecificData.changeType, oControl, sControlType);
+		if (aSelectedOverlays[0].getVariantManagement && oChangeHandler && oChangeHandler.revertChange) {
+			sVariantManagementReference = aSelectedOverlays[0].getVariantManagement();
+		}
+
+		return this.getCommandFactory().getCommandFor(
+			vSelectorControl,
+			"settings",
+			mChangeSpecificData,
+			undefined,
+			sVariantManagementReference)
+
+		.then(function(oSettingsCommand) {
+			return oCompositeCommand.addCommand(oSettingsCommand);
+		});
 	};
 
 	Settings.prototype._handleAppDescriptorChangeCommand = function(mChange, oElement, oCompositeCommand) {
@@ -297,8 +296,8 @@ sap.ui.define([
 	};
 
 	Settings.prototype._getActionIcon = function(oSettingsAction) {
-		var sDefaultSettingIcon = "sap-icon://key-user-settings";
-		var sActionIcon = oSettingsAction.icon;
+		var sDefaultSettingIcon = "sap-icon://key-user-settings",
+			sActionIcon = oSettingsAction.icon;
 		if (!sActionIcon) {
 			return sDefaultSettingIcon;
 		}

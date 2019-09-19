@@ -11,16 +11,6 @@
 			"theme": "sap_belize"
 		},
 		{
-			"name": "Dialogs.less",
-			"designtime": true,
-			"theme": "sap_belize"
-		},
-		{
-			"name": "FieldRepository.less",
-			"designtime": true,
-			"theme": "sap_belize"
-		},
-		{
 			"name": "Overlay.less",
 			"designtime": true,
 			"theme": "sap_belize"

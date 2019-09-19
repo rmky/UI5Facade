@@ -29,7 +29,7 @@ sap.ui.define([
 	 * @class The Remove allows trigger remove operations on the overlay
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -60,7 +60,7 @@ sap.ui.define([
 
 	/**
 	 * @param {sap.ui.dt.ElementOverlay} oElementOverlay - Overlay to be checked for editable
-	 * @return {Promise.<boolean>|booolean} <code>true</code> if it's editable wrapped in a promise.
+	 * @return {promise.<boolean>|booolean} <code>true</code> if it's editable wrapped in a promise.
 	 * @private
 	 */
 	Remove.prototype._isEditable = function (oElementOverlay) {
@@ -71,7 +71,7 @@ sap.ui.define([
 			if (oRemoveAction.changeOnRelevantContainer) {
 				oElement = oElementOverlay.getRelevantContainer();
 			}
-			return this.hasChangeHandler(oRemoveAction.changeType, oElement)
+			return this.hasChangeHandler(oRemoveAction.changeType, oElement, true)
 				.then(function(bHasChangeHandler) {
 					return bHasChangeHandler
 						&& this._checkRelevantContainerStableID(oRemoveAction, oElementOverlay)
@@ -224,7 +224,8 @@ sap.ui.define([
 		aElementOverlays.forEach(function(oOverlay) {
 			var oRemovedElement = oOverlay.getElement();
 			var oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
-			var sVariantManagementReference = this.getVariantManagementReference(oOverlay);
+			var oRemoveAction = this.getAction(oOverlay);
+			var sVariantManagementReference = this.getVariantManagementReference(oOverlay, oRemoveAction);
 			var sConfirmationText = this._getConfirmationText(oOverlay);
 
 			aPromises.push(

@@ -28,7 +28,7 @@ sap.ui.define([
 	 * @extends sap.ui.rta.plugin.Plugin
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @private
@@ -76,9 +76,9 @@ sap.ui.define([
 	};
 
 	Rename.prototype.startEdit = function (oOverlay) {
-		var oElement = oOverlay.getElement();
-		var oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
-		var vDomRef = oDesignTimeMetadata.getAction("rename", oElement).domRef;
+		var oElement = oOverlay.getElement(),
+			oDesignTimeMetadata = oOverlay.getDesignTimeMetadata(),
+			vDomRef = oDesignTimeMetadata.getAction("rename", oElement).domRef;
 		RenameHandler.startEdit.call(this, {
 			overlay: oOverlay,
 			domRef: vDomRef,
@@ -156,7 +156,7 @@ sap.ui.define([
 
 	/**
 	 * @param {sap.ui.dt.ElementOverlay} oOverlay - Overlay to be checked for editable
-	 * @returns {Promise.<boolean>|booolean} <code>true</code> if it's editable wrapped in a promise.
+	 * @returns {promise.<boolean>|booolean} <code>true</code> if it's editable wrapped in a promise.
 	 * @private
 	 */
 	Rename.prototype._isEditable = function(oOverlay) {
@@ -166,7 +166,7 @@ sap.ui.define([
 			if (oRenameAction.changeOnRelevantContainer) {
 				oElement = oOverlay.getRelevantContainer();
 			}
-			return this.hasChangeHandler(oRenameAction.changeType, oElement)
+			return this.hasChangeHandler(oRenameAction.changeType, oElement, true)
 				.then(function(bHasChangeHandler) {
 					return bHasChangeHandler
 						&& this._checkRelevantContainerStableID(oRenameAction, oOverlay)
@@ -200,7 +200,8 @@ sap.ui.define([
 			.then(function(oEditedOverlay) {
 				var oRenamedElement = oEditedOverlay.getElement();
 				var oDesignTimeMetadata = oEditedOverlay.getDesignTimeMetadata();
-				var sVariantManagementReference = this.getVariantManagementReference(oEditedOverlay);
+				var oRenameAction = this.getAction(oEditedOverlay);
+				var sVariantManagementReference = this.getVariantManagementReference(oEditedOverlay, oRenameAction);
 
 				return this.getCommandFactory().getCommandFor(oRenamedElement, "rename", {
 					renamedElement : oRenamedElement,

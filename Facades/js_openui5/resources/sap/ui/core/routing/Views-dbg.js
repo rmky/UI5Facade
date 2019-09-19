@@ -39,7 +39,7 @@ sap.ui.define([
 
 				// temporarily: for checking the url param
 				function checkUrl() {
-					if (UriParameters.fromQuery(window.location.search).get("sap-ui-xx-asyncRouting") === "true") {
+					if (new UriParameters(window.location.href).get("sap-ui-xx-asyncRouting") === "true") {
 						Log.warning("Activation of async view loading in routing via url parameter is only temporarily supported and may be removed soon", "TargetCache");
 						return true;
 					}
@@ -88,7 +88,7 @@ sap.ui.define([
 			},
 
 			/**
-			 * If a view is created, the event will be fired.
+			 * If a view is created the event will be fired.
 			 * It will not be fired, if a view was read from the cache of the Views object.
 			 *
 			 * @name sap.ui.core.routing.Views#created
@@ -102,50 +102,40 @@ sap.ui.define([
 			 */
 
 			/**
-			 * Attaches event handler <code>fnFunction</code> to the {@link #event:created created} event of this
-			 * <code>sap.ui.core.routing.Views</code>.
+			 * Attach event-handler <code>fnFunction</code> to the 'created' event of this <code>sap.ui.core.routing.Views</code>.<br/>
+			 * @param {object} [oData] The object, that should be passed along with the event-object when firing the event.
+			 * @param {function} fnFunction The function to call, when the event occurs. This function will be called on the
+			 * oListener-instance (if present) or in a 'static way'.
+			 * @param {object} [oListener] Object on which to call the given function.
 			 *
-			 * When called, the context of the event handler (its <code>this</code>) will be bound to <code>oListener</code>
-			 * if specified, otherwise it will be bound to this <code>sap.ui.core.routing.Views</code> itself.
-			 *
-			 * @param {object}
-			 *            [oData] An application-specific payload object that will be passed to the event handler
-			 *            along with the event object when firing the event
-			 * @param {function}
-			 *            fnFunction The function to be called, when the event occurs
-			 * @param {object}
-			 *            [oListener] Context object to call the event handler with. Defaults to this
-			 *            <code>sap.ui.core.routing.Views</code> itself
-			 *
-			 * @returns {sap.ui.core.routing.Views} Reference to <code>this</code> in order to allow method chaining
+			 * @return {sap.ui.core.routing.Views} <code>this</code> to allow method chaining
 			 * @public
 			 */
 
 			/**
-			 * Detaches event handler <code>fnFunction</code> from the {@link #event:created created} event of this
-			 * <code>sap.ui.core.routing.Views</code>.
+			 * Detach event-handler <code>fnFunction</code> from the 'created' event of this <code>sap.ui.core.routing.Views</code>.<br/>
 			 *
-			 * The passed function and listener object must match the ones used for event registration.
+			 * The passed function and listener object must match the ones previously used for event registration.
 			 *
-			 * @param {function} fnFunction The function to be called, when the event occurs
-			 * @param {object} [oListener] Context object on which the given function had to be called
-			 * @returns {sap.ui.core.routing.Views} Reference to <code>this</code> in order to allow method chaining
+			 * @param {function} fnFunction The function to call, when the event occurs.
+			 * @param {object} oListener Object on which the given function had to be called.
+			 * @return {sap.ui.core.routing.Views} <code>this</code> to allow method chaining
 			 * @public
 			 */
 
 			/**
-			 * Fires event {@link #event:created created} to attached listeners.
+			 * Fire event created to attached listeners.
 			 *
-			 * @param {object} [oParameters] Parameters to pass along with the event
-			 * @returns {sap.ui.core.routing.Views} Reference to <code>this</code> in order to allow method chaining
+			 * @param {object} [mArguments] the arguments to pass along with the event.
+			 * @return {sap.ui.core.routing.Views} <code>this</code> to allow method chaining
 			 * @protected
 			 */
-			fireCreated: function (oParameters) {
-				if (oParameters) {
-					oParameters.view = oParameters.object;
-					oParameters.viewOptions = oParameters.options;
+			fireCreated: function (mArguments) {
+				if (mArguments) {
+					mArguments.view = mArguments.object;
+					mArguments.viewOptions = mArguments.options;
 				}
-				return this.fireEvent("created", oParameters);
+				return this.fireEvent("created", mArguments);
 			}
 		});
 

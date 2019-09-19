@@ -88,22 +88,19 @@ sap.ui.define(['./BlockLayerUtils', "sap/ui/thirdparty/jquery"], //require of sa
 	 * @see sap.ui.core.BusyIndicatorSize
 	 */
 	BusyIndicatorUtils.addHTML = function (oBusyBlockState, sSize) {
-		// Note: to avoid the cycle (Core -> Control -> BusyIndicatorUtils -> library -> Core),
-		//       this cannot be modeled as a top-level dependency
-		var BusyIndicatorSize = sap.ui.require("sap/ui/core/library").BusyIndicatorSize,
-			sSizeClass = "sapUiLocalBusyIndicatorSizeMedium",
+		var sSizeClass = "sapUiLocalBusyIndicatorSizeMedium",
 			sAnimationSizeClass;
 
 		switch (sSize) {
-			case BusyIndicatorSize.Small:
+			case sap.ui.core.BusyIndicatorSize.Small:
 				sSizeClass = "sapUiLocalBusyIndicatorSizeMedium";
 				sAnimationSizeClass = "sapUiLocalBusyIndicatorAnimSmall";
 				break;
-			case BusyIndicatorSize.Large:
+			case sap.ui.core.BusyIndicatorSize.Large:
 				sSizeClass = "sapUiLocalBusyIndicatorSizeBig";
 				sAnimationSizeClass = "sapUiLocalBusyIndicatorAnimStandard";
 				break;
-			case BusyIndicatorSize.Auto:
+			case sap.ui.core.BusyIndicatorSize.Auto:
 				sSizeClass = "sapUiLocalBusyIndicatorSizeMedium";
 				sAnimationSizeClass = "sapUiLocalBusyIndicatorAnimStandard";
 				break;
@@ -125,7 +122,7 @@ sap.ui.define(['./BlockLayerUtils', "sap/ui/thirdparty/jquery"], //require of sa
 		oBlockLayerDOM.className += " sapUiLocalBusyIndicator " + sSizeClass + " sapUiLocalBusyIndicatorFade";
 		addAnimation(oBlockLayerDOM, sAnimationSizeClass);
 
-		if (sSize === BusyIndicatorSize.Auto) {
+		if (sSize === sap.ui.core.BusyIndicatorSize.Auto) {
 			handleAutoAnimationSize(oBusyBlockState);
 		}
 		//Set the actual DOM Element to 'aria-busy'

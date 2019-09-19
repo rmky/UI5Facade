@@ -92,7 +92,6 @@ var JavaScriptHighlightRules = function(options) {
         "3[0-7][0-7]?|" + // oct
         "[4-7][0-7]?|" + //oct
         ".)";
-
     this.$rules = {
         "no_regex" : [
             DocCommentHighlightRules.getStartRule("doc-start"),
@@ -1484,7 +1483,6 @@ var CssHighlightRules = function() {
         "support.constant.color": supportConstantColor,
         "support.constant.fonts": supportConstantFonts
     }, "text", true);
-
     this.$rules = {
         "start" : [{
             include : ["strings", "url", "comments"]
@@ -1773,7 +1771,11 @@ var CssCompletions = function() {
             this.defineCompletions();
         }
 
-        if (state==='ruleset' || session.$mode.$id == "ace/mode/scss") {
+        var token = session.getTokenAt(pos.row, pos.column);
+
+        if (!token)
+            return [];
+        if (state==='ruleset'){
             var line = session.getLine(pos.row).substr(0, pos.column);
             if (/:[^;]+$/.test(line)) {
                 /([\w\-]+):[^:]*$/.test(line);
@@ -2796,7 +2798,7 @@ oop.inherits(FoldMode, BaseFoldMode);
             var ch = token.value[0];
             if (ch == "=") return 6;
             if (ch == "-") return 5;
-            return 7 - token.value.search(/[^#]|$/);
+            return 7 - token.value.search(/[^#]/);
         }
 
         if (isHeading(row)) {
@@ -2859,7 +2861,6 @@ var ShHighlightRules = function() {
     }, "identifier");
 
     var integer = "(?:(?:[1-9]\\d*)|(?:0))";
-
     var fraction = "(?:\\.\\d+)";
     var intPart = "(?:\\d+)";
     var pointFloat = "(?:(?:" + intPart + "?" + fraction + ")|(?:" + intPart + "\\.))";
@@ -3115,7 +3116,6 @@ oop.inherits(Mode, TextMode);
     };
 
     this.autoOutdent = function(state, doc, row) {
-
         row += 1;
         var indent = this.$getIndent(doc.getLine(row));
         var tab = doc.getTabString();
@@ -3178,7 +3178,8 @@ oop.inherits(Mode, TextMode);
 }).call(Mode.prototype);
 
 exports.Mode = Mode;
-});                (function() {
+});
+                (function() {
                     ace.require(["ace/mode/markdown"], function(m) {
                         if (typeof module == "object" && typeof exports == "object" && module) {
                             module.exports = m;

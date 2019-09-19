@@ -17,8 +17,7 @@ sap.ui.define([
 	"sap/base/util/deepEqual",
 	"sap/base/util/Version",
 	"sap/base/Log",
-	"sap/base/assert",
-	"sap/base/util/isEmptyObject"
+	"sap/base/assert"
 ],
 	function(
 		jQuery,
@@ -32,8 +31,7 @@ sap.ui.define([
 		deepEqual,
 		Version,
 		Log,
-		assert,
-		isEmptyObject
+		assert
 	) {
 	"use strict";
 
@@ -133,7 +131,7 @@ sap.ui.define([
 					"bindingSyntax"         : { type : "string",   defaultValue : "default", noUrl:true }, // default|simple|complex
 					"versionedLibCss"       : { type : "boolean",  defaultValue : false },
 					"manifestFirst"         : { type : "boolean",  defaultValue : false },
-					"flexibilityServices"   : { type : "string",   defaultValue : "/sap/bc/lrep"},
+					"flexibilityServices"   : { type : "string",  defaultValue : "/sap/bc/lrep" },
 					"whitelistService"      : { type : "string",   defaultValue : null,      noUrl: true }, // url/to/service
 					"frameOptions"          : { type : "string",   defaultValue : "default", noUrl: true }, // default/allow/deny/trusted (default => allow)
 					"frameOptionsConfig"    : { type : "object",   defaultValue : undefined, noUrl:true },  // advanced frame options configuration
@@ -249,39 +247,14 @@ sap.ui.define([
 				}
 			}
 
-			function getMetaTagValue(sName) {
-				var oMetaTag = document.querySelector("META[name='" + sName + "']"),
-				    sMetaContent = oMetaTag && oMetaTag.getAttribute("content");
-				if (sMetaContent) {
-					return sMetaContent;
-				}
-			}
-
-			function validateThemeOrigin(sOrigin) {
-				var sAllowedOrigins = getMetaTagValue("sap-allowedThemeOrigins");
-				return !!sAllowedOrigins && sAllowedOrigins.split(",").some(function(sAllowedOrigin) {
-					return sAllowedOrigin === "*" || sOrigin === sAllowedOrigin.trim();
-				});
-			}
-
 			function validateThemeRoot(sThemeRoot) {
 				var oThemeRoot,
 					sPath;
 
 				try {
-					// Remove search query as they are not supported for themeRoots/resourceRoots
-					oThemeRoot = new URI(sThemeRoot).search("");
-
-					// If the URL is absolute, validate the origin
-					var sOrigin = oThemeRoot.origin();
-					if (sOrigin && validateThemeOrigin(sOrigin)) {
-						sPath = oThemeRoot.toString();
-					} else {
-						// For relative URLs or not allowed origins
-						// ensure same origin and resolve relative paths based on href
-						sPath = oThemeRoot.absoluteTo(window.location.href).origin(window.location.origin).normalize().toString();
-					}
-					return sPath + (sPath.endsWith('/') ? '' : '/') + "UI5/";
+					oThemeRoot = new URI(sThemeRoot, window.location.href).normalize();
+					sPath = oThemeRoot.path();
+					return sPath + (sPath.slice(-1) === '/' ? '' : '/') + "UI5/";
 				} catch (e) {
 					// malformed URL are also not accepted
 				}
@@ -332,6 +305,14 @@ sap.ui.define([
 			this._compatversion._default = _getCVers();
 			for (var n in M_COMPAT_FEATURES) {
 				this._compatversion[n] = _getCVers(n);
+			}
+
+			function getMetaTagValue(sName) {
+				var oMetaTag = document.querySelector("META[name='" + sName + "']"),
+				    sMetaContent = oMetaTag && oMetaTag.getAttribute("content");
+				if (sMetaContent) {
+					return sMetaContent;
+				}
 			}
 
 			// 6. apply the settings from the url (only if not blocked by app configuration)
@@ -494,13 +475,6 @@ sap.ui.define([
 				config["frameOptions"] = "allow";
 			}
 
-			// in case the flexibilityServices configuration was set to a non-empty, non-default value, sap.ui.fl becomes mandatory
-			if (config.flexibilityServices
-					&& config.flexibilityServices !== M_SETTINGS.flexibilityServices.defaultValue
-					&& config.modules.indexOf("sap.ui.fl.library") == -1) {
-				config.modules.push("sap.ui.fl.library");
-			}
-
 			var aCSSLibs = config['preloadLibCss'];
 			if ( aCSSLibs.length > 0 ) {
 				// a leading "!" denotes that the application has loaded the file already
@@ -536,6 +510,7 @@ sap.ui.define([
 					Log.info("  " + n + " = " + config[n]);
 				}
 			}
+
 
 			// Setup animation mode. If no animation mode is provided
 			// the value is set depending on the animation setting.
@@ -1173,8 +1148,8 @@ sap.ui.define([
 		 *
 		 * @returns {boolean} whether the design mode is active or not.
 		 * @since 1.13.2
-		 * @private
-	 	 * @ui5-restricted sap.watt com.sap.webide
+		 * private
+	 	 * @sap-restricted sap.watt com.sap.webide
 		 */
 		getDesignMode : function() {
 			return this["xx-designMode"];
@@ -1185,8 +1160,8 @@ sap.ui.define([
 		 *
 		 * @returns {boolean} whether the activation of the controller code is suppressed or not
 		 * @since 1.13.2
-		 * @private
-	 	 * @ui5-restricted sap.watt com.sap.webide
+		 * private
+	 	 * @sap-restricted sap.watt com.sap.webide
 		 */
 		getSuppressDeactivationOfControllerCode : function() {
 			return this["xx-suppressDeactivationOfControllerCode"];
@@ -1197,8 +1172,8 @@ sap.ui.define([
 		 *
 		 * @returns {boolean} whether the activation of the controller code is suppressed or not
 		 * @since 1.26.4
-		 * @private
-	 	 * @ui5-restricted sap.watt com.sap.webide
+		 * private
+	 	 * @sap-restricted sap.watt com.sap.webide
 		 */
 		getControllerCodeDeactivated : function() {
 			return this.getDesignMode() && !this.getSuppressDeactivationOfControllerCode();
@@ -1251,8 +1226,7 @@ sap.ui.define([
 		 * <code>handleURL</code>, <code>onIndexLoad</code> or <code>onIndexLoaded</code>.
 		 *
 		 * @returns {object} object containing the callback functions for the AppCacheBuster
-		 * @private
-		 * @ui5-restricted
+		 * @sap-restricted
 		 */
 		getAppCacheBusterHooks : function() {
 			return this["xx-appCacheBusterHooks"];
@@ -1263,7 +1237,7 @@ sap.ui.define([
 		 *
 		 * @returns {boolean} true if customizing is disabled
 		 * @private
-		 * @ui5-restricted
+		 * @sap-restricted
 		 */
 		getDisableCustomizing : function() {
 			return this["xx-disableCustomizing"];
@@ -1333,22 +1307,6 @@ sap.ui.define([
 		 * @since 1.60.0
 		 */
 		getFlexibilityServices : function() {
-			if (!this.flexibilityServices) {
-				this.flexibilityServices = [];
-			}
-
-			if (typeof this.flexibilityServices === 'string') {
-				if (this.flexibilityServices[0] === "/") {
-					this.flexibilityServices = [{
-						url : this.flexibilityServices,
-						layerFilter : ["ALL"],
-						connectorName : "LrepConnector"
-					}];
-				} else {
-					this.flexibilityServices = JSON.parse(this.flexibilityServices);
-				}
-			}
-
 			return this.flexibilityServices;
 		},
 
@@ -1694,7 +1652,7 @@ sap.ui.define([
 			function fallback(that) {
 				var oLocale = that.oConfiguration.language;
 				// if any user settings have been defined, add the private use subtag "sapufmt"
-				if ( !isEmptyObject(that.mSettings) ) {
+				if ( !jQuery.isEmptyObject(that.mSettings) ) {
 					// TODO move to Locale/LocaleData
 					var l = oLocale.toString();
 					if ( l.indexOf("-x-") < 0 ) {

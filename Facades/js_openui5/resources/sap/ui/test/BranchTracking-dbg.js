@@ -727,7 +727,7 @@
 			"sap/ui/base/SyncPromise"
 		], function (Log, UriParameters, SyncPromise) {
 			bInfo = Log.isLoggable(Log.Level.INFO, sClassName);
-			sTestId = UriParameters.fromQuery(window.location.search).get("testId");
+			sTestId = new UriParameters(window.location.href).get("testId");
 			SyncPromise.listener = listener;
 		});
 

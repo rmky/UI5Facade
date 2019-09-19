@@ -11,7 +11,8 @@ sap.ui.define([
 	'sap/ui/unified/CalendarRenderer',
 	"sap/ui/unified/calendar/Header",
 	"sap/ui/unified/DateRange",
-	"sap/ui/dom/containsOrEquals"
+	"sap/ui/dom/containsOrEquals",
+	"sap/ui/thirdparty/jquery"
 ],
 	function(
 		Renderer,
@@ -19,7 +20,8 @@ sap.ui.define([
 		CalendarRenderer,
 		Header,
 		DateRange,
-		containsOrEquals
+		containsOrEquals,
+		jQuery
 	) {
 	"use strict";
 
@@ -42,20 +44,15 @@ sap.ui.define([
 		return containsOrEquals(this.getDomRef("content"), oEvent.target);
 	};
 
-	CustomMonthPicker.prototype.onBeforeRendering = function () {
-		var oHeader = this.getAggregation("header");
-		Calendar.prototype.onBeforeRendering.call(this, arguments);
-		oHeader.setVisibleButton1(false);
-		oHeader.setVisibleButton2(true);
-	};
-
 	CustomMonthPicker.prototype.onAfterRendering = function () {
 		this._showMonthPicker();
 	};
 
 	CustomMonthPicker.prototype._selectYear = function () {
+		var oYearPicker = this.getAggregation("yearPicker");
+
 		var oFocusedDate = this._getFocusedDate();
-		oFocusedDate.setYear(this.getAggregation("yearPicker").getYear());
+		oFocusedDate.setYear(oYearPicker.getYear());
 
 		this._focusDate(oFocusedDate, true);
 
@@ -85,5 +82,5 @@ sap.ui.define([
 
 	return CustomMonthPicker;
 
-});
+}, /* bExport= */ true);
 

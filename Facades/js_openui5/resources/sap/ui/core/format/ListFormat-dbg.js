@@ -9,10 +9,9 @@ sap.ui.define([
 	'sap/ui/core/Locale',
 	'sap/ui/core/LocaleData',
 	"sap/base/Log",
-	"sap/ui/thirdparty/jquery",
-	"sap/base/util/isEmptyObject"
+	"sap/ui/thirdparty/jquery"
 ],
-	function(Locale, LocaleData, Log, jQuery, isEmptyObject) {
+	function(Locale, LocaleData, Log, jQuery) {
 	"use strict";
 
 	/**
@@ -97,7 +96,7 @@ sap.ui.define([
 
 		mListPatterns = this.oLocaleData.getListFormat(oOriginalFormat.type, oOriginalFormat.style);
 
-		if (isEmptyObject(mListPatterns)) {
+		if (jQuery.isEmptyObject(mListPatterns)) {
 			Log.error("No list pattern exists for the provided format options (type, style).");
 			return "";
 		}
@@ -169,7 +168,7 @@ sap.ui.define([
 
 		mListPatterns = this.oLocaleData.getListFormat(oOriginalFormat.type, oOriginalFormat.style);
 
-		if (isEmptyObject(mListPatterns)) {
+		if (jQuery.isEmptyObject(mListPatterns)) {
 			Log.error("No list pattern exists for the provided format options (type, style).");
 			return [];
 		}

@@ -40,7 +40,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.70.0
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @public
@@ -127,7 +127,7 @@ sap.ui.define([
 				object.attachItemSelect(this._itemSelectionHandler.bind(this));
 			}
 
-			return Control.prototype.setAggregation.apply(this, arguments);
+			return sap.ui.base.ManagedObject.prototype.setAggregation.apply(this, arguments);
 		};
 
 		/**
@@ -466,5 +466,5 @@ sap.ui.define([
 
 		return SideNavigation;
 
-	}
+	}, /* bExport= */ true
 );

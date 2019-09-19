@@ -9,15 +9,13 @@ sap.ui.define([
 	"sap/ui/fl/Utils",
 	"sap/ui/base/EventProvider",
 	"sap/ui/fl/registry/ChangeRegistry",
-	"sap/ui/fl/core/FlexVisualizer",
-	"sap/base/Log"
+	"sap/ui/fl/core/FlexVisualizer"
 ], function (
 	jQuery,
 	Utils,
 	EventProvider,
 	ChangeRegistry,
-	FlexVisualizer,
-	Log
+	FlexVisualizer
 ) {
 	"use strict";
 
@@ -29,17 +27,17 @@ sap.ui.define([
 	 * @alias sap.ui.fl.core.EventDelegate
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @experimental Since 1.27.0
 	 * @private
 	 *
 	 */
 	var EventDelegate = function (oControl, oSupportedRegistryItems) {
 		if (!oControl) {
-			Log.error("sap.ui.fl.core.EventDelegate: Control required");
+			Utils.log.error("sap.ui.fl.core.EventDelegate: Control required");
 		}
 		if (!oSupportedRegistryItems) {
-			Log.error("sap.ui.fl.core.EventDelegate: Supported registry items required");
+			Utils.log.error("sap.ui.fl.core.EventDelegate: Supported registry items required");
 		}
 
 		EventProvider.apply(this);

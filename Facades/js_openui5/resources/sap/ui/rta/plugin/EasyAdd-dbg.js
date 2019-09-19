@@ -25,7 +25,7 @@ sap.ui.define([
 	 * @class The EasyAdd Plugin adds an Icon to an Overlay, which allows to trigger add operations directly
 	 * @extends sap.ui.rta.plugin.additionalElements.AdditionalElementsPlugin
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @since 1.48
@@ -64,9 +64,6 @@ sap.ui.define([
 			} else {
 				sControlName = oOverlay.getDesignTimeMetadata().getAggregation("sections").childNames.plural();
 			}
-			// This is needed to trigger the selection of available elements in the showAvailableElements method
-			// Normally, getAllElements is called before showAvailableElements, here this is not the case
-			this.clearCachedElements();
 			this.showAvailableElements(bOverlayIsSibling, [oOverlay], iIndex, sControlName);
 		}.bind(this);
 

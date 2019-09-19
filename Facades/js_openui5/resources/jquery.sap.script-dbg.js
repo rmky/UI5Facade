@@ -37,7 +37,7 @@ sap.ui.define([
 	 * @return {int} The generated hash-code
 	 * @since 1.39
 	 * @private
-	 * @ui5-restricted sap.ui.core
+	 * @sap-restricted sap.ui.core
 	 * @function
 	 * @deprecated since 1.58 use {@link module:sap/base/strings/hash} instead
 	 */
@@ -268,7 +268,7 @@ sap.ui.define([
 	 * Use {@link jQuery.sap.getUriParameters} to create an instance of jQuery.sap.util.UriParameters.
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @since 0.9.0
 	 * @name jQuery.sap.util.UriParameters
 	 * @public

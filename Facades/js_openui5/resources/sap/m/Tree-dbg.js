@@ -39,7 +39,7 @@ function(
 	 * @extends sap.m.ListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -365,7 +365,7 @@ function(
 
 	/**
 	 *
-	 * Expands one or multiple items. Note that items that are hidden at the time of calling this API can't be expanded.
+	 * Expands one or multiple items.
 	 *
 	 * @return {sap.m.Tree} A reference to the Tree control
 	 * @public

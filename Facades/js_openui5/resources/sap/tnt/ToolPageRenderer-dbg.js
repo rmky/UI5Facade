@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/Device"],
-	function (Device) {
+sap.ui.define([],
+	function () {
 		'use strict';
 
 		/**
@@ -51,7 +51,7 @@ sap.ui.define(["sap/ui/Device"],
 		};
 
 		ToolPageRenderer.renderContentWrapper = function (rm, control) {
-			var isDesktop = Device.system.desktop;
+			var isDesktop = sap.ui.Device.system.desktop;
 
 			rm.write('<div class="sapTntToolPageContentWrapper');
 
@@ -70,7 +70,7 @@ sap.ui.define(["sap/ui/Device"],
 				return;
 			}
 
-			var isDesktop = Device.system.desktop;
+			var isDesktop = sap.ui.Device.system.desktop;
 			var sideContentAggregation = control.getAggregation('sideContent');
 			var isSideExpanded = control.getSideExpanded();
 

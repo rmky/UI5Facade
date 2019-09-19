@@ -4,14 +4,16 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/thirdparty/jquery",
+sap.ui.define(["jquery.sap.global",
 		'sap/ui/base/Object',
 		"sap/base/util/UriParameters",
+		"sap/ui/thirdparty/jquery",
 		"sap/ui/support/RuleAnalyzer",
 		"sap/ui/support/library"],
 	function(jQuery,
 			 BaseObject,
 			 UriParameters,
+			 jQueryDOM,
 			 RuleAnalyzer,
 			 library) {
 	"use strict";
@@ -45,7 +47,7 @@ sap.ui.define(["sap/ui/thirdparty/jquery",
 		 */
 		onAfterInit : function () {
 			var bLoaded = sap.ui.getCore().getLoadedLibraries()["sap.ui.support"],
-				deferred = jQuery.Deferred();
+				deferred = jQueryDOM.Deferred();
 
 			if (!bLoaded) {
 				sap.ui.require(["sap/ui/support/Bootstrap"], function (bootstrap) {
@@ -69,7 +71,7 @@ sap.ui.define(["sap/ui/thirdparty/jquery",
 		getAssertions : function () {
 
 			var fnShouldSkipRulesIssues = function () {
-				return UriParameters.fromQuery(window.location.search).get('sap-skip-rules-issues') == 'true';
+				return new UriParameters(window.location.href).get('sap-skip-rules-issues') == 'true';
 			};
 			var getWindow = function () {
 				var opaWindow = window.parent;
@@ -108,7 +110,7 @@ sap.ui.define(["sap/ui/thirdparty/jquery",
 				 * @returns {Promise} Promise.
 				 */
 				noRuleFailures: function(options) {
-					var ruleDeferred = jQuery.Deferred(),
+					var ruleDeferred = jQueryDOM.Deferred(),
 						options = options[0] || {},
 						failOnAnyRuleIssues = options["failOnAnyIssues"],
 						failOnHighRuleIssues = options["failOnHighIssues"],
@@ -169,7 +171,7 @@ sap.ui.define(["sap/ui/thirdparty/jquery",
 				 * @returns {Promise} Promise.
 				 */
 				getFinalReport: function () {
-					var ruleDeferred = jQuery.Deferred(),
+					var ruleDeferred = jQueryDOM.Deferred(),
 						history = RuleAnalyzer.getFormattedAnalysisHistory(),
 						analysisHistory = RuleAnalyzer.getAnalysisHistory(),
 						totalIssues = analysisHistory.reduce(function (total, analysis) {
@@ -217,7 +219,7 @@ sap.ui.define(["sap/ui/thirdparty/jquery",
 					var oContext,
 						oHistory,
 						options = options[0] || {},
-						ruleDeferred = jQuery.Deferred(),
+						ruleDeferred = jQueryDOM.Deferred(),
 						sHistoryFormat = options["historyFormat"],
 						sFile = options["fileName"];
 

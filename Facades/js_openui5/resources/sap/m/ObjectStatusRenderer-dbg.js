@@ -138,7 +138,10 @@ sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/IndicationColorSupp
 				}
 				if (accValueText) {
 					oRm.openStart("span", oObjStatus.getId() + "sapSRH");
-					oRm.class("sapUiPseudoInvisibleText");
+					oRm.class("sapUiInvisibleText");
+					oRm.accessibilityState({
+						hidden: false
+					});
 					oRm.openEnd();
 					oRm.text(accValueText);
 					oRm.close("span");

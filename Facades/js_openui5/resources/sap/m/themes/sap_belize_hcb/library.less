@@ -205,7 +205,6 @@ html.sap-desktop ::-webkit-scrollbar-thumb:vertical {
 	border-radius: 0.375rem;
 }
 
-.sapUiSizeCompact .sapMBar-CTX .sapMBtnDefault.sapMBtnInner:not(.sapMBtnDisabled),
 .sapUiSizeCompact .sapMBar-CTX .sapMBtnInner:not(.sapMBtnDisabled) {
 	border-color: @sapUiButtonBorderColor;
 }
@@ -261,7 +260,6 @@ html.sap-desktop .sapMBtn:focus > .sapMFocusable:not(.sapMBtnActive) {
 }
 
 .sapMBtnDisabled .sapMBtnInner,
-.sapUiSizeCompact .sapMBar-CTX .sapMBtnDisabled > .sapMBtnDefault.sapMBtnInner,
 .sapUiSizeCompact .sapMBar-CTX .sapMBtnDisabled > .sapMBtnInner {
 	border-color: @sapUiHcReducedForeground;
 	color: @sapUiContentDisabledTextColor;
@@ -673,10 +671,10 @@ html.sap-desktop .sapMFC:focus {
 /* START "GenericTag.less" */
 html.sap-desktop .sapMGenericTag {
 	&:before {
-		border: 0.125rem solid @sapUiBaseBG;
+		border: 1px solid @sapUiBaseBG;
 	}
 	&:after {
-		border: 0.125rem dotted @sapUiContentContrastFocusColor;
+		border: 1px dotted @sapUiContentContrastFocusColor;
 	}
 }
 /* END "GenericTag.less" */
@@ -2393,14 +2391,15 @@ html.sap-desktop .sapUiSizeCompact .sapMPlanCal.sapMSize1 .sapUiCalInt.sapUiCalO
 /* Belize High Contrast Black theme     */
 /* ==================================== */
 
-.sapMPullDownNontouch:focus {
-	outline-width: 0.125rem;
-}
-
-html[data-sap-ui-browser^="ie"] .sapMPullDownNontouch:focus:before {
-	width: calc(~'100% - 0.125rem');
-	height: calc(~'100% - 0.125rem');
-	border-width: 0.125rem;
+.sapMPullDownNontouch:focus:after {
+	content: '';
+	display: block;
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	top: 0;
+	border: 0.125rem dotted @sapUiContentFocusColor;
 }
 /* END "PullToRefresh.less" */
 
@@ -2761,49 +2760,45 @@ html.sap-desktop .sapMSFB:hover,
 /* ====================================== */
 
 .sapMSegBBtn {
-	.sapMSegBBtnInner {
-		margin-right: 0;
-		-webkit-tap-highlight-color: transparent;
-	}
-	&:first-child .sapMSegBBtnInner {
+	margin-right: 0;
+	-webkit-tap-highlight-color: transparent;
+	&:first-child {
 		border-top-left-radius: 0.375rem;
 		border-bottom-left-radius: 0.375rem;
 	}
-	&.sapMSegBtnLastVisibleButton .sapMSegBBtnInner {
+	&.sapMSegBtnLastVisibleButton {
 		border-top-right-radius: 0.375rem;
 		border-bottom-right-radius: 0.375rem;
 	}
 	&.sapMSegBBtnDis {
-		.sapMSegBBtnInner {
-			background-color: @sapUiSegmentedButtonBackground;
-			border-color: @sapUiHcReducedForeground;
-			color: @sapUiContentDisabledTextColor;
-		}
-		&.sapMSegBBtnSel .sapMSegBBtnInner {
+		background-color: @sapUiSegmentedButtonBackground;
+		border-color: @sapUiHcReducedForeground;
+		color: @sapUiContentDisabledTextColor;
+		&.sapMSegBBtnSel {
 			background-color: @sapUiHcReducedBackground;
 			color: @sapUiHcReducedAltForeground;
 		}
-		&.sapMSegBtnLastVisibleButton .sapMSegBBtnInner {
+		&.sapMSegBtnLastVisibleButton {
 			border-color: @sapUiHcReducedForeground;
 		}
 	}
-	&.sapMSegBBtnSel:focus:not(.sapMSegBBtnDis) .sapMSegBBtnInner {
+	&.sapMSegBBtnSel:focus:not(.sapMSegBBtnDis) {
 		border-radius: 0;
 	}
 }
 
 .sapMSegB {
 	.sapMSegBBtn {
-		&:not(.sapMSegBtnLastVisibleButton) .sapMSegBBtnInner {
+		&:not(.sapMSegBtnLastVisibleButton) {
 			border-right: 1px solid transparent;
 		}
-		+ .sapMSegBBtn.sapMSegBBtnFocusable:focus .sapMSegBBtnInner {
+		+ .sapMSegBBtn.sapMSegBBtnFocusable:focus {
 			border-right: 1px solid transparent;
 		}
-		&.sapMSegBtnLastVisibleButton:not(.sapMSegBBtnDis) .sapMSegBBtnInner {
+		&.sapMSegBtnLastVisibleButton:not(.sapMSegBBtnDis) {
 			border-right: 1px solid @sapUiSegmentedButtonBorderColor;
 		}
-		&.sapMSegBBtnDis.sapMSegBtnLastVisibleButton .sapMSegBBtnInner {
+		&.sapMSegBBtnDis.sapMSegBtnLastVisibleButton {
 			border-right: 1px solid @sapUiHcReducedForeground;
 		}
 	}
@@ -2811,45 +2806,41 @@ html.sap-desktop .sapMSFB:hover,
 
 /* Fix for disabled button border nested between active buttons */
 .sapMSegBBtn.sapMSegBBtnFocusable + .sapMSegBBtnDis {
-	.sapMSegBBtnInner {
-		opacity: 1;
-		border-left: 1px solid @sapUiSegmentedButtonBorderColor;
-		border-top-color: @sapUiHcReducedForeground;
-		border-bottom-color: @sapUiHcReducedForeground;
-		color: @sapUiContentDisabledTextColor;
-	}
-	&.sapMSegBBtnSel .sapMSegBBtnInner {
+	opacity: 1;
+	border-left: 1px solid @sapUiSegmentedButtonBorderColor;
+	border-top-color: @sapUiHcReducedForeground;
+	border-bottom-color: @sapUiHcReducedForeground;
+	color: @sapUiContentDisabledTextColor;
+	&.sapMSegBBtnSel {
 		background-color: @sapUiHcReducedBackground;
 		color: @sapUiHcReducedAltForeground;
 	}
-	& .sapMSegBBtnInner > .sapUiIcon {
+	& > .sapUiIcon {
 		opacity: 0.5;
 	}
 }
 
 /* Custom focus outline: */
 .sapMSegBBtnFocusable {
-	&:focus .sapMSegBBtnInner {
+	&:focus {
 		outline: 0.125rem dotted @sapUiContentFocusColor;
 		outline-offset: -0.125rem;
 		border: 1px solid transparent;
 	}
-	&.sapMSegBBtnSel:focus .sapMSegBBtnInner {
+	&.sapMSegBBtnSel:focus {
 		border: 1px solid transparent;
 	}
 	&:active + .sapMSegBBtn,
 	&:focus + .sapMSegBBtn {
-		.sapMSegBBtnInner {
+		border-left: 1px solid transparent;
+		&:not(.sapMSegBtnLastVisibleButton) {
 			border-left: 1px solid transparent;
 		}
-		&:not(.sapMSegBtnLastVisibleButton) .sapMSegBBtnInner {
-			border-left: 1px solid transparent;
-		}
-		&.sapMSegBtnLastVisibleButton .sapMSegBBtnInner {
+		&.sapMSegBtnLastVisibleButton {
 			border-left: 1px solid transparent;
 		}
 	}
-	&.sapMSegBBtnSel:focus + .sapMSegBBtn .sapMSegBBtnInner {
+	&.sapMSegBBtnSel:focus + .sapMSegBBtn {
 		border-left: 1px solid transparent;
 	}
 }
@@ -2857,11 +2848,11 @@ html.sap-desktop .sapMSFB:hover,
 /* IE mobile and desctop ignores outline-offset. Use an overlay: */
 html[data-sap-ui-browser^="ed"].sap-desktop .sapMSegB,
 html[data-sap-ui-browser^="ie"].sap-desktop .sapMSegB {
-	.sapMSegBBtn:focus .sapMSegBBtnInner {
+	.sapMSegBBtn:focus {
 		outline: none;
 		position: relative;
 	}
-	.sapMSegBBtn:not(.sapMSegBBtnDis):focus .sapMSegBBtnInner:before {
+	.sapMSegBBtn:not(.sapMSegBBtnDis):focus:before {
 		content: " ";
 		box-sizing: border-box;
 		width: 100%;
@@ -2872,7 +2863,7 @@ html[data-sap-ui-browser^="ie"].sap-desktop .sapMSegB {
 		border: 2px dashed @sapUiContentFocusColor;
 		pointer-events: none;
 	}
-	.sapMSegBBtn.sapMSegBtnLastVisibleButton:focus .sapMSegBBtnInner {
+	.sapMSegBBtn.sapMSegBtnLastVisibleButton:focus {
 		margin-right: 0;
 	}
 }
@@ -2881,34 +2872,34 @@ html[data-sap-ui-browser^="ie"].sap-desktop .sapMSegB {
 html[data-sap-ui-os^="Android4.1"][data-sap-ui-browser^="an"],
 html[data-sap-ui-os^="Android4.2"][data-sap-ui-browser^="an"],
 html[data-sap-ui-os^="Android4.3"][data-sap-ui-browser^="an"] {
-	.sapMSegBBtn:not(.sapMSegBBtnSel):focus .sapMSegBBtnInner {
+	.sapMSegBBtn:not(.sapMSegBBtnSel):focus {
 		background-color: transparent;
 	}
-	.sapMSegBBtnSel:focus .sapMSegBBtnInner {
+	.sapMSegBBtnSel:focus {
 		background-color: @sapUiSegmentedButtonSelectedBackground;
 	}
 }
 
 /* Compact size */
 .sapUiSizeCompact {
-	.sapMSegBBtn:not(.sapMSegBIcons) .sapMSegBBtnInner {
+	.sapMSegBBtn:not(.sapMSegBIcons) {
 		height: 1.625rem;
 		line-height: 1.5rem;
 		padding-left: 0.4375rem;
 		padding-right: 0.4375rem;
 	}
 
-	.sapMSegB.sapMBarChild .sapMSegBBtn .sapMSegBBtnInner {
+	.sapMSegB.sapMBarChild .sapMSegBBtn {
 		padding-left: 0.4375rem;
 		padding-right: 0.4375rem;
 	}
 
-	.sapMSegBBtn:first-child .sapMSegBBtnInner {
+	.sapMSegBBtn:first-child {
 		border-top-left-radius: 0.375rem;
 		border-bottom-left-radius: 0.375rem;
 	}
 
-	.sapMSegBBtn.sapMSegBtnLastVisibleButton .sapMSegBBtnInner {
+	.sapMSegBBtn.sapMSegBtnLastVisibleButton {
 		border-top-right-radius: 0.375rem;
 		border-bottom-right-radius: 0.375rem;
 	}
@@ -3368,17 +3359,6 @@ html.sap-desktop {
 .calendarRowTypeColorMixIn(sapUiCalendarAppType19, sapUiCalItemType19, lighten(desaturate(@sapUiAccent6,30),10));
 .calendarRowTypeColorMixIn(sapUiCalendarAppType20, sapUiCalItemType20, saturate(@sapUiAccent5,70));
 /* END "SinglePlanningCalendarGrid.less" */
-
-/* START "SinglePlanningCalendarMonthGrid.less" */
-.sapMSPCMonthDay {
-	border-top-width: 0.125rem;
-	border-left-width: 0.125rem;
-}
-
-html.sap-desktop .sapMSPCMonthDay:focus::after {
-	border-width: 0.125rem;
-}
-/* END "SinglePlanningCalendarMonthGrid.less" */
 
 /* START "Slider.less" */
 /* ================================= */
@@ -4158,26 +4138,6 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 			border: 0.125rem dotted @sapUiContentFocusColor;
 		}
 	}
-}
-
-/* ------------------------------ */
-/* Disabled                       */
-/* ------------------------------ */
-
-.sapMTokenizer.sapMTokenizerDisabled .sapMToken  {
-  &.sapMToken:hover,
-  &.sapMToken:focus,
-  &.sapMTokenSelected,
-  &.sapMToken .sapMTokenIcon {
-    background: @sapUiButtonBackground;
-    cursor: default;
-    color: @sapUiButtonTextColor;
-    outline: none;
-  }
-
-  &.sapMTokenText {
-    color: @sapUiButtonTextColor;
-  }
 }
 /* END "Tokenizer.less" */
 

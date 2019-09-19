@@ -126,7 +126,7 @@ sap.ui.define(['sap/ui/base/Object', "sap/base/util/isPlainObject"],
 	/**
 	 * This method returns, whether the context is preliminary.
 	 * @private
-	 * @ui5-restricted sap.suite.ui.generic
+	 * @sap-restricted sap.suite.ui.generic
 	 * @return {boolean} the preliminary flag
 	 */
 	Context.prototype.isPreliminary = function() {

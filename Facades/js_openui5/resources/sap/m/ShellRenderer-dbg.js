@@ -5,12 +5,13 @@
  */
 
 sap.ui.define([
+	'jquery.sap.global',
 	'sap/ui/core/library',
 	'sap/m/library',
 	'sap/ui/Device',
 	"sap/base/security/encodeXML"
 ],
-function(coreLibrary, library, Device, encodeXML) {
+function(jQuery, coreLibrary, library, Device, encodeXML) {
 	"use strict";
 
 

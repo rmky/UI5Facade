@@ -9,12 +9,11 @@
 sap.ui.define([
 	"sap/ui/fl/changeHandler/Base",
 	"sap/ui/core/util/reflection/JsControlTreeModifier",
-	"sap/base/Log"
+	"sap/ui/fl/Utils"
 ], function(
 	BaseChangeHandler,
 	JsControlTreeModifier,
-	Log
-) {
+	Utils) {
 	"use strict";
 
 	/**
@@ -22,7 +21,7 @@ sap.ui.define([
 	 *
 	 * @alias sap.ui.layout.changeHandler.RenameForm
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @since 1.40
 	 * @private
 	 * @experimental Since 1.40. This class is experimental and provides only limited functionality. Also the API might be changed in future.
@@ -60,7 +59,7 @@ sap.ui.define([
 
 			return true;
 		} else {
-			Log.error("Change does not contain sufficient information to be applied: [" + oChangeDefinition.layer + "]" + oChangeDefinition.namespace + "/" + oChangeDefinition.fileName + "." + oChangeDefinition.fileType);
+			Utils.log.error("Change does not contain sufficient information to be applied: [" + oChangeDefinition.layer + "]" + oChangeDefinition.namespace + "/" + oChangeDefinition.fileName + "." + oChangeDefinition.fileType);
 			//however subsequent changes should be applied
 		}
 	};
@@ -93,7 +92,7 @@ sap.ui.define([
 			oChangeWrapper.resetRevertData();
 			return true;
 		} else {
-			Log.error("Change doesn't contain sufficient information to be reverted. Most Likely the Change didn't go through applyChange.");
+			Utils.log.error("Change doesn't contain sufficient information to be reverted. Most Likely the Change didn't go through applyChange.");
 		}
 	};
 

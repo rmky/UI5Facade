@@ -215,7 +215,6 @@ sap.ui.define([
 
 	function sendBeaconRequest() {
 		oBeaconRequest.send();
-		clearTimeout(iBeaconTimeoutID);
 		iBeaconTimeoutID = setTimeout(sendBeaconRequest, 60000);
 	}
 
@@ -269,6 +268,7 @@ sap.ui.define([
 			Interaction.onInteractionFinished = onInteractionFinished;
 		} else if (!bActive && bFesrActive) {
 			bFesrActive = false;
+			sBeaconURL = null;
 			Interaction.setActive(false);
 			XHRInterceptor.unregister("FESR", "open");
 			// passport stays active so far
@@ -278,10 +278,9 @@ sap.ui.define([
 					this.setRequestHeader("SAP-PASSPORT", Passport.header(Passport.traceFlags(), ROOT_ID, Passport.getTransactionId()));
 				});
 			}
-			if (oBeaconRequest) {
-				oBeaconRequest.send();
+			if (oBeaconRequest && iBeaconTimeoutID) {
 				clearTimeout(iBeaconTimeoutID);
-				iBeaconTimeoutID = null;
+				oBeaconRequest.send();
 				oBeaconRequest = null;
 				sBeaconURL = null;
 			}

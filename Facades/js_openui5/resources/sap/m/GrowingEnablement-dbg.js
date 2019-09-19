@@ -96,12 +96,16 @@ sap.ui.define([
 
 		// renders load more trigger
 		render : function(oRm) {
-			oRm.openStart("div", this._oControl.getId() + "-triggerList");
-			oRm.class("sapMListUl").class("sapMGrowingList");
-			oRm.style("display", "none");
-			oRm.openEnd();
+			oRm.write("<div");
+			oRm.addClass("sapMListUl");
+			oRm.addClass("sapMGrowingList");
+			oRm.writeAttribute("id", this._oControl.getId() + "-triggerList");
+			oRm.addStyle("display", "none");
+			oRm.writeClasses();
+			oRm.writeStyles();
+			oRm.write(">");
 			oRm.renderControl(this._getTrigger());
-			oRm.close("div");
+			oRm.write("</div>");
 		},
 
 		onAfterRendering : function() {
@@ -236,7 +240,7 @@ sap.ui.define([
 									'<div class="sapMGrowingListDescription sapMSLIDescription" id="' + sTriggerID + 'Info"></div>' +
 								'</div>'
 				})
-			}).setParent(this._oControl, null, true).attachPress(this.requestNewPage, this).addDelegate({
+			}).setParent(this._oControl, null, true).attachPress(this.requestNewPage, this).addEventDelegate({
 				onsapenter : function(oEvent) {
 					this.requestNewPage();
 					oEvent.preventDefault();

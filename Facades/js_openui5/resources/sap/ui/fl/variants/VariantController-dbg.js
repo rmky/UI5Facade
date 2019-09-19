@@ -7,15 +7,11 @@
 sap.ui.define([
 	"sap/ui/fl/Utils",
 	"sap/ui/fl/Change",
-	"sap/ui/fl/Variant",
-	"sap/base/util/ObjectPath",
-	"sap/base/Log"
+	"sap/ui/fl/Variant"
 ], function (
 	Utils,
 	Change,
-	Variant,
-	ObjectPath,
-	Log
+	Variant
 ) {
 	"use strict";
 
@@ -32,7 +28,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.variants.VariantController
 	 * @experimental Since 1.50.0
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 */
 	var VariantController = function (sComponentName, sAppVersion, oChangeFileContent) {
 		this._sComponentName = sComponentName || "";
@@ -41,7 +37,6 @@ sap.ui.define([
 		this.setChangeFileContent(oChangeFileContent, {});
 		this.sVariantTechnicalParameterName = "sap-ui-fl-control-variant-id";
 		this._oResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.ui.fl");
-		this.DEFAULT_AUTHOR = "SAP";
 	};
 
 	/**
@@ -83,16 +78,6 @@ sap.ui.define([
 				aVariants.forEach(function (oVariant, index) {
 					if (oVariant.content.fileName === sVariantManagementReference) {
 						iIndex = index;
-						// Standard Variant should always contain the value: "SAP" in "author" / "Created by" field
-						// case when standard variant exists in the backend response
-						if (!ObjectPath.get("content.support.user", oVariant)) {
-							var oSupport = {
-								support: {
-									user: this.DEFAULT_AUTHOR
-								}
-							};
-							Object.assign(oVariant.content, oSupport);
-						}
 					}
 					if (!oVariant.content.content.favorite) {
 						oVariant.content.content.favorite = true;
@@ -218,7 +203,7 @@ sap.ui.define([
 
 	VariantController.prototype.setVariantChanges = function(sVariantManagementReference, sVariantReference, aChanges) {
 		if (!sVariantManagementReference || !sVariantReference || !Array.isArray(aChanges)) {
-			Log.error("Cannot set variant changes without Variant reference");
+			Utils.log.error("Cannot set variant changes without Variant reference");
 			return undefined;
 		}
 
@@ -346,8 +331,7 @@ sap.ui.define([
 	 */
 	VariantController.prototype.getChangesForVariantSwitch = function(mPropertyBag) {
 		var aCurrentVariantChanges = this.getVariantChanges(mPropertyBag.variantManagementReference, mPropertyBag.currentVariantReference, true);
-		var aMapChanges = [];
-		var aChangeKeysFromMap = [];
+		var aMapChanges = [], aChangeKeysFromMap = [];
 		Object.keys(mPropertyBag.changesMap).forEach(function(sControlId) {
 			mPropertyBag.changesMap[sControlId].forEach(function(oMapChange) {
 				aMapChanges = aMapChanges.concat(oMapChange);
@@ -389,8 +373,8 @@ sap.ui.define([
 	};
 
 	VariantController.prototype._applyChangesOnVariant = function(oVariant) {
-		var mVariantChanges = oVariant.variantChanges;
-		var oActiveChange;
+		var mVariantChanges = oVariant.variantChanges,
+			oActiveChange;
 		Object.keys(mVariantChanges).forEach(function(sChangeType) {
 			switch (sChangeType) {
 				case "setTitle":
@@ -412,14 +396,14 @@ sap.ui.define([
 					}
 					break;
 				default:
-					Log.error("No valid changes on variant " + oVariant.content.content.title + " available");
+					Utils.log.error("No valid changes on variant " + oVariant.content.content.title + " available");
 			}
 		}.bind(this));
 	};
 
 	VariantController.prototype._applyChangesOnVariantManagement = function(oVariantManagement) {
-		var mVariantManagementChanges = oVariantManagement.variantManagementChanges;
-		var oActiveChange;
+		var mVariantManagementChanges = oVariantManagement.variantManagementChanges,
+			oActiveChange;
 		if (Object.keys(mVariantManagementChanges).length > 0) {
 			oActiveChange = this._getActiveChange("setDefault", mVariantManagementChanges);
 			if (oActiveChange) {
@@ -464,8 +448,7 @@ sap.ui.define([
 							title : oVariant.content.content.title,
 							layer : oVariant.content.layer,
 							favorite : oVariant.content.content.favorite,
-							visible : oVariant.content.content.visible,
-							author : ObjectPath.get("content.support.user", oVariant)
+							visible : oVariant.content.content.visible
 						})
 					);
 			});
@@ -562,7 +545,7 @@ sap.ui.define([
 	 */
 	VariantController.prototype.resetMap = function (bResetAtRuntime) {
 		if (bResetAtRuntime) {
-			return Promise.resolve(_fnResetMapListener());
+			return Promise.resolve(_fnResetMapListener.call(null));
 		}
 		this._mVariantManagement = {};
 		return Promise.resolve();

@@ -6,11 +6,9 @@
 
 sap.ui.define([
 	"sap/ui/fl/Utils",
-	"sap/ui/fl/changeHandler/Base",
 	"sap/base/util/LoaderExtensions"
 ], function(
 	Utils,
-	Base,
 	LoaderExtensions
 ) {
 	"use strict";
@@ -20,7 +18,7 @@ sap.ui.define([
 	 *
 	 * @alias sap.ui.fl.changeHandler.AddXML
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @since 1.54
 	 * @private
 	 * @experimental Since 1.54. This class is experimental and provides only limited functionality. Also the API might be changed in future.
@@ -50,20 +48,32 @@ sap.ui.define([
 	AddXML.applyChange = function(oChange, oControl, mPropertyBag) {
 		var oModifier = mPropertyBag.modifier;
 		var oChangeDefinition = oChange.getDefinition();
+		var sModuleName = oChange.getModuleName();
 		var sAggregationName = oChangeDefinition.content.targetAggregation;
 
-		var aNewControls = Base.instantiateFragment(oChange, mPropertyBag);
+		if (!sModuleName) {
+			throw new Error("The module name of the fragment is not set. This should happen in the backend");
+		}
+
+		var sFragment = LoaderExtensions.loadResource(sModuleName, {dataType: "text"});
 
 		var iIndex = oChangeDefinition.content.index;
 		var oView = mPropertyBag.view;
+		var sNamespace = oChange.getProjectId();
+
+		var aNewControls;
+		try {
+			aNewControls = oModifier.instantiateFragment(sFragment, sNamespace, oView);
+		} catch (oError) {
+			throw new Error("The following XML Fragment could not be instantiated: " + sFragment + " Reason: " + oError.message);
+		}
 
 		var oAggregationDefinition = oModifier.findAggregation(oControl, sAggregationName);
 		if (!oAggregationDefinition) {
 			destroyArrayOfControls(aNewControls);
 			throw new Error("The given Aggregation is not available in the given control: " + oModifier.getId(oControl));
 		}
-		var sModuleName = oChange.getModuleName();
-		var sFragment = LoaderExtensions.loadResource(sModuleName, {dataType: "text"});
+
 		aNewControls.forEach(function(oNewControl, iIterator) {
 			if (!oModifier.validateType(oNewControl, oAggregationDefinition, oControl, sFragment, iIterator)) {
 				destroyArrayOfControls(aNewControls);
@@ -155,6 +165,8 @@ sap.ui.define([
 
 		var generateModuleName = function(oChangeDefinition) {
 			var sModuleName = oChangeDefinition.reference.replace(/\./g, "/");
+			sModuleName += "/$$flexModules/";
+			sModuleName += oChangeDefinition.validAppVersions.creation;
 			sModuleName += "/changes/";
 			sModuleName += oChangeDefinition.content.fragmentPath.replace(/\.fragment\.xml/g, "");
 

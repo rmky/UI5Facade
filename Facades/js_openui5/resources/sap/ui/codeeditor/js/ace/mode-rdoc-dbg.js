@@ -102,7 +102,6 @@ var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 var LaTeXHighlightRules = require("./latex_highlight_rules");
 
 var RDocHighlightRules = function() {
-
     this.$rules = {
         "start" : [
             {
@@ -233,7 +232,8 @@ oop.inherits(Mode, TextMode);
 }).call(Mode.prototype);
 
 exports.Mode = Mode;
-});                (function() {
+});
+                (function() {
                     ace.require(["ace/mode/rdoc"], function(m) {
                         if (typeof module == "object" && typeof exports == "object" && module) {
                             module.exports = m;

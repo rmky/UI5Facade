@@ -58,7 +58,7 @@ sap.ui.define(['sap/ui/core/Renderer', './InputBaseRenderer'], function(Renderer
 			oResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 			sAnnouncement = oResourceBundle.getText("MASKINPUT_SCREENREADER_DESCRIPTION", [sMaskPlaceholderSymbol, sMask]);
 
-			return sAnnouncement.trim();
+			return jQuery.trim(sAnnouncement);
 		}
 
 		return InputBaseRenderer.getDescribedByAnnouncement.apply(this, arguments);

@@ -8,12 +8,13 @@
 
 // Provides class sap.ui.core.ElementMetadata
 sap.ui.define([
+	'sap/ui/thirdparty/jquery',
 	'sap/base/Log',
 	'sap/base/util/ObjectPath',
 	'sap/ui/base/ManagedObjectMetadata',
 	'sap/ui/core/Renderer'
 ],
-	function(Log, ObjectPath, ManagedObjectMetadata, Renderer) {
+	function(jQuery, Log, ObjectPath, ManagedObjectMetadata, Renderer) {
 	"use strict";
 
 
@@ -25,7 +26,7 @@ sap.ui.define([
 	 *
 	 * @class
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @since 0.8.6
 	 * @alias sap.ui.core.ElementMetadata
 	 * @extends sap.ui.base.ManagedObjectMetadata

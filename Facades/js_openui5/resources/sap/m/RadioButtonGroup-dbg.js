@@ -57,7 +57,7 @@ sap.ui.define([
 			 * @implements sap.ui.core.IFormContent
 			 *
 			 * @author SAP SE
-			 * @version 1.70.0
+			 * @version 1.68.1
 			 *
 			 * @constructor
 			 * @public
@@ -176,16 +176,21 @@ sap.ui.define([
 			RadioButtonGroup.prototype.onBeforeRendering = function() {
 				var aButtons = this.getButtons();
 				var iButtonCount = aButtons.length;
-				var bEditable = this.getEditable();
+				var aVisibleRBs = aButtons.filter(function (oRadioButton) {
+						oRadioButton._setEditableParent(this.getEditable());
 
-				aButtons.forEach(function (oRadioButton) {
-					oRadioButton._setEditableParent(bEditable);
-				});
+						return oRadioButton.getVisible();
+					}, this);
 
 				if (this.getSelectedIndex() > iButtonCount) {
 					Log.warning("Invalid index, set to 0");
 					this.setSelectedIndex(0);
 				}
+
+				aVisibleRBs.forEach(function (oRadioButton, iIndex) {
+					oRadioButton._setPosinset(iIndex);
+					oRadioButton._setSetsize(aVisibleRBs.length);
+				}, this);
 			};
 
 			/**

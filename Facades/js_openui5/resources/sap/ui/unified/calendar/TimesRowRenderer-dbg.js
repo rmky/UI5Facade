@@ -186,11 +186,10 @@ sap.ui.define(['sap/ui/unified/calendar/CalendarUtils', 'sap/ui/core/date/Univer
 	};
 
 	TimesRowRenderer.renderTime = function(oRm, oTimesRow, oDate, oHelper, sWidth, sAmPm){
-		var sRole = oTimesRow._getAriaRole();
+
 		var mAccProps = {
-				role: sRole,
-				// aria-selected isn't valid for role="button"
-				selected: sRole !== "gridcell" ? null : false,
+				role: oTimesRow._getAriaRole(),
+				selected: false,
 				label: "",
 				describedby: ""
 			};
@@ -217,11 +216,7 @@ sap.ui.define(['sap/ui/unified/calendar/CalendarUtils', 'sap/ui/core/date/Univer
 
 		if (iSelected > 0) {
 			oRm.addClass("sapUiCalItemSel"); // time selected
-
-			if (sRole === "gridcell") {
-				// aria-selected isn't valid for role="button"
-				mAccProps["selected"] = true;
-			}
+			mAccProps["selected"] = true;
 		}
 		if (iSelected == 2) {
 			oRm.addClass("sapUiCalItemSelStart"); // interval start

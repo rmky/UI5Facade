@@ -98,7 +98,6 @@ ace.define("ace/mode/edifact_highlight_rules",["require","exports","module","ace
             "constant.language": buildinConstants,
             "support.function": langClasses
         }, "identifier");
-    
         this.$rules = {
             "start" : [
                 {
@@ -155,7 +154,8 @@ oop.inherits(Mode, TextMode);
 }).call(Mode.prototype);
 
 exports.Mode = Mode;
-});                (function() {
+});
+                (function() {
                     ace.require(["ace/mode/edifact"], function(m) {
                         if (typeof module == "object" && typeof exports == "object" && module) {
                             module.exports = m;

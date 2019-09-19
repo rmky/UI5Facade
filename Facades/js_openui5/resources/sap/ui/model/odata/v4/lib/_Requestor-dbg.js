@@ -266,25 +266,20 @@ sap.ui.define([
 				oChangeRequest,
 				aChangeSet,
 				oError,
-				i,
-				j;
+				i;
 
+			aChangeSet = aBatchQueue[0];
 			// restore changes in reverse order to get the same initial state
-			for (j = aBatchQueue.length - 1; j >= 0; j -= 1) {
-				if (Array.isArray(aBatchQueue[j])) {
-					aChangeSet = aBatchQueue[j];
-					for (i = aChangeSet.length - 1; i >= 0; i -= 1) {
-						oChangeRequest = aChangeSet[i];
-						if (oChangeRequest.$cancel && fnFilter(oChangeRequest)) {
-							oChangeRequest.$cancel();
-							oError = new Error("Request canceled: " + oChangeRequest.method + " "
-								+ oChangeRequest.url + "; group: " + sGroupId0);
-							oError.canceled = true;
-							oChangeRequest.$reject(oError);
-							aChangeSet.splice(i, 1);
-							bCanceled = true;
-						}
-					}
+			for (i = aChangeSet.length - 1; i >= 0; i -= 1) {
+				oChangeRequest = aChangeSet[i];
+				if (oChangeRequest.$cancel && fnFilter(oChangeRequest)) {
+					oChangeRequest.$cancel();
+					oError = new Error("Request canceled: " + oChangeRequest.method + " "
+						+ oChangeRequest.url + "; group: " + sGroupId0);
+					oError.canceled = true;
+					oChangeRequest.$reject(oError);
+					aChangeSet.splice(i, 1);
+					bCanceled = true;
 				}
 			}
 		}
@@ -761,14 +756,14 @@ sap.ui.define([
 	};
 
 	/**
-	 * Tells whether there are changes for the given group ID and given entity.
+	 * Tells whether there are pending changes for the given group ID.
 	 *
 	 * @param {string} sGroupId
 	 *   The group ID
 	 * @param {object} oEntity
 	 *   The entity used to identify a request based on its "If-Match" header
 	 * @returns {boolean}
-	 *   Whether there are changes for the given group ID and given entity
+	 *   Whether there are pending changes for the given group ID
 	 *
 	 * @public
 	 */
@@ -776,46 +771,33 @@ sap.ui.define([
 		var aRequests = this.mBatchQueue[sGroupId];
 
 		if (aRequests) {
-			return aRequests.some(function (vRequests) {
-				return Array.isArray(vRequests) && vRequests.some(function (oRequest) {
-					return oRequest.headers["If-Match"] === oEntity;
-				});
+			return aRequests[0].some(function (oRequest) {
+				return oRequest.headers["If-Match"] === oEntity;
 			});
 		}
+
 		return false;
 	};
 
 	/**
-	 * Returns <code>true</code> if there are pending changes for the given group ID.
+	 * Returns <code>true</code> if there are pending changes.
 	 *
-	 * @param {string} [sGroupId]
-	 *   The ID of the group to be checked; if not supplied all groups are checked for pending
-	 *   changes (since 1.70.0)
 	 * @returns {boolean} <code>true</code> if there are pending changes
 	 *
 	 * @public
 	 */
-	Requestor.prototype.hasPendingChanges = function (sGroupId) {
-		var that = this;
+	Requestor.prototype.hasPendingChanges = function () {
+		var sGroupId, bPending;
 
-		function filter (mMap) {
-			var aKeys = Object.keys(mMap);
-
-			return sGroupId === undefined
-				? aKeys
-				: aKeys.filter(function (sGroupId0) {
-					return sGroupId === sGroupId0;
-				});
-		}
-
-		return filter(this.mRunningChangeRequests).length > 0
-			|| filter(this.mBatchQueue).some(function (sGroupId0) {
-				return that.mBatchQueue[sGroupId0].some(function (vRequests) {
-					return Array.isArray(vRequests) && vRequests.some(function (oRequest) {
-						return oRequest.$cancel;
-					});
-				});
+		for (sGroupId in this.mBatchQueue) {
+			bPending = this.mBatchQueue[sGroupId][0].some(function (oRequest) {
+				return oRequest.$cancel;
 			});
+			if (bPending) {
+				return true;
+			}
+		}
+		return Object.keys(this.mRunningChangeRequests).length > 0;
 	};
 
 	/**
@@ -937,24 +919,23 @@ sap.ui.define([
 	 *
 	 * @param {string} sCurrentGroupId
 	 *   The ID of the group in which to search
+	 * @param {object} oEntity
+	 *   The entity used to identify a request based on its "If-Match" header
 	 * @param {string} sNewGroupId
 	 *   The ID of the group for the new requests
-	 * @param {object} [oEntity]
-	 *   The entity used to identify a request based on its "If-Match" header; if not set, all
-	 *   requests are taken into account
 	 * @throws {Error}
 	 *   If group ID is '$cached'. The error has a property <code>$cached = true</code>
 	 *
-	 * @public
+	 * @private
 	 */
-	Requestor.prototype.relocateAll = function (sCurrentGroupId, sNewGroupId, oEntity) {
+	Requestor.prototype.relocateAll = function (sCurrentGroupId, oEntity, sNewGroupId) {
 		var j = 0,
 			aRequests = this.mBatchQueue[sCurrentGroupId],
 			that = this;
 
 		if (aRequests) {
 			aRequests[0].slice().forEach(function (oChange) {
-				if (!oEntity || oChange.headers["If-Match"] === oEntity) {
+				if (oChange.headers["If-Match"] === oEntity) {
 					aRequests[0].splice(j, 1);
 					that.request(oChange.method, oChange.url, new _GroupLock(sNewGroupId),
 							oChange.headers, oChange.body, oChange.$submit, oChange.$cancel)
@@ -1017,12 +998,20 @@ sap.ui.define([
 	 * @param {string} sResourcePath
 	 *   The resource path of the request whose response contained the messages
 	 * @param {string} [sMessages]
-	 *   The messages in the serialized form as contained in the "sap-messages" response header
+	 *   The messages in the serialized form as contained in the sap-messages response header
 	 *
 	 * @private
 	 */
 	Requestor.prototype.reportUnboundMessagesAsJSON = function (sResourcePath, sMessages) {
-		this.oModelInterface.reportUnboundMessages(sResourcePath, JSON.parse(sMessages || null));
+		var aMessages = JSON.parse(sMessages || null);
+
+		if (aMessages) {
+			aMessages.forEach(function (oMessage) {
+				oMessage.technicalDetails = {originalMessage : Object.assign({}, oMessage)};
+			});
+		}
+
+		this.oModelInterface.reportUnboundMessages(sResourcePath, aMessages);
 	};
 
 	/**
@@ -1181,10 +1170,9 @@ sap.ui.define([
 	 * @param {string} [sOriginalResourcePath]
 	 *  The path by which the resource has originally been requested
 	 * @returns {Promise}
-	 *   A promise that is resolved with an object having the properties body, contentType, messages
-	 *   and resourcePath. The body is already an object if the contentType is "application/json".
-	 *   The messages are retrieved from the "sap-messages" response header. The promise is rejected
-	 *   with an error if the request failed.
+	 *   A promise that is resolved with an object having the properties body and contentType. The
+	 *   body is already an object if the Content-Type is "application/json". The promise is
+	 *   rejected with an error if the request failed.
 	 *
 	 * @private
 	 */
@@ -1251,12 +1239,12 @@ sap.ui.define([
 							// the session
 							that.setSessionContext(sContextId,
 								jqXHR.getResponseHeader("SAP-Http-Session-Timeout"));
-						} else if (that.mHeaders["SAP-ContextId"]) {
-							// There was a session, but now it's gone
+						} else if (jqXHR.getResponseHeader("SAP-Err-Id") === "ICMENOSESSION") {
+							// The server could not find the context ID ("ICM Error NO SESSION")
 							sMessage = "Session not found on server";
 							Log.error(sMessage, undefined, sClassName);
 							that.clearSessionContext(/*bTimeout*/true);
-						}
+						} // else keep the session untouched
 						fnReject(_Helper.createError(jqXHR, sMessage, sRequestUrl,
 							sOriginalResourcePath));
 					}

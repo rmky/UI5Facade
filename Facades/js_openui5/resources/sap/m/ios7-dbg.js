@@ -5,13 +5,13 @@
  */
 /*global window, document *///declare unusual global vars for JSLint/SAPUI5 validation
 
-sap.ui.define(["sap/ui/core/IntervalTrigger", "sap/ui/thirdparty/jquery", "sap/ui/base/EventProvider", "sap/ui/Device"],
-	function(IntervalTrigger, jQuery, EventProvider, Device) {
+sap.ui.define(["sap/ui/core/IntervalTrigger", "sap/ui/thirdparty/jquery"],
+	function(IntervalTrigger, jQuery) {
 	"use strict";
 
 
 
-		var _Ios7 = EventProvider.extend("sap.m._Ios7", {
+		sap.ui.base.EventProvider.extend("sap.m._Ios7", {
 			/**
 			 * IOS 7 behaves strange if the keyboard is open and you do an orientation change:
 			 * There will be a black space below the page and it will scroll away from the top in this case.
@@ -21,10 +21,10 @@ sap.ui.define(["sap/ui/core/IntervalTrigger", "sap/ui/thirdparty/jquery", "sap/u
 			 * @private
 			 */
 			constructor : function() {
-				var bIsIOS7Safari = Device.os.ios && Device.os.version >= 7 && Device.os.version < 8 && Device.browser.name === "sf";
+				var bIsIOS7Safari = sap.ui.Device.os.ios && sap.ui.Device.os.version >= 7 && sap.ui.Device.os.version < 8 && sap.ui.Device.browser.name === "sf";
 
 				//call the base to properly init the event registry
-				EventProvider.apply(this);
+				sap.ui.base.EventProvider.apply(this);
 
 				if (!bIsIOS7Safari) {
 					return;
@@ -39,7 +39,7 @@ sap.ui.define(["sap/ui/core/IntervalTrigger", "sap/ui/thirdparty/jquery", "sap/u
 					this._attachNavigationBarPolling();
 				}
 
-				Device.orientation.attachHandler(this._onOrientationChange, this);
+				sap.ui.Device.orientation.attachHandler(this._onOrientationChange, this);
 
 				this._onFocusin =  jQuery.proxy(this._onFocusin, this);
 				document.addEventListener("focusin", this._onFocusin , true);
@@ -58,7 +58,7 @@ sap.ui.define(["sap/ui/core/IntervalTrigger", "sap/ui/thirdparty/jquery", "sap/u
 		 * @internal
 		 * @returns {int} the height of the navigation bar
 		 */
-		_Ios7.prototype.getNavigationBarHeight = function () {
+		sap.m._Ios7.prototype.getNavigationBarHeight = function () {
 			if (!this._bNavigationBarEventFired) {
 				return 0;
 			}
@@ -69,8 +69,8 @@ sap.ui.define(["sap/ui/core/IntervalTrigger", "sap/ui/thirdparty/jquery", "sap/u
 		privates
 		*****************************/
 
-		_Ios7.prototype._attachNavigationBarPolling = function () {
-			if (!Device.system.phone || this._bIntervallAttached) {
+		sap.m._Ios7.prototype._attachNavigationBarPolling = function () {
+			if (!sap.ui.Device.system.phone || this._bIntervallAttached) {
 				return;
 			}
 
@@ -78,8 +78,8 @@ sap.ui.define(["sap/ui/core/IntervalTrigger", "sap/ui/thirdparty/jquery", "sap/u
 			this._bIntervallAttached = true;
 		};
 
-		_Ios7.prototype._detachNavigationBarPolling = function () {
-			if (!Device.system.phone || !this._bIntervallAttached) {
+		sap.m._Ios7.prototype._detachNavigationBarPolling = function () {
+			if (!sap.ui.Device.system.phone || !this._bIntervallAttached) {
 				return;
 			}
 
@@ -89,7 +89,7 @@ sap.ui.define(["sap/ui/core/IntervalTrigger", "sap/ui/thirdparty/jquery", "sap/u
 
 		//We cannot turn this off in landscape mode, since the inner and outer height might be different when the soft-keyboard pops up.
 		//So we need to do a lot of unnecessary scrolls, since keyboard and navigation bar cannot be distinguished.
-		_Ios7.prototype._detectNavigationBar = function () {
+		sap.m._Ios7.prototype._detectNavigationBar = function () {
 			var iHeightDifference = window.outerHeight - window.innerHeight;
 
 			if (iHeightDifference === 0 || this._bInputIsOpen || this._bNavigationBarEventFired) {
@@ -114,8 +114,8 @@ sap.ui.define(["sap/ui/core/IntervalTrigger", "sap/ui/thirdparty/jquery", "sap/u
 			}
 		};
 
-		_Ios7.prototype.destroy = function() {
-			EventProvider.prototype.destroy.apply(this, arguments);
+		sap.m._Ios7.prototype.destroy = function() {
+			sap.ui.base.EventProvider.prototype.destroy.apply(this, arguments);
 
 			document.removeEventListener("focusin", this._onFocusin , true);
 			document.removeEventListener("focusout", this._onFocusout, true);
@@ -128,10 +128,10 @@ sap.ui.define(["sap/ui/core/IntervalTrigger", "sap/ui/thirdparty/jquery", "sap/u
 		 * @param oEvent the native focusin event
 		 * @private
 		 */
-		_Ios7.prototype._onFocusin = function (oEvent) {
+		sap.m._Ios7.prototype._onFocusin = function (oEvent) {
 			var sTagName = oEvent.target.tagName;
 
-			if (!_Ios7._rTagRegex.test(sTagName)) {
+			if (!sap.m._Ios7._rTagRegex.test(sTagName)) {
 				return;
 			}
 
@@ -142,20 +142,20 @@ sap.ui.define(["sap/ui/core/IntervalTrigger", "sap/ui/thirdparty/jquery", "sap/u
 			this.fireEvent("inputOpened");
 		};
 
-		_Ios7._rTagRegex = /INPUT|TEXTAREA|SELECT/;
+		sap.m._Ios7._rTagRegex = /INPUT|TEXTAREA|SELECT/;
 
 		/**
 		 * @param oEvent the native focusout event
 		 * @private
 		 */
-		_Ios7.prototype._onFocusout = function (oEvent) {
+		sap.m._Ios7.prototype._onFocusout = function (oEvent) {
 			var sTagName = oEvent.srcElement.tagName,
 				oRelated = oEvent.relatedTarget,
 				sRelatedTag = (oRelated && (oRelated.getAttribute("readonly") === null) && (oRelated.getAttribute("disabled") === null)) ? oRelated.tagName : "";
 
 			//only handle the focusout for elements that can bring up a soft-keyboard
 			//there are a lot of input types that might not bring up the soft-keyboard - checking for them might be a bit too much
-			if (_Ios7._rTagRegex.test(sTagName) && !_Ios7._rTagRegex.test(sRelatedTag)) {
+			if (sap.m._Ios7._rTagRegex.test(sTagName) && !sap.m._Ios7._rTagRegex.test(sRelatedTag)) {
 				window.scrollTo(0,0);
 
 				//Attach the polling again, since it was disabled in the focus in. But only do it in landscape.
@@ -172,7 +172,7 @@ sap.ui.define(["sap/ui/core/IntervalTrigger", "sap/ui/thirdparty/jquery", "sap/u
 		 * handles the orientation change
 		 * @private
 		 */
-		_Ios7.prototype._onOrientationChange = function (oEvent) {
+		sap.m._Ios7.prototype._onOrientationChange = function (oEvent) {
 			var bIsLandscape = oEvent.landscape;
 
 			window.scrollTo(0,0);
@@ -191,7 +191,7 @@ sap.ui.define(["sap/ui/core/IntervalTrigger", "sap/ui/thirdparty/jquery", "sap/u
 		};
 
 		//expose the singleton
-		var ios7 = new _Ios7();
+		var ios7 = new sap.m._Ios7();
 
 
 	return ios7;

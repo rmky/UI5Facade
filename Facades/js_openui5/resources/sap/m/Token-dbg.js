@@ -56,7 +56,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -93,12 +93,7 @@ sap.ui.define([
 			 * This property specifies the text directionality with enumerated options. By default, the control inherits text direction from the DOM.
 			 * @since 1.28.0
 			 */
-			textDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : TextDirection.Inherit},
-
-			/**
-			 * Indicates the editable status of the token's parent (Tokenizer). If it is set to <code>true</code>, the ARIA attributes of the token are updated accordingly.
-			 */
-			editableParent : {type : "boolean", group : "Behavior", defaultValue : true, visibility: "hidden"}
+			textDirection : {type : "sap.ui.core.TextDirection", group : "Appearance", defaultValue : TextDirection.Inherit}
 		},
 		aggregations : {
 
@@ -155,7 +150,21 @@ sap.ui.define([
 			id : that.getId() + "-icon",
 			src : sSrcIcon,
 			noTabStop: true,
-			press : this._tokenIconPress.bind(this)
+			press : function(oEvent) {
+				var oParent = that.getParent();
+
+				// fire "delete" event before Tokenizer's _onTokenDelete because the Tokenizer will destroy the token
+				// and the token's delete handler will not be executed
+				that.fireDelete({
+					token : that
+				});
+
+				if (oParent instanceof Tokenizer) {
+					oParent._onTokenDelete(that);
+				}
+
+				oEvent.preventDefault();
+			}
 		});
 
 		this._deleteIcon.addStyleClass("sapMTokenIcon");
@@ -177,11 +186,9 @@ sap.ui.define([
 	};
 
 	/**
-	 * Helper function for synchronizing the tooltip of the token.
+	 * Helper function for synchronizing the tooltip of the token
 	 * @private
-	 * @param {sap.m.Token} oControl The control instance to get the tooltip for
 	 * @param {boolean} bEditable The editable value
-	 * @return {string} The tooltip text
 	 */
 	Token.prototype._getTooltip = function (oControl, bEditable) {
 		var sTooltip = oControl.getTooltip_AsString(),
@@ -230,31 +237,6 @@ sap.ui.define([
 		if (this.getSelected()) {
 			this.focus();
 		}
-	};
-
-	/**
-	 * Function is called when token's icon is pressed to delete token.
-	 * @private
-	 * @param {jQuery.Event} oEvent The event object
-	 */
-	Token.prototype._tokenIconPress = function(oEvent) {
-		var oParent = this.getParent();
-
-		if (!oParent.getEnabled()) {
-			return;
-		}
-
-		// fire "delete" event before Tokenizer's _onTokenDelete because the Tokenizer will destroy the token
-		// and the token's delete handler will not be executed
-		this.fireDelete({
-			token : this
-		});
-
-		if (oParent.isA("sap.m.Tokenizer")) {
-			oParent._onTokenDelete(this);
-		}
-
-		oEvent.preventDefault();
 	};
 
 	/**

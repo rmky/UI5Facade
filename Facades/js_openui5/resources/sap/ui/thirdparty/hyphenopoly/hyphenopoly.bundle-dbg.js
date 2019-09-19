@@ -504,8 +504,6 @@
 			}).then(function runWasm(result) {
 				result.instance.exports.convert();
 				prepareLanguagesObj(lang, encloseHyphenateFunction(baseData, result.instance.exports.hyphenate), decode(new Uint16Array(wasmMemory.buffer).subarray(384, 640)), baseData.leftmin, baseData.rightmin);
-			}).catch(function (oError) {
-				console.warn(oError);
 			});
 		}
 		/**

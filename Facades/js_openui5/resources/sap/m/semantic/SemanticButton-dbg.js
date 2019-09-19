@@ -25,7 +25,7 @@ sap.ui.define([
 	 * @abstract
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -51,7 +51,7 @@ sap.ui.define([
 			},
 			events : {
 				/**
-				* See {@link sap.m.Button#event:press}
+				* See {@link sap.m.Button#press}
 				*/
 				press : {}
 			}

@@ -106,7 +106,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -354,10 +354,7 @@ sap.ui.define([
 			vertical: true
 		});
 		this._oHeaderObserver = null;
-		this._oSubHeaderAfterRenderingDelegate = {onAfterRendering: function() {
-				this._bStickySubheaderInTitleArea = false; // reset the flag as the stickySubHeader is freshly rerendered with the iconTabBar
-				this._adjustStickyContent();
-			}};
+		this._oSubHeaderAfterRenderingDelegate = {onAfterRendering: this._adjustStickyContent};
 	};
 
 	DynamicPage.prototype.onBeforeRendering = function () {
@@ -1998,7 +1995,6 @@ sap.ui.define([
 	DynamicPage.prototype._detachResizeHandlers = function () {
 		this._deRegisterResizeHandler(DynamicPage.RESIZE_HANDLER_ID.PAGE);
 		this._deRegisterResizeHandler(DynamicPage.RESIZE_HANDLER_ID.TITLE);
-		this._deRegisterResizeHandler(DynamicPage.RESIZE_HANDLER_ID.HEADER);
 		this._deRegisterResizeHandler(DynamicPage.RESIZE_HANDLER_ID.CONTENT);
 	};
 

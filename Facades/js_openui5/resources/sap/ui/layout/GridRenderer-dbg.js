@@ -15,7 +15,7 @@ sap.ui.define(["sap/ui/Device", "sap/ui/layout/library"],
 	/**
 	 * @author SAP SE
 	 * @version
-	 * 1.70.0
+	 * 1.68.1
 	 * @namespace
 	 */
 	var GridRenderer = {
@@ -353,13 +353,8 @@ sap.ui.define(["sap/ui/Device", "sap/ui/layout/library"],
 					}
 				}
 
-				if (typeof oLay._sStylesInternal === "string") {
-					var aStylesInternal = oLay._sStylesInternal.split(" ");
-
-					for (var iStylesIterator = 0; iStylesIterator < aStylesInternal.length; iStylesIterator++) {
-						oRm.class(aStylesInternal[iStylesIterator]);
-					}
-				}
+				// Internal additional classes
+				oRm.class(oLay._sStylesInternal);
 			}
 
 			// No layoutData - apply default values. it could be

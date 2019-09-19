@@ -36,7 +36,7 @@ sap.ui.define([
 	 * @class The <code>P13nColumnsPanel</code> control is used to define column-specific settings for table personalization.
 	 * @extends sap.m.P13nPanel
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @constructor
 	 * @public
 	 * @since 1.26.0
@@ -475,6 +475,9 @@ sap.ui.define([
 			return;
 		}
 		sap.ui.getCore().applyChanges();
+		if (!!oItem.getDomRef()) {
+			oItem.focus();
+		}
 	};
 
 	// -------------------------- new --------------------------------------------

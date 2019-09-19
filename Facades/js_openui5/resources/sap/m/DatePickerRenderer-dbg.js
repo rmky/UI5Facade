@@ -13,7 +13,6 @@ sap.ui.define(['sap/ui/core/Renderer', './InputBaseRenderer'],
 	 * @namespace
 	 */
 	var DatePickerRenderer = Renderer.extend(InputBaseRenderer);
-	DatePickerRenderer.apiVersion = 2;
 
 	/**
 	 * Write the value of the input.
@@ -22,11 +21,13 @@ sap.ui.define(['sap/ui/core/Renderer', './InputBaseRenderer'],
 	 * @param {sap.m.DatePicker} oDP An object representation of the control that should be rendered.
 	 */
 	DatePickerRenderer.writeInnerValue = function(oRm, oDP) {
+
 		if (oDP._bValid) {
-			oRm.attr("value", oDP._formatValue(oDP.getDateValue()));
+			oRm.writeAttributeEscaped("value", oDP._formatValue(oDP.getDateValue()));
 		} else {
-			oRm.attr("value", oDP.getValue());
+			oRm.writeAttributeEscaped("value", oDP.getValue());
 		}
+
 	};
 
 	/**
@@ -36,11 +37,11 @@ sap.ui.define(['sap/ui/core/Renderer', './InputBaseRenderer'],
 	 * @param {sap.m.DatePicker} oDP An object representation of the control that should be rendered.
 	 */
 	DatePickerRenderer.writeInnerAttributes = function(oRm, oDP) {
-		oRm.attr("type", "text");
+		oRm.writeAttribute("type", "text");
 
 		if (oDP._bMobile) {
 			// prevent keyboard in mobile devices
-			oRm.attr("readonly", "readonly");
+			oRm.writeAttribute("readonly", "readonly");
 		}
 	};
 
@@ -62,8 +63,6 @@ sap.ui.define(['sap/ui/core/Renderer', './InputBaseRenderer'],
 		mAccessibilityState["autocomplete"] = "none";
 		mAccessibilityState["haspopup"] = true;
 		mAccessibilityState["expanded"] = false;
-		// aria-disabled is not necessary if we already have a native 'disabled' attribute
-		mAccessibilityState["disabled"] = null;
 
 		if (oDP._bMobile && oDP.getEnabled() && oDP.getEditable()) {
 			// if on mobile device readonly property is set, but should not be announced

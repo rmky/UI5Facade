@@ -7,12 +7,11 @@ sap.ui.define(['./Service'], function (Service) {
 	"use strict";
 
 	/**
-	 * @class sap.ui.integration.Data
+	 * @class Data
 	 * Provides an interface for a simple DataService
 	 * @experimental
-	 * @private
-	 * @ui5-restricted sap.ushell
-	 * @extends sap.ui.integration.Service
+	 * @sap-restricted sap.ushell
+	 * @extends Service
 	 */
 	var Data = Service.extend();
 

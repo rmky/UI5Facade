@@ -47,7 +47,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.70.0
+		 * @version 1.68.1
 		 * @since 1.48
 		 *
 		 * @constructor
@@ -500,7 +500,7 @@ sap.ui.define([
 				assert(false, "The PDF file cannot be opened with the given source. Given source: " + this.getSource());
 				return;
 			} else if (!PDFViewerRenderer._isPdfPluginEnabled()) {
-				Log.warning("The PDF plug-in is not available on this device.");
+				jQuery.sap.log.warning("The PDF plug-in is not available on this device.");
 			}
 
 			if (this._isEmbeddedModeAllowed()) {

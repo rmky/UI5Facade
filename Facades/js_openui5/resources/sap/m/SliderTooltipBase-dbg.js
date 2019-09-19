@@ -21,7 +21,7 @@ function(Control, Library, SliderTooltipBaseRenderer) {
 		 * @abstract
 		 *
 		 * @author SAP SE
-		 * @version 1.70.0
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @public
@@ -43,8 +43,8 @@ function(Control, Library, SliderTooltipBaseRenderer) {
 		 * Updates value of the tooltip.
 		 *
 		 * @param {float} fValue The new value
+		 * @sap-restricted sap.m.Slider
 		 * @private
-		 * @ui5-restricted sap.m.Slider
 		 */
 		SliderTooltipBase.prototype.setValue = function (fValue) {
 			this.fValue = fValue;

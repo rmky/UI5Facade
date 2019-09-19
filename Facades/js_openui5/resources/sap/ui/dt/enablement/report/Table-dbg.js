@@ -15,8 +15,7 @@ sap.ui.define([
 	"sap/m/Button",
 	"sap/m/SearchField",
 	"sap/m/Text",
-	"sap/m/RatingIndicator",
-	"./TableRenderer"
+	"sap/m/RatingIndicator"
 ],
 function(
 	Control,
@@ -43,7 +42,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @private

@@ -28,9 +28,9 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.LrepConnector
 	 * @private
-	 * @ui5-restricted
+	 * @sap-restricted
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 */
 	var LrepConnector = function(mParameters) {
 		this._initClientParam();
@@ -57,8 +57,7 @@ sap.ui.define([
 		PUBLISH: "/actions/publish/",
 		DATA: "/flex/data/",
 		MODULES: "/flex/modules/",
-		SETTINGS: "/flex/settings",
-		INFO: "/flex/info"
+		SETTINGS: "/flex/settings"
 	};
 
 	/**
@@ -77,6 +76,11 @@ sap.ui.define([
 		return LrepConnector.createConnector().loadSettings().then(function () {
 			return Promise.resolve(LrepConnector._bServiceAvailability);
 		});
+	};
+
+
+	LrepConnector.prototype._getFlexibilityServicesUrlPrefix = function() {
+		return sap.ui.getCore().getConfiguration().getFlexibilityServices();
 	};
 
 	/**
@@ -136,7 +140,7 @@ sap.ui.define([
 	 *
 	 * @param {String} sRequestUrlPrefix - request URL prefix which must start with a (/) and must not end with a (/)
 	 * @private
-	 * @ui5-restricted
+	 * @sap-restricted
 	 */
 	LrepConnector.prototype.setRequestUrlPrefix = function(sRequestUrlPrefix) {
 		this._sRequestUrlPrefix = sRequestUrlPrefix;
@@ -250,10 +254,7 @@ sap.ui.define([
 	 * @private
 	 */
 	LrepConnector.prototype._getMessagesFromXHR = function(oXHR) {
-		var errorResponse;
-		var aMessages;
-		var length;
-		var i;
+		var errorResponse, aMessages, length, i;
 		aMessages = [];
 		try {
 			errorResponse = JSON.parse(oXHR.responseText);
@@ -282,7 +283,7 @@ sap.ui.define([
 	 * @private
 	 */
 	LrepConnector.prototype._sendAjaxRequest = function(sUri, mOptions) {
-		var sFlexibilityServicePrefix = FlexUtils.getLrepUrl();
+		var sFlexibilityServicePrefix = this._getFlexibilityServicesUrlPrefix();
 
 		if (!sFlexibilityServicePrefix) {
 			return Promise.reject({
@@ -325,20 +326,10 @@ sap.ui.define([
 			function prepareErrorAndReject(fnReject, oXhr, sStatus, sErrorThrown) {
 				// Fetching XSRF Token failed
 				var oError = new Error(sErrorThrown);
-				oError.status = sStatus;
+				oError.status = "error";
 				oError.code = oXhr.statusCode().status;
 				oError.messages = this._getMessagesFromXHR(oXhr);
-				// for IE11 - Error.prototype.stack is not set until error is caught
-				if (!oError.stack) {
-					try {
-						throw oError;
-					} catch (oErrorCaught) {
-						fnReject(oErrorCaught);
-					}
-				} else {
-					// for other browsers
-					fnReject(oError);
-				}
+				fnReject(oError);
 			}
 
 			function fetchTokenAndHandleRequest(oResponse, sStatus, oXhr) {
@@ -447,8 +438,8 @@ sap.ui.define([
 
 		function _createUrls(oComponent, mPropertyBag, sClient) {
 			var mUrls = {};
-			var sFlexDataPrefix = FlexUtils.getLrepUrl() + LrepConnector.ROUTES.DATA;
-			var sFlexModulesPrefix = FlexUtils.getLrepUrl() + LrepConnector.ROUTES.MODULES;
+			var sFlexDataPrefix = this._getFlexibilityServicesUrlPrefix() + LrepConnector.ROUTES.DATA;
+			var sFlexModulesPrefix = this._getFlexibilityServicesUrlPrefix() + LrepConnector.ROUTES.MODULES;
 			var sPostFix = "";
 
 			if (mPropertyBag.cacheKey) {
@@ -490,7 +481,7 @@ sap.ui.define([
 		var mUrls = _createUrls.call(this, oComponent, mPropertyBag, this._sClient);
 
 		return this.send(mUrls.flexDataUrl, undefined, undefined, mOptions)
-		.then(this._onChangeResponseReceived.bind(this, oComponent.name, mUrls.flexModulesUrl, mPropertyBag.cacheKey))
+		.then(this._onChangeResponseReceived.bind(this, oComponent.name, mUrls.flexModulesUrl))
 		.then(function(mFlexData) {
 			if (mPropertyBag.isTrial) {
 				return this.enableFakeConnectorForTrial(oComponent, mFlexData);
@@ -502,44 +493,6 @@ sap.ui.define([
 				LrepConnector._bServiceAvailability = false;
 			}
 			throw (oError);
-		});
-	};
-
-	/**
-	 * Get flex/info from ABAP backend.
-	 *
-	 * @param {object} mPropertyBag Contains additional data needed for flex/info request
-	 * @param {string} mPropertyBag.reference Name of Component
-	 * @param {string} mPropertyBag.layer Layer on which the request is sent to the the backend
-	 * @param {string} [mPropertyBag.appVersion] Version of the application that is currently running
-	 * @returns {Promise<object>} Returns the result from the request
-	 * @public
-	 */
-	LrepConnector.prototype.getFlexInfo = function(mPropertyBag) {
-		if (!mPropertyBag.reference) {
-			throw new Error("No Component to get flex info");
-		}
-		var sRequestPath = FlexUtils.getLrepUrl() + LrepConnector.ROUTES.INFO + "/" + mPropertyBag.reference;
-		var aParams = [];
-		if (mPropertyBag.appVersion) {
-			aParams.push({
-				name: "appVersion",
-				value: mPropertyBag.appVersion
-			});
-		}
-
-		if (mPropertyBag.layer) {
-			aParams.push({
-				name: "layer",
-				value: mPropertyBag.layer
-			});
-		}
-		sRequestPath += this._buildParams(aParams);
-
-		return this.send(sRequestPath, "GET", null, null).then(function(oResponse) {
-			return oResponse.response;
-		}, function() {
-			return Promise.resolve({});
 		});
 	};
 
@@ -566,14 +519,8 @@ sap.ui.define([
 		});
 	};
 
-	LrepConnector.prototype._onChangeResponseReceived = function (sComponentName, sFlexModulesUri, sCacheKey, oResponse) {
+	LrepConnector.prototype._onChangeResponseReceived = function (sComponentName, sFlexModulesUri, oResponse) {
 		LrepConnector._bServiceAvailability = true;
-		// If a cachebuster token is used, we provide no etag in the response.
-		// For the view cache feature, we must provide a etag, that's why we set the value from the
-		// cachebuster token as etag
-		if (oResponse.etag === null) {
-			oResponse.etag = sCacheKey;
-		}
 		var mFlexData = {
 			changes : oResponse.response,
 			loadModules : oResponse.response.loadModules,
@@ -617,7 +564,7 @@ sap.ui.define([
 	 */
 	LrepConnector.prototype.loadSettings = function() {
 		if (!LrepConnector._oLoadSettingsPromise) {
-			var sUri = FlexUtils.getLrepUrl() + LrepConnector.ROUTES.SETTINGS;
+			var sUri = this._getFlexibilityServicesUrlPrefix() + LrepConnector.ROUTES.SETTINGS;
 
 			if (this._sClient) {
 				sUri += "?sap-client=" + this._sClient;
@@ -686,9 +633,9 @@ sap.ui.define([
 	 */
 	LrepConnector.prototype._getUrlPrefix = function(bIsVariant) {
 		if (bIsVariant) {
-			return FlexUtils.getLrepUrl() + "/variants/";
+			return this._getFlexibilityServicesUrlPrefix() + "/variants/";
 		}
-		return FlexUtils.getLrepUrl() + "/changes/";
+		return this._getFlexibilityServicesUrlPrefix() + "/changes/";
 	};
 
 	/**
@@ -868,7 +815,7 @@ sap.ui.define([
 	 * @public
 	 */
 	LrepConnector.prototype.getStaticResource = function(sNamespace, sName, sType, bIsRuntime) {
-		var sRequestPath = FlexUtils.getLrepUrl() + LrepConnector.ROUTES.CONTENT;
+		var sRequestPath = this._getFlexibilityServicesUrlPrefix() + LrepConnector.ROUTES.CONTENT;
 		sRequestPath += sNamespace + "/" + sName + "." + sType;
 
 		var aParams = [];
@@ -895,7 +842,7 @@ sap.ui.define([
 	 * @public
 	 */
 	LrepConnector.prototype.getFileAttributes = function(sNamespace, sName, sType, sLayer) {
-		var sRequestPath = FlexUtils.getLrepUrl() + LrepConnector.ROUTES.CONTENT;
+		var sRequestPath = this._getFlexibilityServicesUrlPrefix() + LrepConnector.ROUTES.CONTENT;
 		sRequestPath += sNamespace + "/" + sName + "." + sType;
 
 		var aParams = [];
@@ -950,7 +897,7 @@ sap.ui.define([
 	};
 
 	LrepConnector.prototype._fileAction = function(sMethod, sNamespace, sName, sType, sLayer, sContent, sContentType, sChangelist) {
-		var sRequestPath = FlexUtils.getLrepUrl() + LrepConnector.ROUTES.CONTENT;
+		var sRequestPath = this._getFlexibilityServicesUrlPrefix() + LrepConnector.ROUTES.CONTENT;
 		sRequestPath += sNamespace + "/" + sName + "." + sType;
 
 		var aParams = [];
@@ -987,7 +934,7 @@ sap.ui.define([
 	 * @private Private for now, as is not in use.
 	 */
 	LrepConnector.prototype.publish = function(sOriginNamespace, sName, sType, sOriginLayer, sTargetLayer, sTargetNamespace, sChangelist) {
-		var sRequestPath = FlexUtils.getLrepUrl() + LrepConnector.ROUTES.PUBLISH;
+		var sRequestPath = this._getFlexibilityServicesUrlPrefix() + LrepConnector.ROUTES.PUBLISH;
 		sRequestPath += sOriginNamespace + "/" + sName + "." + sType;
 
 		var aParams = [];
@@ -1030,7 +977,7 @@ sap.ui.define([
 	 * @public
 	 */
 	LrepConnector.prototype.listContent = function(sNamespace, sLayer) {
-		var sRequestPath = FlexUtils.getLrepUrl() + LrepConnector.ROUTES.CONTENT;
+		var sRequestPath = this._getFlexibilityServicesUrlPrefix() + LrepConnector.ROUTES.CONTENT;
 		sRequestPath += sNamespace;
 
 		var aParams = [];

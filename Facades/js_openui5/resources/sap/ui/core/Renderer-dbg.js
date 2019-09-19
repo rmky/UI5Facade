@@ -17,7 +17,7 @@ sap.ui.define([
 	 * @classdesc Base Class for a Renderer.
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @namespace
 	 * @public
 	 * @alias sap.ui.core.Renderer
@@ -188,7 +188,7 @@ sap.ui.define([
 	 *                              renderer to extend (deprecated signature)
 	 * @param {object} [oRendererInfo] Methods and/or properties that should be added to the new renderer class
 	 * @throws {TypeError} When called as a generic method with the deprecated signature (<code>vName</code> is
-	 *                     an object and <code>this</code> is not the <code>sap.ui.core.Renderer</code> class)
+	 *                     an object and <code>this</code> is not the <code>sap.ui.core.Renderer<code> class)
 	 * @returns {object} A new renderer that can be enriched further
 	 * @public
 	 * @static

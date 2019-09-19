@@ -90,17 +90,15 @@ sap.ui.define([
 			this.bPendingRequest = true;
 		}
 		var oContext = this.oModel.createBindingContext(this.sPath, this.oContext, this.mParameters, function(oContext) {
-			var oData,
-				bUpdated = oContext && oContext.isUpdated(),
-				bForceRefresh = oContext && oContext.isRefreshForced();
+			var oData;
 
 			if (that.bCreatePreliminaryContext && oContext && that.oElementContext && that.oElementContext.isPreliminary()) {
 				that.oElementContext.setPreliminary(false);
 				that.oModel._updateContext(that.oElementContext, oContext.getPath());
 				that._fireChange({ reason: ChangeReason.Context }, false, true);
-			} else if (!oContext || Context.hasChanged(oContext, that.oElementContext)) {
+			} else if (!oContext || oContext !== that.oElementContext) {
 				that.oElementContext = oContext;
-				that._fireChange({ reason: ChangeReason.Context }, bForceRefresh, bUpdated);
+				that._fireChange({ reason: ChangeReason.Context });
 			}
 
 			if (bReloadNeeded) {
@@ -232,7 +230,7 @@ sap.ui.define([
 					that.oElementContext.setPreliminary(false);
 					that.oModel._updateContext(that.oElementContext, oContext.getPath());
 					that._fireChange({ reason: ChangeReason.Context }, false, true);
-				} else if (Context.hasChanged(oContext, that.oElementContext) || bForceUpdate) {
+				} else if (that.oElementContext !== oContext || bForceUpdate) {
 					that.oElementContext = oContext;
 					that._fireChange({ reason: ChangeReason.Context }, bForceUpdate);
 				}
@@ -270,6 +268,7 @@ sap.ui.define([
 		var that = this,
 			oData,
 			sResolvedPath,
+			oData,
 			bCreated = oContext && oContext.bCreated,
 			bPreliminary = oContext && oContext.isPreliminary(),
 			bForceUpdate = oContext && oContext.isRefreshForced(),
@@ -320,9 +319,9 @@ sap.ui.define([
 					that.oElementContext.setPreliminary(false);
 					that.oModel._updateContext(that.oElementContext, oContext.getPath());
 					that._fireChange({ reason: ChangeReason.Context }, false, true);
-				} else if (Context.hasChanged(oContext, that.oElementContext)) {
+				} else if (that.oElementContext !== oContext || bForceUpdate) {
 					that.oElementContext = oContext;
-					that._fireChange({ reason: ChangeReason.Context }, bForceUpdate, bUpdated);
+					that._fireChange({ reason: ChangeReason.Context }, bForceUpdate);
 				}
 				if (sResolvedPath && bReloadNeeded) {
 					if (that.oElementContext) {

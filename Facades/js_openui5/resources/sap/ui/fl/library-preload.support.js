@@ -60,9 +60,9 @@ sap.ui.predefine('sap/ui/fl/library.support',[
 		}],
 		async: true,
 		check: function (issueManager, oCoreFacade, oScope, resolve) {
-			var aElements = oScope.getElements();
-			var oElement;
-			var oAppComponent;
+			var aElements = oScope.getElements(),
+				oElement,
+				oAppComponent;
 
 			for (var i = 0; i < aElements.length; i++) {
 				oElement = aElements[i];

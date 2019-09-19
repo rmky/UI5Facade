@@ -184,7 +184,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.Model
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 */
 	var ODataModel = Model.extend("sap.ui.model.odata.v4.ODataModel",
 			/** @lends sap.ui.model.odata.v4.ODataModel.prototype */
@@ -1148,28 +1148,14 @@ sap.ui.define([
 	 * (see {@link sap.ui.model.odata.v4.ODataListBinding#create}) that have not yet been
 	 * successfully sent to the server.
 	 *
-	 * @param {string} [sGroupId]
-	 *   A group ID as specified in {@link sap.ui.model.odata.v4.ODataModel}, except group IDs
-	 *   having {@link sap.ui.model.odata.v4.SubmitMode.Direct}; if specified, only pending changes
-	 *   related to that group ID are considered (since 1.70.0)
 	 * @returns {boolean}
 	 *   <code>true</code> if there are pending changes
-	 * @throws {Error}
-	 *   If the given group ID is invalid, or has {@link sap.ui.model.odata.v4.SubmitMode.Direct}
 	 *
 	 * @public
 	 * @since 1.39.0
 	 */
-	ODataModel.prototype.hasPendingChanges = function (sGroupId) {
-		if (sGroupId !== undefined) {
-			this.checkBatchGroupId(sGroupId);
-			if (this.isAutoGroup(sGroupId)
-					&& this.oRequestor.hasPendingChanges("$parked." + sGroupId)) {
-				return true;
-			}
-		}
-
-		return this.oRequestor.hasPendingChanges(sGroupId);
+	ODataModel.prototype.hasPendingChanges = function () {
+		return this.oRequestor.hasPendingChanges();
 	};
 
 	/**
@@ -1229,14 +1215,19 @@ sap.ui.define([
 	 * submitBatch, even if the request is created later asynchronously. To achieve this, the API
 	 * function creates a lock that blocks _submitBatch until the request is created.
 	 *
+	 * It is possible to create a lock without giving a group ID initially. In this case all queues
+	 * for all group IDs are locked until a group ID is given. Once a group ID has been set, it
+	 * cannot be changed anymore.
+	 *
 	 * For performance reasons it is possible to create a group lock that actually doesn't lock. All
 	 * non-API functions use this group lock instead of the group ID so that a lock is possible. But
 	 * not in every case a lock is necessary and suitable.
 	 *
-	 * @param {string} sGroupId
-	 *   The group ID
-	 * @param {boolean} [bLocked]
-	 *   Whether the created lock is locked
+	 * @param {string} [sGroupId]
+	 *   The group ID. If not given here, it can be set later on the created lock.
+	 * @param {boolean|sap.ui.model.odata.v4.lib._GroupLock} [vLock]
+	 *   If vLock is a group lock, it is modified and returned. Otherwise a lock is created which
+	 *   locks if vLock is truthy.
 	 * @param {object} [oOwner]
 	 *   The lock's owner for debugging
 	 * @returns {sap.ui.model.odata.v4.lib._GroupLock}
@@ -1244,11 +1235,15 @@ sap.ui.define([
 	 *
 	 * @private
 	 */
-	ODataModel.prototype.lockGroup = function (sGroupId, bLocked, oOwner) {
+	ODataModel.prototype.lockGroup = function (sGroupId, vLock, oOwner) {
 		var oGroupLock;
 
-		oGroupLock = new _GroupLock(sGroupId, bLocked, oOwner, this.oRequestor.getSerialNumber());
-		if (bLocked) {
+		if (vLock instanceof _GroupLock) {
+			vLock.setGroupId(sGroupId);
+			return vLock;
+		}
+		oGroupLock = new _GroupLock(sGroupId, vLock, oOwner, this.oRequestor.getSerialNumber());
+		if (oGroupLock.isLocked()) {
 			this.aLockedGroupLocks.push(oGroupLock);
 		}
 		return oGroupLock;
@@ -1304,29 +1299,20 @@ sap.ui.define([
 	 *   The resource path of the cache that saw the messages
 	 * @param {object} mPathToODataMessages
 	 *   Maps a cache-relative path with key predicates or indices to an array of messages with the
-	 *   following properties. Each message is passed to the "technicalDetails" (see
-	 *   _Helper.createTechnicalDetails). Currently the "technicalDetails" only contain an attribute
-	 *   named "originalMessage" that contains the message that is received from back-end.
-	 *   {string} code
-	 *     The error code
-	 *   {string} [longtextUrl]
-	 *     The absolute URL for the message's long text
-	 *   {string} message
-	 *     The message text
+	 *   following properties:
+	 *   {string} code - The error code
+	 *   {string} [longtextUrl] - The absolute URL for the message's long text
+	 *   {string} message - The message text
 	 *   {number} numericSeverity
-	 *     The numeric message severity (1 for "success", 2 for "info", 3 for "warning" and 4 for
-	 *     "error")
-	 *   {string} target
-	 *     The relative target for the message; the reported target path is a concatenation of the
-	 *     resource path, the cache-relative path and this property
+	 *      The numeric message severity (1 for "success", 2 for "info", 3 for "warning" and 4 for
+	 *      "error")
 	 *   {boolean} [technical]
-	 *     Whether the message is reported as <code>technical</code> (supplied by #reportError)
-	 *   {boolean} [transition]
-	 *     Whether the message is reported as <code>persistent=true</code> and therefore needs to be
-	 *     managed by the application
-	 *   {object} [@$ui5.originalMessage]
-	 *     The original message object supplied by #reportError. In case this is supplied it is used
-	 *     in _Helper.createTechnicalDetails to create the "originalMessage" property
+	 *      Whether the message is reported as <code>technical</code> (used by reportError)
+	 *   {string} target
+	 *      The relative target for the message; the reported target path is a concatenation of the
+	 *      resource path, the cache-relative path and this property
+	 *   {boolean} [transition] - Whether the message is reported as <code>persistent=true</code>
+	 *      and therefore needs to be managed by the application
 	 * @param {string[]} [aCachePaths]
 	 *    An array of cache-relative paths of the entities for which non-persistent messages have to
 	 *    be removed; if the array is not given, all entities are affected
@@ -1352,7 +1338,7 @@ sap.ui.define([
 					processor : that,
 					target : sTarget,
 					technical : oRawMessage.technical,
-					technicalDetails : _Helper.createTechnicalDetails(oRawMessage),
+					technicalDetails : oRawMessage.technicalDetails,
 					type : aMessageTypes[oRawMessage.numericSeverity] || MessageType.None
 				}));
 			});
@@ -1417,19 +1403,25 @@ sap.ui.define([
 		 * numeric severity and longtext to the corresponding properties and adds it to one of the
 		 * arrays to be reported later.
 		 * @param {object} oMessage The message
-		 * @param {number} [iNumericSeverity] The numeric severity
-		 * @param {boolean} [bTechnical] Whether the message is reported as technical
 		 */
-		function addMessage(oMessage, iNumericSeverity, bTechnical) {
-			var oReportMessage = {
+		function addMessage(oMessage) {
+			var oClonedMessage,
+				oReportMessage = {
 					code : oMessage.code,
 					message : oMessage.message,
-					numericSeverity : iNumericSeverity,
-					technical : bTechnical || oMessage.technical,
-					// use "@$ui5." prefix to overcome name collisions with instance annotations
-					// returned from back-end.
-					"@$ui5.originalMessage" : oMessage
+					technical : oMessage.technical,
+					technicalDetails: {}
 				};
+
+			Object.defineProperty(oReportMessage.technicalDetails, "originalMessage", {
+				enumerable : true,
+				get : function () {
+					if (!oClonedMessage) {
+						oClonedMessage = _Helper.clone(oMessage);
+					}
+					return oClonedMessage;
+				}
+			});
 
 			Object.keys(oMessage).forEach(function (sProperty) {
 				if (sProperty[0] === '@') {
@@ -1478,17 +1470,19 @@ sap.ui.define([
 
 		if (oError.error) {
 			sResourcePath = oError.resourcePath && oError.resourcePath.split("?")[0];
-			addMessage(oError.error, 4 /* Error */, true);
+			oError.error["@.numericSeverity"] = 4; //"Error"
+			oError.error.technical = true;
+			addMessage(oError.error);
 			if (oError.error.details) {
-				oError.error.details.forEach(function (oMessage) {
-					addMessage(oMessage);
-				});
+				oError.error.details.forEach(addMessage);
 			}
 			if (aBoundMessages.length) {
 				this.reportBoundMessages(sResourcePath, {"" : aBoundMessages}, []);
 			}
 		} else {
-			addMessage(oError, 4 /* Error */, true);
+			oError["@.numericSeverity"] = 4; //"Error"
+			oError.technical = true;
+			addMessage(oError);
 		}
 
 		this.reportUnboundMessages(sResourcePath, aUnboundMessages);
@@ -1503,23 +1497,15 @@ sap.ui.define([
 	 *   <code>undefined</code> the message's long text URL cannot be determined.
 	 * @param {object[]} [aMessages]
 	 *   The array of messages as contained in the <code>sap-messages</code> response header with
-	 *   the following properties. Each message is passed to the "technicalDetails" (see
-	 *   _Helper.createTechnicalDetails). Currently the "technicalDetails" only contain an attribute
-	 *   named "originalMessage" that contains the message that is received from back-end.
-	 *   {string} code
-	 *     The error code
-	 *   {string} [longtextUrl]
-	 *     The absolute URL for the message's long text
-	 *   {string} message
-	 *     The message text
+	 *   the following properties:
+	 *   {string} code - The error code
+	 *   {string} [longtextUrl] - The absolute URL for the message's long text
+	 *   {string} message - The message text
 	 *   {number} numericSeverity
-	 *     The numeric message severity (1 for "success", 2 for "info", 3 for "warning" and 4 for
-	 *     "error")
+	 *      The numeric message severity (1 for "success", 2 for "info", 3 for "warning" and 4 for
+	 *      "error")
 	 *   {boolean} [technical]
-	 *     Whether the message is reported as <code>technical</code> (supplied by #reportError)
-	 *   {object} [@$ui5.originalMessage]
-	 *     The original message object supplied by #reportError. In case this is supplied it is used
-	 *     in _Helper.createTechnicalDetails to create the "originalMessage" property
+	 *      Whether the message is reported as <code>technical</code> (used by reportError)
 	 *
 	 * @private
 	 */
@@ -1542,7 +1528,7 @@ sap.ui.define([
 						processor : that,
 						target : "",
 						technical : oMessage.technical,
-						technicalDetails : _Helper.createTechnicalDetails(oMessage),
+						technicalDetails: oMessage.technicalDetails,
 						type : aMessageTypes[oMessage.numericSeverity] || MessageType.None
 					});
 				})
@@ -1674,8 +1660,7 @@ sap.ui.define([
 	 * subsequent calls to this method for the same group ID may be combined in one batch request
 	 * using separate change sets. For group IDs with {@link sap.ui.model.odata.v4.SubmitMode.Auto},
 	 * only a single change set is used; this method is useful to repeat failed updates or creates
-	 * (see {@link sap.ui.model.odata.v4.ODataListBinding#create}) together with all other requests
-	 * for the given group ID in one batch request.
+	 * (see {@link sap.ui.model.odata.v4.ODataListBinding#create}).
 	 *
 	 * @param {string} sGroupId
 	 *   A valid group ID as specified in {@link sap.ui.model.odata.v4.ODataModel}.
@@ -1695,7 +1680,7 @@ sap.ui.define([
 
 		this.checkBatchGroupId(sGroupId);
 		if (this.isAutoGroup(sGroupId)) {
-			this.oRequestor.relocateAll("$parked." + sGroupId, sGroupId);
+			sGroupId = "$parked." + sGroupId;
 		} else {
 			this.oRequestor.addChangeSet(sGroupId);
 		}

@@ -175,7 +175,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @param {sap.ui.core.Core} oCore internal API of the <core>Core</code> that manages this UIArea
 	 * @param {object} [oRootNode] reference to the DOM element that should be 'hosting' the UI Area.
 	 * @public
@@ -261,12 +261,11 @@ sap.ui.define([
 	};
 
 	/**
-	 * Allows setting the root node hosting this instance of <code>UIArea</code>.
-	 *
-	 * The node must have an ID that will be used as ID for this instance of <code>UIArea</code>.
+	 * Allows setting the Root Node hosting this instance of <code>UIArea</code>.<br/> The Dom Ref must have an Id that
+	 * will be used as Id for this instance of <code>UIArea</code>.
 	 *
 	 * @param {object}
-	 *            oRootNode the hosting DOM node for this instance of <code>UIArea</code>.
+	 *            oRootNode the hosting Dom Ref for this instance of <code>UIArea</code>.
 	 * @public
 	 */
 	UIArea.prototype.setRootNode = function(oRootNode) {
@@ -488,11 +487,8 @@ sap.ui.define([
 	};
 
 	/**
-	 * Triggers asynchronous re-rendering of the <code>UIArea</code>'s content.
-	 *
-	 * Serves as an end-point for the bubbling of invalidation requests along the
-	 * element/control aggregation hierarchy.
-	 *
+	 * Will be used as end-point for invalidate-bubbling from controls up their hierarchy.<br/> Triggers re-rendering of
+	 * the UIAreas content.
 	 * @protected
 	 */
 	UIArea.prototype.invalidate = function() {
@@ -500,13 +496,13 @@ sap.ui.define([
 	};
 
 	/**
-	 * Notifies the <code>UIArea</code> about an invalidated descendant control.
+	 * Notifies the UIArea about an invalidated control.
 	 *
-	 * During re-rendering, the <code>UIArea</code> internally decides whether to re-render just the modified
-	 * controls or the complete content. It also informs the <code>Core</code> when it becomes invalid
-	 * for the first time.
+	 * The UIArea internally decides whether to re-render just the modified
+	 * controls or the complete content. It also informs the Core when it
+	 * becomes invalid the first time.
 	 *
-	 * @param {object} oControl Descendant control that got invalidated
+	 * @param {object} oControl
 	 * @private
 	 */
 	UIArea.prototype.addInvalidatedControl = function(oControl){
@@ -541,12 +537,12 @@ sap.ui.define([
 	};
 
 	/**
-	 * Synchronously renders any pending UI updates.
+	 * Renders any pending UI updates.
 	 *
-	 * Either renders the whole <code>UIArea</code> or a set of descendant controls that have been invalidated.
+	 * Either renders the whole UIArea or a set of descendent controls that have been invalidated.
 	 *
-	 * @param {boolean} force Whether a re-rendering of the <code>UIArea</code> should be enforced
-	 * @return {boolean} Whether a redraw was necessary or not
+	 * @param {boolean} force true, if the rerendering of the UI area should be forced
+	 * @return {boolean} whether a redraw was necessary or not
 	 * @private
 	 */
 	UIArea.prototype.rerender = function(force){

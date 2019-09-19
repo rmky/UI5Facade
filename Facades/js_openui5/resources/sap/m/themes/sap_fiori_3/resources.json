@@ -56,11 +56,6 @@
 			"theme": "sap_fiori_3"
 		},
 		{
-			"name": "ColumnListItem.less",
-			"designtime": true,
-			"theme": "sap_fiori_3"
-		},
-		{
 			"name": "ComboBoxBase.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
@@ -97,11 +92,6 @@
 		},
 		{
 			"name": "GenericTile.less",
-			"designtime": true,
-			"theme": "sap_fiori_3"
-		},
-		{
-			"name": "GroupHeaderListItem.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
 		},

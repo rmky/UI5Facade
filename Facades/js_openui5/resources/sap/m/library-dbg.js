@@ -45,13 +45,12 @@ sap.ui.define([
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.m",
-		version: "1.70.0",
+		version: "1.68.1",
 		dependencies : ["sap.ui.core"],
 		designtime: "sap/m/designtime/library.designtime",
 		types: [
 			"sap.m.BackgroundDesign",
 			"sap.m.BarDesign",
-			"sap.m.BreadcrumbsSeparatorStyle",
 			"sap.m.ButtonType",
 			"sap.m.CarouselArrowsPlacement",
 			"sap.m.DateTimeInputType",
@@ -166,6 +165,7 @@ sap.ui.define([
 			"sap.m.CustomListItem",
 			"sap.m.CustomTile",
 			"sap.m.CustomTreeItem",
+			"sap.m.ColumnHeader",
 			"sap.m.DatePicker",
 			"sap.m.DateRangeSelection",
 			"sap.m.DateTimeField",
@@ -267,7 +267,6 @@ sap.ui.define([
 			"sap.m.SimpleFixFlex",
 			"sap.m.SinglePlanningCalendar",
 			"sap.m.SinglePlanningCalendarGrid",
-			"sap.m.SinglePlanningCalendarMonthGrid",
 			"sap.m.Slider",
 			"sap.m.SliderTooltip",
 			"sap.m.SliderTooltipBase",
@@ -305,6 +304,7 @@ sap.ui.define([
 			"sap.m.upload.UploadSet",
 			"sap.m.VBox",
 			"sap.m.ViewSettingsDialog",
+			"sap.m.ViewSettingsPopover",
 			"sap.m.Wizard",
 			"sap.m.WizardStep",
 			"sap.m.semantic.DetailPage",
@@ -519,7 +519,7 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.m
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @public
 	 */
 	var thisLib = sap.m;
@@ -589,60 +589,6 @@ sap.ui.define([
 		 * @public
 		 */
 		Footer : "Footer"
-
-	};
-
-	/**
-	 * Variations of the {@link sap.m.Breadcrumbs} separators.
-	 *
-	 * @enum {string}
-	 * @public
-	 * @since 1.69
-	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
-	 */
-
-	thisLib.BreadcrumbsSeparatorStyle = {
-		/**
-		 * The separator will appear as "/"
-		 * @public
-		 */
-
-		Slash: "/",
-
-		/**
-		 * The separator will appear as "\"
-		 * @public
-		 */
-
-		BackSlash: "\\",
-
-		/**
-		 * The separator will appear as "//"
-		 * @public
-		 */
-
-		DoubleSlash: "//",
-
-		/**
-		 * The separator will appear as "\\"
-		 * @public
-		 */
-
-		DoubleBackSlash: "\\\\",
-
-		/**
-		 * The separator will appear as ">"
-		 * @public
-		 */
-
-		GreaterThan: ">",
-
-		/**
-		 * The separator will appear as ">>"
-		 * @public
-		 */
-
-		DoubleGreaterThan: ">>"
 
 	};
 
@@ -4493,16 +4439,14 @@ sap.ui.define([
 	};
 
 	/**
-	 * Suggestion helper for <code>sap.m.Input</code> fields when used with an OData model.
+	 * Suggestion helper for sap.m.Input fields: Creates a multi-column suggest list for an sap.m.Input field based on a ValueList
+	 * annotation. The ValueList annotation will be resolved via the binding information of the Input field.
 	 *
-	 * Creates a multi-column suggest list for an <code>sap.m.Input</code> field based on a <code>ValueList</code>
-	 * annotation. The <code>ValueList</code> annotation will be resolved via the binding information of the input field.
-	 *
-	 * If the annotation describes multiple input parameters, the suggest provider will resolve all of these relative
-	 * to the context of the input field and use them for the suggest query. The suggest provider will write all
-	 * values that are described as output parameters back to the model (relative to the context of the input field).
-	 * This can only be done if the model runs in "TwoWay" binding mode. Both features can be switched off via the
-	 * <code>bResolveInput/bResolveOutput</code> parameter of the suggest function.
+	 * If the annotation describes multiple input parameter the suggest provider will resolve all of these relative to the
+	 * context of the Input filed and use them for the suggestion query. The suggest provider will write all values that are
+	 * described as output parameters back to the model (relative to the context of the Input field). This can only be done if
+	 * the model runs in "TwoWay" binding mode. Both features can be switched of via the bResolveInput/bResolveOutput parameter
+	 * of the suggest function:
 	 *
 	 * @namespace
 	 * @since 1.21.2
@@ -4854,4 +4798,5 @@ sap.ui.define([
 	}
 
 	return thisLib;
+
 });

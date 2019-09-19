@@ -4,26 +4,30 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
+	"sap/ui/fl/descriptorRelated/api/DescriptorVariantFactory",
+	"sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory",
 	"sap/ui/fl/Utils",
 	"sap/m/MessageBox",
 	"sap/ui/rta/Utils",
 	"sap/ui/fl/descriptorRelated/internal/Utils",
+	"sap/ui/fl/transport/TransportSelection",
+	"sap/ui/fl/transport/Transports",
 	"sap/ui/core/BusyIndicator",
 	"sap/base/util/uid",
-	"sap/base/Log",
-	"sap/ui/fl/write/api/PersistenceWriteAPI",
-	"sap/ui/fl/write/api/ChangesWriteAPI"
+	"sap/base/Log"
 ],
 function(
+	DescriptorVariantFactory,
+	DescriptorInlineChangeFactory,
 	FlexUtils,
 	MessageBox,
 	RtaUtils,
 	DescriptorUtils,
+	TransportSelection,
+	Transports,
 	BusyIndicator,
 	uid,
-	Log,
-	PersistenceWriteAPI,
-	ChangesWriteAPI
+	Log
 ) {
 	"use strict";
 	var AppVariantUtils = {};
@@ -113,9 +117,10 @@ function(
 		return sChangedId;
 	};
 
-	AppVariantUtils.createAppVariant = function(oRootControl, mPropertyBag) {
-		mPropertyBag.version = "1.0.0"; // Application variant version should be 1.0.0 which is expected by backend
-		return PersistenceWriteAPI.saveAs(Object.assign({selector: oRootControl}, mPropertyBag));
+	AppVariantUtils.createDescriptorVariant = function(mParameters) {
+		mParameters.layer = FlexUtils.getCurrentLayer(false);
+		mParameters.version = "1.0.0"; // Application variant version should be 1.0.0 which is expected by backend
+		return DescriptorVariantFactory.createNew(mParameters);
 	};
 
 	AppVariantUtils.getInlineChangeInput = function(sValue, sComment) {
@@ -185,7 +190,7 @@ function(
 		return sAppVariantId + "_sap.app.crossNavigation.inbounds." + sCurrentRunningInboundId + "." + sPropertyName;
 	};
 
-	AppVariantUtils.getInlineChangesForInboundProperties = function(sCurrentRunningInboundId, sReferenceAppId, sPropertyName, sPropertyValue) {
+	AppVariantUtils.getInlineChangesForInboundProperties = function(sCurrentRunningInboundId, sAppVariantId, sPropertyName, sPropertyValue) {
 		var oChangeInput = {
 			inboundId: sCurrentRunningInboundId,
 			entityPropertyChange: {
@@ -197,7 +202,7 @@ function(
 		};
 
 		if (sPropertyName === "title" || sPropertyName === "subTitle") {
-			var sKey = this.getInboundPropertiesKey(sReferenceAppId, sCurrentRunningInboundId, sPropertyName);
+			var sKey = this.getInboundPropertiesKey(sAppVariantId, sCurrentRunningInboundId, sPropertyName);
 			oChangeInput.entityPropertyChange.propertyValue = "{{" + sKey + "}}";
 			oChangeInput.texts[sKey] = this.getInlinePropertyChange(sPropertyName, sPropertyValue);
 		} else if (sPropertyName === "icon") {
@@ -207,7 +212,7 @@ function(
 		return oChangeInput;
 	};
 
-	AppVariantUtils.getInlineChangeForInboundPropertySaveAs = function(sCurrentRunningInboundId, sAppVariantId) {
+	AppVariantUtils.getInlineChangeForInboundPropertySaveAs = function(sCurrentRunningInboundId) {
 		return {
 			inboundId: sCurrentRunningInboundId,
 			entityPropertyChange: {
@@ -216,11 +221,11 @@ function(
 				propertyValue: {
 					required: true,
 					filter: {
-						value: sAppVariantId,
+						value: this.getNewAppVariantId(),
 						format: "plain"
 					},
 					launcherValue: {
-						value: sAppVariantId
+						value: this.getNewAppVariantId()
 					}
 				}
 			}
@@ -241,39 +246,34 @@ function(
 		return oProperty;
 	};
 
-	AppVariantUtils.createInlineChange = function(oContent, sInlineChangeType, oRootControl) {
-		var oChangeSpecificData = {
-			changeType: sInlineChangeType,
-			content: oContent
-		};
-		//This API is not standard and content has to be adjusted
-		if (oChangeSpecificData.content.texts) {
-			oChangeSpecificData.texts = oChangeSpecificData.content.texts;
-			delete oChangeSpecificData.content.texts;
+	AppVariantUtils.createInlineChange = function(mParameters, sChange) {
+		var mTexts;
+		if (sChange === "title") {
+			return DescriptorInlineChangeFactory.create_app_setTitle(mParameters);
+		} else if (sChange === "description") {
+			return DescriptorInlineChangeFactory.create_app_setDescription(mParameters);
+		} else if (sChange === "subtitle") {
+			return DescriptorInlineChangeFactory.create_app_setSubTitle(mParameters);
+		} else if (sChange === "icon") {
+			return DescriptorInlineChangeFactory.create_ui_setIcon(mParameters);
+		} else if (sChange === "inbound") {
+			return DescriptorInlineChangeFactory.create_app_changeInbound(mParameters);
+		} else if (sChange === "createInbound") {
+			return DescriptorInlineChangeFactory.create_app_addNewInbound(mParameters);
+		} else if (sChange === "inboundTitle") {
+			mTexts = mParameters.texts;
+			delete mParameters.texts;
+			return DescriptorInlineChangeFactory.create_app_changeInbound(mParameters, mTexts);
+		} else if (sChange === "inboundSubtitle") {
+			mTexts = mParameters.texts;
+			delete mParameters.texts;
+			return DescriptorInlineChangeFactory.create_app_changeInbound(mParameters, mTexts);
+		} else if (sChange === "inboundIcon") {
+			delete mParameters.texts;
+			return DescriptorInlineChangeFactory.create_app_changeInbound(mParameters);
+		} else if (sChange === "removeInbound") {
+			return DescriptorInlineChangeFactory.create_app_removeAllInboundsExceptOne(mParameters);
 		}
-		return ChangesWriteAPI.create({changeSpecificData: oChangeSpecificData, selector: oRootControl});
-	};
-
-	AppVariantUtils.addChangesToPersistence = function(aAllInlineChanges, oRootControl) {
-		aAllInlineChanges.forEach(function(oChange) {
-			return PersistenceWriteAPI.add({
-				change: oChange,
-				selector: oRootControl
-			});
-		});
-
-		return Promise.resolve();
-	};
-
-	AppVariantUtils.removeChangesFromPersistence = function(aAllInlineChanges, oRootControl) {
-		aAllInlineChanges.forEach(function(oChange) {
-			return PersistenceWriteAPI.remove({
-				change: oChange,
-				selector: oRootControl
-			});
-		});
-
-		return Promise.resolve();
 	};
 
 	AppVariantUtils.getTransportInput = function(sPackageName, sNameSpace, sName, sType) {
@@ -295,8 +295,8 @@ function(
 		};
 	};
 
-	AppVariantUtils.triggerCatalogAssignment = function(sAppVariantId, sReferenceAppId) {
-		var sRoute = '/sap/bc/lrep/appdescr_variants/' + sAppVariantId + '?action=assignCatalogs&assignFromAppId=' + sReferenceAppId;
+	AppVariantUtils.triggerCatalogAssignment = function(sAppVariantId, sOriginalId) {
+		var sRoute = '/sap/bc/lrep/appdescr_variants/' + sAppVariantId + '?action=assignCatalogs&assignFromAppId=' + sOriginalId;
 		return DescriptorUtils.sendRequest(sRoute, 'POST');
 	};
 
@@ -368,18 +368,20 @@ function(
 	 * Builds the success message text based on different platforms (i.e. S/4HANA Cloud and S/4HANA on Premise)
 	 * and based on from where the 'Save As' is triggered.
 	 */
-	AppVariantUtils.buildSuccessInfo = function(sAppVariantId, bSaveAsTriggeredFromRtaToolbar, bIsS4HanaCloud) {
-		var sSystemTag = bIsS4HanaCloud ? "CLOUD" : "ON_PREMISE";
+	AppVariantUtils.buildSuccessInfo = function(oAppVariantDescriptor, bSaveAsTriggeredFromRtaToolbar) {
+		var bIsCloud = AppVariantUtils.isS4HanaCloud(oAppVariantDescriptor.getSettings());
+
+		var sSystemTag = bIsCloud ? "CLOUD" : "ON_PREMISE";
 		var sOverviewList = bSaveAsTriggeredFromRtaToolbar ? "" : "_OVERVIEW_LIST";
-		var sText = bIsS4HanaCloud ? undefined : sAppVariantId;
+		var sText = bIsCloud ? undefined : oAppVariantDescriptor.getId();
 
 		var sMessage = AppVariantUtils.getText("SAVE_APP_VARIANT_SUCCESS_MESSAGE") + "\n\n";
 		sMessage += AppVariantUtils.getText("SAVE_APP_VARIANT_SUCCESS_S4HANA_" + sSystemTag + "_MESSAGE" + sOverviewList, sText);
 
 		return {
 			text: sMessage,
-			appVariantId: sAppVariantId,
-			copyId : !bIsS4HanaCloud
+			appVariantId: oAppVariantDescriptor.getId(),
+			copyId : !bIsCloud
 		};
 	};
 
@@ -391,18 +393,12 @@ function(
 		return { text: sMessage	};
 	};
 
-	AppVariantUtils.buildDeleteSuccessMessage = function(sAppVariantId) {
-		var sMessage = AppVariantUtils.getText("DELETE_APP_VARIANT_SUCCESS_MESSAGE", sAppVariantId);
-		return { text: sMessage	};
-	};
-
 	AppVariantUtils.showRelevantDialog = function(oInfo, bSuccessful) {
-		BusyIndicator.hide();
-		var sTitle;
-		var sRightButtonText;
-		var sOKButtonText;
-		var sCopyIdButtonText;
-		var aActions = [];
+		var sTitle,
+			sRightButtonText,
+			sOKButtonText,
+			sCopyIdButtonText,
+			aActions = [];
 
 		if (bSuccessful) {
 			sTitle = this.getText("SAVE_APP_VARIANT_SUCCESS_MESSAGE_TITLE");
@@ -441,10 +437,10 @@ function(
 					resolve();
 				} else if (oInfo.deleteAppVariant && sAction === sRightButtonText) {
 					// Do you really want to delete this app? => Close
-					reject(oInfo.deleteAppVariant);
+					reject();
 				} else if (oInfo.error) {
 					// Error: Deletion/Creation failed => Close or CopyID & Close
-					reject(oInfo.error);
+					reject();
 				} else {
 					resolve();
 				}
@@ -482,8 +478,88 @@ function(
 		return Promise.resolve();
 	};
 
-	AppVariantUtils.deleteAppVariant = function(vSelector) {
-		return PersistenceWriteAPI.deleteAppVariant({selector: vSelector});
+	AppVariantUtils.onTransportInDialogSelected = function(oAppVariantDescriptor, oTransportInfo) {
+		if (oTransportInfo) {
+			if (oTransportInfo.transport && oTransportInfo.packageName !== "$TMP") {
+				if (oTransportInfo.transport) {
+					return oAppVariantDescriptor.setTransportRequest(oTransportInfo.transport).then(function() {
+						return oAppVariantDescriptor;
+					});
+				}
+			}
+			return Promise.resolve(oAppVariantDescriptor);
+		}
+		return Promise.reject();
+	};
+
+	AppVariantUtils.openTransportSelection = function(oTransportInput) {
+		BusyIndicator.hide();
+		var oTransportSelection = new TransportSelection();
+		return oTransportSelection.openTransportSelection(oTransportInput, this, RtaUtils.getRtaStyleClassName());
+	};
+
+	AppVariantUtils._deleteAppVariantWithTransport = function (oAppVariantDescriptor, oTransportResult) {
+		var oTransportInput = this.getTransportInput("", oAppVariantDescriptor.getNamespace(), "manifest", "appdescr_variant");
+		// In case: app variant is not local + not in a transport + S/4HANA on Premise => not deletable
+		if (!oTransportResult.localonly && oTransportResult.transports.length === 0 && !this.isS4HanaCloud(oAppVariantDescriptor.getSettings())) {
+			return RtaUtils._showMessageBox(
+				MessageBox.Icon.INFORMATION,
+				"DELETE_APP_VARIANT_NO_TRANSPORT",
+				"MSG_DELETE_APP_VARIANT_NOT_POSSIBLE");
+		}
+
+		return this.openTransportSelection(oTransportInput)
+			.then(function (oTransportInfo) {
+				BusyIndicator.show();
+				return this.onTransportInDialogSelected(oAppVariantDescriptor, oTransportInfo);
+			}.bind(this))
+			.then(function () {
+				return oAppVariantDescriptor.submit();
+			})
+			.then(function () {
+				BusyIndicator.hide();
+				return RtaUtils._showMessageBox(
+					MessageBox.Icon.INFORMATION,
+					"DELETE_APP_VARIANT_NO_TRANSPORT",
+					"DELETE_APP_VARIANT_SUCCESS_MESSAGE");
+			});
+	};
+
+	AppVariantUtils.createDeletion = function(sAppVariantId) {
+		return DescriptorVariantFactory.createDeletion(sAppVariantId);
+	};
+
+	AppVariantUtils._getTransportInformation = function(oTransportInput) {
+		var mTransportObject = {};
+		if (oTransportInput) {
+			mTransportObject.package = oTransportInput.getPackage();
+			mTransportObject.namespace = oTransportInput.getNamespace();
+			mTransportObject.name = oTransportInput.getId();
+			mTransportObject.type = oTransportInput.getDefinition().fileType;
+		}
+
+		var oTransports = new Transports();
+		return oTransports.getTransports(mTransportObject);
+	};
+
+	AppVariantUtils.triggerDeleteAppVariantFromLREP = function(oAppVariantDescriptor) {
+		var oTransportInput = this.getTransportInput("", oAppVariantDescriptor.getNamespace(), "manifest", "appdescr_variant");
+
+		return this._getTransportInformation(oTransportInput)
+			.then(function(oTransportsResult) {
+				return this._deleteAppVariantWithTransport(oAppVariantDescriptor, oTransportsResult);
+			}.bind(this))
+			.catch(function(oError) {
+				if (oError) {
+					var oErrorInfo = this.buildErrorInfo("MSG_DELETE_APP_VARIANT_FAILED", oError, oAppVariantDescriptor.getId());
+					return this.showRelevantDialog(oErrorInfo, false);
+				}
+			}.bind(this));
+	};
+
+
+	AppVariantUtils.getDescriptorFromLREP = function(sAppVariantId) {
+		return DescriptorVariantFactory.createForExisting(sAppVariantId);
 	};
 
 	AppVariantUtils.handleBeforeUnloadEvent = function () {

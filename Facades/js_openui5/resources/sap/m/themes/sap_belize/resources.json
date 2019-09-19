@@ -281,11 +281,6 @@
 			"theme": "sap_belize"
 		},
 		{
-			"name": "SinglePlanningCalendarMonthGrid.less",
-			"designtime": true,
-			"theme": "sap_belize"
-		},
-		{
 			"name": "SlideTile.less",
 			"designtime": true,
 			"theme": "sap_belize"

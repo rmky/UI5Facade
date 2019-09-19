@@ -18,8 +18,9 @@ sap.ui.define([
 		"sap/m/ObjectStatus",
 		"sap/f/Avatar",
 		"sap/f/cards/ActionEnablement",
-		"sap/ui/core/library",
-		"sap/m/library",
+		"sap/ui/core/VerticalAlign",
+		"sap/m/ListSeparators",
+		"sap/m/ListType",
 		"sap/f/cards/BindingResolver"
 	], function (
 		library,
@@ -35,21 +36,15 @@ sap.ui.define([
 		ObjectStatus,
 		Avatar,
 		ActionEnablement,
-		coreLibrary,
-		mobileLibrary,
+		VerticalAlign,
+		ListSeparators,
+		ListType,
 		BindingResolver
 	) {
 		"use strict";
 
 		// shortcut for sap.f.AvatarSize
 		var AvatarSize = library.AvatarSize;
-
-		// shortcut for sap.ui.core.VerticalAlign
-		var VerticalAlign = coreLibrary.VerticalAlign;
-
-		// shortcuts for sap.m.* types
-		var ListSeparators = mobileLibrary.ListSeparators;
-		var ListType = mobileLibrary.ListType;
 
 		/**
 		 * Constructor for a new <code>TableContent</code>.
@@ -69,7 +64,7 @@ sap.ui.define([
 		 * @extends sap.f.cards.BaseContent
 		 *
 		 * @author SAP SE
-		 * @version 1.70.0
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @private

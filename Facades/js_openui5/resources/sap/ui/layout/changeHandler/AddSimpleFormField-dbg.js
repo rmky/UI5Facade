@@ -5,13 +5,13 @@
  */
 
 sap.ui.define([
+	"sap/ui/fl/Utils",
 	"sap/ui/fl/changeHandler/ChangeHandlerMediator",
-	"sap/ui/fl/changeHandler/Base",
-	"sap/base/Log"
+	"sap/ui/fl/changeHandler/Base"
 ], function(
+	Utils,
 	ChangeHandlerMediator,
-	Base,
-	Log
+	Base
 ) {
 	"use strict";
 
@@ -24,7 +24,7 @@ sap.ui.define([
 	 *
 	 * @author SAP SE
 	 *
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @experimental Since 1.49.0 This class is experimental and provides only limited functionality. Also the API might be
 	 *               changed in future.
@@ -148,7 +148,7 @@ sap.ui.define([
 
 				return true;
 			} else {
-				Log.error("Change does not contain sufficient information to be applied or ChangeHandlerMediator could not be retrieved: [" + oChangeDefinition.layer + "]"
+				Utils.log.error("Change does not contain sufficient information to be applied or ChangeHandlerMediator could not be retrieved: [" + oChangeDefinition.layer + "]"
 					+ oChangeDefinition.namespace + "/"
 					+ oChangeDefinition.fileName + "."
 					+ oChangeDefinition.fileType);

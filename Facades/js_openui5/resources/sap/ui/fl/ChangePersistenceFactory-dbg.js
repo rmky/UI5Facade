@@ -24,7 +24,7 @@ function(
 	 * @alias sap.ui.fl.ChangePersistenceFactory
 	 * @experimental Since 1.27.0
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 */
 	var ChangePersistenceFactory = {};
 
@@ -110,9 +110,7 @@ function(
 		}};
 		var sComponentName = Utils.getFlexReference(oManifest);
 		var sAppVersion = Utils.getAppVersionFromManifest(oManifest);
-		var sMaxLayer;
-		var oStartupParameters;
-		var oTechnicalParameters;
+		var sMaxLayer, oStartupParameters, oTechnicalParameters;
 
 		oStartupParameters = oConfig && oConfig.componentData && oConfig.componentData.startupParameters || {};
 		oTechnicalParameters = oConfig && oConfig.componentData && oConfig.componentData.technicalParameters;

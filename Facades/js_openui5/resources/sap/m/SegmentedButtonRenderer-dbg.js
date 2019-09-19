@@ -16,7 +16,6 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/InvisibleRenderer"],
 	 * @namespace
 	 */
 	var SegmentedButtonRenderer = {
-		apiVersion: 2
 	};
 
 	/**
@@ -41,33 +40,40 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/InvisibleRenderer"],
 
 		// Select representation mockup
 		if (oControl._bInOverflow) {
-			oRM.openStart("div", oControl);
-			oRM.openEnd();
+			oRM.write("<div");
+			oRM.writeControlData(oControl);
+			oRM.writeClasses();
+			oRM.write(">");
 			oRM.renderControl(oControl.getAggregation("_select"));
-			oRM.close("div");
+			oRM.write("</div>");
 			return;
 		}
 
 		// write the HTML into the render manager
-		oRM.openStart("ul", oControl);
+		oRM.write("<ul");
+
 
 		if (SegmentedButtonRenderer._addAllIconsClass(aButtons)) {
-			oRM.class("sapMSegBIcons");
+			oRM.addClass("sapMSegBIcons");
 		}
-		oRM.class("sapMSegB");
-		oRM.style('width', oControl.getWidth());
-
+		oRM.addClass("sapMSegB");
+		oRM.writeClasses();
+		if (oControl.getWidth() && oControl.getWidth() !== '') {
+			oRM.addStyle('width', oControl.getWidth());
+		}
+		oRM.writeStyles();
+		oRM.writeControlData(oControl);
 		sTooltip = oControl.getTooltip_AsString();
 		if (sTooltip) {
-			oRM.attr("title", sTooltip);
+			oRM.writeAttributeEscaped("title", sTooltip);
 		}
 
 		// ARIA
-		oRM.accessibilityState(oControl, {
+		oRM.writeAccessibilityState(oControl, {
 			role : "radiogroup"
 		});
 
-		oRM.openEnd();
+		oRM.write(">");
 
 		for (var i = 0; i < aButtons.length; i++) {
 			oButton = aButtons[i];
@@ -91,42 +97,47 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/InvisibleRenderer"],
 
 				// instead of the button API we render a li element but with the id of the button
 				// only the button properties enabled, width, icon, text, and tooltip are evaluated here
-				oRM.openStart("li", oButton);
-				oRM.attr("aria-posinset", iVisibleButtonPos);
-				oRM.attr("aria-setsize", aVisibleButtons.length);
-				oRM.class("sapMSegBBtn");
+				oRM.write("<li");
+				oRM.writeControlData(oButton);
+				oRM.writeAttribute("aria-posinset", iVisibleButtonPos);
+				oRM.writeAttribute("aria-setsize", aVisibleButtons.length);
+				oRM.addClass("sapMSegBBtn");
 				if (oButton.aCustomStyleClasses !== undefined && oButton.aCustomStyleClasses instanceof Array) {
 					for (var j = 0; j < oButton.aCustomStyleClasses.length; j++) {
-						oRM.class(oButton.aCustomStyleClasses[j]);
+						oRM.addClass(oButton.aCustomStyleClasses[j]);
 					}
 				}
 				if (oButton.getEnabled()) {
-					oRM.class("sapMSegBBtnFocusable");
+					oRM.addClass("sapMSegBBtnFocusable");
 				} else {
-					oRM.class("sapMSegBBtnDis");
+					oRM.addClass("sapMSegBBtnDis");
 				}
 				if (sSelectedButton === oButton.getId()) {
-					oRM.class("sapMSegBBtnSel");
+					oRM.addClass("sapMSegBBtnSel");
 				}
 				if (oButtonIcon && sButtonText !== '') {
-					oRM.class("sapMSegBBtnMixed");
+					oRM.addClass("sapMSegBBtnMixed");
 				}
+				oRM.writeClasses();
 				sButtonWidth = oButton.getWidth();
-				oRM.style('width', sButtonWidth);
+				if (sButtonWidth) {
+					oRM.addStyle('width', sButtonWidth);
+					oRM.writeStyles();
+				}
 
 				sTooltip = oButton.getTooltip_AsString();
 				if (sTooltip) {
-					oRM.attr("title", sTooltip);
+					oRM.writeAttributeEscaped("title", sTooltip);
 				}
-				oRM.attr("tabindex", oButton.getEnabled() ? "0" : "-1");
+				oRM.writeAttribute("tabindex", oButton.getEnabled() ? "0" : "-1");
 
 				sButtonTextDirection = oButton.getTextDirection();
 				if (sButtonTextDirection !== TextDirection.Inherit) {
-					oRM.attr("dir", sButtonTextDirection.toLowerCase());
+					oRM.writeAttribute("dir", sButtonTextDirection.toLowerCase());
 				}
 
 				// ARIA
-				oRM.accessibilityState(oButton, {
+				oRM.writeAccessibilityState(oButton, {
 					role : "radio",
 					checked : sSelectedButton === oButton.getId()
 				});
@@ -138,15 +149,12 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/InvisibleRenderer"],
 						sIconAriaLabel += " " + sButtonText;
 					} else {
 						// if we have no text for the button set tooltip the name of the Icon
-						oRM.attr("title", sIconAriaLabel);
+						oRM.writeAttributeEscaped("title", sIconAriaLabel);
 					}
-					oRM.attr("aria-label", sIconAriaLabel);
+					oRM.writeAttributeEscaped("aria-label", sIconAriaLabel);
 				}
 
-				oRM.openEnd();
-				oRM.openStart("div");
-				oRM.class("sapMSegBBtnInner");
-				oRM.openEnd();
+				oRM.write('>');
 
 				if (oButtonIcon && oImage) {
 					oRM.renderControl(oImage);
@@ -154,15 +162,14 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/InvisibleRenderer"],
 
 				// render text
 				if (sButtonText !== '') {
-					oRM.text(sButtonText);
+					oRM.writeEscaped(sButtonText, false);
 				}
-				oRM.close("div");
-				oRM.close("li");
+				oRM.write("</li>");
 			} else {
 				InvisibleRenderer.render(oRM, oButton, "li");
 			}
 		}
-		oRM.close("ul");
+		oRM.write("</ul>");
 	};
 
 	SegmentedButtonRenderer._addAllIconsClass = function (aButtons) {

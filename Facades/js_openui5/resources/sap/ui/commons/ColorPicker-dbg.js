@@ -22,7 +22,7 @@ sap.ui.define(['./library', 'sap/ui/unified/ColorPicker', "sap/base/Log"],
 	 * @extends sap.ui.unified.ColorPicker
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public

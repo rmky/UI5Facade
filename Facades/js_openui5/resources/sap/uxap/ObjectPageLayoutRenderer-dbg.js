@@ -67,7 +67,7 @@ sap.ui.define(["sap/ui/Device"],
 
 			// custom scrollbar
 			if (Device.system.desktop) {
-				oRm.renderControl(oControl._getCustomScrollBar());
+				oRm.renderControl(oControl._getCustomScrollBar().addStyleClass("sapUxAPObjectPageCustomScroller"));
 			}
 
 			// Header

@@ -27,8 +27,7 @@ sap.ui.define([
 	"sap/base/util/deepClone",
 	"sap/base/util/deepEqual",
 	"sap/base/util/uid",
-	"sap/ui/thirdparty/jquery",
-	"sap/base/util/isEmptyObject"
+	"sap/ui/thirdparty/jquery"
 ], function(
 	BindingParser,
 	DataType,
@@ -51,8 +50,7 @@ sap.ui.define([
 	deepClone,
 	deepEqual,
 	uid,
-	jQuery,
-	isEmptyObject
+	jQuery
 ) {
 
 	"use strict";
@@ -272,7 +270,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.EventProvider
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @public
 	 * @alias sap.ui.base.ManagedObject
 	 */
@@ -1027,7 +1025,7 @@ sap.ui.define([
 	 * @param {Object} [oThisArg=undefined] Value to use as <code>this</code> when executing <code>fn</code>
 	 * @returns {any} Returns the value that <code>fn</code> returned after execution
 	 * @private
-	 * @ui5-restricted sap.ui.base,sap.ui.core
+	 * @sap-restricted sap.ui.base,sap.ui.core
 	 */
 	ManagedObject.runWithPreprocessors = function(fn, oPreprocessors, oThisArg) {
 		assert(typeof fn === "function", "fn must be a function");
@@ -1070,7 +1068,7 @@ sap.ui.define([
 	ManagedObject.prototype.applySettings = function(mSettings, oScope) {
 
 		// PERFOPT: don't retrieve (expensive) JSONKeys if no settings are given
-		if ( !mSettings || isEmptyObject(mSettings) ) {
+		if ( !mSettings || jQuery.isEmptyObject(mSettings) ) {
 			return this;
 		}
 
@@ -2434,19 +2432,10 @@ sap.ui.define([
 
 
 	/**
-	 * Marks this object and its aggregated children as 'invalid'.
+	 * This triggers rerendering of itself and its children.
 	 *
-	 * The term 'invalid' originally was introduced by controls where a change to the object's state made the
-	 * rendered DOM <i>invalid</i>. Later, the concept of invalidation was moved up in the inheritance hierarchy
-	 * to <code>ManagedObject</code>, but the term was kept for compatibility reasons.
-	 *
-	 * Managed settings (properties, aggregations, associations) invalidate the corresponding object automatically.
-	 * Changing the state via the standard mutators, therefore, does not require an explicit call to <code>invalidate</code>.
-	 * The same applies to changes made via data binding, as it internally uses the standard mutators.
-	 *
-	 * By default, a <code>ManagedObject</code> propagates any invalidation to its parent. Controls or UIAreas
-	 * handle invalidation on their own by triggering a re-rendering.
-	 *
+	 * As <code>sap.ui.base.ManagedObject</code> "bubbles up" the invalidate, changes to
+	 * child-<code>Elements</code> will also result in rerendering of the whole sub tree.
 	 * @protected
 	 */
 	ManagedObject.prototype.invalidate = function() {
@@ -2638,21 +2627,19 @@ sap.ui.define([
 		this.oParent = oParent;
 		this.sParentAggregationName = sAggregationName;
 
-		if (!oParent.mSkipPropagation[sAggregationName]) {
-			//get properties to propagate - get them from the original API parent in case this control was moved by aggregation forwarding
-			var oPropagatedProperties = this.aAPIParentInfos ? this.aAPIParentInfos[0].parent._getPropertiesToPropagate() : oParent._getPropertiesToPropagate();
+		//get properties to propagate - get them from the original API parent in case this control was moved by aggregation forwarding
+		var oPropagatedProperties = this.aAPIParentInfos ? this.aAPIParentInfos[0].parent._getPropertiesToPropagate() : oParent._getPropertiesToPropagate();
 
-			if (oPropagatedProperties !== this.oPropagatedProperties) {
-				this.oPropagatedProperties = oPropagatedProperties;
-				// update bindings
-				if (this.hasModel()) {
-					this.updateBindings(true, null); // TODO could be restricted to models that changed
-					this.updateBindingContext(false, undefined, true);
-					this.propagateProperties(true);
-				}
-				this._callPropagationListener();
-				this.fireModelContextChange();
+		if (oPropagatedProperties !== this.oPropagatedProperties) {
+			this.oPropagatedProperties = oPropagatedProperties;
+			// update bindings
+			if (this.hasModel()) {
+				this.updateBindings(true, null); // TODO could be restricted to models that changed
+				this.updateBindingContext(false, undefined, true);
+				this.propagateProperties(true);
 			}
+			this._callPropagationListener();
+			this.fireModelContextChange();
 		}
 
 		this._applyContextualSettings(oParent._oContextualSettings);
@@ -2692,7 +2679,7 @@ sap.ui.define([
 	/**
 	 * Hook method to let descendants of ManagedObject know when propagated contextual settings have changed
 	 * @private
-	 * @ui5-restricted sap.ui.core.Element
+	 * @sap-restricted sap.ui.core.Element
 	 */
 	ManagedObject.prototype._onContextualSettingsChanged = function () {};
 
@@ -4626,7 +4613,7 @@ sap.ui.define([
 	 * @param {function} listener function
 	 * @returns {sap.ui.base.ManagedObject} Returns <code>this</code> to allow method chaining
 	 * @private
-	 * @ui5-restricted sap.ui.fl
+	 * @sap-restricted sap.ui.fl
 	 */
 	ManagedObject.prototype.addPropagationListener = function(listener) {
 		assert(typeof listener === 'function', "listener must be a function");
@@ -4642,7 +4629,7 @@ sap.ui.define([
 	 * @param {function} listener function
 	 * @returns {sap.ui.base.ManagedObject} Returns <code>this</code> to allow method chaining
 	 * @private
-	 * @ui5-restricted sap.ui.fl
+	 * @sap-restricted sap.ui.fl
 	 */
 	ManagedObject.prototype.removePropagationListener = function(listener) {
 		assert(typeof listener === 'function', "listener must be a function");
@@ -4659,7 +4646,7 @@ sap.ui.define([
 	 * get propagation listeners
 	 * @returns {array} aPropagationListeners Returns registered propagationListeners
 	 * @private
-	 * @ui5-restricted sap.ui.fl
+	 * @sap-restricted sap.ui.fl
 	 */
 	ManagedObject.prototype.getPropagationListeners = function() {
 		return this.oPropagatedProperties.aPropagationListeners.concat(this.aPropagationListeners);
@@ -4761,10 +4748,10 @@ sap.ui.define([
 	 * @private
 	 */
 	ManagedObject.prototype._getPropertiesToPropagate = function() {
-		var bNoOwnModels = isEmptyObject(this.oModels),
-			bNoOwnContexts = isEmptyObject(this.oBindingContexts),
+		var bNoOwnModels = jQuery.isEmptyObject(this.oModels),
+			bNoOwnContexts = jQuery.isEmptyObject(this.oBindingContexts),
 			bNoOwnListeners = this.aPropagationListeners.length === 0,
-			bNoOwnElementContexts = isEmptyObject(this.mElementBindingContexts);
+			bNoOwnElementContexts = jQuery.isEmptyObject(this.mElementBindingContexts);
 
 		function merge(empty,o1,o2,o3) {
 			// jQuery.extend ignores 'undefined' values but not 'null' values.
@@ -4824,7 +4811,7 @@ sap.ui.define([
 	 * @public
 	 */
 	ManagedObject.prototype.hasModel = function() {
-		return !(isEmptyObject(this.oModels) && isEmptyObject(this.oPropagatedProperties.oModels));
+		return !(jQuery.isEmptyObject(this.oModels) && jQuery.isEmptyObject(this.oPropagatedProperties.oModels));
 	};
 
 	/**

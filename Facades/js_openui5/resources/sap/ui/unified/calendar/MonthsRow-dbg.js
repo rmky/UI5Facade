@@ -17,8 +17,7 @@ sap.ui.define([
 	'sap/ui/core/Locale',
 	"./MonthsRowRenderer",
 	"sap/ui/dom/containsOrEquals",
-	"sap/ui/thirdparty/jquery",
-	"sap/ui/unified/DateRange"
+	"sap/ui/thirdparty/jquery"
 ], function(
 	Control,
 	LocaleData,
@@ -31,8 +30,7 @@ sap.ui.define([
 	Locale,
 	MonthsRowRenderer,
 	containsOrEquals,
-	jQuery,
-	DateRange
+	jQuery
 ) {
 	"use strict";
 
@@ -61,7 +59,7 @@ sap.ui.define([
 	 * The MontsRow works with JavaScript Date objects, but only the month and the year are used to display and interact.
 	 * As representation for a month, the 1st of the month will always be returned in the API.
 	 * @extends sap.ui.core.Control
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -226,7 +224,7 @@ sap.ui.define([
 	// overwrite invalidate to recognize changes on selectedDates
 	MonthsRow.prototype.invalidate = function(oOrigin) {
 
-		if (!this._bDateRangeChanged && (!oOrigin || !(oOrigin instanceof DateRange))) {
+		if (!this._bDateRangeChanged && (!oOrigin || !(oOrigin instanceof sap.ui.unified.DateRange))) {
 			Control.prototype.invalidate.apply(this, arguments);
 		} else if (this.getDomRef() && !this._sInvalidateMonths) {
 			// DateRange changed -> only rerender months
@@ -1190,7 +1188,7 @@ sap.ui.define([
 					oStartDate.setDate(1); // begin of month
 				}
 			} else {
-				oDateRange = new DateRange();
+				oDateRange = new sap.ui.unified.DateRange();
 				oAggOwner.addAggregation("selectedDates", oDateRange, true); // no re-rendering
 			}
 
@@ -1242,7 +1240,7 @@ sap.ui.define([
 					}
 				} else {
 					// not selected -> select
-					oDateRange = new DateRange({startDate: oDate.toLocalJSDate()});
+					oDateRange = new sap.ui.unified.DateRange({startDate: oDate.toLocalJSDate()});
 					oAggOwner.addAggregation("selectedDates", oDateRange, true); // no re-rendering
 				}
 				sYyyymm = this._oFormatYyyymm.format(oDate.toUTCJSDate(), true);

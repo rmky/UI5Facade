@@ -45,8 +45,8 @@ sap.ui.define(['sap/base/Log', '../../Component', '../../Element', '../../routin
 		 * @see https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent/CustomEvent)
 		 * @alias sap.ui.core.support.usage.EventBroadcaster
 		 * @private
-		 * @ui5-restricted
 		 * @experimental Since 1.58
+		 * @ui5-restricted
 		 */
 		var EventBroadcaster = {};
 
@@ -97,7 +97,7 @@ sap.ui.define(['sap/base/Log', '../../Component', '../../Element', '../../routin
 		 * In the example configuration events coming from control
 		 * <code>sap.m.AccButton</code> are not be exposed.
 		 *
-		 * <pre>
+		 * <pre><code>
 		 * {
 		 *		global: ["modelContextChange", "beforeRendering", "afterRendering",
 		 *				"propertyChanged", "beforeGeometryChanged", "geometryChanged",
@@ -115,7 +115,7 @@ sap.ui.define(['sap/base/Log', '../../Component', '../../Element', '../../routin
 		 *			"sap.m.AccButton": {}
 		 *		}
 		 *	}
-		 * </pre>
+		 * </pre></code>
 		 * The set configuration object is copied from the given one.
 		 * @experimental
 		 * @since 1.65

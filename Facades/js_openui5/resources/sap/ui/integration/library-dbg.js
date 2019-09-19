@@ -5,12 +5,11 @@
  */
 
 /**
- * Initialization Code and shared classes of library sap.ui.integration.
+ * Initialization Code and shared classes of library sap.f.
  */
 sap.ui.define(["sap/ui/base/DataType",
 		"sap/ui/Global",
 		"sap/ui/core/library",
-		"sap/m/library",
 		"sap/f/library"
 	], // library dependency
 	function (DataType) {
@@ -20,15 +19,14 @@ sap.ui.define(["sap/ui/base/DataType",
 		// delegate further initialization of this library to the Core
 		sap.ui.getCore().initLibrary({
 			name: "sap.ui.integration",
-			version: "1.70.0",
-			dependencies: ["sap.ui.core", "sap.f", "sap.m"],
+			version: "1.68.1",
+			dependencies: ["sap.ui.core", "sap.f"],
 			types: [
 				"sap.ui.integration.CardActionType",
 				"sap.ui.integration.CardDataMode"
 			],
 			controls: [
 				"sap.ui.integration.widgets.Card",
-				"sap.ui.integration.Widget",
 				"sap.ui.integration.host.HostConfiguration"
 			],
 			elements: [],
@@ -37,7 +35,6 @@ sap.ui.define(["sap/ui/base/DataType",
 			//define the custom tags that can be used in this library
 			customTags: {
 				"card": "sap/ui/integration/widgets/Card",
-				"widget": "sap/ui/integration/Widget",
 				"host-configuration": "sap/ui/integration/host/HostConfiguration"
 			},
 			defaultTagPrefix: "ui"
@@ -49,7 +46,7 @@ sap.ui.define(["sap/ui/base/DataType",
 		 * @namespace
 		 * @alias sap.ui.integration
 		 * @author SAP SE
-		 * @version 1.70.0
+		 * @version 1.68.1
 		 * @public
 		 */
 		var thisLib = sap.ui.integration;

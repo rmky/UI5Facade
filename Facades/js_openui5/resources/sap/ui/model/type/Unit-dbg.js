@@ -13,8 +13,7 @@ sap.ui.define([
 	'sap/ui/model/ValidateException',
 	'sap/ui/core/LocaleData',
 	"sap/base/strings/hash",
-	"sap/ui/thirdparty/jquery",
-	"sap/base/util/isEmptyObject"
+	"sap/ui/thirdparty/jquery"
 ],
 	function(
 		NumberFormat,
@@ -24,8 +23,7 @@ sap.ui.define([
 		ValidateException,
 		LocaleData,
 		hash,
-		jQuery,
-		isEmptyObject
+		jQuery
 	) {
 	"use strict";
 
@@ -56,7 +54,7 @@ sap.ui.define([
 	 *
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @public
 	 * @param {object} [oFormatOptions] Formatting options. For a list of all available options, see {@link sap.ui.core.format.NumberFormat.getUnitInstance NumberFormat}.
@@ -316,7 +314,7 @@ sap.ui.define([
 	Unit.prototype._createInputFormat = function() {
 		var oSourceOptions = this.oFormatOptions.source;
 		if (oSourceOptions) {
-			if (isEmptyObject(oSourceOptions)) {
+			if (jQuery.isEmptyObject(oSourceOptions)) {
 				oSourceOptions = {
 					groupingEnabled: false,
 					groupingSeparator: ",",

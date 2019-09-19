@@ -643,10 +643,10 @@ sap.ui.define([
 	/**
 	 * fireRefresh
 	 */
-	ODataListBinding.prototype._fireRefresh = function(oParameters) {
+	ODataListBinding.prototype._fireRefresh = function(mArguments) {
 		 if (this.oModel.resolve(this.sPath, this.oContext)) {
 			 this.bRefresh = true;
-			 this.fireEvent("refresh", oParameters);
+			 this.fireEvent("refresh", mArguments);
 		 }
 	};
 

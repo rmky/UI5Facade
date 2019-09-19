@@ -13,7 +13,8 @@ sap.ui.define([
 	'sap/ui/core/Control',
 	'sap/ui/core/EnabledPropagator',
 	"sap/ui/events/KeyCodes",
-	'./ToolbarRenderer'
+	'./ToolbarRenderer',
+	"sap/ui/thirdparty/jquery"
 ],
 function(
 	BarInPageEnabler,
@@ -23,7 +24,8 @@ function(
 	Control,
 	EnabledPropagator,
 	KeyCodes,
-	ToolbarRenderer
+	ToolbarRenderer,
+	jQuery
 ) {
 	"use strict";
 
@@ -68,7 +70,7 @@ function(
 	 * @implements sap.ui.core.Toolbar,sap.m.IBar
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -422,15 +424,14 @@ function(
 	 * @protected
 	 */
 	Toolbar.prototype.getTitleControl = function() {
-		var Title = sap.ui.require("sap/m/Title");
-		if (!Title) {
+		if (!sap.m.Title) {
 			return;
 		}
 
 		var aContent = this.getContent();
 		for (var i = 0; i < aContent.length; i++) {
 			var oContent = aContent[i];
-			if (oContent instanceof Title && oContent.getVisible()) {
+			if (oContent instanceof sap.m.Title && oContent.getVisible()) {
 				return oContent;
 			}
 		}

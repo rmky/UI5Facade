@@ -22,7 +22,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', './library', 'sap/ui/core/Element', '
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public

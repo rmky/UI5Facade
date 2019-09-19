@@ -18,10 +18,10 @@ sap.ui.define(['./ServiceFactory', "sap/base/assert"],
 	 * The service factory registry.
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @alias sap.ui.core.service.ServiceFactoryRegistry
 	 * @private
-	 * @ui5-restricted sap.ushell
+	 * @sap-restricted sap.ushell
 	 * @since 1.37.0
 	 */
 	var ServiceFactoryRegistry = Object.create(null);
@@ -35,7 +35,7 @@ sap.ui.define(['./ServiceFactory', "sap/base/assert"],
 	 * @return {sap.ui.core.service.ServiceFactoryRegistry} <code>this</code> to allow method chaining
 	 * @static
 	 * @private
-	 * @ui5-restricted sap.ushell
+	 * @sap-restricted sap.ushell
 	 */
 	ServiceFactoryRegistry.register = function(sServiceFactoryName, oServiceFactory) {
 
@@ -56,7 +56,7 @@ sap.ui.define(['./ServiceFactory', "sap/base/assert"],
 	 * @return {sap.ui.core.service.ServiceFactoryRegistry} <code>this</code> to allow method chaining
 	 * @static
 	 * @private
-	 * @ui5-restricted sap.ushell
+	 * @sap-restricted sap.ushell
 	 */
 	ServiceFactoryRegistry.unregister = function(sServiceFactoryName) {
 
@@ -76,7 +76,7 @@ sap.ui.define(['./ServiceFactory', "sap/base/assert"],
 	 * @return {sap.ui.core.service.ServiceFactory} Service factory instance
 	 * @static
 	 * @private
-	 * @ui5-restricted sap.ushell
+	 * @sap-restricted sap.ushell
 	 */
 	ServiceFactoryRegistry.get = function(sServiceFactoryName) {
 		return mServiceFactories[sServiceFactoryName];

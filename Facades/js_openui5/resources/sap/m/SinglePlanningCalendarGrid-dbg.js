@@ -24,9 +24,7 @@ sap.ui.define([
 		'sap/ui/events/KeyCodes',
 		'./SinglePlanningCalendarGridRenderer',
 		'sap/ui/Device',
-		'sap/ui/core/delegate/ItemNavigation',
-		"sap/ui/thirdparty/jquery",
-		'./PlanningCalendarLegend'
+		'sap/ui/core/delegate/ItemNavigation'
 	],
 	function (
 		SinglePlanningCalendarUtilities,
@@ -47,9 +45,7 @@ sap.ui.define([
 		KeyCodes,
 		SinglePlanningCalendarGridRenderer,
 		Device,
-		ItemNavigation,
-		jQuery,
-		PlanningCalendarLegend
+		ItemNavigation
 	) {
 		"use strict";
 
@@ -62,9 +58,7 @@ sap.ui.define([
 			MILLISECONDS_IN_A_DAY = 86400000,
 			// Day view only - indicates the special dates
 			// 3px height the marker itself + 2x2px on its top and bottom both on cozy & compact
-			DAY_MARKER_HEIGHT_PX = 7,
-			FIRST_HOUR_OF_DAY = 0,
-			LAST_HOUR_OF_DAY = 24;
+			DAY_MARKER_HEIGHT_PX = 7;
 
 		/**
 		 * Constructor for a new SinglePlanningCalendarGrid.
@@ -73,16 +67,19 @@ sap.ui.define([
 		 * @param {object} [mSettings] initial settings for the new control
 		 *
 		 * @class
-		 *
-		 * Displays a grid in which appointments of the {@link sap.m.SinglePlanningCalendar} are rendered.
+		 * Disclaimer: This control is in a beta state - incompatible API changes may be done before its official public release. Use at your own discretion.
 		 *
 		 * <h3>Overview</h3>
+		 *
+		 * Displays a grid in which appointments are rendered.
 		 *
 		 * <b>Note:</b> The <code>PlanningCalendarGrid</code> uses parts of the <code>sap.ui.unified</code> library.
 		 * This library will be loaded after the <code>PlanningCalendarGrid</code>, if it wasn't previously loaded.
 		 * This could lead to a waiting time when a <code>PlanningCalendarGrid</code> is used for the first time.
 		 * To prevent this, apps using the <code>PlanningCalendarGrid</code> must also load the
 		 * <code>sap.ui.unified</code> library.
+		 *
+		 * <h3>Usage</h3>
 		 *
 		 * The <code>PlanningCalendarGrid</code> has the following structure:
 		 *
@@ -97,7 +94,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.70.0
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @private
@@ -117,26 +114,6 @@ sap.ui.define([
 					 * The time part will be ignored. The current date is used as default.
 					 */
 					startDate: {type: "object", group: "Data"},
-
-					/**
-					 * Determines the start hour of the grid to be shown if the <code>fullDay</code> property is set to
-					 * <code>false</code>. Otherwise the previous hours are displayed as non-working. The passed hour is
-					 * considered as 24-hour based.
-					 */
-					startHour: {type: "int", group: "Data", defaultValue: 0},
-
-					/**
-					 * Determines the end hour of the grid to be shown if the <code>fullDay</code> property is set to
-					 * <code>false</code>. Otherwise the next hours are displayed as non-working. The passed hour is
-					 * considered as 24-hour based.
-					 */
-					endHour: {type: "int", group: "Data", defaultValue: 24},
-
-					/**
-					 * Determines if all of the hours in a day are displayed. If set to <code>false</code>, the hours shown are
-					 * between the <code>startHour</code> and <code>endHour</code>.
-					 */
-					fullDay: {type: "boolean", group: "Data", defaultValue: true},
 
 					/**
 					 * Determines whether the appointments in the grid are draggable.
@@ -354,7 +331,7 @@ sap.ui.define([
 				pattern: "EEEE dd/MM/YYYY"
 			});
 			this._oFormatAriaCell = DateFormat.getDateTimeInstance({
-				pattern: "EEEE dd/MM/YYYY 'at' HH a"
+				pattern: "EEEE dd/MM/YYYY 'at' HH"
 			});
 
 			//the id of the SPC's legend if any
@@ -1216,7 +1193,10 @@ sap.ui.define([
 		 * @private
 		 */
 		SinglePlanningCalendarGrid.prototype._getVisibleStartHour = function () {
-			return (this.getFullDay() || !this.getStartHour()) ? FIRST_HOUR_OF_DAY : this.getStartHour();
+			// inject here the logic about the visibility of the fisrt visible hour, when the startHour property exist
+			// example:
+			// return this.getShowFullDay() ? 0 : this._getStartHour();
+			return 0;
 		};
 
 		/**
@@ -1226,29 +1206,41 @@ sap.ui.define([
 		 * @private
 		 */
 		SinglePlanningCalendarGrid.prototype._getVisibleEndHour = function () {
-			return ((this.getFullDay() || !this.getEndHour()) ? LAST_HOUR_OF_DAY : this.getEndHour()) - 1;
+			// inject here the logic about the visibility of the last visible hour, when the endHour property exist
+			// example:
+			// return (this.getShowFullDay() ? 24 : this._getEndHour()) - 1;
+			return 23;
 		};
 
 		/**
 		 * Determines if a given hour is between the first and the last visible hour in the grid.
 		 *
-		 * @param {int} iHour the hour to be checked
 		 * @returns {boolean} true if the iHour is in the visible hour range
 		 * @private
 		 */
-		SinglePlanningCalendarGrid.prototype._isVisibleHour = function (iHour) {
-			var iStartHour = this.getStartHour(),
-				iEndHour = this.getEndHour();
+		SinglePlanningCalendarGrid.prototype._isVisibleHour = function () {
+			// inject here the logic about the visibility of the working time range, when the startHour and endHour
+			// properties exist
+			// example:
+			// return this._getStartHour() <= iHour && iHour <= this._getEndHour();
+			return true;
+		};
 
-			if (!this.getStartHour()) {
-				iStartHour = FIRST_HOUR_OF_DAY;
-			}
+		/**
+		 * Determines whether the given hour is outside the visible hours of the grid.
+		 *
+		 * @returns {boolean} true if the iHour is outside the visible hour range
+		 * @private
+		 */
+		SinglePlanningCalendarGrid.prototype._isOutsideVisibleHours = function () {
+			// inject here the logic about the visibility of the working time range, when the startHour and endHour
+			// properties exist
+			// example:
+			// var iVisibleStartHour = this._getVisibleStartHour(),
+			// 	   iVisibleEndHour = this._getVisibleEndHour();
+			// 	   return iHour < iVisibleStartHour || iHour > iVisibleEndHour;
 
-			if (!this.getEndHour()) {
-				iEndHour = LAST_HOUR_OF_DAY;
-			}
-
-			return iStartHour <= iHour && iHour < iEndHour;
+			return false;
 		};
 
 		/**
@@ -1373,7 +1365,7 @@ sap.ui.define([
 			var $nowMarker = this.$("nowMarker"),
 				$nowMarkerText = this.$("nowMarkerText"),
 				$nowMarkerAMPM = this.$("nowMarkerAMPM"),
-				bCurrentHourNotVisible = !this._isVisibleHour(oDate.getHours());
+				bCurrentHourNotVisible = this._isOutsideVisibleHours(oDate.getHours());
 
 			$nowMarker.toggleClass("sapMSinglePCNowMarkerHidden", bCurrentHourNotVisible);
 			$nowMarker.css("top", this._calculateTopPosition(oDate) + "px");
@@ -1924,7 +1916,7 @@ sap.ui.define([
 				sFormattedEndDate = this._oFormatAriaApp.format(oAppointment.getEndDate()),
 				sAppInfo = sStartTime + ": " + sFormattedStartDate + "; " + sEndTime + ": " + sFormattedEndDate;
 
-			return sAppInfo + "; " + PlanningCalendarLegend.findLegendItemForItem(sap.ui.getCore().byId(this._sLegendId), oAppointment);
+			return sAppInfo + "; " + this._findCorrespondingLegendItem(this, oAppointment);
 		};
 
 		/**
@@ -1959,7 +1951,7 @@ sap.ui.define([
 			if (bFullDay) {
 				return sStartTime + ": " + this._oFormatAriaFullDayCell.format(oStartDate) + "; ";
 			}
-			return sStartTime + ": " + this._oFormatAriaCell.format(oStartDate) + "; " + sEndTime + ": " + this._oFormatAriaCell.format(oEndDate);
+			return sStartTime + ": " + this._oFormatAriaCell.format(oStartDate) + "; " + sEndTime + ": " + this._oFormatAriaCell.format(oEndDate) + "; ";
 		};
 
 		/**
@@ -2068,6 +2060,42 @@ sap.ui.define([
 				oRm.write("></div>");
 			}
 		});
+
+		/*
+		 * Finds the corresponding legend item to a given appointment.
+		 * @param {oControl}
+		 * @param {oSpecialItem} An appointment or a legend type
+		 * @returns {string} The matching legend item's default text.
+		 * @private
+		 */
+		SinglePlanningCalendarGrid.prototype._findCorrespondingLegendItem = function(oControl, oSpecialItem) {
+			var sLegendId = oControl._sLegendId,
+				oLegend = sap.ui.getCore().byId(sLegendId),
+				aLegendAppointments = oLegend ? oLegend.getAppointmentItems() : null,
+				aLegendItems = oLegend ? oLegend.getItems() : null,
+				bAppointmentItem = oSpecialItem instanceof CalendarAppointment,
+				aItems = bAppointmentItem ? aLegendAppointments : aLegendItems,
+				oItemType = bAppointmentItem ? oSpecialItem.getType() : oSpecialItem.type,
+				oItem,
+				sLegendItemText;
+
+			if (aItems && aItems.length) {
+				for (var i = 0; i < aItems.length; i++) {
+					oItem = aItems[i];
+					if (oItem.getType() === oItemType) {
+						sLegendItemText = oItem.getText();
+						break;
+					}
+				}
+			}
+
+			//if the special item's type is not present in the legend's items,
+			// the screen reader has to read it's type
+			if (!sLegendItemText) {
+				sLegendItemText = oItemType;
+			}
+			return sLegendItemText;
+		};
 
 		function _initItemNavigation(){
 			// Collect the dom references of the items

@@ -21,9 +21,6 @@ sap.ui.define([
 	// shortcut for sap.f.AvatarImageFitType
 	var AvatarImageFitType = library.AvatarImageFitType;
 
-	// shortcut for sap.f.AvatarColor
-	var AvatarColor = library.AvatarColor;
-
 	// shortcut for sap.f.AvatarSize
 	var AvatarSize = library.AvatarSize;
 
@@ -69,7 +66,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -125,22 +122,7 @@ sap.ui.define([
 				 *
 				 * @since 1.65
 				 */
-				fallbackIcon: {type: "string", group: "Data", defaultValue: null},
-				/**
-				 * Determines the background color of the control.
-				 *
-				 * <b>Note:</b> By using background colors from the predefined sets,
-				 * your colors can later be customized from the Theme Designer.
-				 *
-				 * @since 1.69
-				 */
-				backgroundColor: {type: "sap.f.AvatarColor", group: "Appearance", defaultValue: AvatarColor.Accent6},
-
-				/**
-				 * Determines whether the control is displayed with border.
-				 * @since 1.69
-				 */
-				showBorder: {type: "boolean", group: "Appearance", defaultValue: false}
+				fallbackIcon: {type: "string", group: "Data", defaultValue: null}
 			},
 			aggregations : {
 				/**
@@ -339,7 +321,7 @@ sap.ui.define([
 	Avatar.prototype._validateSrc = function (sSrc) {
 		if (IconPool.isIconURI(sSrc)) {
 			this._sActualType = AvatarType.Icon;
-			this._bIsDefaultIcon = IconPool.getIconInfo(sSrc) ? false : true;
+			this._bIsDefaultIcon = false;
 		} else {
 			this._bIsDefaultIcon = true;
 			this._sActualType = AvatarType.Image;

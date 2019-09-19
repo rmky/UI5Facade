@@ -18,8 +18,7 @@ sap.ui.define([
 	'sap/ui/unified/MenuItem',
 	'sap/ui/Device',
 	'sap/ui/core/EnabledPropagator',
-	"sap/ui/thirdparty/jquery",
-	"sap/ui/core/Popup"
+	"sap/ui/thirdparty/jquery"
 ],
 	function(
 		library,
@@ -34,13 +33,9 @@ sap.ui.define([
 		UfdMenuItem,
 		Device,
 		EnabledPropagator,
-		jQuery,
-		Popup
+		jQuery
 	) {
 		"use strict";
-
-		// shortcut for sap.ui.core.Popup.Dock
-		var Dock = Popup.Dock;
 
 		// shortcut for sap.m.ListType
 		var ListType = library.ListType;
@@ -61,7 +56,7 @@ sap.ui.define([
 		 * @implements sap.ui.core.IContextMenu
 		 *
 		 * @author SAP SE
-		 * @version 1.70.0
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @public
@@ -222,11 +217,12 @@ sap.ui.define([
 					this._bIsInitialized = true;
 				}
 
+				var eDock = sap.ui.core.Popup.Dock;
 				if (!sDockMy) {
-					sDockMy = Dock.BeginTop;
+					sDockMy = eDock.BeginTop;
 				}
 				if (!sDockAt) {
-					sDockAt = Dock.BeginBottom;
+					sDockAt = eDock.BeginBottom;
 				}
 				if (!sOffset) {
 					sOffset = "0 -2";
@@ -300,8 +296,8 @@ sap.ui.define([
 		 * The function is called once per MenuItem
 		 *
 		 * @param {function} fn The callback function
-		 * @private
-		 * @ui5-restricted ObjectPageLayoutABHelper
+		 * @protected
+		 * @sap-restricted ObjectPageLayoutABHelper
 		 * @returns void
 		 */
 		Menu.prototype._setCustomEnhanceAccStateFunction = function(fn) {
@@ -457,7 +453,7 @@ sap.ui.define([
 		};
 
 		Menu.prototype._createVisualMenuItemFromItem = function(oItem) {
-			var oUfMenuItem = new UfdMenuItem({
+			return new UfdMenuItem({
 				id: this._generateUnifiedMenuItemId(oItem.getId()),
 				icon: oItem.getIcon(),
 				text: oItem.getText(),
@@ -465,15 +461,7 @@ sap.ui.define([
 				tooltip: oItem.getTooltip(),
 				visible: oItem.getVisible(),
 				enabled: oItem.getEnabled()
-			}),
-			i,
-			aCustomData = oItem.getCustomData();
-
-			for (i = 0; i < aCustomData.length; i++) {
-				oItem._addCustomData(oUfMenuItem, aCustomData[i]);
-			}
-
-			return oUfMenuItem;
+			});
 		};
 
 		Menu.prototype._addVisualMenuItemFromItem = function(oItem, oMenu, iIndex) {

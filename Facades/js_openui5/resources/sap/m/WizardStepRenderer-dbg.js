@@ -18,7 +18,7 @@ sap.ui.define(function () {
 	};
 
 	WizardStepRenderer.startWizardStep = function (oRm, oStep) {
-		oRm.write("<div");
+		oRm.write("<article");
 		oRm.writeAccessibilityState(oStep, {
 			"labelledby": oStep._getNumberInvisibleText().getId(),
 			"role": "region"
@@ -45,7 +45,7 @@ sap.ui.define(function () {
 	};
 
 	WizardStepRenderer.endWizardStep = function (oRm) {
-		oRm.write("</div>");
+		oRm.write("</article>");
 	};
 
 	return WizardStepRenderer;

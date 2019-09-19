@@ -20,7 +20,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.command.BaseCommand
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @since 1.50
@@ -54,9 +54,9 @@ sap.ui.define([
 	 * @returns {Promise} Returns resolve after execution
 	 */
 	ControlVariantSwitch.prototype.execute = function() {
-		var oElement = this.getElement();
-		var oAppComponent = this._getAppComponent();
-		var sNewVariantReference = this.getTargetVariantReference();
+		var oElement = this.getElement(),
+			oAppComponent = this._getAppComponent(),
+			sNewVariantReference = this.getTargetVariantReference();
 
 		this.oModel = oAppComponent.getModel(flUtils.VARIANT_MODEL_NAME);
 		this.sVariantManagementReference = JsControlTreeModifier.getSelector(oElement, oAppComponent).id;

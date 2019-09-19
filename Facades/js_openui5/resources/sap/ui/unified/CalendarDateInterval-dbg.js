@@ -6,28 +6,25 @@
 
 //Provides control sap.ui.unified.Calendar.
 sap.ui.define([
-	'./calendar/CalendarUtils',
+	'sap/ui/unified/calendar/CalendarUtils',
 	'./Calendar',
 	'./calendar/DatesRow',
 	'./calendar/MonthPicker',
 	'./calendar/YearPicker',
-	'./calendar/YearRangePicker',
-	'./calendar/CalendarDate',
+	'sap/ui/unified/calendar/CalendarDate',
 	'./library',
 	'sap/ui/Device',
 	"./CalendarDateIntervalRenderer",
 	"sap/base/util/deepEqual",
 	"sap/ui/core/Popup",
 	"sap/base/Log",
-	"sap/ui/thirdparty/jquery",
-	"./DateRange"
+	"sap/ui/thirdparty/jquery"
 ], function(
 	CalendarUtils,
 	Calendar,
 	DatesRow,
 	MonthPicker,
 	YearPicker,
-	YearRangePicker,
 	CalendarDate,
 	library,
 	Device,
@@ -35,12 +32,10 @@ sap.ui.define([
 	deepEqual,
 	Popup,
 	Log,
-	jQuery,
-	DateRange
+	jQuery
 ) {
 	"use strict";
 
-	var CalendarType = sap.ui.core.CalendarType;
 	/*
 	* Inside the CalendarDateInterval CalendarDate objects are used. But in the API JS dates are used.
 	* So conversion must be done on API functions.
@@ -55,7 +50,7 @@ sap.ui.define([
 	 * @class
 	 * <code>CalendarDateInterval</code> only visualizes the dates in a one-line interval and allows the selection of a single day.
 	 * @extends sap.ui.unified.Calendar
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -117,10 +112,6 @@ sap.ui.define([
 
 	CalendarDateInterval.prototype._initilizeYearPicker = function() {
 		this.setAggregation("yearPicker", this._createYearPicker());
-	};
-
-	CalendarDateInterval.prototype._initilizeYearRangePicker = function() {
-		this.setAggregation("yearRangePicker", this._createYearRangePicker());
 	};
 
 	CalendarDateInterval.prototype.setPickerPopup = function(bPickerPopup) {
@@ -186,36 +177,6 @@ sap.ui.define([
 		oYearPicker.attachEvent("pageChange", _handleYearPickerPageChange, this);
 
 		return oYearPicker;
-	};
-
-	CalendarDateInterval.prototype._createYearRangePicker = function() {
-		var oYearRangePicker = new YearRangePicker(this.getId() + "--YRP");
-		oYearRangePicker.attachEvent("select", this._selectYearRange, this);
-		oYearRangePicker.setPrimaryCalendarType(this.getPrimaryCalendarType());
-		oYearRangePicker.setYears(6);
-		oYearRangePicker.setRangeSize(this.getAggregation("yearPicker").getYears());
-
-		return oYearRangePicker;
-	};
-
-	// TODO: Make a calculation for the YearRangePicker column count
-	// based on control width and browser window width
-	CalendarDateInterval.prototype._adjustYearRangeDisplay = function() {
-		var oYearRangePicker = this.getAggregation("yearRangePicker");
-
-		if (!this._getSucessorsPickerPopup()) {
-			switch (this.getPrimaryCalendarType()) {
-				case CalendarType.Gregorian:
-					oYearRangePicker.setColumns(3);
-					oYearRangePicker.setYears(3);
-					break;
-				default:
-					oYearRangePicker.setColumns(2);
-					oYearRangePicker.setYears(2);
-			}
-		} else {
-			Calendar.prototype._adjustYearRangeDisplay.call(this, arguments);
-		}
 	};
 
 	/**
@@ -301,7 +262,7 @@ sap.ui.define([
 	CalendarDateInterval.prototype._showCalendarPicker = function() {
 		var oStartDate = this.getStartDate(),
 			oCalPicker = this._getCalendarPicker(),
-			oSelectedRange = new DateRange(),
+			oSelectedRange = new sap.ui.unified.DateRange(),
 			oEndDate = new Date(oStartDate.getTime());
 
 		oEndDate.setDate(oEndDate.getDate() + this._getDays() - 1);
@@ -346,8 +307,6 @@ sap.ui.define([
 				jQuery(oMonth._oItemNavigation.getItemDomRefs()[oMonth._oItemNavigation.getFocusedIndex()]).attr("tabindex", "0");
 			}
 		}
-
-		this.getAggregation("calendarPicker")._closedPickers();
 	};
 
 	/**
@@ -430,8 +389,6 @@ sap.ui.define([
 
 	CalendarDateInterval.prototype.setDays = function(iDays){
 
-		var oYearRangePicker = this.getAggregation("yearRangePicker");
-
 		this.setProperty("days", iDays, true);
 
 		iDays = this._getDays(); // to use phone limit
@@ -453,7 +410,6 @@ sap.ui.define([
 				iYears = 20;
 			}
 			oYearPicker.setYears(iYears);
-			oYearRangePicker.setRangeSize(iYears);
 		}
 
 		var oStartDate = this._getStartDate();
@@ -620,8 +576,6 @@ sap.ui.define([
 			}
 			this._closedPickers();
 		}
-		this._updateHeadersButtons();
-		this._setHeaderText(this._getFocusedDate());
 
 	};
 
@@ -792,6 +746,7 @@ sap.ui.define([
 
 		var oFocusedDate = new CalendarDate(this._getFocusedDate(), this.getPrimaryCalendarType()),
 			oMonthPicker,
+			oYearPicker,
 			oStartDate,
 			iDays;
 
@@ -824,15 +779,9 @@ sap.ui.define([
 
 		case 2: // year picker
 			if (!this.getPickerPopup()) {
-				this.getAggregation("yearPicker").previousPage();
-				_handleYearPickerPageChange.call(this);
-			}
-			break;
-
-		case 3: // year range picker
-			if (!this.getPickerPopup()) {
-				this.getAggregation("yearRangePicker").previousPage();
-				_handleYearPickerPageChange.call(this);
+				oYearPicker = this.getAggregation("yearPicker");
+				oYearPicker.previousPage();
+				this._togglePrevNexYearPicker();
 			}
 			break;
 			// no default
@@ -844,6 +793,7 @@ sap.ui.define([
 
 		var oFocusedDate = new CalendarDate(this._getFocusedDate(),  this.getPrimaryCalendarType()),
 			oMonthPicker,
+			oYearPicker,
 			oStartDate,
 			iDays;
 
@@ -876,15 +826,9 @@ sap.ui.define([
 
 		case 2: // year picker
 			if (!this.getPickerPopup()) {
-				this.getAggregation("yearPicker").nextPage();
-				_handleYearPickerPageChange.call(this);
-			}
-			break;
-
-		case 3: // year range picker
-			if (!this.getPickerPopup()) {
-				this.getAggregation("yearRangePicker").nextPage();
-				_handleYearPickerPageChange.call(this);
+				oYearPicker = this.getAggregation("yearPicker");
+				oYearPicker.nextPage();
+				this._togglePrevNexYearPicker();
 			}
 			break;
 			// no default
@@ -1088,7 +1032,7 @@ sap.ui.define([
 	function _handleYearPickerPageChange(oEvent) {
 
 		this._togglePrevNexYearPicker();
-		this._updateHeadersYearPrimaryText(this._getYearString());
+
 	}
 
 	return CalendarDateInterval;

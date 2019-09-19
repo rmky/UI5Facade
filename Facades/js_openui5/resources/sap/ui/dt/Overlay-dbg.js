@@ -46,7 +46,7 @@ function (
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @private
@@ -566,7 +566,7 @@ function (
 	Overlay.prototype.applyStyles = function (bForceScrollbarSync) {
 		this.fireBeforeGeometryChanged();
 
-		if (!this.isRendered() || this._bIsBeingDestroyed || this.getShouldBeDestroyed()) {
+		if (!this.isRendered()) {
 			return;
 		}
 
@@ -712,13 +712,12 @@ function (
 	Overlay.prototype.detachBrowserEvent = function(sEventType, fnHandler, oListener) {
 		if (sEventType && (typeof (sEventType) === "string")) { // do nothing if the first parameter is empty or not a string
 			if (typeof (fnHandler) === "function") {   // also do nothing if the second parameter is not a function
+				var $ = this.$(), i, oParamSet;
 				oListener = oListener || this;
 
 				// remove the bind parameters from the stored array
 				if (this._aBindParameters) {
-					var $ = this.$();
-					var oParamSet;
-					for (var i = this._aBindParameters.length - 1; i >= 0; i--) {
+					for (i = this._aBindParameters.length - 1; i >= 0; i--) {
 						oParamSet = this._aBindParameters[i];
 						if (oParamSet.sEventType === sEventType && oParamSet.fnHandler === fnHandler && oParamSet.oListener === oListener) {
 							this._aBindParameters.splice(i, 1);
@@ -929,4 +928,4 @@ function (
 	};
 
 	return Overlay;
-});
+}, /* bExport= */ true);

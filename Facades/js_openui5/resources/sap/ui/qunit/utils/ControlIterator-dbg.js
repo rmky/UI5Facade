@@ -53,7 +53,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log", "
 	 * @namespace
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @public
 	 * @since 1.48.0
@@ -99,8 +99,6 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log", "
 		"sap.ui.documentation.sdk.controls.BorrowedList",
 		"sap.ui.documentation.sdk.controls.LightTable",
 		"sap.ui.layout.BlockLayoutRow",
-		"sap.ui.layout.form.ResponsiveGridLayoutPanel", // control not for stand alone usage. Only inside ResponsiveGridLayout
-		"sap.ui.layout.form.ResponsiveLayoutPanel", // control not for stand alone usage. Only inside ResponsiveLayout
 		"sap.ui.richtexteditor.RichTextEditor",
 		"sap.ui.richtexteditor.ToolbarWrapper",
 		"sap.ui.rta.AddElementsDialog",
@@ -157,6 +155,8 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log", "
 		"sap.ui.core.XMLComposite",
 		"sap.ui.demokit.IndexLayout._Tile",
 		"sap.ui.mdc.BaseControl", // should be abstract?
+		"sap.ui.mdc.FilterBar", //The control only runs in views with XML pre-processor. The test can't provide this environment
+		"sap.ui.mdc.FilterField", //The control only runs in views with XML pre-processor. The test can't provide this environment
 		"sap.ui.mdc.odata.v4.microchart.MicroChart", //The control only runs in views with XML pre-processor. The test can't provide this environment
 		"sap.ui.mdc.ValueHelpDialog", //The control only runs in views with XML pre-processor. The test can't provide this environment
 		"sap.ui.mdc.XMLComposite", //The control only runs in views with XML pre-processor. The test can't provide this environment

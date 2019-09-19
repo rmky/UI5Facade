@@ -4,8 +4,20 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(["sap/ui/core/Renderer", "sap/ui/core/Core", "./library", "./ListBaseRenderer", "./ColumnListItemRenderer"],
-	function(Renderer, Core, library, ListBaseRenderer, ColumnListItemRenderer) {
+sap.ui.define([
+	'sap/ui/core/Renderer',
+	'./ListBaseRenderer',
+	'./ColumnListItemRenderer',
+	'sap/m/library',
+	'sap/base/security/encodeXML'
+],
+	function(
+		Renderer,
+		ListBaseRenderer,
+		ColumnListItemRenderer,
+		library,
+		encodeXML
+	) {
 	"use strict";
 
 
@@ -14,16 +26,16 @@ sap.ui.define(["sap/ui/core/Renderer", "sap/ui/core/Core", "./library", "./ListB
 
 
 	/**
-	 * Table renderer.
+	 * List renderer.
 	 * @namespace
 	 *
 	 * TableRenderer extends the ListBaseRenderer
 	 */
 	var TableRenderer = Renderer.extend(ListBaseRenderer);
-	TableRenderer.apiVersion = 2;
+
+	var bRtl = sap.ui.getCore().getConfiguration().getRTL();
 
 	// store the flex alignment for the column header based on the RTL mode
-	var bRtl = Core.getConfiguration().getRTL();
 	TableRenderer.columnAlign = {
 		left: bRtl ? "flex-end" : "flex-start",
 		center: "center",
@@ -64,46 +76,53 @@ sap.ui.define(["sap/ui/core/Renderer", "sap/ui/core/Core", "./library", "./ListB
 						!oColumn.isHidden();
 			}).length == 1,
 			createBlankCell = function(cls, id, bAriaHidden) {
-				rm.openStart(cellTag, id && idPrefix + id);
+				rm.write("<");
+				rm.write(cellTag);
 				if (cellTag === "th") {
-					rm.class("sapMTableTH");
-					rm.attr("role", bAriaHidden ? "presentation" : "columnheader");
+					rm.addClass("sapMTableTH");
+					rm.writeAttribute("role", bAriaHidden ? "presentation" : "columnheader");
 				} else if (bAriaHidden) { // hidden td
-					rm.attr("role", "presentation");
+					rm.writeAttribute("role", "presentation");
 				}
-				bAriaHidden && rm.attr("aria-hidden", "true");
-				rm.class(clsPrefix + cls);
-				rm.openEnd();
-				rm.close(cellTag);
+				bAriaHidden && rm.writeAttribute("aria-hidden", "true");
+				id && rm.writeAttribute("id", idPrefix + id);
+				rm.addClass(clsPrefix + cls);
+				rm.writeClasses();
+				rm.write("></");
+				rm.write(cellTag);
+				rm.write(">");
 				index++;
 			};
 
-		rm.openStart(groupTag).openEnd();
+		rm.write("<" + groupTag + ">");
+		rm.write("<tr");
 
-		rm.openStart("tr", oTable.addNavSection(idPrefix + type + "er"));
-		rm.attr("tabindex", -1);
+		rm.writeAttribute("tabindex", -1);
+		rm.writeAttribute("id", oTable.addNavSection(idPrefix + type + "er" ));
 
 		if (isHeaderHidden) {
-			rm.class("sapMListTblHeaderNone");
+			rm.addClass("sapMListTblHeaderNone");
 		} else {
-			rm.class("sapMListTblRow").class("sapMLIBFocusable").class("sapMListTbl" + type + "er");
+			rm.addClass("sapMListTblRow sapMLIBFocusable sapMListTbl" + type + "er");
 			ColumnListItemRenderer.addLegacyOutlineClass.call(ColumnListItemRenderer, rm);
 		}
 
-		rm.openEnd();
+		rm.writeClasses();
+		rm.write(">");
 
 		createBlankCell("HighlightCol", type + "Highlight", true);
 
 		if (iModeOrder == -1) {
 			if (mode == "MultiSelect" && type == "Head" && !isHeaderHidden) {
-				rm.openStart("th");
-				rm.class("sapMTableTH");
-				rm.attr("aria-hidden", "true");
-				rm.class(clsPrefix + "SelCol");
-				rm.attr("role", "presentation");
-				rm.openEnd();
+				rm.write("<th");
+				rm.addClass("sapMTableTH");
+				rm.writeAttribute("aria-hidden", "true");
+				rm.addClass(clsPrefix + "SelCol");
+				rm.writeAttribute("role", "presentation");
+				rm.writeClasses();
+				rm.write(">");
 				rm.renderControl(oTable._getSelectAllCheckbox());
-				rm.close("th");
+				rm.write("</th>");
 				index++;
 			} else {
 				createBlankCell("SelCol", "", true);
@@ -132,50 +151,55 @@ sap.ui.define(["sap/ui/core/Renderer", "sap/ui/core/Core", "./library", "./ListB
 				cls = oColumn.getStyleClass(true),
 				align = oColumn.getCssAlign();
 
+			rm.write("<" + cellTag);
+			cls && rm.addClass(encodeXML(cls));
+
 			if (type == "Head") {
-				rm.openStart(cellTag, oColumn);
-				rm.class("sapMTableTH");
-				rm.attr("role", "columnheader");
+				rm.writeElementData(oColumn);
+				rm.addClass("sapMTableTH");
+				rm.writeAttribute("role", "columnheader");
 				var sSortIndicator = oColumn.getSortIndicator().toLowerCase();
-				sSortIndicator !== "none" && rm.attr("aria-sort", sSortIndicator);
-			} else {
-				rm.openStart(cellTag);
+				sSortIndicator !== "none" && rm.writeAttribute("aria-sort", sSortIndicator);
 			}
 
-			cls && rm.class(cls);
-			rm.class(clsPrefix + "Cell");
-			rm.class(clsPrefix + type + "erCell");
-			rm.attr("data-sap-width", oColumn.getWidth());
-			rm.style("width", width);
+			rm.addClass(clsPrefix + "Cell");
+			rm.addClass(clsPrefix + type + "erCell");
+			rm.writeAttribute("data-sap-width", oColumn.getWidth());
+			width && rm.addStyle("width", width);
 
 			// required to set the correct aligment to the footer cell
 			if (align && type !== "Head") {
-				rm.style("text-align", align);
+				rm.addStyle("text-align", align);
 			}
 
-			rm.openEnd();
+			rm.writeClasses();
+			rm.writeStyles();
+			rm.write(">");
 
 			if (control) {
 				if (type === "Head") {
-					rm.openStart("div");
-					rm.class("sapMColumnHeader");
+					rm.write("<div");
+					rm.addClass("sapMColumnHeader");
 
 					if (bActiveHeaders) {
 						// add active header attributes and style class
-						rm.attr("tabindex", 0);
-						rm.attr("role", "button");
-						rm.attr("aria-haspopup", "dialog");
-						rm.class("sapMColumnHeaderActive");
+						rm.writeAttribute("tabindex", 0);
+						rm.writeAttribute("role", "button");
+						rm.writeAttribute("aria-haspopup", "dialog");
+						rm.addClass("sapMColumnHeaderActive");
 					}
 
 					if (align) {
-						rm.style("justify-content", TableRenderer.columnAlign[align]);
-						rm.style("text-align", align);
+						rm.addStyle("justify-content", TableRenderer.columnAlign[align]);
+						rm.addStyle("text-align", align);
 					}
 
-					rm.openEnd();
-					rm.renderControl(control.addStyleClass("sapMColumnHeaderContent"));
-					rm.close("div");
+					rm.writeClasses();
+					rm.writeStyles();
+					rm.write(">");
+					control.addStyleClass("sapMColumnHeaderContent");
+					rm.renderControl(control);
+					rm.write("</div>");
 				} else {
 					// rendering of the footer cell
 					rm.renderControl(control);
@@ -186,7 +210,7 @@ sap.ui.define(["sap/ui/core/Renderer", "sap/ui/core/Core", "./library", "./ListB
 				hasFooter = !!oColumn.getFooter();
 			}
 
-			rm.close(cellTag);
+			rm.write("</" + cellTag + ">");
 			oColumn.setIndex(index++);
 		});
 
@@ -196,8 +220,7 @@ sap.ui.define(["sap/ui/core/Renderer", "sap/ui/core/Core", "./library", "./ListB
 			createBlankCell("SelCol", "", true);
 		}
 
-		rm.close("tr");
-		rm.close(groupTag);
+		rm.write("</tr></" + groupTag + ">");
 
 		if (type == "Head") {
 			oTable._hasPopin = hasPopin;
@@ -211,10 +234,16 @@ sap.ui.define(["sap/ui/core/Renderer", "sap/ui/core/Core", "./library", "./ListB
 	 * add table container class name
 	 */
 	TableRenderer.renderContainerAttributes = function(rm, oControl) {
-		rm.attr("role", "application");
-		rm.attr("aria-labelledby", this.getAriaAnnouncement("TABLE_CONTAINER_ROLE_DESCRIPTION"));
-		rm.class("sapMListTblCnt");
 
+		rm.writeAttribute("role", "application");
+		rm.writeAttribute("aria-labelledby", this.getAriaAnnouncement("TABLE_CONTAINER_ROLE_DESCRIPTION"));
+
+		// TBD: According to ACC experts aria-roledescription should be used. Unfortunately this does not yet work in a satisfying manner
+		//      Labelling is used instead, see above
+		//var oBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m");
+		//rm.writeAttribute("aria-roledescription", oBundle.getText("TABLE_CONTAINER_ROLE_DESCRIPTION"));
+
+		rm.addClass("sapMListTblCnt");
 		ListBaseRenderer.renderContainerAttributes.apply(this, arguments);
 	};
 
@@ -222,16 +251,21 @@ sap.ui.define(["sap/ui/core/Renderer", "sap/ui/core/Core", "./library", "./ListB
 	 * render table tag and add required classes
 	 */
 	TableRenderer.renderListStartAttributes = function(rm, oControl) {
-		rm.openStart("table", oControl.getId("listUl"));
-		rm.class("sapMListTbl");
+		rm.write("<table");
+		rm.addClass("sapMListTbl");
 		if (oControl.getFixedLayout() === false) {
-			rm.style("table-layout", "auto");
+			rm.addStyle("table-layout", "auto");
 		}
 
 		// make the type column visible if needed
 		if (oControl._iItemNeedsColumn) {
-			rm.class("sapMListTblHasNav");
+			rm.addClass("sapMListTblHasNav");
 		}
+
+		// TBD: According to ACC experts aria-roledescription should be used. Unfortunately this does not yet work in a satisfying manner
+		//      Labelling is used instead, see TableRenderer.getAriaLabelledBy
+		//var oBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m");
+		//rm.writeAttribute("aria-roledescription", oBundle.getText("TABLE_ROLE_DESCRIPTION"));
 	};
 
 	/**
@@ -258,48 +292,51 @@ sap.ui.define(["sap/ui/core/Renderer", "sap/ui/core/Core", "./library", "./ListB
 	 */
 	TableRenderer.renderListHeadAttributes = function(rm, oControl) {
 		this.renderColumns(rm, oControl, "Head");
-		rm.openStart("tbody", oControl.addNavSection(oControl.getId("tblBody")));
-		rm.class("sapMListItems");
-		rm.class("sapMTableTBody");
+		rm.write("<tbody");
+		rm.addClass("sapMListItems");
+		rm.addClass("sapMTableTBody");
+		rm.writeAttribute("id", oControl.addNavSection(oControl.getId("tblBody")));
 		if (oControl.getAlternateRowColors()) {
-			rm.class(oControl._getAlternateRowColorsClass());
+			rm.addClass(oControl._getAlternateRowColorsClass());
 		}
-		if (oControl.hasPopin()) {
-			rm.class("sapMListTblHasPopin");
-		}
-		rm.openEnd();
+		rm.writeClasses();
+		rm.write(">");
 	};
 
 	/**
 	 * render footer and finish rendering table
 	 */
 	TableRenderer.renderListEndAttributes = function(rm, oControl) {
-		rm.close("tbody"); // items should be rendered before foot
+		rm.write("</tbody>");	// items should be rendered before foot
 		oControl._hasFooter && this.renderColumns(rm, oControl, "Foot");
-		rm.close("table");
+		rm.write("</table>");
 	};
 
 	/**
 	 * render no data
 	 */
 	TableRenderer.renderNoData = function(rm, oControl) {
-		rm.openStart("tr", oControl.getId("nodata"));
-		rm.attr("tabindex", oControl.getKeyboardMode() == ListKeyboardMode.Navigation ? -1 : 0);
-		rm.class("sapMLIB").class("sapMListTblRow").class("sapMLIBTypeInactive");
+		rm.write("<tr");
+		rm.writeAttribute("tabindex", oControl.getKeyboardMode() == ListKeyboardMode.Navigation ? -1 : 0);
+		rm.writeAttribute("id", oControl.getId("nodata"));
+		rm.addClass("sapMLIB sapMListTblRow sapMLIBTypeInactive");
 		ColumnListItemRenderer.addFocusableClasses.call(ColumnListItemRenderer, rm);
 		if (!oControl._headerHidden || (!oControl.getHeaderText() && !oControl.getHeaderToolbar())) {
-			rm.class("sapMLIBShowSeparator");
+			rm.addClass("sapMLIBShowSeparator");
 		}
-		rm.openEnd();
+		rm.writeClasses();
+		rm.write(">");
 
-		rm.openStart("td", oControl.getId("nodata-text"));
-		rm.attr("colspan", oControl.getColCount());
-		rm.class("sapMListTblCell").class("sapMListTblCellNoData");
-		rm.openEnd();
-		rm.text(oControl.getNoDataText(true));
-		rm.close("td");
+		rm.write("<td");
+		rm.writeAttribute("id", oControl.getId("nodata-text"));
+		rm.writeAttribute("colspan", oControl.getColCount());
+		rm.addClass("sapMListTblCell sapMListTblCellNoData");
+		rm.writeClasses();
+		rm.write(">");
+		rm.writeEscaped(oControl.getNoDataText(true));
+		rm.write("</td>");
 
-		rm.close("tr");
+		rm.write("</tr>");
 	};
 
 	return TableRenderer;

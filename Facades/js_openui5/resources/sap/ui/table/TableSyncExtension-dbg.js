@@ -127,7 +127,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table that allows synchronization with a table.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableSyncExtension
@@ -149,7 +149,7 @@ sap.ui.define([
 				renderHorizontalScrollbar: ExtensionHelper.renderHorizontalScrollbar.bind(this)
 			};
 
-			TableUtils.addDelegate(oTable, this._delegate, oTable);
+			oTable.addEventDelegate(this._delegate, oTable);
 
 			return "SyncExtension";
 		},

@@ -18,7 +18,7 @@ sap.ui.define(['./Event', './Object', './ObjectPool', "sap/base/assert"],
 	 * @abstract
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @public
 	 * @alias sap.ui.base.EventProvider
 	 */
@@ -190,7 +190,7 @@ sap.ui.define(['./Event', './Object', './ObjectPool', "sap/base/assert"],
 	 * @param {string}
 	 *            sEventId The identifier of the event to fire
 	 * @param {object}
-	 *            [oParameters] Parameters which should be carried by the event
+	 *            [mParameters] The parameters which should be carried by the event
 	 * @param {boolean}
 	 *            [bAllowPreventDefault] Defines whether function <code>preventDefault</code> is supported on the fired event
 	 * @param {boolean}
@@ -200,12 +200,12 @@ sap.ui.define(['./Event', './Object', './ObjectPool', "sap/base/assert"],
 	 *                                             the function returns <code>true</code> if the default action should be executed, <code>false</code> otherwise.
 	 * @protected
 	 */
-	EventProvider.prototype.fireEvent = function(sEventId, oParameters, bAllowPreventDefault, bEnableEventBubbling) {
+	EventProvider.prototype.fireEvent = function(sEventId, mParameters, bAllowPreventDefault, bEnableEventBubbling) {
 
 		// get optional parameters right
-		if (typeof oParameters === "boolean") {
+		if (typeof mParameters === "boolean") {
 			bEnableEventBubbling = bAllowPreventDefault;
-			bAllowPreventDefault = oParameters;
+			bAllowPreventDefault = mParameters;
 		}
 
 		/* eslint-disable consistent-this */
@@ -221,7 +221,7 @@ sap.ui.define(['./Event', './Object', './ObjectPool', "sap/base/assert"],
 
 				// avoid issues with 'concurrent modification' (e.g. if an event listener unregisters itself).
 				aEventListeners = aEventListeners.slice();
-				oEvent = oEvent || this.oEventPool.borrowObject(sEventId, this, oParameters); // borrow event lazily
+				oEvent = oEvent || this.oEventPool.borrowObject(sEventId, this, mParameters); // borrow event lazily
 
 				for (i = 0, iL = aEventListeners.length; i < iL; i++) {
 					oInfo = aEventListeners[i];

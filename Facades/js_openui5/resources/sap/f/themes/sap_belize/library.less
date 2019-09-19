@@ -19,16 +19,19 @@
 
 @_sap_f_Avatar_Color: @sapUiContentContrastTextColor;
 
-.sapFAvatarBorder {
-	&.sapFAvatarIcon,
-	&.sapFAvatarInitials,
-	.sapFAvatarImageHolder {
-		box-shadow: 0 0 0 0.0625rem fade(@sapUiContentShadowColor, 10) inset;
-	}
+.sapFAvatarImageContain {
+	background-color: @sapUiAccent7;
 }
 
 .sapFAvatarIcon {
+	background-color: @sapUiAccent7;
+	border-color: @sapUiAccent7;
 	color: @_sap_f_Avatar_Color;
+}
+
+.sapFAvatarInitials {
+	background-color: @sapUiAccent7;
+	border-color: @sapUiAccent7;
 }
 
 .sapFAvatarInitialsHolder {

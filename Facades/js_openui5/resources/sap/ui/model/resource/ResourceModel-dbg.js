@@ -49,7 +49,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.Model
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @param {object} oData
 	 *                     Parameters used to initialize the <code>ResourceModel</code>; at least one of <code>bundle</code>,
@@ -141,8 +141,8 @@ sap.ui.define([
 	 * @param {object} oData
 	 * @param {object} bAsync whether the resource bundle should be loaded asynchronously
 	 * @returns {jQuery.sap.util.ResourceBundle|Promise} loaded resource bundle or Promise in async case
+	 * @sap-restricted sap.ui.core.Component
 	 * @private
-	 * @ui5-restricted sap.ui.core.Component
 	 */
 	ResourceModel.loadResourceBundle = function(oData, bAsync) {
 		var oConfiguration = sap.ui.getCore().getConfiguration(),

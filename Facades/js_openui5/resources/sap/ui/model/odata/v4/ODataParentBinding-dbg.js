@@ -8,13 +8,12 @@
 //with dependent bindings
 sap.ui.define([
 	"./ODataBinding",
-	"./SubmitMode",
 	"./lib/_Helper",
 	"sap/base/Log",
 	"sap/ui/base/SyncPromise",
 	"sap/ui/model/ChangeReason",
 	"sap/ui/thirdparty/jquery"
-], function (asODataBinding, SubmitMode, _Helper, Log, SyncPromise, ChangeReason, jQuery) {
+], function (asODataBinding, _Helper, Log, SyncPromise, ChangeReason, jQuery) {
 	"use strict";
 
 	/**
@@ -124,24 +123,6 @@ sap.ui.define([
 		if (this.iPatchCounter === 1) {
 			this.fireEvent("patchSent");
 		}
-	};
-
-	/**
-	 * Find the context in the uppermost binding in the hierarchy that can be reached with an empty
-	 * path.
-	 *
-	 * @param {sap.ui.model.odata.v4.Context} oContext
-	 *   The context of the caller
-	 * @returns {sap.ui.model.odata.v4.Context}
-	 *   The context that can be reached through empty paths
-	 *
-	 * @private
-	 */
-	ODataParentBinding.prototype._findEmptyPathParentContext = function (oContext) {
-		if (this.sPath === "" && this.oContext.getBinding) {
-			return this.oContext.getBinding()._findEmptyPathParentContext(this.oContext);
-		}
-		return oContext;
 	};
 
 	/**
@@ -510,10 +491,6 @@ sap.ui.define([
 	 *   The edit URL to be used for the DELETE request
 	 * @param {string} sPath
 	 *   The path of the entity relative to this binding
-	 * @param {object} [oETagEntity]
-	 *   An entity with the ETag of the binding for which the deletion was requested. This is
-	 *   provided if the deletion is delegated from a context binding with empty path to a list
-	 *   binding.
 	 * @param {function} fnCallback
 	 *   A function which is called after the entity has been deleted from the server and from the
 	 *   cache; the index of the entity is passed as parameter
@@ -527,7 +504,7 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataParentBinding.prototype.deleteFromCache = function (oGroupLock, sEditUrl, sPath,
-			oETagEntity, fnCallback) {
+			fnCallback) {
 		var oCache = this.oCachePromise.getResult(),
 			sGroupId;
 
@@ -536,14 +513,15 @@ sap.ui.define([
 		}
 
 		if (oCache) {
+			oGroupLock.setGroupId(this.getUpdateGroupId());
 			sGroupId = oGroupLock.getGroupId();
 			if (!this.oModel.isAutoGroup(sGroupId) && !this.oModel.isDirectGroup(sGroupId)) {
 				throw new Error("Illegal update group ID: " + sGroupId);
 			}
-			return oCache._delete(oGroupLock, sEditUrl, sPath, oETagEntity, fnCallback);
+			return oCache._delete(oGroupLock, sEditUrl, sPath, fnCallback);
 		}
 		return this.oContext.getBinding().deleteFromCache(oGroupLock, sEditUrl,
-			_Helper.buildPath(this.oContext.iIndex, this.sPath, sPath), oETagEntity, fnCallback);
+			_Helper.buildPath(this.oContext.iIndex, this.sPath, sPath), fnCallback);
 	};
 
 	/**
@@ -568,40 +546,29 @@ sap.ui.define([
 	 * binding's path; the aggregated query options initially hold the binding's local query
 	 * options with the entity type's key properties added to $select.
 	 *
-	 * The decision is based on the reduced path of the child binding. If the resolved binding path
-	 * contains a pair of navigation properties that are marked as partners, the path is reduced by
-	 * removing these two navigation properties from the path.
-	 *
 	 * @param {sap.ui.model.odata.v4.Context} oContext
 	 *   The child binding's context, must not be <code>null</code> or <code>undefined</code>. See
 	 *   <code>sap.ui.model.odata.v4.ODataBinding#fetchQueryOptionsForOwnCache</code>.
-	 * @param {string} sChildPath
-	 *   The child binding's binding path relative to <code>oContext</code>
-	 * @param {sap.ui.base.SyncPromise} oChildQueryOptionsPromise
-	 *   Promise resolving with the child binding's (aggregated) query options
-	 * @returns {sap.ui.base.SyncPromise}
-	 *   A promise resolved with the reduced path for the child binding if the child binding can use
-	 *   this binding's or an ancestor binding's cache; <code>undefined</code> otherwise.
+	 * @param {string} sChildPath The child binding's binding path
+	 * @param {sap.ui.base.SyncPromise} oChildQueryOptionsPromise Promise resolving with the child
+	 *   binding's (aggregated) query options
+	 * @returns {sap.ui.base.SyncPromise} A promise resolved with a boolean value indicating whether
+	 *   the child binding can use this binding's or an ancestor binding's cache.
 	 *
 	 * @private
-	 * @see sap.ui.model.odata.v4.ODataMetaModel#getReducedPath
 	 */
 	ODataParentBinding.prototype.fetchIfChildCanUseCache = function (oContext, sChildPath,
 			oChildQueryOptionsPromise) {
-		// getBaseForPathReduction must be called early, because the (virtual) parent context may be
-		// lost again when the path is needed
-		var sBaseForPathReduction = this.getBaseForPathReduction(),
-			sBaseMetaPath,
+		var sBaseMetaPath,
 			bCacheImmutable,
 			oCanUseCachePromise,
+			sChildMetaPath,
+			bDependsOnOperation = this.oModel.resolve(this.sPath, this.oContext)
+				.indexOf("(...)") >= 0, // whether this binding is an operation or depends on one
 			sFullMetaPath,
-			bIsAdvertisement = sChildPath[0] === "#",
+			bIsAdvertisement,
 			oMetaModel = this.oModel.getMetaModel(),
 			aPromises,
-			sResolvedChildPath = this.oModel.resolve(sChildPath, oContext),
-			sResolvedPath = this.oModel.resolve(this.sPath, this.oContext),
-			// whether this binding is an operation or depends on one
-			bDependsOnOperation = sResolvedPath.indexOf("(...)") >= 0,
 			that = this;
 
 		/*
@@ -632,9 +599,10 @@ sap.ui.define([
 			});
 		}
 
-		if (bDependsOnOperation || this.getRootBinding().isSuspended()) {
+		if (bDependsOnOperation || sChildPath === "$count" || sChildPath.slice(-7) === "/$count"
+				|| sChildPath[0] === "@" || this.getRootBinding().isSuspended()) {
 			// Note: Operation bindings do not support auto-$expand/$select yet
-			return SyncPromise.resolve(sResolvedChildPath);
+			return SyncPromise.resolve(true);
 		}
 
 		// Note: this.oCachePromise exists for all bindings except operation bindings
@@ -642,7 +610,9 @@ sap.ui.define([
 			|| this.oCachePromise.isFulfilled() && !this.oCachePromise.getResult()
 			|| this.oCachePromise.isFulfilled() && this.oCachePromise.getResult().bSentReadRequest;
 		sBaseMetaPath = oMetaModel.getMetaPath(oContext.getPath());
-		sFullMetaPath = oMetaModel.getMetaPath(sResolvedChildPath);
+		sChildMetaPath = oMetaModel.getMetaPath("/" + sChildPath).slice(1);
+		bIsAdvertisement = sChildMetaPath[0] === "#";
+		sFullMetaPath = _Helper.buildPath(sBaseMetaPath, sChildMetaPath);
 		aPromises = [
 			this.doFetchQueryOptions(this.oContext),
 			// After access to complete meta path of property, the metadata of all prefix paths
@@ -652,26 +622,11 @@ sap.ui.define([
 			oChildQueryOptionsPromise
 		];
 		oCanUseCachePromise = SyncPromise.all(aPromises).then(function (aResult) {
-			var sChildMetaPath,
-				mChildQueryOptions = aResult[2],
+			var mChildQueryOptions = aResult[2],
 				mWrappedChildQueryOptions,
 				mLocalQueryOptions = aResult[0],
-				oProperty = aResult[1],
-				sReducedPath = oMetaModel.getReducedPath(sResolvedChildPath, sBaseForPathReduction);
+				oProperty = aResult[1];
 
-			if (sChildPath === "$count" || sChildPath.slice(-7) === "/$count"
-					|| sChildPath[0] === "@") {
-				return SyncPromise.resolve(sReducedPath);
-			}
-
-			if (_Helper.getRelativePath(sReducedPath, sResolvedPath) === undefined) {
-				return that.oContext.getBinding().fetchIfChildCanUseCache(that.oContext,
-					_Helper.getRelativePath(sResolvedChildPath, that.oContext.getPath()),
-					oChildQueryOptionsPromise);
-			}
-
-			sChildMetaPath = _Helper.getRelativePath(_Helper.getMetaPath(sReducedPath),
-				sBaseMetaPath);
 			if (that.bAggregatedQueryOptionsInitial) {
 				that.selectKeyProperties(mLocalQueryOptions, sBaseMetaPath);
 				that.mAggregatedQueryOptions = jQuery.extend(true, {}, mLocalQueryOptions);
@@ -679,9 +634,7 @@ sap.ui.define([
 			}
 			if (bIsAdvertisement) {
 				mWrappedChildQueryOptions = {"$select" : [sChildMetaPath.slice(1)]};
-				return that.aggregateQueryOptions(mWrappedChildQueryOptions, bCacheImmutable)
-					? sReducedPath
-					: undefined;
+				return that.aggregateQueryOptions(mWrappedChildQueryOptions, bCacheImmutable);
 			}
 			if (sChildMetaPath === ""
 				|| oProperty
@@ -690,21 +643,17 @@ sap.ui.define([
 					sChildMetaPath, mChildQueryOptions,
 					that.oModel.oRequestor.getModelInterface().fetchMetadata);
 				if (mWrappedChildQueryOptions) {
-					return that.aggregateQueryOptions(mWrappedChildQueryOptions, bCacheImmutable)
-						? sReducedPath
-						: undefined;
+					return that.aggregateQueryOptions(mWrappedChildQueryOptions, bCacheImmutable);
 				}
-				return undefined;
+				return false;
 			}
 			if (sChildMetaPath === "value") { // symbolic name for operation result
-				return that.aggregateQueryOptions(mChildQueryOptions, bCacheImmutable)
-					? sReducedPath
-					: undefined;
+				return that.aggregateQueryOptions(mChildQueryOptions, bCacheImmutable);
 			}
 			Log.error("Failed to enhance query options for auto-$expand/$select as the path '"
 					+ sFullMetaPath + "' does not point to a property",
 				JSON.stringify(oProperty), sClassName);
-			return undefined;
+			return false;
 		});
 		this.aChildCanUseCachePromises.push(oCanUseCachePromise);
 		this.oCachePromise = SyncPromise.all([this.oCachePromise, oCanUseCachePromise])
@@ -723,31 +672,6 @@ sap.ui.define([
 				+ "auto-$expand/$select for child " + sChildPath,  sClassName, oError);
 		});
 		return oCanUseCachePromise;
-	};
-
-	/**
-	 * Returns the absolute base path used for path reduction of child (property) bindings. This is
-	 * the shortest possible path of a binding that may carry the data for the reduced path. A
-	 * parent binding is not eligible if it uses a different update group with submit mode API.
-	 *
-	 * @returns {string}
-	 *   The absolute base path for path reduction
-	 *
-	 * @private
-	 */
-	ODataParentBinding.prototype.getBaseForPathReduction = function () {
-		var oParentBinding, sParentUpdateGroupId;
-
-		if (!this.isRoot()) {
-			oParentBinding = this.oContext.getBinding();
-			sParentUpdateGroupId = oParentBinding.getUpdateGroupId();
-			if (sParentUpdateGroupId === this.getUpdateGroupId()
-					|| this.oModel.getGroupProperty(sParentUpdateGroupId, "submit")
-						!== SubmitMode.API) {
-				return oParentBinding.getBaseForPathReduction();
-			}
-		}
-		return this.oModel.resolve(this.sPath, this.oContext);
 	};
 
 	/**

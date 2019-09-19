@@ -18,7 +18,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @public
 	 * @alias sap.ui.core.LocaleData
 	 */
@@ -673,11 +673,13 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 					i = 0,
 					iSkeletonLength,
 					iPatternLength,
-					iBestLength,
+					iOldLength,
 					iNewLength,
 					oSkeletonToken,
 					oBestToken,
 					oSymbol,
+					oSkeletonSymbol,
+					oBestSymbol,
 					sChar;
 
 				// Create a map of group names to token
@@ -699,30 +701,32 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 					} else {
 						oSymbol = mCLDRSymbols[sChar];
 						// If symbol is a CLDR symbol and is contained in the group, expand length
-						if (oSymbol && mGroups[oSymbol.group] && mPatternGroups[oSymbol.group]) {
+					if (oSymbol && mGroups[oSymbol.group] && mPatternGroups[oSymbol.group]) {
 							oSkeletonToken = mGroups[oSymbol.group];
 							oBestToken = mPatternGroups[oSymbol.group];
+							oSkeletonSymbol = mCLDRSymbols[oSkeletonToken.symbol];
+							oBestSymbol = mCLDRSymbols[oBestToken.symbol];
 
 							iSkeletonLength = oSkeletonToken.length;
-							iBestLength = oBestToken.length;
+							iPatternLength = oBestToken.length;
 
-							iPatternLength = 1;
+							iOldLength = 1;
 							while (sPattern.charAt(i + 1) == sChar) {
 								i++;
-								iPatternLength++;
+								iOldLength++;
 							}
 
 							// Prevent expanding the length of the field when:
-							// 1. The length in the best matching skeleton (iBestLength) matches the length of the application provided skeleton (iSkeletonLength) or
-							// 2. The length of the provided skeleton (iSkeletonLength) and the length of the result pattern (iPatternLength) are not in the same category (numeric or text)
+							// 1. The length in the best matching skeleton (iPatternLength) matches the length of the application provided skeleton (iSkeletonLength) or
+							// 2. The length of the provided skeleton (iSkeletonLength) and the length of the result pattern (iOldLength) are not in the same category (numeric or text)
 							//	because switching between numeric to text representation is wrong in all cases
-							if (iSkeletonLength === iBestLength ||
-								((iSkeletonLength < oSymbol.numericCeiling) ?
-									(iPatternLength >= oSymbol.numericCeiling) : (iPatternLength < oSymbol.numericCeiling)
+							if (iSkeletonLength === iPatternLength ||
+								((iSkeletonLength < oSkeletonSymbol.numericCeiling) ?
+									(iPatternLength >= oBestSymbol.numericCeiling) : (iPatternLength < oBestSymbol.numericCeiling)
 								)) {
-								iNewLength = iPatternLength;
+								iNewLength = iOldLength;
 							} else {
-								iNewLength = Math.max(iPatternLength, iSkeletonLength);
+								iNewLength = Math.max(iOldLength, iSkeletonLength);
 							}
 
 							for (var j = 0; j < iNewLength; j++) {
@@ -935,8 +939,8 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 		 *     "EUR": "EUR",
 		 *     "GBP": "GBP",
 		 * }
+		 * @sap-restricted sap.ui.core.format.NumberFormat
 		 * @private
-		 * @ui5-restricted sap.ui.core.format.NumberFormat
 		 * @since 1.63
 		 */
 		getCustomCurrencyCodes: function () {

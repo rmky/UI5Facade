@@ -18,7 +18,6 @@ sap.ui.define(['sap/m/library', "sap/base/security/encodeCSS"],
 	 * @namespace
 	 */
 	var ImageRenderer = {
-		apiVersion: 2
 	};
 
 
@@ -36,94 +35,106 @@ sap.ui.define(['sap/m/library', "sap/base/security/encodeCSS"],
 			oLightBox = oImage.getDetailBox(),
 			sUseMap = oImage.getUseMap(),
 			aLabelledBy = oImage.getAriaLabelledBy(),
-			aDescribedBy = oImage.getAriaDescribedBy(),
-			bIsImageMode = sMode === ImageMode.Image;
+			aDescribedBy = oImage.getAriaDescribedBy();
 
 		// Additional element for Image with LightBox
 		if (oLightBox) {
-			oRm.openStart("span", oImage);
-			oRm.class("sapMLightBoxImage");
-			oRm.openEnd();
-			oRm.openStart("span").class("sapMLightBoxMagnifyingGlass").openEnd().close("span");
+			oRm.write("<span class=\"sapMLightBoxImage\"");
+			oRm.writeControlData(oImage);
+			oRm.write(">");
+			oRm.write("<span class=\"sapMLightBoxMagnifyingGlass\"></span>");
 		}
 
-		// Open the DOM element tag. The 'img' tag is used for mode sap.m.ImageMode.Image and 'span' tag is used for sap.m.ImageMode.Background
 
-		if (bIsImageMode) {
-			oRm.voidStart("img", !oLightBox ? oImage : oImage.getId() + "-inner");
+		// Open the DOM element tag. The 'img' tag is used for mode sap.m.ImageMode.Image and 'span' tag is used for sap.m.ImageMode.Background
+		oRm.write(sMode === ImageMode.Image ? "<img" : "<span");
+
+		if (!oLightBox) {
+			oRm.writeControlData(oImage);
 		} else {
-			oRm.openStart("span", !oLightBox ? oImage : oImage.getId() + "-inner");
+			oRm.writeAttribute("id", oImage.getId() + "-inner");
 		}
 
 		// aria-labelledby references
 		if (!oImage.getDecorative() && aLabelledBy && aLabelledBy.length > 0) {
-			oRm.attr("aria-labelledby", aLabelledBy.join(" "));
+			oRm.writeAttributeEscaped("aria-labelledby", aLabelledBy.join(" "));
 		}
 
 		// aria-describedby references
 		if (!oImage.getDecorative() && aDescribedBy && aDescribedBy.length > 0) {
-			oRm.attr("aria-describedby", aDescribedBy.join(" "));
+			oRm.writeAttributeEscaped("aria-describedby", aDescribedBy.join(" "));
 		}
 
-		if (bIsImageMode) {
-			oRm.attr("src", oImage._getDensityAwareSrc());
+		if (sMode === ImageMode.Image) {
+			oRm.writeAttributeEscaped("src", oImage._getDensityAwareSrc());
 		} else {
 			// preload the image with a window.Image instance. The source uri is set to the output DOM node via CSS style 'background-image' after the source image is loaded (in onload function)
 			oImage._preLoadImage(oImage._getDensityAwareSrc());
 			if (oImage._isValidBackgroundSizeValue(oImage.getBackgroundSize())) {
-				oRm.style("background-size", oImage.getBackgroundSize());
+				oRm.addStyle("background-size", oImage.getBackgroundSize());
 			}
 			if (oImage._isValidBackgroundPositionValue(oImage.getBackgroundPosition())) {
-				oRm.style("background-position", oImage.getBackgroundPosition());
+				oRm.addStyle("background-position", oImage.getBackgroundPosition());
 			}
-			oRm.style("background-repeat", encodeCSS(oImage.getBackgroundRepeat()));
+			oRm.addStyle("background-repeat", encodeCSS(oImage.getBackgroundRepeat()));
 		}
 
-		oRm.class("sapMImg");
+		oRm.addClass("sapMImg");
 		if (oImage.hasListeners("press") || oImage.hasListeners("tap")) {
-			oRm.class("sapMPointer");
+			oRm.addClass("sapMPointer");
 		}
 
 		if (sUseMap || !oImage.getDecorative() || bHasPressHandlers) {
-			oRm.class("sapMImgFocusable");
+			oRm.addClass("sapMImgFocusable");
 		}
+
+		oRm.writeClasses();
 
 		//TODO implement the ImageMap control
 		if (sUseMap) {
 			if (!(sUseMap.startsWith("#"))) {
 				sUseMap = "#" + sUseMap;
 			}
-			oRm.attr("usemap", sUseMap);
+			oRm.writeAttributeEscaped("usemap", sUseMap);
 		}
 
 		if (oImage.getDecorative() && !sUseMap && !bHasPressHandlers) {
-			oRm.attr("role", "presentation");
-			oRm.attr("aria-hidden", "true");
-			oRm.attr("alt", ""); // accessibility requirement: write always empty alt attribute for decorative images
-		} else if (alt || tooltip) {
-			oRm.attr("alt", alt || tooltip);
+			oRm.writeAttribute("role", "presentation");
+			oRm.writeAttribute("aria-hidden", "true");
+			oRm.write(" alt=''"); // accessibility requirement: write always empty alt attribute for decorative images
+		} else {
+			if (alt || tooltip) {
+				oRm.writeAttributeEscaped("alt", alt || tooltip);
+			}
 		}
 
 		if (alt || tooltip) {
-			oRm.attr("aria-label", alt || tooltip);
+			oRm.writeAttributeEscaped("aria-label", alt || tooltip);
 		}
 
 		if (tooltip) {
-			oRm.attr("title", tooltip);
+			oRm.writeAttributeEscaped("title", tooltip);
 		}
 
 		if (bHasPressHandlers) {
-			oRm.attr("role", "button");
-			oRm.attr("tabindex", 0);
+			oRm.writeAttribute("role", "button");
+			oRm.writeAttribute("tabindex", 0);
 		}
 
-		oRm.style("width", oImage.getWidth());
-		oRm.style("height", oImage.getHeight());
+		// Dimensions
+		if (oImage.getWidth() && oImage.getWidth() != '') {
+			oRm.addStyle("width", oImage.getWidth());
+		}
+		if (oImage.getHeight() && oImage.getHeight() != '') {
+			oRm.addStyle("height", oImage.getHeight());
+		}
 
-		bIsImageMode ? oRm.voidEnd() : oRm.openEnd().close("span"); // close the <img>/<span> element
+		oRm.writeStyles();
+
+		oRm.write(" />"); // close the <img> element
 
 		if (oLightBox) {
-			oRm.close("span");
+			oRm.write("</span>");
 		}
 	};
 

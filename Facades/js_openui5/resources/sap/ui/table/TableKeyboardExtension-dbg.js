@@ -112,24 +112,25 @@ sap.ui.define([
 			 * invalid. To correctly restore the focus, first the ItemNavigation must be invalidated and then the focus must be set (or trigger
 			 * the jQuery focus event, if the focus is already on the correct element).
 			 */
+			var bRenderedRows = oEvent && oEvent.isMarked("renderRows");
 
-			this._oStoredFocusInfo = this.getFocusInfo();
+			if (bRenderedRows) {
+				this._oStoredFocusInfo = this.getFocusInfo();
+			}
 		},
 		onAfterRendering: function(oEvent) {
 			var bRenderedRows = oEvent && oEvent.isMarked("renderRows");
 
 			this._getKeyboardExtension().invalidateItemNavigation();
 
-			// The presence of the "customId" property in the focus info indicates that the table had the focus before rendering.
-			// Reapply the focus info to the table only in this case.
-			if (this._oStoredFocusInfo && this._oStoredFocusInfo.customId) {
-				if (bRenderedRows) {
+			if (bRenderedRows) {
+				// The presence of the "customId" property in the focus info indicates that the table had the focus before rendering.
+				// Reapply the focus info to the table only in this case.
+				if (this._oStoredFocusInfo && this._oStoredFocusInfo.customId) {
 					this.applyFocusInfo(this._oStoredFocusInfo);
-				} else {
-					this._getKeyboardExtension().initItemNavigation();
 				}
+				delete this._oStoredFocusInfo;
 			}
-			delete this._oStoredFocusInfo;
 		},
 		onfocusin: function(oEvent) {
 			var oExtension = this._getKeyboardExtension();
@@ -160,12 +161,11 @@ sap.ui.define([
 		_initItemNavigation: function(oExtension) {
 			var oTable = oExtension.getTable();
 			var $Table = oTable.$();
-			var iRowCount = oTable.getRows().length;
 			var iColumnCount = TableUtils.getVisibleColumnCount(oTable);
+			var iTotalColumnCount = iColumnCount;
 			var bHasRowHeader = TableUtils.hasRowHeader(oTable);
 			var bHasRowActions = TableUtils.hasRowActions(oTable);
 			var bHasFixedColumns = TableUtils.hasFixedColumns(oTable);
-			var i;
 
 			// create the list of item dom refs
 			var aItemDomRefs = [],
@@ -183,15 +183,15 @@ sap.ui.define([
 
 			if (bHasRowHeader) {
 				aRowHdrDomRefs = $Table.find(".sapUiTableRowSelectionCell").get();
-				iColumnCount++;
+				iTotalColumnCount++;
 			}
 
 			if (bHasRowActions) {
 				aRowActionDomRefs = $Table.find(".sapUiTableRowActionCell").get();
-				iColumnCount++;
+				iTotalColumnCount++;
 			}
 
-			for (i = 0; i < iRowCount; i++) {
+			for (var i = 0; i < oTable.getVisibleRowCount(); i++) {
 				if (bHasRowHeader) {
 					aItemDomRefs.push(aRowHdrDomRefs[i]);
 				}
@@ -220,9 +220,8 @@ sap.ui.define([
 				var $FixedHeaders = $Table.find(".sapUiTableCHT.sapUiTableCtrlFixed>tbody>tr");
 				// Returns the .sapUiTableColHdr elements (.sapUiTableColHdrCnt .sapUiTableCtrlScr .sapUiTableColHdrTr)
 				var $ScrollHeaders = $Table.find(".sapUiTableCHT.sapUiTableCtrlScroll>tbody>tr");
-				var iHeaderRowCount = TableUtils.getHeaderRowCount(oTable);
 
-				for (i = 0; i < iHeaderRowCount; i++) {
+				for (var i = 0; i < TableUtils.getHeaderRowCount(oTable); i++) {
 					if (bHasRowHeader) {
 						aHeaderDomRefs.push(oTable.getDomRef("selall"));
 					}
@@ -260,7 +259,7 @@ sap.ui.define([
 			}
 
 			// configure the item navigation
-			oExtension._itemNavigation.setColumns(iColumnCount);
+			oExtension._itemNavigation.setColumns(iTotalColumnCount);
 			oExtension._itemNavigation.setRootDomRef($Table.find(".sapUiTableCnt").get(0));
 			oExtension._itemNavigation.setItemDomRefs(aItemDomRefs);
 			oExtension._itemNavigation.setFocusedIndex(ExtensionHelper.getInitialItemNavigationIndex(oExtension));
@@ -286,7 +285,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles keyboard related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardExtension
@@ -306,9 +305,9 @@ sap.ui.define([
 			this._actionMode = false;
 
 			// Register the delegates in correct order
-			TableUtils.addDelegate(oTable, ExtensionDelegate, oTable);
-			TableUtils.addDelegate(oTable, this._delegate, oTable);
-			TableUtils.addDelegate(oTable, ItemNavigationDelegate, oTable);
+			oTable.addEventDelegate(ExtensionDelegate, oTable);
+			oTable.addEventDelegate(this._delegate, oTable);
+			oTable.addEventDelegate(ItemNavigationDelegate, oTable);
 
 			/**
 			 * Gets the item navigation.

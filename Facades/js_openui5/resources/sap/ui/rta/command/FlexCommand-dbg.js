@@ -31,7 +31,7 @@ sap.ui.define([
 	 * @extends sap.ui.rta.command.BaseCommand
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @private
@@ -109,16 +109,13 @@ sap.ui.define([
 			};
 			this.setSelector(oSelector);
 		}
-
-		return this._createChange(mFlexSettings, sVariantManagementReference)
-			.then(function(oChange) {
-				this._oPreparedChange = oChange;
-				return true;
-			}.bind(this))
-			.catch(function(oError) {
-				Log.error(oError.message || oError.name);
-				return false;
-			});
+		try {
+			this._oPreparedChange = this._createChange(mFlexSettings, sVariantManagementReference);
+		} catch (oError) {
+			Log.error(oError.message || oError.name);
+			return false;
+		}
+		return true;
 	};
 
 	/**
@@ -169,10 +166,10 @@ sap.ui.define([
 	 * Create a Flex change from a given Change Specific Data.
 	 * (This method can be reused to retrieve an Undo Change)
 	 *
-	 * @param {object} mChangeSpecificData - Map containing change specific data
-	 * @param {object} mFlexSettings - Map containing flex settings
-	 * @param {string} sVariantManagementReference - Reference to the variant management
-	 * @returns {Promise.<object>} Change object wrapped in a promise.
+	 * @param {object} mChangeSpecificData Map containing change specific data
+	 * @param {object} mFlexSettings Map containing flex settings
+	 * @param {string} sVariantManagementReference Reference to the variant management
+	 * @returns {object} Returns the change object
 	 * @private
 	 */
 	FlexCommand.prototype._createChangeFromData = function(mChangeSpecificData, mFlexSettings, sVariantManagementReference) {
@@ -192,15 +189,13 @@ sap.ui.define([
 		if (sVariantReference) {
 			mChangeSpecificData = Object.assign({}, mChangeSpecificData, mVariantObj);
 		}
-		return ChangesWriteAPI.create({changeSpecificData: mChangeSpecificData, selector: this._validateControlForChange(mFlexSettings)})
-			.then(function(oChange) {
-				if (mFlexSettings && mFlexSettings.originalSelector) {
-					oChange.addDependentControl(mFlexSettings.originalSelector, "originalSelector", {modifier: JsControlTreeModifier, appComponent: this.getAppComponent()});
-					oChange.getDefinition().selector = Object.assign(oChange.getDefinition().selector, JsControlTreeModifier.getSelector(this.getSelector().id, this.getSelector().appComponent));
-					oChange.setContent(Object.assign({}, oChange.getContent(), mFlexSettings.content));
-				}
-				return oChange;
-			}.bind(this));
+		var oChange = ChangesWriteAPI.create(mChangeSpecificData, this._validateControlForChange(mFlexSettings));
+		if (mFlexSettings && mFlexSettings.originalSelector) {
+			oChange.addDependentControl(mFlexSettings.originalSelector, "originalSelector", {modifier: JsControlTreeModifier, appComponent: this.getAppComponent()});
+			oChange.getDefinition().selector = JsControlTreeModifier.getSelector(this.getSelector().id, this.getSelector().appComponent);
+			oChange.setContent(Object.assign({}, oChange.getContent(), mFlexSettings.content));
+		}
+		return oChange;
 	};
 
 	/**
@@ -219,11 +214,12 @@ sap.ui.define([
 			var oChange = this.getPreparedChange();
 
 			if (oChange.getRevertData()) {
-				var oAppComponent = this.getAppComponent(true);
-				return ChangesWriteAPI.revert({change: oChange, element: vControl})
-					.then(function() {
-						PersistenceWriteAPI.remove({change: oChange, selector: oAppComponent});
-					});
+				var bRevertible = ChangesWriteAPI.isChangeHandlerRevertible(oChange, vControl);
+				if (!bRevertible) {
+					Log.error(enhanceErrorMessage("No revert change function available to handle revert data.", vControl));
+					return;
+				}
+				return PersistenceWriteAPI.remove(oChange, {appComponent: this.getAppComponent(true), revert: true});
 			} else if (this._aRecordedUndo) {
 				RtaControlTreeModifier.performUndo(this._aRecordedUndo);
 			} else {
@@ -243,45 +239,41 @@ sap.ui.define([
 
 		var oAppComponent = this.getAppComponent();
 		var oSelectorElement = RtaControlTreeModifier.bySelector(oChange.getSelector(), oAppComponent);
+		var mControl = ChangesWriteAPI.getControlIfTemplateAffected(oSelectorElement, {
+			modifier: JsControlTreeModifier,
+			appComponent: oAppComponent,
+			change: oChange
+		});
+		var bRevertible = ChangesWriteAPI.isChangeHandlerRevertible(oChange, mControl.control);
+		var mPropertyBag = {
+			modifier: bRevertible ? JsControlTreeModifier : RtaControlTreeModifier,
+			appComponent: oAppComponent,
+			view: flUtils.getViewForControl(oSelectorElement)
+		};
 
+		if (!bRevertible) {
+			RtaControlTreeModifier.startRecordingUndo();
+		}
 
-		var bRevertible;
-		var mPropertyBag;
-		// TODO: Remove this function while removing RTA Undo logic
-		return ChangesWriteAPI._isChangeHandlerRevertible({selector: oSelectorElement, change: oChange})
-			.then(function(bRevertibleResult) {
-				bRevertible = bRevertibleResult;
-				mPropertyBag = {
-					modifier: bRevertible ? JsControlTreeModifier : RtaControlTreeModifier,
-					appComponent: oAppComponent,
-					view: flUtils.getViewForControl(oSelectorElement)
-				};
+		return Promise.resolve()
 
-				if (!bRevertible) {
-					// TODO: Remove RTA undo logic
-					RtaControlTreeModifier.startRecordingUndo();
+		.then(function() {
+			return ChangesWriteAPI.apply(oChange, oSelectorElement, mPropertyBag);
+		})
+
+		.then(function(oResult) {
+			if (!bRevertible) {
+				if (!oChange.getUndoOperations()) {
+					this._aRecordedUndo = RtaControlTreeModifier.stopRecordingUndo();
+				} else {
+					this._aRecordedUndo = oChange.getUndoOperations();
+					oChange.resetUndoOperations();
 				}
-
-				return Promise.resolve();
-			})
-
-			.then(function() {
-				return ChangesWriteAPI.apply(Object.assign({change: oChange, element: oSelectorElement}, mPropertyBag));
-			})
-
-			.then(function(oResult) {
-				if (!bRevertible) {
-					if (!oChange.getUndoOperations()) {
-						this._aRecordedUndo = RtaControlTreeModifier.stopRecordingUndo();
-					} else {
-						this._aRecordedUndo = oChange.getUndoOperations();
-						oChange.resetUndoOperations();
-					}
-				}
-				if (!oResult.success) {
-					return Promise.reject(oResult.error);
-				}
-			}.bind(this));
+			}
+			if (!oResult.success) {
+				return Promise.reject(oResult.error);
+			}
+		}.bind(this));
 	};
 
 	FlexCommand.prototype._validateControlForChange = function(mFlexSettings) {

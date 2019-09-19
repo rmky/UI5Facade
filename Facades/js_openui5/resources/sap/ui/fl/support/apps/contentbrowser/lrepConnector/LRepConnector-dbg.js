@@ -13,7 +13,7 @@ sap.ui.define(["sap/ui/fl/Utils", "sap/ui/thirdparty/jquery"], function(Utils, j
 	 * @constructor
 	 * @alias sap.ui.fl.support.apps.contentbrowser.lrepConnector.LRepConnector
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @experimental Since 1.45
 	 */
 	var LrepConnector = {};
@@ -62,6 +62,8 @@ sap.ui.define(["sap/ui/fl/Utils", "sap/ui/thirdparty/jquery"], function(Utils, j
 	 * @public
 	 */
 	LrepConnector.saveFile = function (sLayer, sNamespace, sFilename, sFileType, sContent, sTransportId, sPackageName) {
+		var that = this;
+
 		return new Promise(function (fnResolve, fnReject) {
 			if (!sLayer || sNamespace === undefined || !sFilename || !sFileType) {
 				fnReject();
@@ -69,12 +71,12 @@ sap.ui.define(["sap/ui/fl/Utils", "sap/ui/thirdparty/jquery"], function(Utils, j
 
 			var sContentSuffix = sNamespace + sFilename + "." + sFileType;
 			sContentSuffix = encodeURI(sContentSuffix);
-			var sLayerSuffix = this._getLayerSuffix(sLayer);
-			var sChangeListSuffix = this._getChangeListSuffix(sTransportId);
-			var sPackageSuffix = this._getPackageSuffix(sPackageName);
+			var sLayerSuffix = that._getLayerSuffix(sLayer);
+			var sChangeListSuffix = that._getChangeListSuffix(sTransportId);
+			var sPackageSuffix = that._getPackageSuffix(sPackageName);
 			var sUrl = LrepConnector.sContentPathPrefix + sContentSuffix + sLayerSuffix + sChangeListSuffix + sPackageSuffix;
-			this._getTokenAndSendPutRequest(sUrl, sContent, fnResolve, fnReject);
-		}.bind(this));
+			that._getTokenAndSendPutRequest.call(that, sUrl, sContent, fnResolve, fnReject);
+		});
 	};
 
 	/**
@@ -89,6 +91,8 @@ sap.ui.define(["sap/ui/fl/Utils", "sap/ui/thirdparty/jquery"], function(Utils, j
 	 * @public
 	 */
 	LrepConnector.deleteFile = function (sLayer, sNamespace, sFileName, sFileType, sTransportId) {
+		var that = this;
+
 		return new Promise(function (fnResolve, fnReject) {
 			if (!sLayer || sNamespace === undefined || !sFileName || !sFileType) {
 				fnReject();
@@ -96,11 +100,11 @@ sap.ui.define(["sap/ui/fl/Utils", "sap/ui/thirdparty/jquery"], function(Utils, j
 
 			var sContentSuffix = sNamespace + sFileName + "." + sFileType;
 			sContentSuffix = encodeURI(sContentSuffix);
-			var sLayerSuffix = this._getLayerSuffix(sLayer);
-			var sChangeListSuffix = this._getChangeListSuffix(sTransportId);
+			var sLayerSuffix = that._getLayerSuffix(sLayer);
+			var sChangeListSuffix = that._getChangeListSuffix(sTransportId);
 			var sUrl = LrepConnector.sContentPathPrefix + sContentSuffix + sLayerSuffix + sChangeListSuffix;
-			this._getTokenAndSendDeletionRequest(sUrl, fnResolve, fnReject);
-		}.bind(this));
+			that._getTokenAndSendDeletionRequest.call(that, sUrl, fnResolve, fnReject);
+		});
 	};
 
 	/**

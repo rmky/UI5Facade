@@ -13,9 +13,7 @@ sap.ui.define([],
 	 * ObjectIdentifier renderer.
 	 * @namespace
 	 */
-	var ObjectIdentifierRenderer = {
-		apiVersion: 2
-	};
+	var ObjectIdentifierRenderer = {};
 
 	/**
 	 * Renders the HTML for the given control, using the provided {@link sap.ui.core.RenderManager}.
@@ -37,78 +35,88 @@ sap.ui.define([],
 		}
 
 		// write the HTML into the render manager
-		oRm.openStart("div", oOI); // Identifier begins
+		oRm.write("<div"); // Identifier begins
+		oRm.writeControlData(oOI);
 		//WAI ARIA support
-		oRm.accessibilityState(oOI);
-		oRm.class("sapMObjectIdentifier");
+		oRm.writeAccessibilityState(oOI);
+		oRm.addClass("sapMObjectIdentifier");
+		oRm.writeClasses();
 
 		sTooltip = oOI.getTooltip_AsString();
 		if (sTooltip) {
-			oRm.attr("title", sTooltip);
+			oRm.writeAttributeEscaped("title", sTooltip);
 		}
 
-		oRm.openEnd();
+		oRm.write(">");
 
-		oRm.openStart("div"); // Top row begins
-		oRm.class("sapMObjectIdentifierTopRow");
+		oRm.write("<div"); // Top row begins
+		oRm.addClass("sapMObjectIdentifierTopRow");
+		oRm.writeClasses();
 		if (!oOI._hasTopRow()) {
-			oRm.style("display", "none");
+			oRm.addStyle("display", "none");
+			oRm.writeStyles();
 		}
 
-		oRm.openEnd();
+		oRm.write(">");
 
-		oRm.openStart("div", oOI.getId() + "-title"); // Title begins
-		oRm.class("sapMObjectIdentifierTitle");
+		oRm.write("<div id='" + oOI.getId() + "-title'"); // Title begins
+		oRm.addClass("sapMObjectIdentifierTitle");
 
-		oRm.openEnd();
+		oRm.writeClasses();
+		oRm.write(">");
 		oRm.renderControl(oOI._getTitleControl());
 
 		//Render WAI ARIA hidden label for title
 		oRm.renderControl(oOI._oAriaCustomRole);
-		oRm.close("div"); // Title ends
+		oRm.write("</div>"); // Title ends
 
-		oRm.openStart("div"); // Icons begin
-		oRm.class("sapMObjectIdentifierIcons");
+		oRm.write("<div"); // Icons begin
+		oRm.addClass("sapMObjectIdentifierIcons");
+		oRm.writeClasses();
 
-		oRm.openEnd();
+		oRm.write(">");
 
 		if (oOI.getBadgeAttachments()) {
-			oRm.openStart("span"); // Icon span begins
-			oRm.class("sapMObjectIdentifierIconSpan");
-			oRm.openEnd();
+			oRm.write("<span"); // Icon span begins
+			oRm.addClass("sapMObjectIdentifierIconSpan");
+			oRm.writeClasses();
+			oRm.write(">");
 			oRm.renderControl(oOI._getAttachmentsIcon());
-			oRm.close("span"); // Icon span ends
+			oRm.write("</span>"); // Icon span ends
 		}
 		if (oOI.getBadgeNotes()) {
-			oRm.openStart("span"); // Icon span begins
-			oRm.class("sapMObjectIdentifierIconSpan");
-			oRm.openEnd();
+			oRm.write("<span"); // Icon span begins
+			oRm.addClass("sapMObjectIdentifierIconSpan");
+			oRm.writeClasses();
+			oRm.write(">");
 			oRm.renderControl(oOI._getNotesIcon());
-			oRm.close("span"); // Icon span ends
+			oRm.write("</span>"); // Icon span ends
 		}
 		if (oOI.getBadgePeople()) {
-			oRm.openStart("span"); // Icon span begins
-			oRm.class("sapMObjectIdentifierIconSpan");
-			oRm.openEnd();
+			oRm.write("<span"); // Icon span begins
+			oRm.addClass("sapMObjectIdentifierIconSpan");
+			oRm.writeClasses();
+			oRm.write(">");
 			oRm.renderControl(oOI._getPeopleIcon());
-			oRm.close("span"); // Icon span ends
+			oRm.write("</span>"); // Icon span ends
 		}
 
-		oRm.close("div"); // Icons end
+		oRm.write("</div>"); // Icons end
 
-		oRm.close("div"); // Top row ends
+		oRm.write("</div>"); // Top row ends
 
-		oRm.openStart("div", oOI.getId() + "-text"); // Text begins
-		oRm.class("sapMObjectIdentifierText");
+		oRm.write("<div id='" + oOI.getId() + "-text'"); // Text begins
+		oRm.addClass("sapMObjectIdentifierText");
 
 		if (!!oOI.getProperty("text") && !!oOI.getProperty("title")) {
-			oRm.class("sapMObjectIdentifierTextBellow");
+			oRm.addClass("sapMObjectIdentifierTextBellow");
 		}
-		oRm.openEnd();
+		oRm.writeClasses();
+		oRm.write(">");
 		oRm.renderControl(oOI._getTextControl());
-		oRm.close("div"); // Text ends
+		oRm.write("</div>"); // Text ends
 
-		oRm.close("div"); // Identifier ends
+		oRm.write("</div>"); // Identifier ends
 	};
 
 

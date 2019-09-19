@@ -31,7 +31,6 @@ sap.ui.define([
 	 */
 	var Uploader = Element.extend("sap.m.upload.Uploader", {
 		metadata: {
-			library: "sap.m",
 			publicMethods: [
 				"uploadItem",
 				"terminateItem",

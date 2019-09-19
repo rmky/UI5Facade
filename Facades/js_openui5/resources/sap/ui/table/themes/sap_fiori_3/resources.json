@@ -6,11 +6,6 @@
 			"theme": "sap_fiori_3"
 		},
 		{
-			"name": "Cell.less",
-			"designtime": true,
-			"theme": "sap_fiori_3"
-		},
-		{
 			"name": "RowSelection.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"

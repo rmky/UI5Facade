@@ -5,21 +5,13 @@
  */
 
 sap.ui.define([
-	"sap/ui/core/Core",
 	"sap/ui/core/Control",
 	"./library",
 	"sap/ui/core/ResizeHandler",
 	"./AlignedFlowLayoutRenderer",
 	"sap/ui/dom/units/Rem"
 ],
-	function(
-		Core,
-		Control,
-		library,
-		ResizeHandler,
-		AlignedFlowLayoutRenderer,
-		Rem
-	) {
+	function(Control, library, ResizeHandler, AlignedFlowLayoutRenderer, Rem) {
 		"use strict";
 
 		/**
@@ -38,7 +30,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.70.0
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @private
@@ -121,7 +113,7 @@ sap.ui.define([
 					mEndItemStyle = oEndItemDomRef.style;
 
 				// adapt the position of the absolute-positioned end item in case a standard CSS class is added
-				if (Core.getConfiguration().getRTL()) {
+				if (sap.ui.getCore().getConfiguration().getRTL()) {
 					mEndItemStyle.left = oLayoutComputedStyle.getPropertyValue("padding-left");
 				} else {
 					mEndItemStyle.right = oLayoutComputedStyle.getPropertyValue("padding-right");
@@ -140,10 +132,13 @@ sap.ui.define([
 		// control changes
 		AlignedFlowLayout.prototype.onResize = function(oEvent) {
 
-			// avoid cyclic dependencies and infinite resizing callback loops
-			if (oEvent && (oEvent.size.width !== oEvent.oldSize.width)) {
-				this.reflow();
+			// called by resize handler, but only the height changed, so there is nothing to do;
+			// this is required to avoid a resizing loop
+			if (oEvent && (oEvent.size.width === oEvent.oldSize.width)) {
+				return;
 			}
+
+			this.reflow();
 		};
 
 		/**
@@ -178,9 +173,7 @@ sap.ui.define([
 				oLastItemDomRef = this.getLastItemDomRef();
 
 			if (oEndItemDomRef && oLastItemDomRef) {
-				var oLastSpacerDomRef = oDomRef.lastElementChild,
-					mLastSpacerStyle = oLastSpacerDomRef.style;
-
+				var mLastSpacerStyle = oDomRef.lastElementChild.style;
 				mLastSpacerStyle.width = "";
 				mLastSpacerStyle.height = "";
 				mLastSpacerStyle.display = "";
@@ -188,12 +181,10 @@ sap.ui.define([
 
 				var iEndItemHeight = oEndItemDomRef.offsetHeight,
 					iEndItemWidth = oEndItemDomRef.offsetWidth,
-					iLastItemOffsetTop = oLastItemDomRef.offsetTop,
 					iLastItemOffsetLeft = oLastItemDomRef.offsetLeft,
-					iEndItemOffsetLeft,
 					iAvailableWidthForEndItem;
 
-				if (Core.getConfiguration().getRTL()) {
+				if (sap.ui.getCore().getConfiguration().getRTL()) {
 					iAvailableWidthForEndItem = iLastItemOffsetLeft;
 				} else {
 					var iRightBorderOfLastItem = iLastItemOffsetLeft + oLastItemDomRef.offsetWidth;
@@ -205,42 +196,22 @@ sap.ui.define([
 				// if the end item fits into the line
 				if (bEnoughSpaceForEndItem) {
 
-					if (this.checkItemsWrapping(oDomRef)) { // if multiple lines mode
+					if (this.checkItemsWrapping(oDomRef)) {
 
-						// if the end item overlaps the items on the first line,
-						// this usually occurs when the end item is higher than the other items
-						if (oEndItemDomRef.offsetTop < iLastItemOffsetTop) {
-							mLastSpacerStyle.height = Math.max(0, iEndItemHeight - iLastItemOffsetTop) + "px";
-
-							// Detect collision of the last two items after increasing the height
-							// of the last spacer.
-							// Increasing the height of the last spacer may cause the vertical
-							// scrollbar to be visible, which would decrease the available width
-							// and possibly causing a collision of the last two items.
-							if (oLastItemDomRef.offsetTop >= oEndItemDomRef.offsetTop) {
-								iEndItemOffsetLeft = oEndItemDomRef.offsetLeft;
-								iLastItemOffsetLeft = oLastItemDomRef.offsetLeft;
-
-								if (
-									(iEndItemOffsetLeft >= iLastItemOffsetLeft) &&
-									(iEndItemOffsetLeft <= (iLastItemOffsetLeft + oLastItemDomRef.offsetWidth))
-								) {
-									mLastSpacerStyle.height = iEndItemHeight + "px";
-								}
-							}
-
+						// if the end item overlap the items on the first line
+						if (oEndItemDomRef.offsetTop < oLastItemDomRef.offsetTop) {
+							mLastSpacerStyle.height = iEndItemHeight + "px";
 							mLastSpacerStyle.display = "block";
-
 						} else {
 							mLastSpacerStyle.height = "0";
 							mLastSpacerStyle.display = "";
 						}
 
-					} else { // first line mode and the end item fits into the line
+					} else {
 
 						// if the height of the end item is higher than the other items on the first line,
 						// the end item goes up and overflow its container
-						if (oEndItemDomRef.offsetTop < iLastItemOffsetTop) {
+						if (oEndItemDomRef.offsetTop < oLastItemDomRef.offsetTop) {
 
 							// increase the height of the last spacer item to make the end item go down
 							mLastSpacerStyle.height = iEndItemHeight + "px";
@@ -254,36 +225,26 @@ sap.ui.define([
 					mLastSpacerStyle.display = "block";
 				}
 
-				var sEndItemWidth = iEndItemWidth + "px";
-				mLastSpacerStyle.width = sEndItemWidth;
-				mLastSpacerStyle.minWidth = sEndItemWidth;
+				mLastSpacerStyle.width = iEndItemWidth + "px";
 			}
 
-			// if the items fit into a single line, add a CSS class to turn off the display of the spacer elements
-			var oCheckItemsWrappingSettings = { excludeEndItem: true };
-
-			if (this.checkItemsWrapping(oDomRef, oCheckItemsWrappingSettings)) {
-				oDomRef.classList.remove(CSS_CLASS_ONE_LINE);
-			} else {
+			// if the items fits into a single line, sets a CSS class to turns off the display of the spacer elements
+			if (!this.checkItemsWrapping(oDomRef) && bEnoughSpaceForEndItem) {
 				oDomRef.classList.add(CSS_CLASS_ONE_LINE);
+			} else {
+				oDomRef.classList.remove(CSS_CLASS_ONE_LINE);
 			}
 		};
 
 		/*
 		 * Checks whether the visible content fits into a single line or it wraps onto multiple lines.
 		 */
-		AlignedFlowLayout.prototype.checkItemsWrapping = function(oDomRef, oSettings) {
+		AlignedFlowLayout.prototype.checkItemsWrapping = function(oDomRef) {
 			oDomRef = oDomRef || this.getDomRef();
 
 			if (!oDomRef) {
 				return false;
 			}
-
-			var oDefaultSettings = {
-				excludeEndItem: false
-			};
-
-			oSettings = Object.assign(oDefaultSettings, oSettings);
 
 			var oFirstItemDomRef = oDomRef.firstElementChild,
 				oLastItemDomRef = this.getLastItemDomRef();
@@ -301,14 +262,10 @@ sap.ui.define([
 				return true;
 			}
 
-			if (oSettings.excludeEndItem) {
-				return false;
-			}
-
-			var oEndItemDomRef = this.getDomRef("endItem");
+			oLastItemDomRef = this.getDomRef("endItem");
 
 			// detect wrapping (including the end item)
-			return !!oEndItemDomRef && (oEndItemDomRef.offsetTop >= (iFirstItemOffsetTop + iFirstItemOffsetHeight));
+			return !!oLastItemDomRef && (iLastItemOffsetTop >= (iFirstItemOffsetTop + iFirstItemOffsetHeight));
 		};
 
 		/*
@@ -366,12 +323,11 @@ sap.ui.define([
 			}
 
 			// we do not need more spacers than items
-			iSpacers = Math.min(iSpacers, iContentLength - 1);
+			iSpacers = Math.min(iSpacers, iContentLength - 2);
 
 			// we need at least 1 spacer, to prevent collision of the content with the endContent aggregation
 			iSpacers = Math.max(1, iSpacers);
-			iSpacers = Math.floor(iSpacers);
-			return iSpacers;
+			return Math.floor(iSpacers);
 		};
 
 		return AlignedFlowLayout;

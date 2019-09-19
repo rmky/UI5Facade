@@ -63,7 +63,7 @@ sap.ui.define([
 	 * If used inside the calendar the properties and aggregation are directly taken from the parent
 	 * (To not duplicate and sync DateRanges and so on...)
 	 * @extends sap.ui.core.Control
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -1065,9 +1065,6 @@ sap.ui.define([
 
 	Month.prototype.onsapselect = function(oEvent){
 
-		if (this.bSpaceButtonPressed){
-			return;
-		}
 		// focused item must be selected
 		var bSelected = this._selectDay(this._getSelectedDateFromEvent(oEvent));
 		if (bSelected) {
@@ -1078,17 +1075,6 @@ sap.ui.define([
 		oEvent.stopPropagation();
 		oEvent.preventDefault();
 
-	};
-
-	Month.prototype.onkeydown = function(oEvent){
-		if (oEvent.which === KeyCodes.SPACE){
-			this.bSpaceButtonPressed = true;
-		}
-	};
-	Month.prototype.onkeyup = function(oEvent){
-		if (oEvent.which === KeyCodes.SPACE){
-			this.bSpaceButtonPressed = false;
-		}
 	};
 
 	Month.prototype.onsapselectmodifiers = function(oEvent){
@@ -1832,7 +1818,7 @@ sap.ui.define([
 					oStartDate = CalendarDate.fromLocalJSDate(oStartDate, sCalendarType);
 				}
 			} else {
-				oDateRange = new DateRange();
+				oDateRange = new sap.ui.unified.DateRange();
 				oAggOwner.addAggregation("selectedDates", oDateRange, true); // no re-rendering
 			}
 
@@ -1880,7 +1866,7 @@ sap.ui.define([
 					}
 				} else {
 					// not selected -> select
-					oDateRange = new DateRange({startDate: oDate.toLocalJSDate()});
+					oDateRange = new sap.ui.unified.DateRange({startDate: oDate.toLocalJSDate()});
 					oAggOwner.addAggregation("selectedDates", oDateRange, true); // no re-rendering
 				}
 				sYyyymmdd = this._oFormatYyyymmdd.format(oDate.toUTCJSDate(), true);

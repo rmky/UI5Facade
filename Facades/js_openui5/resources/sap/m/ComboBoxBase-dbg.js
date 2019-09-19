@@ -62,7 +62,7 @@ sap.ui.define([
 		 * @abstract
 		 *
 		 * @author SAP SE
-		 * @version 1.70.0
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @public
@@ -1504,11 +1504,6 @@ sap.ui.define([
 			});
 
 			this.addAggregation("items", oHeader, bSuppressInvalidate);
-
-			if (this._getList() && oHeader.isA("sap.ui.core.SeparatorItem")) {
-				this._getList().addItem(this._mapItemToListItem(oHeader));
-			}
-
 			return oHeader;
 		};
 
@@ -1657,8 +1652,8 @@ sap.ui.define([
 		 *
 		 * @since 1.64
 		 * @experimental Since 1.64
-		 * @private
-		 * @ui5-restricted
+		 * @protected
+		 * @sap-restricted
 		 */
 		ComboBoxBase.prototype.applyShowItemsFilters = function () {};
 

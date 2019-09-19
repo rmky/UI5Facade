@@ -25,7 +25,7 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.ui.fl.descriptorRelated
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @private
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
@@ -35,7 +35,7 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.ui.fl.descriptorRelated.api
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @private
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
@@ -50,7 +50,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorChange
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @private
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
@@ -185,7 +185,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorChangeFactory
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @private
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
@@ -197,7 +197,7 @@ sap.ui.define([
 	 *
 	 * @param {string} sReference the descriptor id for which the change is created
 	 * @param {object} oInlineChange the inline change instance
-	 * @param {string} [sLayer] layer of the descriptor change, when nothing passed, will set it to CUSTOMER
+	 * @param {string} sLayer layer of the descriptor change
 	 * @param {object} oAppComponent application component to get the version from
 	 * @param {string} sTool tool which creates the descriptor change (e.g. RTA, DTA, FCC ...)
 	 *
@@ -218,12 +218,8 @@ sap.ui.define([
 
 		var sAppVersion;
 		if (oAppComponent) {
-			sAppVersion = oAppComponent.appVersion;
-
-			if (!oAppComponent.appId && !sAppVersion) {
-				var mManifest = oAppComponent.getManifest();
-				sAppVersion = FlexUtils.getAppVersionFromManifest(mManifest);
-			}
+			var mManifest = oAppComponent.getManifest();
+			sAppVersion = FlexUtils.getAppVersionFromManifest(mManifest);
 		}
 
 		var mPropertyBag = {};

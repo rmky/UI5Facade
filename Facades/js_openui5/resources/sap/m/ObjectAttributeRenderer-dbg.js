@@ -17,7 +17,6 @@ sap.ui.define(["sap/ui/core/library"],
 	 * @namespace
 	 */
 	var ObjectAttributeRenderer = {
-		apiVersion: 2,
 		MAX_LINES: {
 			SINGLE_LINE: 1
 		}
@@ -33,31 +32,36 @@ sap.ui.define(["sap/ui/core/library"],
 		var oParent = oOA.getParent(),
 			sTooltip = oOA.getTooltip_AsString();
 
-		oRm.openStart("div", oOA);
 		if (oOA._isEmpty()) {
-			oRm.class("sapMObjectAttributeDiv");
-			oRm.class("sapUiHidden");
-			oRm.openEnd();
-			oRm.close("div");
+			oRm.write("<div");
+			oRm.writeControlData(oOA);
+			oRm.addClass("sapMObjectAttributeDiv");
+			oRm.addClass("sapUiHidden");
+			oRm.writeClasses();
+			oRm.write(">");
+			oRm.write("</div>");
 			return;
 		}
 
-		oRm.class("sapMObjectAttributeDiv");
+		oRm.write("<div");
+		oRm.writeControlData(oOA);
+		oRm.addClass("sapMObjectAttributeDiv");
 		// add tabindex, "active" class and ARIA only when the ObjectAttribute is clickable
 		// e.g. when is active ot the CustomContent is sap.m.Link
 		if (oOA._isClickable()) {
-			oRm.class("sapMObjectAttributeActive");
-			oRm.attr("tabindex", "0");
-			oRm.accessibilityState(oOA, {
+			oRm.addClass("sapMObjectAttributeActive");
+			oRm.writeAttribute("tabindex", "0");
+			oRm.writeAccessibilityState(oOA, {
 				role: "link"
 			});
 		}
+		oRm.writeClasses();
 
 		if (sTooltip) {
-			oRm.attr("title", sTooltip);
+			oRm.writeAttributeEscaped("title", sTooltip);
 		}
 
-		oRm.openEnd();
+		oRm.write(">");
 
 		// If the attribute is link (active or customContent is Link) only the "text" should be clickable,
 		// so render title, colon and text in different spans.
@@ -68,38 +72,40 @@ sap.ui.define(["sap/ui/core/library"],
 		} else {
 			oRm.renderControl(oOA._getUpdatedTextControl());
 		}
-		oRm.close("div");
+		oRm.write("</div>");
 	};
 
 	ObjectAttributeRenderer.renderActiveTitle = function (oRm, oOA) {
 		if (!oOA.getProperty("title")) {
 			return;
 		}
-
-		oRm.openStart("span", oOA.getId() + "-title");
-		oRm.class("sapMObjectAttributeTitle");
-		oRm.openEnd();
-		oRm.text(oOA.getProperty("title"));
-		oRm.close("span");
-		oRm.openStart("span", oOA.getId() + "-colon");
-		oRm.class("sapMObjectAttributeColon");
-		oRm.openEnd();
-		oRm.unsafeHtml(":&nbsp;");
-		oRm.close("span");
+		oRm.write("<span id=\"" + oOA.getId() + "-title\"");
+		oRm.addClass("sapMObjectAttributeTitle");
+		oRm.writeClasses();
+		oRm.write(">");
+		oRm.writeEscaped(oOA.getProperty("title"));
+		oRm.write("</span>");
+		oRm.write("<span id=\"" + oOA.getId() + "-colon\"");
+		oRm.addClass("sapMObjectAttributeColon");
+		oRm.writeClasses();
+		oRm.write(">");
+		oRm.write(":&nbsp;");
+		oRm.write("</span>");
 	};
 
 	ObjectAttributeRenderer.renderActiveText = function (oRm, oOA, oParent) {
 		var sTextDir = oOA.getTextDirection(),
 			oAttrAggregation = oOA.getAggregation("customContent");
 
-		oRm.openStart("span", oOA.getId() + "-text");
-		oRm.class("sapMObjectAttributeText");
+		oRm.write("<span id=\"" + oOA.getId() + "-text\"");
+		oRm.addClass("sapMObjectAttributeText");
 
 		if (sTextDir && sTextDir !== TextDirection.Inherit) {
-			oRm.attr("dir", sTextDir.toLowerCase());
+			oRm.writeAttribute("dir", sTextDir.toLowerCase());
 		}
 
-		oRm.openEnd();
+		oRm.writeClasses();
+		oRm.write(">");
 
 		if (oAttrAggregation && oParent) {
 			if ((oParent instanceof sap.m.ObjectHeader) && !oOA.getParent().getResponsive()) {
@@ -109,9 +115,9 @@ sap.ui.define(["sap/ui/core/library"],
 			}
 			oRm.renderControl(oAttrAggregation);
 		} else {
-			oRm.text(oOA.getProperty("text"));
+			oRm.writeEscaped(oOA.getProperty("text"));
 		}
-		oRm.close("span");
+		oRm.write("</span>");
 	};
 
 	return ObjectAttributeRenderer;

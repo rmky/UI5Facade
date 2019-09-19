@@ -92,7 +92,6 @@ var JavaScriptHighlightRules = function(options) {
         "3[0-7][0-7]?|" + // oct
         "[4-7][0-7]?|" + //oct
         ".)";
-
     this.$rules = {
         "no_regex" : [
             DocCommentHighlightRules.getStartRule("doc-start"),
@@ -547,7 +546,6 @@ var CssHighlightRules = function() {
         "support.constant.color": supportConstantColor,
         "support.constant.fonts": supportConstantFonts
     }, "text", true);
-
     this.$rules = {
         "start" : [{
             include : ["strings", "url", "comments"]
@@ -1793,7 +1791,8 @@ oop.inherits(Mode, TextMode);
 
 exports.Mode = Mode;
 
-});                (function() {
+});
+                (function() {
                     ace.require(["ace/mode/mask"], function(m) {
                         if (typeof module == "object" && typeof exports == "object" && module) {
                             module.exports = m;

@@ -20,8 +20,7 @@ sap.ui.define([
 	'sap/m/Bar',
 	'sap/m/Title',
 	'sap/ui/core/theming/Parameters',
-	'./SelectDialogRenderer',
-	"sap/base/Log"
+	'./SelectDialogRenderer'
 ],
 function(
 	Button,
@@ -38,8 +37,7 @@ function(
 	Bar,
 	Title,
 	Parameters,
-	SelectDialogRenderer,
-	Log
+	SelectDialogRenderer
 	) {
 	"use strict";
 
@@ -48,8 +46,6 @@ function(
 	// shortcut for sap.m.ListMode
 	var ListMode = library.ListMode;
 
-	// shortcut for sap.m.ButtonType
-	var ButtonType = library.ButtonType;
 
 
 	/**
@@ -85,13 +81,11 @@ function(
 	 * when the dialog is opened again. </li>
 	 * <li> When cancelling the selection, the event <code>change</code> will be fired and the selection is restored
 	 * to the state when the dialog was opened. </li>
-	 * <li>The SelectDialog is usually displayed at the center of the screen. Its size and position can be changed by the user.
-	 * To enable this you need to set the <code>resizable</code> and <code>draggable</code> properties. Both properties are available only in desktop mode.</li>
 	 * </ul>
 	 * <h3>Usage</h3>
 	 * <h4>When to use:</h4>
 	 * <ul>
-	 * <li>You need to select one or more entries from a comprehensive list that contains multiple attributes or values. </li>
+	 * <li>You  need to select one or more entries from a comprehensive list that contains multiple attributes or values. </li>
 	 * </ul>
 	 * <h4>When not to use:</h4>
 	 * <ul>
@@ -113,7 +107,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -188,17 +182,7 @@ function(
 			 * Overwrites the default text for the confirmation button.
 			 * @since 1.68
 			 */
-			confirmButtonText: {type : "string", group : "Appearance"},
-			/**
-			 * When set to <code>true</code>, the SelectDialog is draggable by its header. The default value is <code>false</code>. <b>Note</b>: The SelectDialog can be draggable only in desktop mode.
-			 * @since 1.70
-			 */
-			draggable: {type: "boolean", group: "Behavior", defaultValue: false},
-			/**
-			 * When set to <code>true</code>, the SelectDialog will have a resize handler in its bottom right corner. The default value is <code>false</code>. <b>Note</b>: The SelectDialog can be resizable only in desktop mode.
-			 * @since 1.70
-			 */
-			resizable: {type: "boolean", group: "Behavior", defaultValue: false}
+			confirmButtonText: {type : "string", group : "Appearance"}
 		},
 		defaultAggregation : "items",
 		aggregations : {
@@ -254,14 +238,7 @@ function(
 					/**
 					 * The Items binding of the Select Dialog for search purposes. It will only be available if the items aggregation is bound to a model.
 					 */
-					itemsBinding : {type : "any"},
-
-					/**
-					 * Returns if the Clear button is pressed.
-					 * @since 1.70
-					 */
-
-					clearButtonPressed: {type: "boolean"}
+					itemsBinding : {type : "any"}
 				}
 			},
 
@@ -366,24 +343,21 @@ function(
 			width: "100%",
 			liveChange: function (oEvent) {
 				var sValue = oEvent.getSource().getValue(),
-				iDelay = (sValue ? 300 : 0); // no delay if value is empty
+					iDelay = (sValue ? 300 : 0); // no delay if value is empty
 
 				// execute search after user stops typing for 300ms
 				clearTimeout(iLiveChangeTimer);
 				if (iDelay) {
 					iLiveChangeTimer = setTimeout(function () {
-						that._executeSearch(sValue, false, "liveChange");
+						that._executeSearch(sValue, "liveChange");
 					}, iDelay);
 				} else {
-					that._executeSearch(sValue, false, "liveChange");
+					that._executeSearch(sValue, "liveChange");
 				}
 			},
 			// execute the standard search
 			search: function (oEvent) {
-				var sValue = oEvent.getSource().getValue(),
-					bClearButtonPressed = oEvent.getParameters().clearButtonPressed;
-
-				that._executeSearch(sValue, bClearButtonPressed, "search");
+				that._executeSearch(oEvent.getSource().getValue(), "search");
 			}
 		});
 		this._searchField = this._oSearchField; // for downward compatibility
@@ -412,9 +386,7 @@ function(
 			subHeader: this._oSubHeader,
 			content: [this._oBusyIndicator, this._oList],
 			leftButton: this._getCancelButton(),
-			initialFocus: (Device.system.desktop ? this._oSearchField : null),
-			draggable: this.getDraggable() && Device.system.desktop,
-			resizable: this.getResizable() && Device.system.desktop
+			initialFocus: (Device.system.desktop ? this._oSearchField : null)
 		}).addStyleClass("sapMSelectDialog", true);
 		// for downward compatibility reasons
 		this._dialog = this._oDialog;
@@ -456,49 +428,6 @@ function(
 		this.setProperty("growing", bValue, true);
 
 		return this;
-	};
-
-	/**
-	 * Sets the draggable property.
-	 * @public
-	 * @param {boolean} bValue Value for the draggable property
-	 * @returns {sap.m.SelectDialog} <code>this</code> pointer for chaining
-	 */
-	SelectDialog.prototype.setDraggable = function (bValue) {
-		this._setInteractionProperty(bValue, "draggable", this._oDialog.setDraggable);
-
-		return this;
-	};
-
-	/**
-	 * Sets the resizable property.
-	 * @public
-	 * @param {boolean} bValue Value for the resizable property
-	 * @returns {sap.m.SelectDialog} <code>this</code> pointer for chaining
-	 */
-	SelectDialog.prototype.setResizable = function (bValue) {
-		this._setInteractionProperty(bValue, "resizable", this._oDialog.setResizable);
-
-		return this;
-	};
-
-	/**
-	 * @private
-	 * @param {boolean} bValue Value for the property
-	 * @param {string} sPropertyType Property type
-	 * @param {function} fnCallback Callback function
-	 */
-	SelectDialog.prototype._setInteractionProperty = function(bValue, sPropertyType, fnCallback) {
-		this.setProperty(sPropertyType, bValue, true);
-
-		if (!Device.system.desktop && bValue) {
-			Log.warning(sPropertyType + " property works only on desktop devices!");
-			return;
-		}
-
-		if (Device.system.desktop && this._oDialog) {
-			fnCallback.call(this._oDialog, bValue);
-		}
 	};
 
 	SelectDialog.prototype.setBusy = function () {
@@ -678,8 +607,7 @@ function(
 			this._oDialog.setBeginButton(this._getOkButton());
 		} else {
 			this._oList.setMode(ListMode.SingleSelectMaster);
-			this._oDialog.setEndButton(this._getCancelButton());
-			this._oDialog.destroyBeginButton();
+			this._oDialog.setBeginButton(this._getCancelButton());
 		}
 
 		return this;
@@ -944,11 +872,10 @@ function(
 	 * Fires the search event. This function is called whenever a search related parameter or the value in the search field is changed
 	 * @private
 	 * @param {string} sValue The new filter value or undefined if called by management functions
-	 * @param {boolean} bClearButtonPressed Indicates if the clear button is pressed
 	 * @param {string} sEventType The search field event type that has been called (liveChange / search)
 	 * @returns {sap.m.SelectDialog} <code>this</code> pointer for chaining
 	 */
-	SelectDialog.prototype._executeSearch = function (sValue, bClearButtonPressed, sEventType) {
+	SelectDialog.prototype._executeSearch = function (sValue, sEventType) {
 
 		var oList = this._oList,
 			oBinding = (oList ? oList.getBinding("items") : undefined),
@@ -972,7 +899,7 @@ function(
 				this._iListUpdateRequested += 1;
 				if (sEventType === "search") {
 					// fire the search so the data can be updated externally
-					this.fireSearch({value: sValue, itemsBinding: oBinding, clearButtonPressed: bClearButtonPressed});
+					this.fireSearch({value: sValue, itemsBinding: oBinding});
 				} else if (sEventType === "liveChange") {
 					// fire the liveChange so the data can be updated externally
 					this.fireLiveChange({value: sValue, itemsBinding: oBinding});
@@ -981,7 +908,7 @@ function(
 				// no binding, just fire the event for manual filtering
 				if (sEventType === "search") {
 					// fire the search so the data can be updated externally
-					this.fireSearch({value: sValue, clearButtonPressed: bClearButtonPressed});
+					this.fireSearch({value: sValue});
 				} else if (sEventType === "liveChange") {
 					// fire the liveChange so the data can be updated externally
 					this.fireLiveChange({value: sValue});
@@ -1086,7 +1013,6 @@ function(
 
 		if (!this._oOkButton) {
 			this._oOkButton = new Button(this.getId() + "-ok", {
-				type: ButtonType.Emphasized,
 				text: this.getConfirmButtonText() || this._oRb.getText("SELECT_CONFIRM_BUTTON"),
 				press: function () {
 					// attach the reset function to afterClose to hide the dialog changes from the end user
@@ -1242,6 +1168,7 @@ function(
 			}, this);
 		}
 	};
+
 
 	/* =========================================================== */
 	/*           end: internal methods                             */

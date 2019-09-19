@@ -129,13 +129,6 @@
 			"name": "js/ace/ext-options.js"
 		},
 		{
-			"name": "js/ace/ext-prompt-dbg.js",
-			"isDebug": true
-		},
-		{
-			"name": "js/ace/ext-prompt.js"
-		},
-		{
 			"name": "js/ace/ext-rtl-dbg.js",
 			"isDebug": true
 		},
@@ -213,13 +206,6 @@
 			"name": "js/ace/keybinding-emacs.js"
 		},
 		{
-			"name": "js/ace/keybinding-sublime-dbg.js",
-			"isDebug": true
-		},
-		{
-			"name": "js/ace/keybinding-sublime.js"
-		},
-		{
 			"name": "js/ace/keybinding-vim-dbg.js",
 			"isDebug": true
 		},
@@ -262,25 +248,11 @@
 			"name": "js/ace/mode-apache_conf.js"
 		},
 		{
-			"name": "js/ace/mode-apex-dbg.js",
-			"isDebug": true
-		},
-		{
-			"name": "js/ace/mode-apex.js"
-		},
-		{
 			"name": "js/ace/mode-applescript-dbg.js",
 			"isDebug": true
 		},
 		{
 			"name": "js/ace/mode-applescript.js"
-		},
-		{
-			"name": "js/ace/mode-aql-dbg.js",
-			"isDebug": true
-		},
-		{
-			"name": "js/ace/mode-aql.js"
 		},
 		{
 			"name": "js/ace/mode-asciidoc-dbg.js",
@@ -372,13 +344,6 @@
 		},
 		{
 			"name": "js/ace/mode-coldfusion.js"
-		},
-		{
-			"name": "js/ace/mode-crystal-dbg.js",
-			"isDebug": true
-		},
-		{
-			"name": "js/ace/mode-crystal.js"
 		},
 		{
 			"name": "js/ace/mode-csharp-dbg.js",
@@ -540,13 +505,6 @@
 		},
 		{
 			"name": "js/ace/mode-fsharp.js"
-		},
-		{
-			"name": "js/ace/mode-fsl-dbg.js",
-			"isDebug": true
-		},
-		{
-			"name": "js/ace/mode-fsl.js"
 		},
 		{
 			"name": "js/ace/mode-ftl-dbg.js",
@@ -822,13 +780,6 @@
 			"name": "js/ace/mode-logiql.js"
 		},
 		{
-			"name": "js/ace/mode-logtalk-dbg.js",
-			"isDebug": true
-		},
-		{
-			"name": "js/ace/mode-logtalk.js"
-		},
-		{
 			"name": "js/ace/mode-lsl-dbg.js",
 			"isDebug": true
 		},
@@ -941,20 +892,6 @@
 			"name": "js/ace/mode-mysql.js"
 		},
 		{
-			"name": "js/ace/mode-nginx-dbg.js",
-			"isDebug": true
-		},
-		{
-			"name": "js/ace/mode-nginx.js"
-		},
-		{
-			"name": "js/ace/mode-nim-dbg.js",
-			"isDebug": true
-		},
-		{
-			"name": "js/ace/mode-nim.js"
-		},
-		{
 			"name": "js/ace/mode-nix-dbg.js",
 			"isDebug": true
 		},
@@ -995,13 +932,6 @@
 		},
 		{
 			"name": "js/ace/mode-perl.js"
-		},
-		{
-			"name": "js/ace/mode-perl6-dbg.js",
-			"isDebug": true
-		},
-		{
-			"name": "js/ace/mode-perl6.js"
 		},
 		{
 			"name": "js/ace/mode-pgsql-dbg.js",
@@ -1389,13 +1319,6 @@
 			"name": "js/ace/mode-vhdl.js"
 		},
 		{
-			"name": "js/ace/mode-visualforce-dbg.js",
-			"isDebug": true
-		},
-		{
-			"name": "js/ace/mode-visualforce.js"
-		},
-		{
 			"name": "js/ace/mode-wollok-dbg.js",
 			"isDebug": true
 		},
@@ -1459,25 +1382,11 @@
 			"name": "js/ace/snippets/apache_conf.js"
 		},
 		{
-			"name": "js/ace/snippets/apex-dbg.js",
-			"isDebug": true
-		},
-		{
-			"name": "js/ace/snippets/apex.js"
-		},
-		{
 			"name": "js/ace/snippets/applescript-dbg.js",
 			"isDebug": true
 		},
 		{
 			"name": "js/ace/snippets/applescript.js"
-		},
-		{
-			"name": "js/ace/snippets/aql-dbg.js",
-			"isDebug": true
-		},
-		{
-			"name": "js/ace/snippets/aql.js"
 		},
 		{
 			"name": "js/ace/snippets/asciidoc-dbg.js",
@@ -1569,13 +1478,6 @@
 		},
 		{
 			"name": "js/ace/snippets/coldfusion.js"
-		},
-		{
-			"name": "js/ace/snippets/crystal-dbg.js",
-			"isDebug": true
-		},
-		{
-			"name": "js/ace/snippets/crystal.js"
 		},
 		{
 			"name": "js/ace/snippets/csharp-dbg.js",
@@ -1737,13 +1639,6 @@
 		},
 		{
 			"name": "js/ace/snippets/fsharp.js"
-		},
-		{
-			"name": "js/ace/snippets/fsl-dbg.js",
-			"isDebug": true
-		},
-		{
-			"name": "js/ace/snippets/fsl.js"
 		},
 		{
 			"name": "js/ace/snippets/ftl-dbg.js",
@@ -2019,13 +1914,6 @@
 			"name": "js/ace/snippets/logiql.js"
 		},
 		{
-			"name": "js/ace/snippets/logtalk-dbg.js",
-			"isDebug": true
-		},
-		{
-			"name": "js/ace/snippets/logtalk.js"
-		},
-		{
 			"name": "js/ace/snippets/lsl-dbg.js",
 			"isDebug": true
 		},
@@ -2131,20 +2019,6 @@
 			"name": "js/ace/snippets/mysql.js"
 		},
 		{
-			"name": "js/ace/snippets/nginx-dbg.js",
-			"isDebug": true
-		},
-		{
-			"name": "js/ace/snippets/nginx.js"
-		},
-		{
-			"name": "js/ace/snippets/nim-dbg.js",
-			"isDebug": true
-		},
-		{
-			"name": "js/ace/snippets/nim.js"
-		},
-		{
 			"name": "js/ace/snippets/nix-dbg.js",
 			"isDebug": true
 		},
@@ -2185,13 +2059,6 @@
 		},
 		{
 			"name": "js/ace/snippets/perl.js"
-		},
-		{
-			"name": "js/ace/snippets/perl6-dbg.js",
-			"isDebug": true
-		},
-		{
-			"name": "js/ace/snippets/perl6.js"
 		},
 		{
 			"name": "js/ace/snippets/pgsql-dbg.js",
@@ -2579,13 +2446,6 @@
 			"name": "js/ace/snippets/vhdl.js"
 		},
 		{
-			"name": "js/ace/snippets/visualforce-dbg.js",
-			"isDebug": true
-		},
-		{
-			"name": "js/ace/snippets/visualforce.js"
-		},
-		{
 			"name": "js/ace/snippets/wollok-dbg.js",
 			"isDebug": true
 		},
@@ -2945,6 +2805,30 @@
 			]
 		},
 		{
+			"name": "library-h2-preload-dbg.js",
+			"module": "sap/ui/codeeditor/library-h2-preload.js",
+			"isDebug": true,
+			"merged": true,
+			"required": [
+				"sap/ui/Device.js",
+				"sap/ui/codeeditor/js/ace/ace.js",
+				"sap/ui/codeeditor/js/ace/ext-beautify.js",
+				"sap/ui/codeeditor/js/ace/ext-language_tools.js",
+				"sap/ui/codeeditor/js/ace/mode-javascript.js",
+				"sap/ui/codeeditor/js/ace/mode-json.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/core/Core.js",
+				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/core/library.js",
+				"sap/ui/thirdparty/jquery.js"
+			],
+			"included": [
+				"sap/ui/codeeditor/library.js",
+				"sap/ui/codeeditor/manifest.json",
+				"sap/ui/codeeditor/CodeEditor.js"
+			]
+		},
+		{
 			"name": "library-h2-preload.js",
 			"module": "sap/ui/codeeditor/library-h2-preload.js",
 			"merged": true,
@@ -2999,6 +2883,34 @@
 			"isDebug": true
 		},
 		{
+			"name": "library-preload.json",
+			"module": "sap/ui/codeeditor/library-preload.json",
+			"merged": true,
+			"required": [
+				"sap/ui/Device.js",
+				"sap/ui/codeeditor/js/ace/ace.js",
+				"sap/ui/codeeditor/js/ace/ext-beautify.js",
+				"sap/ui/codeeditor/js/ace/ext-language_tools.js",
+				"sap/ui/codeeditor/js/ace/mode-javascript.js",
+				"sap/ui/codeeditor/js/ace/mode-json.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/core/Core.js",
+				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/core/library-preload.json",
+				"sap/ui/core/library.js",
+				"sap/ui/thirdparty/jquery.js"
+			],
+			"included": [
+				"sap/ui/codeeditor/CodeEditor.js",
+				"sap/ui/codeeditor/library.js",
+				"sap/ui/codeeditor/manifest.json"
+			]
+		},
+		{
+			"name": "library.dependencies.json",
+			"designtime": true
+		},
+		{
 			"name": "library.dependencies.xml",
 			"designtime": true
 		},
@@ -3009,6 +2921,10 @@
 				"sap/ui/core/Core.js",
 				"sap/ui/core/library.js"
 			]
+		},
+		{
+			"name": "library.templates.xml",
+			"designtime": true
 		},
 		{
 			"name": "manifest.json",

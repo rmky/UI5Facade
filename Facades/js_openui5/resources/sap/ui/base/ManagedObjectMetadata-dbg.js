@@ -75,7 +75,7 @@ function(
 	 *
 	 *
 	 * @author Frank Weigel
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @since 0.8.6
 	 * @alias sap.ui.base.ManagedObjectMetadata
 	 * @extends sap.ui.base.Metadata
@@ -1918,7 +1918,7 @@ function(
 	 * @param {string} [sScopeKey] scope name for which metadata will be resolved, see sap.ui.base.ManagedObjectMetadataScope
 	 * @return {Promise} A promise which will return the loaded design time metadata
 	 * @private
-	 * @ui5-restricted sap.ui.dt com.sap.webide
+	 * @sap-restricted sap.ui.dt com.sap.webide
 	 * @since 1.48.0
 	 */
 	ManagedObjectMetadata.prototype.loadDesignTime = function(oManagedObject, sScopeKey) {

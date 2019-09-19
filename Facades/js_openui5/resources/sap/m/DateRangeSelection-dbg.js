@@ -117,8 +117,8 @@ sap.ui.define([
 	 * compact mode and provides a touch-friendly size in cozy mode.
 	 *
 	 * @extends sap.m.DatePicker
-	 * @version 1.70.0
-	 * @version 1.70.0
+	 * @version 1.68.1
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -674,10 +674,6 @@ sap.ui.define([
 		var sValue = this._$input.val();
 		var aDates = [undefined, undefined];
 
-		if (this.getShowFooter() && this._oPopup && !sValue) {
-			this._oPopup.getBeginButton().setEnabled(false);
-		}
-
 		this._bValid = true;
 		if (sValue != "") {
 			aDates = this._parseValue(sValue);
@@ -832,7 +828,8 @@ sap.ui.define([
 
 	};
 
-	DateRangeSelection.prototype._selectDate = function () {
+	DateRangeSelection.prototype._selectDate = function(oEvent){
+
 		var aSelectedDates = this._oCalendar.getSelectedDates();
 
 		if (aSelectedDates.length > 0) {

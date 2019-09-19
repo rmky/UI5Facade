@@ -7,7 +7,6 @@
 sap.ui.define([],
 	function() {
 		"use strict";
-		/* global Map */
 
 		/**
 		 * GridContainer renderer
@@ -74,44 +73,9 @@ sap.ui.define([],
 			}
 		};
 
-		/**
-		 * Renders a single item in the grid.
-		 * @param {sap.ui.core.RenderManager} rm The RenderManager that can be used for writing to the render output buffer
-		 * @param {sap.ui.core.Control} oItem The grid item
-		 * @param {sap.ui.core.Control} oControl The grid
-		 */
 		GridContainerRenderer.renderItem = function(rm, oItem, oControl) {
-			var mStylesInfo = GridContainerRenderer.getStylesForItemWrapper(oItem, oControl),
-				mStyles = mStylesInfo.styles,
-				aClasses = mStylesInfo.classes;
-
 			rm.write("<div");
-
-			mStyles.forEach(function (sValue, sKey) {
-				rm.addStyle(sKey, sValue);
-			});
-
-			aClasses.forEach(function (sValue) {
-				rm.addClass(sValue);
-			});
-
-			rm.writeClasses();
-			rm.writeStyles();
-			rm.write(">");
-
-			rm.renderControl(oItem);
-			rm.write("</div>");
-		};
-
-		/**
-		 * Gets styles and classes which has to be applied to an item's wrapper element.
-		 * @param {sap.ui.core.Control} oItem The grid item
-		 * @param {sap.ui.core.Control} oControl The grid
-		 * @returns {object} An object containing styles and classes
-		 */
-		GridContainerRenderer.getStylesForItemWrapper = function(oItem, oControl) {
-			var mStyles = new Map(),
-				aClasses = ["sapFGridContainerItemWrapper"];
+			rm.addClass("sapFGridContainerItemWrapper");
 
 			var oLayoutData = oItem.getLayoutData();
 			if (oLayoutData) {
@@ -124,24 +88,26 @@ sap.ui.define([],
 				}
 
 				if (iItemColumns) {
-					mStyles.set("grid-column", "span " + iItemColumns);
+					rm.addStyle("grid-column", "span " + iItemColumns);
 				}
 
 				if (oControl.getInlineBlockLayout()) {
-					mStyles.set("grid-row", "span 1");
+					rm.addStyle("grid-row", "span 1");
 				} else if (oLayoutData.getRows() || oLayoutData.getMinRows()) {
-					mStyles.set("grid-row", "span " + oLayoutData.getActualRows());
+					rm.addStyle("grid-row", "span " + oLayoutData.getActualRows());
 				}
 
 				if (!oLayoutData.hasAutoHeight()) {
-					aClasses.push("sapFGridContainerItemFixedRows");
+					rm.addClass("sapFGridContainerItemFixedRows");
 				}
 			}
 
-			return {
-				styles: mStyles,
-				classes: aClasses
-			};
+			rm.writeClasses();
+			rm.writeStyles();
+			rm.write(">");
+
+			rm.renderControl(oItem);
+			rm.write("</div>");
 		};
 
 		return GridContainerRenderer;

@@ -38,7 +38,7 @@ sap.ui.define(['sap/ui/base/Object', "sap/base/assert"],
 		 *
 		 * @extends sap.ui.base.Object
 		 * @author SAP SE
-		 * @version 1.70.0
+		 * @version 1.68.1
 		 * @public
 		 * @alias sap.ui.core.Locale
 		 */

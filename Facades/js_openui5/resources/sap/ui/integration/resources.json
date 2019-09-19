@@ -12,271 +12,6 @@
 			"name": ".theming"
 		},
 		{
-			"name": "Widget-dbg.js",
-			"module": "sap/ui/integration/Widget.js",
-			"isDebug": true,
-			"required": [
-				"sap/base/Log.js",
-				"sap/base/util/LoaderExtensions.js",
-				"sap/ui/core/ComponentContainer.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/core/Core.js",
-				"sap/ui/integration/WidgetRenderer.js",
-				"sap/ui/integration/library.js",
-				"sap/ui/integration/util/Manifest.js",
-				"sap/ui/model/json/JSONModel.js",
-				"sap/ui/model/resource/ResourceModel.js",
-				"sap/ui/thirdparty/jquery.js"
-			]
-		},
-		{
-			"name": "Widget.js",
-			"module": "sap/ui/integration/Widget.js",
-			"required": [
-				"sap/base/Log.js",
-				"sap/base/util/LoaderExtensions.js",
-				"sap/ui/core/ComponentContainer.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/core/Core.js",
-				"sap/ui/integration/WidgetRenderer.js",
-				"sap/ui/integration/library.js",
-				"sap/ui/integration/util/Manifest.js",
-				"sap/ui/model/json/JSONModel.js",
-				"sap/ui/model/resource/ResourceModel.js",
-				"sap/ui/thirdparty/jquery.js"
-			]
-		},
-		{
-			"name": "WidgetComponent-dbg.js",
-			"module": "sap/ui/integration/WidgetComponent.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/core/UIComponent.js",
-				"sap/ui/model/json/JSONModel.js"
-			]
-		},
-		{
-			"name": "WidgetComponent.js",
-			"module": "sap/ui/integration/WidgetComponent.js",
-			"required": [
-				"sap/ui/core/UIComponent.js",
-				"sap/ui/model/json/JSONModel.js"
-			]
-		},
-		{
-			"name": "WidgetRenderer-dbg.js",
-			"module": "sap/ui/integration/WidgetRenderer.js",
-			"isDebug": true
-		},
-		{
-			"name": "WidgetRenderer.js",
-			"module": "sap/ui/integration/WidgetRenderer.js"
-		},
-		{
-			"name": "designtime/controls/BaseEditor-dbg.js",
-			"module": "sap/ui/integration/designtime/controls/BaseEditor.js",
-			"isDebug": true,
-			"required": [
-				"sap/base/i18n/ResourceBundle.js",
-				"sap/base/util/ObjectPath.js",
-				"sap/base/util/deepClone.js",
-				"sap/base/util/merge.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/integration/designtime/controls/utils/ObjectBinding.js",
-				"sap/ui/model/BindingMode.js",
-				"sap/ui/model/json/JSONModel.js",
-				"sap/ui/model/resource/ResourceModel.js"
-			]
-		},
-		{
-			"name": "designtime/controls/BaseEditor.js",
-			"module": "sap/ui/integration/designtime/controls/BaseEditor.js",
-			"required": [
-				"sap/base/i18n/ResourceBundle.js",
-				"sap/base/util/ObjectPath.js",
-				"sap/base/util/deepClone.js",
-				"sap/base/util/merge.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/integration/designtime/controls/utils/ObjectBinding.js",
-				"sap/ui/model/BindingMode.js",
-				"sap/ui/model/json/JSONModel.js",
-				"sap/ui/model/resource/ResourceModel.js"
-			]
-		},
-		{
-			"name": "designtime/controls/CardEditor-dbg.js",
-			"module": "sap/ui/integration/designtime/controls/CardEditor.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/integration/designtime/controls/BaseEditor.js",
-				"sap/ui/integration/designtime/controls/DefaultCardConfig.js"
-			]
-		},
-		{
-			"name": "designtime/controls/CardEditor.js",
-			"module": "sap/ui/integration/designtime/controls/CardEditor.js",
-			"required": [
-				"sap/ui/integration/designtime/controls/BaseEditor.js",
-				"sap/ui/integration/designtime/controls/DefaultCardConfig.js"
-			]
-		},
-		{
-			"name": "designtime/controls/DefaultCardConfig-dbg.js",
-			"module": "sap/ui/integration/designtime/controls/DefaultCardConfig.js",
-			"isDebug": true
-		},
-		{
-			"name": "designtime/controls/DefaultCardConfig.js",
-			"module": "sap/ui/integration/designtime/controls/DefaultCardConfig.js"
-		},
-		{
-			"name": "designtime/controls/PropertyEditor-dbg.js",
-			"module": "sap/ui/integration/designtime/controls/PropertyEditor.js",
-			"isDebug": true,
-			"required": [
-				"sap/m/Label.js",
-				"sap/ui/core/Control.js"
-			]
-		},
-		{
-			"name": "designtime/controls/PropertyEditor.js",
-			"module": "sap/ui/integration/designtime/controls/PropertyEditor.js",
-			"required": [
-				"sap/m/Label.js",
-				"sap/ui/core/Control.js"
-			]
-		},
-		{
-			"name": "designtime/controls/i18n/i18n.properties",
-			"module": "sap/ui/integration/designtime/controls/i18n/i18n.properties"
-		},
-		{
-			"name": "designtime/controls/propertyEditors/EnumStringEditor-dbg.js",
-			"module": "sap/ui/integration/designtime/controls/propertyEditors/EnumStringEditor.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/base/BindingParser.js",
-				"sap/ui/core/Item.js",
-				"sap/ui/integration/designtime/controls/PropertyEditor.js"
-			]
-		},
-		{
-			"name": "designtime/controls/propertyEditors/EnumStringEditor.js",
-			"module": "sap/ui/integration/designtime/controls/propertyEditors/EnumStringEditor.js",
-			"required": [
-				"sap/ui/base/BindingParser.js",
-				"sap/ui/core/Item.js",
-				"sap/ui/integration/designtime/controls/PropertyEditor.js"
-			]
-		},
-		{
-			"name": "designtime/controls/propertyEditors/IconEditor-dbg.js",
-			"module": "sap/ui/integration/designtime/controls/propertyEditors/IconEditor.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/core/Fragment.js",
-				"sap/ui/core/IconPool.js",
-				"sap/ui/integration/designtime/controls/PropertyEditor.js",
-				"sap/ui/model/Filter.js",
-				"sap/ui/model/FilterOperator.js",
-				"sap/ui/model/json/JSONModel.js"
-			]
-		},
-		{
-			"name": "designtime/controls/propertyEditors/IconEditor.js",
-			"module": "sap/ui/integration/designtime/controls/propertyEditors/IconEditor.js",
-			"required": [
-				"sap/ui/core/Fragment.js",
-				"sap/ui/core/IconPool.js",
-				"sap/ui/integration/designtime/controls/PropertyEditor.js",
-				"sap/ui/model/Filter.js",
-				"sap/ui/model/FilterOperator.js",
-				"sap/ui/model/json/JSONModel.js"
-			]
-		},
-		{
-			"name": "designtime/controls/propertyEditors/IconSelection.fragment.xml",
-			"module": "sap/ui/integration/designtime/controls/propertyEditors/IconSelection.fragment.xml",
-			"required": [
-				"sap/m/SelectDialog.js",
-				"sap/m/StandardListItem.js",
-				"sap/ui/core/Fragment.js"
-			]
-		},
-		{
-			"name": "designtime/controls/propertyEditors/StringEditor-dbg.js",
-			"module": "sap/ui/integration/designtime/controls/propertyEditors/StringEditor.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/base/BindingParser.js",
-				"sap/ui/integration/designtime/controls/PropertyEditor.js"
-			]
-		},
-		{
-			"name": "designtime/controls/propertyEditors/StringEditor.js",
-			"module": "sap/ui/integration/designtime/controls/propertyEditors/StringEditor.js",
-			"required": [
-				"sap/ui/base/BindingParser.js",
-				"sap/ui/integration/designtime/controls/PropertyEditor.js"
-			]
-		},
-		{
-			"name": "designtime/controls/utils/ObjectBinding-dbg.js",
-			"module": "sap/ui/integration/designtime/controls/utils/ObjectBinding.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/base/BindingParser.js",
-				"sap/ui/base/ManagedObject.js"
-			]
-		},
-		{
-			"name": "designtime/controls/utils/ObjectBinding.js",
-			"module": "sap/ui/integration/designtime/controls/utils/ObjectBinding.js",
-			"required": [
-				"sap/ui/base/BindingParser.js",
-				"sap/ui/base/ManagedObject.js"
-			]
-		},
-		{
-			"name": "designtime/library-preload.designtime.js",
-			"module": "sap/ui/integration/designtime/library-preload.designtime.js",
-			"merged": true,
-			"designtime": true,
-			"required": [
-				"sap/base/i18n/ResourceBundle.js",
-				"sap/base/util/ObjectPath.js",
-				"sap/base/util/deepClone.js",
-				"sap/base/util/merge.js",
-				"sap/m/Label.js",
-				"sap/ui/base/BindingParser.js",
-				"sap/ui/base/ManagedObject.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/core/Fragment.js",
-				"sap/ui/core/IconPool.js",
-				"sap/ui/core/Item.js",
-				"sap/ui/model/BindingMode.js",
-				"sap/ui/model/Filter.js",
-				"sap/ui/model/FilterOperator.js",
-				"sap/ui/model/json/JSONModel.js",
-				"sap/ui/model/resource/ResourceModel.js"
-			],
-			"included": [
-				"sap/ui/integration/designtime/controls/BaseEditor.js",
-				"sap/ui/integration/designtime/controls/CardEditor.js",
-				"sap/ui/integration/designtime/controls/DefaultCardConfig.js",
-				"sap/ui/integration/designtime/controls/PropertyEditor.js",
-				"sap/ui/integration/designtime/controls/propertyEditors/EnumStringEditor.js",
-				"sap/ui/integration/designtime/controls/propertyEditors/IconEditor.js",
-				"sap/ui/integration/designtime/controls/propertyEditors/StringEditor.js",
-				"sap/ui/integration/designtime/controls/utils/ObjectBinding.js"
-			]
-		},
-		{
-			"name": "designtime/library-preload.designtime.js.map",
-			"isDebug": true,
-			"designtime": true
-		},
-		{
 			"name": "host/HostConfiguration-dbg.js",
 			"module": "sap/ui/integration/host/HostConfiguration.js",
 			"isDebug": true,
@@ -331,10 +66,56 @@
 			"isDebug": true,
 			"required": [
 				"sap/f/library.js",
-				"sap/m/library.js",
 				"sap/ui/Global.js",
 				"sap/ui/base/DataType.js",
 				"sap/ui/core/library.js"
+			]
+		},
+		{
+			"name": "library-h2-preload-dbg.js",
+			"module": "sap/ui/integration/library-h2-preload.js",
+			"isDebug": true,
+			"merged": true,
+			"required": [
+				"sap/base/Log.js",
+				"sap/f/CardRenderer.js",
+				"sap/f/cards/BaseContent.js",
+				"sap/f/cards/DataProviderFactory.js",
+				"sap/f/cards/Header.js",
+				"sap/f/cards/NumericHeader.js",
+				"sap/f/library.js",
+				"sap/m/HBox.js",
+				"sap/m/Text.js",
+				"sap/m/VBox.js",
+				"sap/ui/Global.js",
+				"sap/ui/base/DataType.js",
+				"sap/ui/base/EventProvider.js",
+				"sap/ui/base/Object.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/core/Core.js",
+				"sap/ui/core/Icon.js",
+				"sap/ui/core/Manifest.js",
+				"sap/ui/core/library.js",
+				"sap/ui/model/json/JSONModel.js",
+				"sap/ui/model/resource/ResourceModel.js",
+				"sap/ui/thirdparty/jquery.js",
+				"sap/ui/thirdparty/less.js"
+			],
+			"included": [
+				"sap/ui/integration/library.js",
+				"sap/ui/integration/manifest.json",
+				"sap-ui-integration.js",
+				"sap/ui/integration/host/HostConfiguration.js",
+				"sap/ui/integration/host/HostConfigurationCompiler.js",
+				"sap/ui/integration/library-bootstrap.js",
+				"sap/ui/integration/sap-ui-integration-config.js",
+				"sap/ui/integration/services/Data.js",
+				"sap/ui/integration/services/Navigation.js",
+				"sap/ui/integration/services/Service.js",
+				"sap/ui/integration/util/CardManifest.js",
+				"sap/ui/integration/util/CustomElements.js",
+				"sap/ui/integration/util/ServiceManager.js",
+				"sap/ui/integration/widgets/Card.js"
 			]
 		},
 		{
@@ -343,11 +124,6 @@
 			"merged": true,
 			"required": [
 				"sap/base/Log.js",
-				"sap/base/i18n/ResourceBundle.js",
-				"sap/base/util/LoaderExtensions.js",
-				"sap/base/util/ObjectPath.js",
-				"sap/base/util/deepClone.js",
-				"sap/base/util/merge.js",
 				"sap/f/CardRenderer.js",
 				"sap/f/cards/BaseContent.js",
 				"sap/f/cards/DataProviderFactory.js",
@@ -355,63 +131,35 @@
 				"sap/f/cards/NumericHeader.js",
 				"sap/f/library.js",
 				"sap/m/HBox.js",
-				"sap/m/Label.js",
-				"sap/m/SelectDialog.js",
-				"sap/m/StandardListItem.js",
 				"sap/m/Text.js",
 				"sap/m/VBox.js",
-				"sap/m/library.js",
 				"sap/ui/Global.js",
-				"sap/ui/base/BindingParser.js",
 				"sap/ui/base/DataType.js",
 				"sap/ui/base/EventProvider.js",
-				"sap/ui/base/ManagedObject.js",
 				"sap/ui/base/Object.js",
-				"sap/ui/core/ComponentContainer.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Core.js",
-				"sap/ui/core/Fragment.js",
 				"sap/ui/core/Icon.js",
-				"sap/ui/core/IconPool.js",
-				"sap/ui/core/Item.js",
 				"sap/ui/core/Manifest.js",
-				"sap/ui/core/UIComponent.js",
 				"sap/ui/core/library.js",
-				"sap/ui/model/BindingMode.js",
-				"sap/ui/model/Filter.js",
-				"sap/ui/model/FilterOperator.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/model/resource/ResourceModel.js",
 				"sap/ui/thirdparty/jquery.js",
-				"sap/ui/thirdparty/less.js",
-				"ui5loader-autoconfig.js"
+				"sap/ui/thirdparty/less.js"
 			],
 			"included": [
 				"sap/ui/integration/library.js",
 				"sap/ui/integration/manifest.json",
 				"sap-ui-integration.js",
-				"sap/ui/integration/Widget.js",
-				"sap/ui/integration/WidgetComponent.js",
-				"sap/ui/integration/WidgetRenderer.js",
-				"sap/ui/integration/designtime/controls/BaseEditor.js",
-				"sap/ui/integration/designtime/controls/CardEditor.js",
-				"sap/ui/integration/designtime/controls/DefaultCardConfig.js",
-				"sap/ui/integration/designtime/controls/PropertyEditor.js",
-				"sap/ui/integration/designtime/controls/propertyEditors/EnumStringEditor.js",
-				"sap/ui/integration/designtime/controls/propertyEditors/IconEditor.js",
-				"sap/ui/integration/designtime/controls/propertyEditors/IconSelection.fragment.xml",
-				"sap/ui/integration/designtime/controls/propertyEditors/StringEditor.js",
-				"sap/ui/integration/designtime/controls/utils/ObjectBinding.js",
 				"sap/ui/integration/host/HostConfiguration.js",
 				"sap/ui/integration/host/HostConfigurationCompiler.js",
 				"sap/ui/integration/library-bootstrap.js",
 				"sap/ui/integration/sap-ui-integration-config.js",
-				"sap/ui/integration/sap-ui-integration-define-nojQuery.js",
 				"sap/ui/integration/services/Data.js",
 				"sap/ui/integration/services/Navigation.js",
 				"sap/ui/integration/services/Service.js",
+				"sap/ui/integration/util/CardManifest.js",
 				"sap/ui/integration/util/CustomElements.js",
-				"sap/ui/integration/util/Manifest.js",
 				"sap/ui/integration/util/ServiceManager.js",
 				"sap/ui/integration/widgets/Card.js"
 			]
@@ -426,9 +174,6 @@
 			"merged": true,
 			"required": [
 				"sap/base/Log.js",
-				"sap/base/util/LoaderExtensions.js",
-				"sap/base/util/deepClone.js",
-				"sap/base/util/merge.js",
 				"sap/f/CardRenderer.js",
 				"sap/f/cards/BaseContent.js",
 				"sap/f/cards/DataProviderFactory.js",
@@ -438,41 +183,33 @@
 				"sap/m/HBox.js",
 				"sap/m/Text.js",
 				"sap/m/VBox.js",
-				"sap/m/library.js",
 				"sap/ui/Global.js",
 				"sap/ui/base/DataType.js",
 				"sap/ui/base/EventProvider.js",
 				"sap/ui/base/Object.js",
-				"sap/ui/core/ComponentContainer.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Core.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/Manifest.js",
-				"sap/ui/core/UIComponent.js",
 				"sap/ui/core/library.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/model/resource/ResourceModel.js",
 				"sap/ui/thirdparty/jquery.js",
-				"sap/ui/thirdparty/less.js",
-				"ui5loader-autoconfig.js"
+				"sap/ui/thirdparty/less.js"
 			],
 			"included": [
 				"sap-ui-integration.js",
-				"sap/ui/integration/Widget.js",
-				"sap/ui/integration/WidgetComponent.js",
-				"sap/ui/integration/WidgetRenderer.js",
 				"sap/ui/integration/host/HostConfiguration.js",
 				"sap/ui/integration/host/HostConfigurationCompiler.js",
 				"sap/ui/integration/library-bootstrap.js",
 				"sap/ui/integration/library.js",
 				"sap/ui/integration/manifest.json",
 				"sap/ui/integration/sap-ui-integration-config.js",
-				"sap/ui/integration/sap-ui-integration-define-nojQuery.js",
 				"sap/ui/integration/services/Data.js",
 				"sap/ui/integration/services/Navigation.js",
 				"sap/ui/integration/services/Service.js",
+				"sap/ui/integration/util/CardManifest.js",
 				"sap/ui/integration/util/CustomElements.js",
-				"sap/ui/integration/util/Manifest.js",
 				"sap/ui/integration/util/ServiceManager.js",
 				"sap/ui/integration/widgets/Card.js"
 			]
@@ -480,6 +217,58 @@
 		{
 			"name": "library-preload.js.map",
 			"isDebug": true
+		},
+		{
+			"name": "library-preload.json",
+			"module": "sap/ui/integration/library-preload.json",
+			"merged": true,
+			"required": [
+				"sap/base/Log.js",
+				"sap/f/CardRenderer.js",
+				"sap/f/cards/BaseContent.js",
+				"sap/f/cards/DataProviderFactory.js",
+				"sap/f/cards/Header.js",
+				"sap/f/cards/NumericHeader.js",
+				"sap/f/library-preload.json",
+				"sap/f/library.js",
+				"sap/m/HBox.js",
+				"sap/m/Text.js",
+				"sap/m/VBox.js",
+				"sap/ui/Global.js",
+				"sap/ui/base/DataType.js",
+				"sap/ui/base/EventProvider.js",
+				"sap/ui/base/Object.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/core/Core.js",
+				"sap/ui/core/Icon.js",
+				"sap/ui/core/Manifest.js",
+				"sap/ui/core/library-preload.json",
+				"sap/ui/core/library.js",
+				"sap/ui/model/json/JSONModel.js",
+				"sap/ui/model/resource/ResourceModel.js",
+				"sap/ui/thirdparty/jquery.js",
+				"sap/ui/thirdparty/less.js"
+			],
+			"included": [
+				"sap-ui-integration.js",
+				"sap/ui/integration/host/HostConfiguration.js",
+				"sap/ui/integration/host/HostConfigurationCompiler.js",
+				"sap/ui/integration/library-bootstrap.js",
+				"sap/ui/integration/library.js",
+				"sap/ui/integration/manifest.json",
+				"sap/ui/integration/sap-ui-integration-config.js",
+				"sap/ui/integration/services/Data.js",
+				"sap/ui/integration/services/Navigation.js",
+				"sap/ui/integration/services/Service.js",
+				"sap/ui/integration/util/CardManifest.js",
+				"sap/ui/integration/util/CustomElements.js",
+				"sap/ui/integration/util/ServiceManager.js",
+				"sap/ui/integration/widgets/Card.js"
+			]
+		},
+		{
+			"name": "library.dependencies.json",
+			"designtime": true
 		},
 		{
 			"name": "library.dependencies.xml",
@@ -490,11 +279,14 @@
 			"module": "sap/ui/integration/library.js",
 			"required": [
 				"sap/f/library.js",
-				"sap/m/library.js",
 				"sap/ui/Global.js",
 				"sap/ui/base/DataType.js",
 				"sap/ui/core/library.js"
 			]
+		},
+		{
+			"name": "library.templates.xml",
+			"designtime": true
 		},
 		{
 			"name": "manifest.json",
@@ -768,15 +560,19 @@
 			"name": "sap-ui-integration-define-nojQuery-dbg.js",
 			"module": "sap/ui/integration/sap-ui-integration-define-nojQuery.js",
 			"isDebug": true,
-			"required": [
-				"ui5loader-autoconfig.js"
+			"merged": true,
+			"included": [
+				"sap/ui/thirdparty/jquery.js",
+				"sap/ui/thirdparty/ui/jquery/jquery-ui-position.js"
 			]
 		},
 		{
 			"name": "sap-ui-integration-define-nojQuery.js",
 			"module": "sap/ui/integration/sap-ui-integration-define-nojQuery.js",
-			"required": [
-				"ui5loader-autoconfig.js"
+			"merged": true,
+			"included": [
+				"sap/ui/thirdparty/jquery.js",
+				"sap/ui/thirdparty/ui/jquery/jquery-ui-position.js"
 			]
 		},
 		{
@@ -822,6 +618,25 @@
 			"module": "sap/ui/integration/services/Service.js"
 		},
 		{
+			"name": "util/CardManifest-dbg.js",
+			"module": "sap/ui/integration/util/CardManifest.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/Log.js",
+				"sap/ui/base/Object.js",
+				"sap/ui/core/Manifest.js"
+			]
+		},
+		{
+			"name": "util/CardManifest.js",
+			"module": "sap/ui/integration/util/CardManifest.js",
+			"required": [
+				"sap/base/Log.js",
+				"sap/ui/base/Object.js",
+				"sap/ui/core/Manifest.js"
+			]
+		},
+		{
 			"name": "util/CustomElements-dbg.js",
 			"module": "sap/ui/integration/util/CustomElements.js",
 			"isDebug": true,
@@ -834,29 +649,6 @@
 			"module": "sap/ui/integration/util/CustomElements.js",
 			"required": [
 				"sap/base/Log.js"
-			]
-		},
-		{
-			"name": "util/Manifest-dbg.js",
-			"module": "sap/ui/integration/util/Manifest.js",
-			"isDebug": true,
-			"required": [
-				"sap/base/Log.js",
-				"sap/base/util/deepClone.js",
-				"sap/base/util/merge.js",
-				"sap/ui/base/Object.js",
-				"sap/ui/core/Manifest.js"
-			]
-		},
-		{
-			"name": "util/Manifest.js",
-			"module": "sap/ui/integration/util/Manifest.js",
-			"required": [
-				"sap/base/Log.js",
-				"sap/base/util/deepClone.js",
-				"sap/base/util/merge.js",
-				"sap/ui/base/Object.js",
-				"sap/ui/core/Manifest.js"
 			]
 		},
 		{
@@ -882,7 +674,6 @@
 			"isDebug": true,
 			"required": [
 				"sap/base/Log.js",
-				"sap/base/util/LoaderExtensions.js",
 				"sap/f/CardRenderer.js",
 				"sap/f/cards/BaseContent.js",
 				"sap/f/cards/DataProviderFactory.js",
@@ -896,7 +687,7 @@
 				"sap/ui/core/Core.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/integration/library.js",
-				"sap/ui/integration/util/Manifest.js",
+				"sap/ui/integration/util/CardManifest.js",
 				"sap/ui/integration/util/ServiceManager.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/model/resource/ResourceModel.js",
@@ -908,7 +699,6 @@
 			"module": "sap/ui/integration/widgets/Card.js",
 			"required": [
 				"sap/base/Log.js",
-				"sap/base/util/LoaderExtensions.js",
 				"sap/f/CardRenderer.js",
 				"sap/f/cards/BaseContent.js",
 				"sap/f/cards/DataProviderFactory.js",
@@ -922,7 +712,7 @@
 				"sap/ui/core/Core.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/integration/library.js",
-				"sap/ui/integration/util/Manifest.js",
+				"sap/ui/integration/util/CardManifest.js",
 				"sap/ui/integration/util/ServiceManager.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/model/resource/ResourceModel.js",

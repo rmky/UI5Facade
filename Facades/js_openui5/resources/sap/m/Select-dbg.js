@@ -9,7 +9,6 @@ sap.ui.define([
 	'./Popover',
 	'./SelectList',
 	'./library',
-	'sap/ui/core/Core',
 	'sap/ui/core/Control',
 	'sap/ui/core/EnabledPropagator',
 	'sap/ui/core/Icon',
@@ -34,7 +33,6 @@ function(
 	Popover,
 	SelectList,
 	library,
-	Core,
 	Control,
 	EnabledPropagator,
 	Icon,
@@ -89,7 +87,7 @@ function(
 		 * @implements sap.ui.core.IFormContent
 		 *
 		 * @author SAP SE
-		 * @version 1.70.0
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @public
@@ -120,7 +118,7 @@ function(
 					 * to <code>false</code>, the control appears as disabled and CANNOT be focused.
 					 *
 					 * <b>Note:</b> When both <code>enabled</code> and <code>editable</code> properties
-					 * are set to <code>false</code>, <code>enabled</code> has priority over
+					 * are set to <code>false<code>, <code>enabled</code> has priority over
 					 * <code>editable</code>.
 					 */
 					enabled: {
@@ -134,7 +132,7 @@ function(
 					 * to <code>false</code>, the control appears as disabled but CAN still be focused.
 					 *
 					 * <b>Note:</b> When both <code>enabled</code> and <code>editable</code> properties
-					 * are set to <code>false</code>, <code>enabled</code> has priority over
+					 * are set to <code>false<code>, <code>enabled</code> has priority over
 					 * <code>editable</code>.
 					 *
 					 * @since 1.66.0
@@ -300,15 +298,6 @@ function(
 						type: "boolean",
 						group: "Behavior",
 						defaultValue: true
-					},
-					/**
-					 * Determines whether the text in the items wraps on multiple lines when the available width is not enough.
-					 * @since 1.69
-					 */
-					wrapItemsText: {
-						type: "boolean",
-						group: "Behavior",
-						defaultValue: false
 					}
 				},
 				defaultAggregation : "items",
@@ -711,14 +700,15 @@ function(
 		Select.prototype._handleAriaActiveDescendant = function(vItem) {
 			var oDomRef = this.getDomRef(),
 				oItemDomRef = vItem && vItem.getDomRef(),
-				sActivedescendant = "aria-activedescendant";
+				sActivedescendant = "aria-activedescendant",
+				bIconOnly = this.getType() === SelectType.IconOnly;
 
 			if (!oDomRef) {
 				return;
 			}
 
 			// the aria-activedescendant attribute is set when the item is rendered
-			if (oItemDomRef && this.isOpen()) {
+			if (oItemDomRef && this.isOpen() && !bIconOnly) {
 				oDomRef.setAttribute(sActivedescendant, vItem.getId());
 			} else {
 				oDomRef.removeAttribute(sActivedescendant);
@@ -767,8 +757,6 @@ function(
 			// call the hook to add additional content to the list
 			this.addContent();
 
-			this.addContentToFlex();
-
 			fnPickerTypeBeforeOpen && fnPickerTypeBeforeOpen.call(this);
 		};
 
@@ -780,7 +768,8 @@ function(
 		Select.prototype.onAfterOpen = function(oControlEvent) {
 			var oDomRef = this.getFocusDomRef(),
 				oItem = null,
-				$oLabel = this.$("label");
+				$oLabel = this.$("label"),
+				bIconOnly = this.getType() === SelectType.IconOnly;
 
 			if (!oDomRef) {
 				return;
@@ -801,7 +790,9 @@ function(
 
 				// note: the "aria-activedescendant" attribute is set
 				// when the currently active descendant is visible and in view
-				oDomRef.setAttribute("aria-activedescendant", oItem.getId());
+				if (!bIconOnly) {
+					oDomRef.setAttribute("aria-activedescendant", oItem.getId());
+				}
 				this.scrollToItem(oItem);
 			}
 		};
@@ -812,7 +803,8 @@ function(
 		 */
 		Select.prototype.onBeforeClose = function(oControlEvent) {
 			var oDomRef = this.getFocusDomRef(),
-				CSS_CLASS = this.getRenderer().CSS_CLASS;
+				CSS_CLASS = this.getRenderer().CSS_CLASS,
+				bIconOnly = this.getType() === SelectType.IconOnly;
 
 			if (oDomRef) {
 
@@ -820,7 +812,9 @@ function(
 				oDomRef.removeAttribute("aria-controls");
 
 				// the "aria-activedescendant" attribute is removed when the currently active descendant is not visible
-				oDomRef.removeAttribute("aria-activedescendant");
+				if (!bIconOnly) {
+					oDomRef.removeAttribute("aria-activedescendant");
+				}
 
 				// if the focus is back to the input after closing the picker,
 				// the value state message should be reopened
@@ -868,24 +862,6 @@ function(
 
 			// initialize the control's picker
 			return this.createPicker(this.getPickerType());
-		};
-
-		Select.prototype.getSimpleFixFlex = function() {
-			if (this.bIsDestroyed) {
-				return null;
-			} else if (this.oSimpleFixFlex) {
-				return this.oSimpleFixFlex;
-			}
-
-			// initialize the SimpleFixFlex
-			this.oSimpleFixFlex = new SimpleFixFlex({
-				id: this.getPickerValueStateContentId(),
-				fixContent: this._getPickerValueStateContent()
-						.addStyleClass(this.getRenderer().CSS_CLASS + "PickerValueState"),
-				flexContent: this.createList()
-			});
-
-			return this.oSimpleFixFlex;
 		};
 
 		/**
@@ -970,7 +946,7 @@ function(
 			if (sValueState === ValueState.None) {
 				sText = "";
 			} else {
-				oResourceBundle = Core.getLibraryResourceBundle("sap.ui.core");
+				oResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.ui.core");
 				sText = oResourceBundle.getText("VALUE_STATE_" + sValueState.toUpperCase());
 			}
 
@@ -1140,7 +1116,7 @@ function(
 				oResourceBundle;
 
 			if (!this.getAggregation("_pickerHeader")) {
-				oResourceBundle = Core.getLibraryResourceBundle("sap.m");
+				oResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 				this.setAggregation("_pickerHeader", new Bar({
 					contentMiddle: new Title({
 						text: oResourceBundle.getText("SELECT_PICKER_TITLE_TEXT")
@@ -1227,6 +1203,11 @@ function(
 
 			// rendering phase is started
 			this.bRenderingPhase = true;
+
+			// note: in Firefox 38, the focusout event is not fired when the select is removed
+			if (Device.browser.firefox && (this.getFocusDomRef() === document.activeElement)) {
+				this._handleFocusout();
+			}
 
 			this.synchronizeSelection({
 				forceSelection: this.getForceSelection()
@@ -1768,7 +1749,7 @@ function(
 				return;
 			}
 
-			var oControl = Core.byId(oEvent.relatedControlId),
+			var oControl = sap.ui.getCore().byId(oEvent.relatedControlId),
 				oFocusDomRef = oControl && oControl.getFocusDomRef();
 
 			if (Device.system.desktop && containsOrEquals(oPicker.getFocusDomRef(), oFocusDomRef)) {
@@ -1803,7 +1784,7 @@ function(
 			this.setProperty("selectedItemId", (vItem instanceof Item) ? vItem.getId() : vItem, true);
 
 			if (typeof vItem === "string") {
-				vItem = Core.byId(vItem);
+				vItem = sap.ui.getCore().byId(vItem);
 			}
 
 			sKey = vItem ? vItem.getKey() : "";
@@ -1838,8 +1819,6 @@ function(
 		 */
 		Select.prototype.addContent = function(oPicker) {};
 
-		Select.prototype.addContentToFlex = function() {};
-
 		/**
 		 * Creates a picker popup container where the selection should take place.
 		 *
@@ -1849,7 +1828,8 @@ function(
 		 */
 		Select.prototype.createPicker = function(sPickerType) {
 			var oPicker = this.getAggregation("picker"),
-				CSS_CLASS = this.getRenderer().CSS_CLASS;
+				CSS_CLASS = this.getRenderer().CSS_CLASS,
+				sPickerValueStateContentValueStateClass = CSS_CLASS + "PickerValueState";
 
 			if (oPicker) {
 				return oPicker;
@@ -1873,7 +1853,12 @@ function(
 						onBeforeRendering: this.onBeforeRenderingPicker,
 						onAfterRendering: this.onAfterRenderingPicker
 					}, this)
-					.addContent(this.getSimpleFixFlex());
+					.addContent(new SimpleFixFlex({
+						id: this.getPickerValueStateContentId(),
+						fixContent: this._getPickerValueStateContent()
+									.addStyleClass(sPickerValueStateContentValueStateClass),
+						flexContent: this.createList()
+					}));
 
 			return oPicker;
 		};
@@ -1916,7 +1901,6 @@ function(
 
 			this._oList = new SelectList({
 				width: "100%",
-				maxWidth: "600px",
 				keyboardNavigationMode: sKeyboardNavigationMode
 			}).addStyleClass(this.getRenderer().CSS_CLASS + "List-CTX")
 			.addEventDelegate({
@@ -1926,26 +1910,7 @@ function(
 				}
 			}, this)
 			.attachSelectionChange(this.onSelectionChange, this);
-
-			this._oList.toggleStyleClass("sapMSelectListWrappedItems", this.getWrapItemsText());
-
 			return this._oList;
-		};
-
-		/**
-		 * Sets the <code>wrapItemsText</code> property.
-		 *
-		 * @param {boolean} bWrap
-		 * @returns {sap.m.Select} <code>this</code> to allow method chaining
-		 * @since 1.69
-		 * @public
-		 */
-		Select.prototype.setWrapItemsText = function (bWrap) {
-			if (this._oList) {
-				this._oList.toggleStyleClass("sapMSelectListWrappedItems", bWrap);
-			}
-
-			return this.setProperty("wrapItemsText", bWrap, true);
 		};
 
 		/**
@@ -2306,14 +2271,14 @@ function(
 		 */
 		Select.prototype.getLabels = function() {
 			var aLabelIDs = this.getAriaLabelledBy().map(function(sLabelID) {
-				return Core.byId(sLabelID);
+				return sap.ui.getCore().byId(sLabelID);
 			});
 
 			var oLabelEnablement = sap.ui.require("sap/ui/core/LabelEnablement");
 
 			if (oLabelEnablement) {
 				aLabelIDs = aLabelIDs.concat(oLabelEnablement.getReferencingLabels(this).map(function(sLabelID) {
-					return Core.byId(sLabelID);
+					return sap.ui.getCore().byId(sLabelID);
 				}));
 			}
 
@@ -2381,7 +2346,7 @@ function(
 		/**
 		 * Whether or not the value state message should be opened.
 		 *
-		 * @returns {boolean} <code>false</code> if the field is disabled, read-only or the default value state is set,
+		 * @returns {boolean} <code>false</true> if the field is disabled, read-only or the default value state is set,
 		 * otherwise it returns <code>true</code>.
 		 * @since 1.40.5
 		 */
@@ -2487,7 +2452,7 @@ function(
 
 			if (typeof vItem === "string") {
 				this.setAssociation("selectedItem", vItem, true);
-				vItem = Core.byId(vItem);
+				vItem = sap.ui.getCore().byId(vItem);
 			}
 
 			if (!(vItem instanceof Item) && vItem !== null) {
@@ -2525,7 +2490,7 @@ function(
 
 			this.setSelection(vItem);
 			this.setValue(this._getSelectedItemText());
-			this._oSelectionOnFocus = this.getSelectedItem();
+			this._oSelectionOnFocus = sap.ui.getCore().byId(vItem);
 			return this;
 		};
 
@@ -2644,7 +2609,7 @@ function(
 		 */
 		Select.prototype.getSelectedItem = function() {
 			var vSelectedItem = this.getAssociation("selectedItem");
-			return (vSelectedItem === null) ? null : Core.byId(vSelectedItem) || null;
+			return (vSelectedItem === null) ? null : sap.ui.getCore().byId(vSelectedItem) || null;
 		};
 
 		/**
@@ -2817,7 +2782,7 @@ function(
 		 * @returns {Object} The <code>sap.m.Select</code> accessibility information
 		 */
 		Select.prototype.getAccessibilityInfo = function() {
-			var bIconOnly = this.getType() === "IconOnly",
+			var bIconOnly = this.getType() === SelectType.IconOnly,
 				oInfo = {
 					role: this.getRenderer().getAriaRole(this),
 					focusable: this.getEnabled(),
@@ -2832,10 +2797,10 @@ function(
 					sDesc = oIconInfo && oIconInfo.text ? oIconInfo.text : "";
 				}
 
-				oInfo.type = Core.getLibraryResourceBundle("sap.m").getText("ACC_CTR_TYPE_BUTTON");
+				oInfo.type = sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("ACC_CTR_TYPE_BUTTON");
 				oInfo.description = sDesc;
 			} else if (this.getType() === "Default") {
-				oInfo.type = Core.getLibraryResourceBundle("sap.m").getText("ACC_CTR_TYPE_COMBO");
+				oInfo.type = sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("ACC_CTR_TYPE_COMBO");
 				oInfo.description = this._getSelectedItemText();
 			}
 

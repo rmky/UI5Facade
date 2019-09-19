@@ -12,8 +12,7 @@ sap.ui.define([
 	'sap/ui/base/ManagedObject',
 	'sap/base/util/ObjectPath',
 	"sap/base/security/encodeXML",
-	"sap/ui/thirdparty/jquery",
-	"sap/base/util/isEmptyObject"
+	"sap/ui/thirdparty/jquery"
 ],
 	function(
 		Core,
@@ -23,8 +22,7 @@ sap.ui.define([
 		ManagedObject,
 		ObjectPath,
 		encodeXML,
-		jQuery,
-		isEmptyObject
+		jQuery
 	) {
 	"use strict";
 
@@ -49,7 +47,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.tmpl.Template
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @alias sap.ui.core.tmpl.HandlebarsTemplate
 	 * @since 1.15
 	 * @deprecated since 1.56
@@ -384,7 +382,7 @@ sap.ui.define([
 				// add the created children to current control instance either as template
 				// in case of a binding has been found or as aggregation in case of no
 				// binding was found
-				if (!isEmptyObject(mChildren)) {
+				if (!jQuery.isEmptyObject(mChildren)) {
 					mSettings = options.hash;
 					var oAllAggregation = oMetadata.getAllAggregations();
 					for (var sAggregationName in mChildren) {

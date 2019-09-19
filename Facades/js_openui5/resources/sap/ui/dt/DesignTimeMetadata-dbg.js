@@ -31,7 +31,7 @@ function(
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @private
@@ -150,7 +150,7 @@ function(
 		if (mData.actions && mData.actions[sAction]) {
 			var vAction = mData.actions[sAction];
 			if (typeof (vAction) === "function") {
-				vAction = vAction(oElement);
+				vAction = vAction.call(null, oElement);
 			}
 
 			if (typeof (vAction) === "string") {
@@ -236,4 +236,4 @@ function(
 	};
 
 	return DesignTimeMetadata;
-});
+}, /* bExport= */ true);

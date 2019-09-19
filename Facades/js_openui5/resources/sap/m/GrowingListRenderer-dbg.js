@@ -15,7 +15,6 @@ sap.ui.define(['./ListRenderer', 'sap/ui/core/Renderer', "sap/base/Log"],
 	 * @namespace
 	 */
 	var GrowingListRenderer = Renderer.extend(ListRenderer);
-	GrowingListRenderer.apiVersion = 2;
 
 	GrowingListRenderer.render = function(rm, oControl) {
 		/**

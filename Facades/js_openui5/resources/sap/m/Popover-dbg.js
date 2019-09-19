@@ -111,7 +111,7 @@ sap.ui.define([
 		* @extends sap.ui.core.Control
 		* @implements sap.ui.core.PopupInterface
 		* @author SAP SE
-		* @version 1.70.0
+		* @version 1.68.1
 		*
 		* @public
 		* @alias sap.m.Popover
@@ -220,14 +220,7 @@ sap.ui.define([
 					 * @since 1.36.4
 					 * @private
 					 */
-					resizable: {type: "boolean", group: "Dimension", defaultValue: false},
-
-					/**
-					 * Specifies the aria-modal of the Popover.
-					 * @since 1.70
-					 * @private
-					 */
-					ariaModal: {type: "boolean", group: "Misc", defaultValue: true, visibility: "hidden"}
+					resizable: {type: "boolean", group: "Dimension", defaultValue: false}
 				},
 				defaultAggregation: "content",
 				aggregations: {
@@ -606,7 +599,7 @@ sap.ui.define([
 				this._bContentChanged = false;
 				oNavContent = this._getSingleNavContent();
 				oPageContent = this._getSinglePageContent();
-				// TODO: migration not possible. jQuery.sap.simulateMobileOnDesktop is a testing flag which should not be used.
+				//TODO: global jquery call found
 				if (oNavContent && !this.getModal() && !Device.support.touch && !jQuery.sap.simulateMobileOnDesktop) {
 					//gain the focus back to popover in order to prevent the autoclose of the popover
 					oNavContent.attachEvent("afterNavigate", function (oEvent) {
@@ -2105,10 +2098,9 @@ sap.ui.define([
 
 
 		/**
-		 * Returns the duration for the Popover's closing animation.
-		 *
+		 * Returns the duration for the Popover's closing animation
+		 * @sap-restricted sap.ui.dt.plugin.MiniMenu
 		 * @private
-		 * @ui5-restricted sap.ui.dt.plugin.MiniMenu
 		 */
 		Popover.prototype._getAnimationDuration = function () {
 			return 300;
@@ -2271,7 +2263,6 @@ sap.ui.define([
 			var aAriaLabels, mAccOptions = {};
 
 			mAccOptions.role = "dialog";
-			mAccOptions.modal = this.getProperty("ariaModal");
 			if (this.getShowHeader() && this._getAnyHeader()) {
 				// If we have a header/title, we add a reference to it in the beginning of the aria-labelledby attribute
 				aAriaLabels = Array.prototype.concat(this._getAnyHeader().getId(), this.getAssociation("ariaLabelledBy", []));
@@ -2454,7 +2445,7 @@ sap.ui.define([
 				return this;
 			}
 
-			this.oPopup.setModal(bModal, ("sapMPopoverBLayer " + (sModalCSSClass || "")).trim());
+			this.oPopup.setModal(bModal, jQuery.trim("sapMPopoverBLayer " + (sModalCSSClass || "")));
 
 			// suppress re-rendering
 			this.setProperty("modal", bModal, true);
@@ -2536,9 +2527,6 @@ sap.ui.define([
 			return this.setProperty("resizable", bValue, true);
 		};
 
-		Popover.prototype._setAriaModal = function (bValue) {
-			return this.setProperty("ariaModal", bValue);
-		};
 
 		/**
 		 * Returns the sap.ui.core.ScrollEnablement delegate which is used with this control.

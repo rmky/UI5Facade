@@ -8,14 +8,12 @@ sap.ui.define([
 	"sap/ui/fl/FlexController",
 	"sap/ui/fl/Utils",
 	"sap/ui/fl/ChangePersistenceFactory",
-	"sap/ui/fl/variants/VariantModel",
-	"sap/base/Log"
+	"sap/ui/fl/variants/VariantModel"
 ], function(
 	FlexController,
 	Utils,
 	ChangePersistenceFactory,
-	VariantModel,
-	Log
+	VariantModel
 ) {
 	"use strict";
 
@@ -25,7 +23,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.FlexControllerFactory
 	 * @experimental Since 1.27.0
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 */
 	var FlexControllerFactory = {};
 
@@ -74,7 +72,7 @@ sap.ui.define([
 			var sAppVersion = Utils.getAppVersionFromManifest(oAppComponent ? oAppComponent.getManifest() : oManifest);
 			return FlexControllerFactory.create(sComponentName, sAppVersion);
 		} catch (oError) {
-			Log.error(oError.message, undefined, "sap.ui.fl.FlexControllerFactory");
+			Utils.log.error(oError.message, undefined, "sap.ui.fl.FlexControllerFactory");
 		}
 	};
 

@@ -14,7 +14,7 @@ sap.ui.define(["sap/m/GroupHeaderListItem", "sap/ui/thirdparty/jquery"],
 		 * @constructor
 		 * @alias sap.ui.fl.support.apps.contentbrowser.utils.DataUtils
 		 * @author SAP SE
-		 * @version 1.70.0
+		 * @version 1.68.1
 		 * @experimental Since 1.45
 		 */
 		var DataUtils = {

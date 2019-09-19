@@ -65,6 +65,7 @@
 			"module": "sap/tnt/NavigationList.js",
 			"isDebug": true,
 			"required": [
+				"jquery.sap.global.js",
 				"sap/base/Log.js",
 				"sap/m/Popover.js",
 				"sap/tnt/NavigationListRenderer.js",
@@ -72,8 +73,7 @@
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Element.js",
 				"sap/ui/core/InvisibleText.js",
-				"sap/ui/core/delegate/ItemNavigation.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/core/delegate/ItemNavigation.js"
 			]
 		},
 		{
@@ -84,6 +84,7 @@
 			"name": "NavigationList.js",
 			"module": "sap/tnt/NavigationList.js",
 			"required": [
+				"jquery.sap.global.js",
 				"sap/base/Log.js",
 				"sap/m/Popover.js",
 				"sap/tnt/NavigationListRenderer.js",
@@ -91,8 +92,7 @@
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Element.js",
 				"sap/ui/core/InvisibleText.js",
-				"sap/ui/core/delegate/ItemNavigation.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/core/delegate/ItemNavigation.js"
 			]
 		},
 		{
@@ -108,8 +108,6 @@
 				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/Item.js",
 				"sap/ui/core/Renderer.js",
-				"sap/ui/core/library.js",
-				"sap/ui/dom/jquery/Aria.js",
 				"sap/ui/events/KeyCodes.js"
 			]
 		},
@@ -129,8 +127,6 @@
 				"sap/ui/core/InvisibleText.js",
 				"sap/ui/core/Item.js",
 				"sap/ui/core/Renderer.js",
-				"sap/ui/core/library.js",
-				"sap/ui/dom/jquery/Aria.js",
 				"sap/ui/events/KeyCodes.js"
 			]
 		},
@@ -198,10 +194,8 @@
 			"required": [
 				"sap/m/OverflowToolbar.js",
 				"sap/m/OverflowToolbarAssociativePopover.js",
-				"sap/m/library.js",
 				"sap/tnt/ToolHeaderRenderer.js",
 				"sap/tnt/library.js",
-				"sap/ui/Device.js",
 				"sap/ui/core/Control.js"
 			]
 		},
@@ -215,10 +209,8 @@
 			"required": [
 				"sap/m/OverflowToolbar.js",
 				"sap/m/OverflowToolbarAssociativePopover.js",
-				"sap/m/library.js",
 				"sap/tnt/ToolHeaderRenderer.js",
 				"sap/tnt/library.js",
-				"sap/ui/Device.js",
 				"sap/ui/core/Control.js"
 			]
 		},
@@ -292,17 +284,11 @@
 		{
 			"name": "ToolPageRenderer-dbg.js",
 			"module": "sap/tnt/ToolPageRenderer.js",
-			"isDebug": true,
-			"required": [
-				"sap/ui/Device.js"
-			]
+			"isDebug": true
 		},
 		{
 			"name": "ToolPageRenderer.js",
-			"module": "sap/tnt/ToolPageRenderer.js",
-			"required": [
-				"sap/ui/Device.js"
-			]
+			"module": "sap/tnt/ToolPageRenderer.js"
 		},
 		{
 			"name": "library-dbg.js",
@@ -314,10 +300,12 @@
 			]
 		},
 		{
-			"name": "library-h2-preload.js",
+			"name": "library-h2-preload-dbg.js",
 			"module": "sap/tnt/library-h2-preload.js",
+			"isDebug": true,
 			"merged": true,
 			"required": [
+				"jquery.sap.global.js",
 				"sap/base/Log.js",
 				"sap/m/BarInPageEnabler.js",
 				"sap/m/OverflowToolbar.js",
@@ -338,9 +326,52 @@
 				"sap/ui/core/delegate/ItemNavigation.js",
 				"sap/ui/core/delegate/ScrollEnablement.js",
 				"sap/ui/core/library.js",
-				"sap/ui/dom/jquery/Aria.js",
-				"sap/ui/events/KeyCodes.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/events/KeyCodes.js"
+			],
+			"included": [
+				"sap/tnt/library.js",
+				"sap/tnt/manifest.json",
+				"sap/tnt/InfoLabel.js",
+				"sap/tnt/InfoLabelRenderer.js",
+				"sap/tnt/NavigationList.js",
+				"sap/tnt/NavigationListItem.js",
+				"sap/tnt/NavigationListRenderer.js",
+				"sap/tnt/SideNavigation.js",
+				"sap/tnt/SideNavigationRenderer.js",
+				"sap/tnt/ToolHeader.js",
+				"sap/tnt/ToolHeaderRenderer.js",
+				"sap/tnt/ToolHeaderUtilitySeparator.js",
+				"sap/tnt/ToolPage.js",
+				"sap/tnt/ToolPageRenderer.js"
+			]
+		},
+		{
+			"name": "library-h2-preload.js",
+			"module": "sap/tnt/library-h2-preload.js",
+			"merged": true,
+			"required": [
+				"jquery.sap.global.js",
+				"sap/base/Log.js",
+				"sap/m/BarInPageEnabler.js",
+				"sap/m/OverflowToolbar.js",
+				"sap/m/OverflowToolbarAssociativePopover.js",
+				"sap/m/OverflowToolbarRenderer.js",
+				"sap/m/Popover.js",
+				"sap/m/library.js",
+				"sap/ui/Device.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/core/Core.js",
+				"sap/ui/core/Element.js",
+				"sap/ui/core/Icon.js",
+				"sap/ui/core/IconPool.js",
+				"sap/ui/core/InvisibleText.js",
+				"sap/ui/core/Item.js",
+				"sap/ui/core/Renderer.js",
+				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/core/delegate/ItemNavigation.js",
+				"sap/ui/core/delegate/ScrollEnablement.js",
+				"sap/ui/core/library.js",
+				"sap/ui/events/KeyCodes.js"
 			],
 			"included": [
 				"sap/tnt/library.js",
@@ -368,6 +399,7 @@
 			"module": "sap/tnt/library-preload.js",
 			"merged": true,
 			"required": [
+				"jquery.sap.global.js",
 				"sap/base/Log.js",
 				"sap/m/BarInPageEnabler.js",
 				"sap/m/OverflowToolbar.js",
@@ -388,9 +420,7 @@
 				"sap/ui/core/delegate/ItemNavigation.js",
 				"sap/ui/core/delegate/ScrollEnablement.js",
 				"sap/ui/core/library.js",
-				"sap/ui/dom/jquery/Aria.js",
-				"sap/ui/events/KeyCodes.js",
-				"sap/ui/thirdparty/jquery.js"
+				"sap/ui/events/KeyCodes.js"
 			],
 			"included": [
 				"sap/tnt/InfoLabel.js",
@@ -414,6 +444,57 @@
 			"isDebug": true
 		},
 		{
+			"name": "library-preload.json",
+			"module": "sap/tnt/library-preload.json",
+			"merged": true,
+			"required": [
+				"jquery.sap.global.js",
+				"sap/base/Log.js",
+				"sap/m/BarInPageEnabler.js",
+				"sap/m/OverflowToolbar.js",
+				"sap/m/OverflowToolbarAssociativePopover.js",
+				"sap/m/OverflowToolbarRenderer.js",
+				"sap/m/Popover.js",
+				"sap/m/library-preload.json",
+				"sap/m/library.js",
+				"sap/ui/Device.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/core/Core.js",
+				"sap/ui/core/Element.js",
+				"sap/ui/core/Icon.js",
+				"sap/ui/core/IconPool.js",
+				"sap/ui/core/InvisibleText.js",
+				"sap/ui/core/Item.js",
+				"sap/ui/core/Renderer.js",
+				"sap/ui/core/ResizeHandler.js",
+				"sap/ui/core/delegate/ItemNavigation.js",
+				"sap/ui/core/delegate/ScrollEnablement.js",
+				"sap/ui/core/library-preload.json",
+				"sap/ui/core/library.js",
+				"sap/ui/events/KeyCodes.js"
+			],
+			"included": [
+				"sap/tnt/InfoLabel.js",
+				"sap/tnt/InfoLabelRenderer.js",
+				"sap/tnt/NavigationList.js",
+				"sap/tnt/NavigationListItem.js",
+				"sap/tnt/NavigationListRenderer.js",
+				"sap/tnt/SideNavigation.js",
+				"sap/tnt/SideNavigationRenderer.js",
+				"sap/tnt/ToolHeader.js",
+				"sap/tnt/ToolHeaderRenderer.js",
+				"sap/tnt/ToolHeaderUtilitySeparator.js",
+				"sap/tnt/ToolPage.js",
+				"sap/tnt/ToolPageRenderer.js",
+				"sap/tnt/library.js",
+				"sap/tnt/manifest.json"
+			]
+		},
+		{
+			"name": "library.dependencies.json",
+			"designtime": true
+		},
+		{
 			"name": "library.dependencies.xml",
 			"designtime": true
 		},
@@ -424,6 +505,10 @@
 				"sap/m/library.js",
 				"sap/ui/core/library.js"
 			]
+		},
+		{
+			"name": "library.templates.xml",
+			"designtime": true
 		},
 		{
 			"name": "manifest.json",

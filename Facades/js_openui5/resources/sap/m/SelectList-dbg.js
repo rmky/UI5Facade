@@ -7,7 +7,6 @@
 // Provides control sap.m.SelectList.
 sap.ui.define([
 	'./library',
-	'sap/ui/core/Core',
 	'sap/ui/core/Control',
 	'sap/ui/core/delegate/ItemNavigation',
 	'sap/ui/core/Item',
@@ -16,7 +15,7 @@ sap.ui.define([
 	// jQuery Plugin "control"
 	"sap/ui/dom/jquery/control"
 ],
-	function(library, Core, Control, ItemNavigation, Item, SelectListRenderer, jQuery) {
+	function(library, Control, ItemNavigation, Item, SelectListRenderer, jQuery) {
 		"use strict";
 
 		// shortcut for sap.m.touch
@@ -36,7 +35,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.70.0
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @public
@@ -529,15 +528,29 @@ sap.ui.define([
 		 * @protected
 		 */
 		SelectList.prototype.setSelection = function(vItem) {
+			var oSelectedItem = this.getSelectedItem(),
+				CSS_CLASS = this.getRenderer().CSS_CLASS;
+
 			this.setAssociation("selectedItem", vItem, true);
-			this.setProperty("selectedItemId", (vItem instanceof Item) ? vItem.getId() : vItem);
+			this.setProperty("selectedItemId", (vItem instanceof Item) ? vItem.getId() : vItem, true);
 
 			if (typeof vItem === "string") {
-				vItem = Core.byId(vItem);
+				vItem = sap.ui.getCore().byId(vItem);
 			}
 
 			this.setProperty("selectedKey", vItem ? vItem.getKey() : "", true);
-			return this;
+
+			if (oSelectedItem) {
+				oSelectedItem.$().removeClass(CSS_CLASS + "ItemBaseSelected")
+								.attr("aria-selected", "false");
+			}
+
+			oSelectedItem = this.getSelectedItem();
+
+			if (oSelectedItem) {
+				oSelectedItem.$().addClass(CSS_CLASS + "ItemBaseSelected")
+								.attr("aria-selected", "true");
+			}
 		};
 
 		/*
@@ -843,7 +856,7 @@ sap.ui.define([
 
 			if (typeof vItem === "string") {
 				this.setAssociation("selectedItem", vItem, true);
-				vItem = Core.byId(vItem);
+				vItem = sap.ui.getCore().byId(vItem);
 			}
 
 			if (!(vItem instanceof Item) && vItem !== null) {
@@ -908,7 +921,7 @@ sap.ui.define([
 		 */
 		SelectList.prototype.getSelectedItem = function() {
 			var vSelectedItem = this.getAssociation("selectedItem");
-			return (vSelectedItem === null) ? null : Core.byId(vSelectedItem) || null;
+			return (vSelectedItem === null) ? null : sap.ui.getCore().byId(vSelectedItem) || null;
 		};
 
 		/**

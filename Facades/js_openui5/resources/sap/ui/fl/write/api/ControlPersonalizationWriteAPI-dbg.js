@@ -5,119 +5,90 @@
  */
 
 sap.ui.define([
-	"sap/ui/fl/ControlPersonalizationAPI",
-	"sap/ui/fl/Utils"
+	"sap/ui/fl/ControlPersonalizationAPI"
 ], function(
-	OldControlPersonalizationAPI,
-	Utils
+	OldControlPersonalizationAPI
 ) {
 	"use strict";
 
+
 	/**
-	 * Provides an API for controls to implement personalization.
+	 * Provides an API to handle specific functionality for personalized changes.
 	 *
-	 * @namespace sap.ui.fl.write.api.ControlPersonalizationWriteAPI
-	 * @experimental Since 1.69
-	 * @since 1.69
-	 * @private
-	 * @ui5-restricted UI5 controls that allow personalization
+	 * @namespace
+	 * @name sap.ui.fl.write.api.ControlPersonalizationWriteAPI
+	 * @author SAP SE
+	 * @experimental Since 1.67
+	 * @since 1.67
+	 * @version 1.68.1
+	 * @public
 	 */
+
 
 	/**
 	 * Object containing attributes of a change, along with the control to which this change should be applied.
 	 *
 	 * @typedef {object} sap.ui.fl.write.api.ControlPersonalizationWriteAPI.PersonalizationChange
-	 * @property {sap.ui.core.Element} selectorElement - Control object to be used as the selector for the change
-	 * @property {object} changeSpecificData - Map of change-specific data to perform a flex change
-	 * @property {string} changeSpecificData.changeType - Change type for which a change handler is registered
-	 * @property {object} changeSpecificData.content - Content for the change, see {@link sap.ui.fl.Change#createInitialFileContent}
-	 * @since 1.69
+	 * @since 1.56
 	 * @private
-	 * @ui5-restricted UI5 controls that allow personalization
+	 * @ui5-restricted
+	 * @property {sap.ui.core.Element} selectorControl The control object to be used as selector for the change
+	 * @property {object} changeSpecificData The map of change-specific data to perform a flex change
+	 * @property {string} changeSpecificData.changeType The change type for which a change handler is registered
 	 */
 
-	var ControlPersonalizationWriteAPI = /** @lends sap.ui.fl.write.api.ControlPersonalizationWriteAPI */{
+	var ControlPersonalizationWriteAPI = {
 
 		/**
 		 * Creates personalization changes, adds them to the flex persistence (not yet saved) and applies them to the control.
 		 *
-		 * @param {object} mPropertyBag - Object with parameters as properties
-		 * @param {sap.ui.fl.write.api.ControlPersonalizationWriteAPI.PersonalizationChange[]} mPropertyBag.changes - Array of control changes of type {@link sap.ui.fl.write.api.ControlPersonalizationWriteAPI.PersonalizationChange}
-		 * @param {boolean} [mPropertyBag.ignoreVariantManagement=false] - If flag is set to <code>true</code>, the changes will not belong to any variant, otherwise it will be detected if the changes are done in the context of variant mangement
+		 * @param {object} mPropertyBag - Changes along with other settings that need to be added
+		 * @param {array} mPropertyBag.controlChanges - Array of control changes of type {@link sap.ui.fl.write.api.ControlPersonalizationWriteAPI.PersonalizationChange}
+		 * @param {boolean} [mPropertyBag.ignoreVariantManagement=false] - If flag is set to true then variant management will be ignored
 		 *
-		 * @returns {Promise} Promise resolving to an array of successfully applied changes, after the changes have been written to the map of dirty changes and applied to the control
-		 * @private
-		 * @ui5-restricted
+		 * @returns {Promise} Returns Promise resolving to an array of successfully applied changes,
+		 * after the changes have been written to the map of dirty changes and applied to the control
+		 *
+		 * @method sap.ui.fl.write.api.ControlPersonalizationWriteAPI.addPersonalizationChanges
+		 * @public
 		 */
-		add: function(mPropertyBag) {
-			mPropertyBag.changes.forEach(function(oPersonalizationChange) {
-				oPersonalizationChange.selectorControl = oPersonalizationChange.selectorElement;
-			});
-			// old API is still using the old name
-			mPropertyBag.controlChanges = mPropertyBag.changes;
-			return OldControlPersonalizationAPI.addPersonalizationChanges(mPropertyBag);
+		addPersonalizationChanges: function() {
+			return OldControlPersonalizationAPI.addPersonalizationChanges.apply(OldControlPersonalizationAPI, arguments);
 		},
 
 		/**
-		 * Deletes changes recorded for the provided selectors. Changes to be deleted can be filtered by specification of change type(s).
+		 * Deletes changes recorded for control. Changes to be deleted can be filtered by specification of change type(s).
 		 *
-		 * @param {object} mPropertyBag - Object with parameters as properties
-		 * @param {sap.ui.fl.Selector[]} mPropertyBag.selectors - Array of selectors, at least one selector is necessary
-		 * @param {String[]} [mPropertyBag.changeTypes] - Types of changes to be deleted
+		 * @param {sap.ui.core.Element[] | map[]} aControls - an array of instances of controls, a map with control IDs including a app component or a mixture for which the reset shall take place
+		 * @param {sap.ui.core.Component} aControls.appComponent - Application component of the controls at runtime in case a map has been used
+		 * @param {string} aControls.id - ID of the control in case a map has been used to specify the control
+		 * @param {String[]} [aChangeTypes] - Types of changes that shall be deleted
 		 *
 		 * @returns {Promise} Promise that resolves after the deletion took place and changes are reverted
 		 *
-		 * @private
-		 * @ui5-restricted
+		 * @method sap.ui.fl.write.api.ControlPersonalizationWriteAPI.resetChanges
+		 * @public
 		 */
-		reset: function(mPropertyBag) {
-			mPropertyBag.selectors = mPropertyBag.selectors || [];
-			return OldControlPersonalizationAPI.resetChanges(mPropertyBag.selectors, mPropertyBag.changeTypes);
+		resetChanges: function() {
+			return OldControlPersonalizationAPI.resetChanges.apply(OldControlPersonalizationAPI, arguments);
 		},
 
 		/**
-		 * Saves unsaved changes to the backend service.
+		 * Saves unsaved changes added to {@link sap.ui.fl.ChangePersistence}.
 		 *
-	 	 * @param {object} mPropertyBag - Object with parameters as properties
-		 * @param {sap.ui.fl.Selector} mPropertyBag.selector - Selector
-		 * @param {String[]} [mPropertyBag.changes] - Array of changes to be saved; if not provided, all unsaved changes will be saved
+		 * @param {array} aChanges - Array of changes to be saved
+		 * @param {sap.ui.base.ManagedObject} oManagedObject - A managed object instance which has an application component responsible, on which changes need to be saved
 		 *
-		 * @returns {Promise} Promise that is resolved when the changes have been saved
+		 * @returns {Promise} Returns Promise which is resolved when the passed array of changes have been saved
 		 *
-		 * @private
-		 * @ui5-restricted
+		 * @method sap.ui.fl.write.api.ControlPersonalizationWriteAPI.saveChanges
+		 * @public
 		 */
-		save: function(mPropertyBag) {
-			var oAppComponent = mPropertyBag.selector.appComponent || Utils.getAppComponentForControl(mPropertyBag.selector);
-			return OldControlPersonalizationAPI.saveChanges(mPropertyBag.changes, oAppComponent);
-		},
-
-		/**
-		 * Builds the {@link sap.ui.fl.Selector} for an element that is not yet available.
-		 *
-		 * @param {object} mPropertyBag - Object with parameters as properties
-		 * @param {sap.ui.core.Element} mPropertyBag.element - Element instance to retrieve the app component
-		 * @param {string} mPropertyBag.elementId - ID of the selector
-		 * @param {string} mPropertyBag.elementType - Type of the selector
-		 * @returns {sap.ui.fl.ElementSelector} - Object that can be used as a {@link sap.ui.fl.Selector}
-		 * @private
-		 * @ui5-restricted
-		 */
-		buildSelectorFromElementIdAndType: function(mPropertyBag) {
-			var oAppComponent = Utils.getAppComponentForControl(mPropertyBag.element);
-			if (!oAppComponent || !mPropertyBag.elementId || !mPropertyBag.elementType) {
-				throw new Error("Not enough information given to build selector.");
-			}
-			return {
-				elementId: mPropertyBag.elementId,
-				elementType: mPropertyBag.elementType,
-				appComponent: oAppComponent,
-				// included for backwards compatibility
-				id: mPropertyBag.elementId,
-				controlType: mPropertyBag.elementType
-			};
+		saveChanges: function() {
+			//TODO really manage object or Element|Component, also control equivalent?
+			//TODO make "control" first parameter
+			return OldControlPersonalizationAPI.saveChanges.apply(OldControlPersonalizationAPI, arguments);
 		}
 	};
-
 	return ControlPersonalizationWriteAPI;
 }, true);

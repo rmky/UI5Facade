@@ -33,7 +33,7 @@ function(
 	 * @extends sap.ui.dt.Overlay
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @private
@@ -166,9 +166,7 @@ function(
 			}
 
 			this.fireChildAdded();
-			return true;
 		}
-		return false;
 	};
 
 	/**
@@ -268,4 +266,4 @@ function(
 	};
 
 	return AggregationOverlay;
-});
+}, /* bExport= */ true);

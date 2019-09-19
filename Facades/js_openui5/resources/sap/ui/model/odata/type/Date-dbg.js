@@ -53,7 +53,7 @@ sap.ui.define([
 	}
 
 	/**
-	 * Returns a formatter that formats the date into yyyy-MM-dd. Creates it lazily.
+	 * Returns a formatter that formats the date into YYYY-MM-DD. Creates it lazily.
 	 *
 	 * @returns {sap.ui.core.format.DateFormat}
 	 *   the formatter
@@ -98,7 +98,7 @@ sap.ui.define([
 	 * @class This class represents the OData V4 primitive type <code>Edm.Date</code>.
 	 *
 	 * In {@link sap.ui.model.odata.v4.ODataModel} this type is represented as a
-	 * <code>string</code> in the format "yyyy-MM-dd".
+	 * <code>string</code> in the format "yyyy-mm-dd".
 	 *
 	 * <b>Note: For an OData V2 service use {@link sap.ui.model.odata.type.DateTime} with the
 	 * constraint <code>displayFormat: "Date"</code> to display only a date.</b>
@@ -106,7 +106,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.odata.type.ODataType
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @alias sap.ui.model.odata.type.Date
 	 * @param {object} [oFormatOptions]
@@ -143,17 +143,14 @@ sap.ui.define([
 	 * Formats the given value to the given target type.
 	 *
 	 * @param {string|Date} vValue
-	 *   the value to be formatted; <code>string</code> values are expected in the format
-	 *   "yyyy-MM-dd" used by OData V4; <code>Date</code> objects are expected to represent UTC as
-	 *   used by OData V2
+	 *   the value to be formatted
 	 * @param {string} sTargetType
-	 *   the target type; may be "any", "object" (since 1.69.0), "string", or a type with one of
-	 *   these types as its {@link sap.ui.base.DataType#getPrimitiveType primitive type}; see
-	 *   {@link sap.ui.model.odata.type} for more information.
-	 * @returns {string|Date}
+	 *   the target type; may be "any", "string", or a type with one of these types as its
+	 *   {@link sap.ui.base.DataType#getPrimitiveType primitive type}.
+	 *   See {@link sap.ui.model.odata.type} for more information.
+	 * @returns {string}
 	 *   the formatted output value in the target type; <code>undefined</code> or <code>null</code>
-	 *   are formatted to <code>null</code>; <code>Date</code> objects are returned for target type
-	 *   "object" and represent the given date with time "00:00:00" in local time
+	 *   are formatted to <code>null</code>
 	 * @throws {sap.ui.model.FormatException}
 	 *   if <code>sTargetType</code> is unsupported
 	 * @public
@@ -167,10 +164,6 @@ sap.ui.define([
 		switch (this.getPrimitiveType(sTargetType)) {
 		case "any":
 			return vValue;
-		case "object":
-			return vValue instanceof Date
-				? new Date(vValue.getUTCFullYear(), vValue.getUTCMonth(), vValue.getUTCDate())
-				: getModelFormatter().parse(vValue, false);
 		case "string":
 			oDate = vValue instanceof Date ? vValue : getModelFormatter().parse(vValue);
 			return oDate ? getFormatter(this).format(oDate) : vValue;
@@ -186,7 +179,7 @@ sap.ui.define([
 	 * expected by the model, <code>parse</code> converts from the String to a Date.
 	 *
 	 * @returns {sap.ui.core.format.DateFormat}
-	 *   the formatter
+	 *   The formatter
 	 *
 	 * @override
 	 * @protected
@@ -209,31 +202,26 @@ sap.ui.define([
 	/**
 	 * Parses the given value to a date.
 	 *
-	 * @param {string|Date} vValue
-	 *   the value to be parsed, maps <code>""</code> to <code>null</code>; <code>Date</code>
-	 *   objects are expected to represent local time and are supported if and only if source type
-	 *   is "object"
+	 * @param {string} sValue
+	 *   the value to be parsed, maps <code>""</code> to <code>null</code>
 	 * @param {string} sSourceType
-	 *   the source type (the expected type of <code>vValue</code>); must be "object" (since
-	 *   1.69.0), "string", or a type with one of these types as its
-	 *   {@link sap.ui.base.DataType#getPrimitiveType primitive type}; see
-	 *   {@link sap.ui.model.odata.type} for more information.
+	 *   the source type (the expected type of <code>sValue</code>); must be "string", or a type
+	 *   with "string" as its {@link sap.ui.base.DataType#getPrimitiveType primitive type}.
+	 *   See {@link sap.ui.model.odata.type} for more information.
 	 * @returns {string}
-	 *   the parsed value in the format "yyyy-MM-dd" used by OData V4
+	 *   the parsed value
 	 * @throws {sap.ui.model.ParseException}
 	 *   if <code>sSourceType</code> is unsupported
 	 * @public
 	 */
-	EdmDate.prototype.parseValue = function (vValue, sSourceType) {
+	EdmDate.prototype.parseValue = function (sValue, sSourceType) {
 		var oResult;
-		if (vValue === "" || vValue === null) {
+		if (sValue === "" || sValue === null) {
 			return null;
 		}
 		switch (this.getPrimitiveType(sSourceType)) {
-		case "object":
-			return getModelFormatter().format(vValue, false);
 		case "string":
-			oResult = getFormatter(this).parse(vValue);
+			oResult = getFormatter(this).parse(sValue);
 			if (!oResult) {
 				throw new ParseException(getErrorMessage(this));
 			}

@@ -10,8 +10,7 @@ sap.ui.define([
 	'sap/ui/core/Core',
 	'sap/ui/core/ElementMetadata',
 	"sap/base/util/LoaderExtensions",
-	"sap/base/util/UriParameters",
-	"jquery.sap.global"
+	"sap/base/util/UriParameters"
 ],
 	function(
 		library,
@@ -19,8 +18,7 @@ sap.ui.define([
 		Core,
 		ElementMetadata,
 		LoaderExtensions,
-		UriParameters,
-		jQuery
+		UriParameters
 	) {
 		'use strict';
 
@@ -65,18 +63,6 @@ sap.ui.define([
 		}
 
 		/**
-		 * Creates a simple object with all URL parameters.
-		 * @returns {Object<string,string[]>} Map of parameter value arrays keyed by parameter names
-		 */
-		function getURLParameters() {
-			var oParams = UriParameters.fromQuery(window.location.search);
-			return Array.from(oParams.keys()).reduce(function(oResult, sKey) {
-				oResult[sKey] = oParams.getAll(sKey);
-				return oResult;
-			}, {});
-		}
-
-		/**
 		 * Gets all the relevant information for the framework.
 		 * @returns {Object}
 		 * @private
@@ -117,7 +103,7 @@ sap.ui.define([
 
 				loadedModules: LoaderExtensions.getAllRequiredModules().sort(),
 
-				URLParameters: getURLParameters()
+				URLParameters: new UriParameters(window.location.href).mParams
 			};
 		}
 

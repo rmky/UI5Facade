@@ -92,7 +92,6 @@ var JavaScriptHighlightRules = function(options) {
         "3[0-7][0-7]?|" + // oct
         "[4-7][0-7]?|" + //oct
         ".)";
-
     this.$rules = {
         "no_regex" : [
             DocCommentHighlightRules.getStartRule("doc-start"),
@@ -814,7 +813,6 @@ var CssHighlightRules = function() {
         "support.constant.color": supportConstantColor,
         "support.constant.fonts": supportConstantFonts
     }, "text", true);
-
     this.$rules = {
         "start" : [{
             include : ["strings", "url", "comments"]
@@ -1103,7 +1101,11 @@ var CssCompletions = function() {
             this.defineCompletions();
         }
 
-        if (state==='ruleset' || session.$mode.$id == "ace/mode/scss") {
+        var token = session.getTokenAt(pos.row, pos.column);
+
+        if (!token)
+            return [];
+        if (state==='ruleset'){
             var line = session.getLine(pos.row).substr(0, pos.column);
             if (/:[^;]+$/.test(line)) {
                 /([\w\-]+):[^:]*$/.test(line);
@@ -2509,7 +2511,6 @@ var TexHighlightRules = function(textClass) {
 
     if (!textClass)
         textClass = "text";
-
     this.$rules = {
         "start" : [
             {
@@ -2597,7 +2598,6 @@ ace.define("ace/mode/r_highlight_rules",["require","exports","module","ace/lib/o
             ("NULL|NA|TRUE|FALSE|T|F|Inf|NaN|NA_integer_|NA_real_|NA_character_|" +
              "NA_complex_").split("|")
             );
-
       this.$rules = {
          "start" : [
             {
@@ -2795,7 +2795,8 @@ oop.inherits(Mode, HtmlMode);
 }).call(Mode.prototype);
 
 exports.Mode = Mode;
-});                (function() {
+});
+                (function() {
                     ace.require(["ace/mode/rhtml"], function(m) {
                         if (typeof module == "object" && typeof exports == "object" && module) {
                             module.exports = m;

@@ -5,7 +5,7 @@
  */
 
 //Provides class sap.ui.model.odata.v4.lib._AggregationHelper
-sap.ui.define(["sap/ui/thirdparty/jquery"], function (jQuery) {
+sap.ui.define([], function () {
 	"use strict";
 
 	var mAllowedAggregateDetails2Type =  {

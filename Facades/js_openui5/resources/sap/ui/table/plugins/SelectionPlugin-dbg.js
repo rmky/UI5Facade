@@ -27,7 +27,7 @@ sap.ui.define([
 	 * @class Implements the selection methods for a table.
 	 * @extends sap.ui.core.Element
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @public
 	 * @since 1.64
 	 * @experimental As of version 1.64
@@ -74,7 +74,8 @@ sap.ui.define([
 	SelectionPlugin.prototype.getRenderConfig = function() {
 		return {
 			headerSelector: {
-				type: "none"
+				type: "toggle",
+				visible: true
 			}
 		};
 	};

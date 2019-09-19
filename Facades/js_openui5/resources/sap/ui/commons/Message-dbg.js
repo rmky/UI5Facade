@@ -11,8 +11,7 @@ sap.ui.define([
   './library',
   'sap/ui/core/Control',
   './MessageRenderer',
-  './Button',
-  'sap/ui/dom/jquery/rect' // jQuery Plugin "rect"
+  './Button'
 ],
 	function(jQuery, Dialog, library, Control, MessageRenderer, Button) {
 	"use strict";
@@ -28,7 +27,7 @@ sap.ui.define([
 	 * @class
 	 * Creates the "Message"s to be supplied to the "MessageBar" Control.
 	 * @extends sap.ui.core.Control
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -172,7 +171,6 @@ sap.ui.define([
 		var jContainer = this.oContainer.$();
 
 	  // Starting a new Stack in the default Dialog's location:
-	  // jQuery Plugin "rect"
 	  var jContainerRect = jContainer.rect(); // For Height and Width...
 		if (oOtherOpenDialogs.length == 0) {
 			// "offsets.right" & "offsets.left" should be identical as plain Dialogs are centered,
@@ -208,7 +206,6 @@ sap.ui.define([
 	  }
 
 	  // Figuring what should the next coordinates be:
-	  // jQuery Plugin "rect"
 	  var jContainerRect = jContainer.rect(); // For Height and Width...
 	  var scrollTop   = jQuery(window).scrollTop();
 	  var scrollLeft  = jQuery(window).scrollLeft(); // Negative in RTL

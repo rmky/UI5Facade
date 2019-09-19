@@ -14,9 +14,7 @@ sap.ui.define(['./BarInPageEnabler', 'sap/ui/Device', "sap/base/Log", 'sap/m/HBo
 	 * Bar renderer.
 	 * @namespace
 	 */
-	var BarRenderer = {
-		apiVersion: 2
-	};
+	var BarRenderer = {};
 
 	/////////////////
 	//Bar in page delegation
@@ -41,18 +39,18 @@ sap.ui.define(['./BarInPageEnabler', 'sap/ui/Device', "sap/base/Log", 'sap/m/HBo
 	 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered
 	 */
 	BarRenderer.decorateRootElement = function (oRM, oControl) {
-		oRM.class("sapMBar");
-		oRM.class(this.getContext(oControl));
+		oRM.addClass("sapMBar");
+		oRM.addClass(this.getContext(oControl));
 
-		oRM.accessibilityState(oControl, {
+		oRM.writeAccessibilityState(oControl, {
 			"role": oControl._getRootAccessibilityRole()
 		});
 
 		if (oControl.getTranslucent() && Device.support.touch) {
-			oRM.class("sapMBarTranslucent");
+			oRM.addClass("sapMBarTranslucent");
 		}
 
-		oRM.class("sapMBar-CTX");
+		oRM.addClass("sapMBar-CTX");
 	};
 
 	/**
@@ -70,26 +68,27 @@ sap.ui.define(['./BarInPageEnabler', 'sap/ui/Device', "sap/base/Log", 'sap/m/HBo
 	 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered
 	 */
 	BarRenderer.renderBarContent = function(oRM, oControl) {
+		var sClosingDiv = "</div>";
+
 		//left content area
-		oRM.openStart("div", oControl.getId() + "-BarLeft");
-		oRM.class("sapMBarLeft");
-		oRM.class("sapMBarContainer");
+		oRM.write("<div id='" + oControl.getId() + "-BarLeft' ");
+		oRM.addClass('sapMBarLeft');
+		oRM.addClass('sapMBarContainer');
+		oRM.writeClasses();
 		writeWidthIfContentOccupiesWholeArea("left", oRM, oControl);
-		oRM.openEnd();
+		oRM.write(">");
 
 		this.renderAllControls(oControl.getContentLeft(), oRM, oControl);
 
-		oRM.close("div");
+		oRM.write(sClosingDiv);
 
 		//middle content area
-		oRM.openStart("div", oControl.getId() + "-BarMiddle");
-		oRM.class("sapMBarMiddle");
-		oRM.openEnd();
+		oRM.write("<div id='" + oControl.getId() + "-BarMiddle' ");
+		oRM.addClass('sapMBarMiddle');
+		oRM.writeClasses();
+		oRM.write(">");
 		if (oControl.getEnableFlexBox()) {
-			oControl._oflexBox = oControl._oflexBox
-				|| new HBox(oControl.getId() + "-BarPH", {
-					alignItems: "Center"
-				}).addStyleClass("sapMBarPH").setParent(oControl, null, true);
+			oControl._oflexBox = oControl._oflexBox || new HBox(oControl.getId() + "-BarPH", {alignItems: "Center"}).addStyleClass("sapMBarPH").setParent(oControl, null, true);
 			var bContentLeft = !!oControl.getContentLeft().length,
 				bContentMiddle = !!oControl.getContentMiddle().length,
 				bContentRight = !!oControl.getContentRight().length;
@@ -103,31 +102,34 @@ sap.ui.define(['./BarInPageEnabler', 'sap/ui/Device', "sap/base/Log", 'sap/m/HBo
 
 			oRM.renderControl(oControl._oflexBox);
 		} else {
-			oRM.openStart("div", oControl.getId() + "-BarPH");
-			oRM.class("sapMBarPH");
-			oRM.class("sapMBarContainer");
+			oRM.write("<div id='" + oControl.getId() + "-BarPH' ");
+			oRM.addClass('sapMBarPH');
+			oRM.addClass('sapMBarContainer');
 			writeWidthIfContentOccupiesWholeArea("middle", oRM, oControl);
-			oRM.openEnd();
+			oRM.writeClasses();
+			oRM.write(">");
 
 			this.renderAllControls(oControl.getContentMiddle(), oRM, oControl);
 
-			oRM.close("div");
+			oRM.write(sClosingDiv);
 		}
-		oRM.close("div");
+		oRM.write(sClosingDiv);
+
 
 		//right content area
-		oRM.openStart("div", oControl.getId() + "-BarRight");
-		oRM.class("sapMBarRight");
-		oRM.class("sapMBarContainer");
+		oRM.write("<div id='" + oControl.getId() + "-BarRight'");
+		oRM.addClass('sapMBarRight');
+		oRM.addClass('sapMBarContainer');
 		if (sap.ui.getCore().getConfiguration().getRTL()) {
-			oRM.class("sapMRTL");
+			oRM.addClass("sapMRTL");
 		}
+		oRM.writeClasses();
 		writeWidthIfContentOccupiesWholeArea("right", oRM, oControl);
-		oRM.openEnd();
+		oRM.write(">");
 
 		this.renderAllControls(oControl.getContentRight(), oRM, oControl);
 
-		oRM.close("div");
+		oRM.write(sClosingDiv);
 	};
 
 	/**
@@ -175,20 +177,25 @@ sap.ui.define(['./BarInPageEnabler', 'sap/ui/Device', "sap/base/Log", 'sap/m/HBo
 		var bContentLeft = !!oControl.getContentLeft().length,
 			bContentMiddle = !!oControl.getContentMiddle().length,
 			bContentRight = !!oControl.getContentRight().length;
+
+		function writeAndUpdate() {
+			oRm.addStyle("width", "100%");
+			oRm.writeStyles();
+		}
 		switch (sArea.toLowerCase()) {
 			case "left":
 				if (bContentLeft && !bContentMiddle && !bContentRight) {
-					oRm.style("width", "100%");
+					writeAndUpdate();
 				}
 				break;
 			case "middle":
 				if (bContentMiddle && !bContentLeft && !bContentRight) {
-					oRm.style("width", "100%");
+					writeAndUpdate();
 				}
 				break;
 			case "right" :
 				if (bContentRight && !bContentLeft && !bContentMiddle) {
-					oRm.style("width", "100%");
+					writeAndUpdate();
 				}
 				break;
 			default:

@@ -1664,24 +1664,18 @@ sap.ui.define([
 		//*********************************************
 
 		/**
-		 * Attaches event handler <code>fnFunction</code> to the {@link #event:selectionChanged selectionChanged} event of this
-		 * <code>sap.ui.model.TreeBindingAdapter</code>.
-		 *
-		 * When called, the context of the event handler (its <code>this</code>) will be bound to <code>oListener</code>
-		 * if specified, otherwise it will be bound to this <code>sap.ui.model.TreeBindingAdapter</code> itself.
-		 *
+		 * Attach event-handler <code>fnFunction</code> to the 'selectionChanged' event of this <code>sap.ui.model.SelectionModel</code>.<br/>
 		 * Event is fired if the selection of tree nodes is changed in any way.
 		 *
 		 * @param {object}
-		 *            [oData] An application-specific payload object that will be passed to the event handler
-		 *            along with the event object when firing the event
+		 *            [oData] The object, that should be passed along with the event-object when firing the event.
 		 * @param {function}
-		 *            fnFunction The function to be called, when the event occurs
+		 *            fnFunction The function to call, when the event occurs. This function will be called on the
+		 *            oListener-instance (if present) or in a 'static way'.
 		 * @param {object}
-		 *            [oListener] Context object to call the event handler with. Defaults to this
-		 *            <code>TreeBindingAdapter</code> itself
+		 *            [oListener] Object on which to call the given function. If empty, this <code>TreeBindingAdapter</code> is used.
 		 *
-		 * @returns {sap.ui.model.TreeBindingAdapter} Reference to <code>this</code> in order to allow method chaining
+		 * @return {sap.ui.model.SelectionModel} <code>this</code> to allow method chaining
 		 * @public
 		 */
 		TreeBindingAdapter.prototype.attachSelectionChanged = function(oData, fnFunction, oListener) {
@@ -1690,16 +1684,15 @@ sap.ui.define([
 		};
 
 		/**
-		 * Detaches event handler <code>fnFunction</code> from the {@link #event:selectionChanged selectionChanged} event of this
-		 * <code>sap.ui.model.TreeBindingAdapter</code>.
+		 * Detach event-handler <code>fnFunction</code> from the 'selectionChanged' event of this <code>sap.ui.model.SelectionModel</code>.<br/>
 		 *
-		 * The passed function and listener object must match the ones used for event registration.
+		 * The passed function and listener object must match the ones previously used for event registration.
 		 *
 		 * @param {function}
-		 *            fnFunction The function to be called, when the event occurs
+		 *            fnFunction The function to call, when the event occurs.
 		 * @param {object}
-		 *            [oListener] Context object on which the given function had to be called
-		 * @returns {sap.ui.model.TreeBindingAdapter} Reference to <code>this</code> in order to allow method chaining
+		 *            oListener Object on which the given function had to be called.
+		 * @return {sap.ui.model.SelectionModel} <code>this</code> to allow method chaining
 		 * @public
 		 */
 		TreeBindingAdapter.prototype.detachSelectionChanged = function(fnFunction, oListener) {
@@ -1708,7 +1701,7 @@ sap.ui.define([
 		};
 
 		/**
-		 * Fires event {@link #event:selectionChanged selectionChanged} to attached listeners.
+		 * Fire event 'selectionChanged' to attached listeners.
 		 *
 		 * Expects following event parameters:
 		 * <ul>
@@ -1716,14 +1709,14 @@ sap.ui.define([
 		 * <li>'rowIndices' of type <code>int[]</code> Other selected indices (if available)</li>
 		 * </ul>
 		 *
-		 * @param {object} oParameters Parameters to pass along with the event.
-		 * @param {int} oParameters.leadIndex Lead selection index
-		 * @param {int[]} [oParameters.rowIndices] Other selected indices (if available)
-		 * @returns {sap.ui.model.TreeBindingAdapter} Reference to <code>this</code> in order to allow method chaining
+		 * @param {object} mArguments the arguments to pass along with the event.
+		 * @param {int} mArguments.leadIndex Lead selection index
+		 * @param {int[]} [mArguments.rowIndices] Other selected indices (if available)
+		 * @return {sap.ui.model.SelectionModel} <code>this</code> to allow method chaining
 		 * @protected
 		 */
-		TreeBindingAdapter.prototype.fireSelectionChanged = function(oParameters) {
-			this.fireEvent("selectionChanged", oParameters);
+		TreeBindingAdapter.prototype.fireSelectionChanged = function(mArguments) {
+			this.fireEvent("selectionChanged", mArguments);
 			return this;
 		};
 

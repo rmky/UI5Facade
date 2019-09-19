@@ -10,7 +10,6 @@ sap.ui.define([
 	"sap/ui/model/json/JSONModel",
 	"sap/m/SearchField",
 	"sap/m/Button",
-	"sap/m/ButtonType",
 	"sap/m/Toolbar",
 	"sap/m/ToolbarSpacer",
 	"sap/ui/model/Filter",
@@ -32,7 +31,6 @@ sap.ui.define([
 	JSONModel,
 	SearchField,
 	Button,
-	ButtonType,
 	Toolbar,
 	ToolbarSpacer,
 	Filter,
@@ -62,7 +60,7 @@ sap.ui.define([
 	 * @class Context - Dialog for available Fields in Runtime Authoring
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -253,8 +251,8 @@ sap.ui.define([
 		}).addStyleClass("sapUIRtaCCDialogScrollContainer");
 
 		return [this.oInputFields,
-			this._oBCContainer,
-			oScrollContainer];
+				this._oBCContainer,
+				oScrollContainer];
 	};
 
 	/**
@@ -266,8 +264,7 @@ sap.ui.define([
 	AddElementsDialog.prototype._createButtons = function() {
 		this._oOKButton = new Button({
 			text : this._oTextResources.getText("BTN_FREP_OK"),
-			press : [this._submitDialog, this],
-			type: ButtonType.Emphasized
+			press : [this._submitDialog, this]
 		});
 		var oCancelButton = new Button({
 			text : this._oTextResources.getText("BTN_FREP_CANCEL"),
@@ -280,6 +277,8 @@ sap.ui.define([
 	 * Close the dialog.
 	 */
 	AddElementsDialog.prototype._submitDialog = function() {
+		// remove Business Contexts
+		this._removeBusinessContexts();
 		this._oDialog.close();
 		this._fnResolve();
 	};
@@ -288,6 +287,8 @@ sap.ui.define([
 	 * Close dialog and revert all change operations
 	 */
 	AddElementsDialog.prototype._cancelDialog = function() {
+		// remove Business Contexts
+		this._removeBusinessContexts();
 		// clear all variables
 		this._oList.removeSelections();
 		this._oDialog.close();
@@ -416,8 +417,6 @@ sap.ui.define([
 	 * @public
 	 */
 	AddElementsDialog.prototype.addBusinessContext = function (aBusinessContexts) {
-		// clear old values from last run
-		this._removeBusinessContexts();
 		// Message "none" when no business contexts are available
 		var oBCDescription = new Text({
 			text: this._oTextResources.getText("MSG_NO_BUSINESS_CONTEXTS")

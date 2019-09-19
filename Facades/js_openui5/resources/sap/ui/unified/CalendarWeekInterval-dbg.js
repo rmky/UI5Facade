@@ -6,8 +6,8 @@
 
 //Provides control sap.ui.unified.CalendarWeekInterval.
 sap.ui.define(['sap/ui/unified/calendar/CalendarUtils', 'sap/ui/unified/calendar/CalendarDate', './library',
-		'sap/ui/unified/CalendarDateInterval', 'sap/ui/unified/CalendarDateIntervalRenderer', "sap/ui/unified/DateRange"],
-	function (CalendarUtils, CalendarDate, library, CalendarDateInterval, CalendarDateIntervalRenderer, DateRange) {
+		'sap/ui/unified/CalendarDateInterval', 'sap/ui/unified/CalendarDateIntervalRenderer'],
+	function (CalendarUtils, CalendarDate, library, CalendarDateInterval, CalendarDateIntervalRenderer) {
 		"use strict";
 
 		/*
@@ -39,7 +39,7 @@ sap.ui.define(['sap/ui/unified/calendar/CalendarUtils', 'sap/ui/unified/calendar
 		 * its start date to the first date of the same week as the date the user chose.
 		 *
 		 * @extends sap.ui.unified.CalendarDateInterval
-		 * @version 1.70.0
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @private
@@ -140,7 +140,7 @@ sap.ui.define(['sap/ui/unified/calendar/CalendarUtils', 'sap/ui/unified/calendar
 			var oCalNewFocusDate = this._getFocusedDate(),
 				oCalFirstWeekDate = this._getStartDate(),
 				oCalPicker = this._getCalendarPicker(),
-				oSelectedRange = new DateRange(),
+				oSelectedRange = new sap.ui.unified.DateRange(),
 				oCalEndDate;
 
 			oCalEndDate = new CalendarDate(oCalFirstWeekDate);

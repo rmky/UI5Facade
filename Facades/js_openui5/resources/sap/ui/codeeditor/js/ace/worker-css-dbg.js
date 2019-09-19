@@ -705,7 +705,6 @@ function validateDelta(docLines, delta) {
 }
 
 exports.applyDelta = function(docLines, delta, doNotValidate) {
-    
     var row = delta.start.row;
     var startColumn = delta.start.column;
     var line = docLines[row] || "";
@@ -787,15 +786,10 @@ EventEmitter._signal = function(eventName, e) {
 
 EventEmitter.once = function(eventName, callback) {
     var _self = this;
-    this.addEventListener(eventName, function newCallback() {
+    callback && this.addEventListener(eventName, function newCallback() {
         _self.removeEventListener(eventName, newCallback);
         callback.apply(null, arguments);
     });
-    if (!callback) {
-        return new Promise(function(resolve) {
-            callback = resolve;
-        });
-    }
 };
 
 
@@ -927,7 +921,6 @@ var Anchor = exports.Anchor = function(doc, row, column) {
                 column: point.column + (point.row == deltaEnd.row ? deltaColShift : 0)
             };
         }
-        
         return {
             row: deltaStart.row,
             column: deltaStart.column
@@ -1176,7 +1169,7 @@ var Document = function(textOrLines) {
             column = this.$lines[row].length;
         }
         this.insertMergedLines({row: row, column: column}, lines);
-    };    
+    };
     this.insertMergedLines = function(position, lines) {
         var start = this.clippedPos(position.row, position.column);
         var end = {
@@ -2055,7 +2048,6 @@ Parser.prototype = function(){
             SELECTOR_TYPE : 7,
             SELECTOR_PART_TYPE : 8,
             SELECTOR_SUB_PART_TYPE : 9,
-
             _stylesheet: function(){
 
                 var tokenStream = this._tokenStream,
@@ -2514,7 +2506,6 @@ Parser.prototype = function(){
 
                 tokenStream.mustMatch(Tokens.COLON);
                 tokenStream.mustMatch(Tokens.IDENT);
-
                 return tokenStream.token().value;
             },
 
@@ -3286,7 +3277,6 @@ Parser.prototype = function(){
                             }
                         } while(tokenStream.match([Tokens.COMMA, Tokens.S]));
                     }
-
                     tokenStream.match(Tokens.RPAREN);
                     functionText += ")";
                     this._readWhitespace();
@@ -3341,7 +3331,6 @@ Parser.prototype = function(){
                     color;
 
                 if(tokenStream.match(Tokens.HASH)){
-
                     token = tokenStream.token();
                     color = token.value;
                     if (!/#[a-f0-9]{3,6}/i.test(color)){
@@ -3352,7 +3341,6 @@ Parser.prototype = function(){
 
                 return token;
             },
-
             _keyframes: function(){
                 var tokenStream = this._tokenStream,
                     token,
@@ -3547,7 +3535,6 @@ Parser.prototype = function(){
             _validateProperty: function(property, value){
                 Validation.validate(property, value);
             },
-
             parse: function(input){
                 this._tokenStream = new TokenStream(input, Tokens);
                 this._stylesheet();
@@ -4148,7 +4135,6 @@ function PropertyValuePart(text, line, col){
 
     SyntaxUnit.call(this, text, line, col, Parser.PROPERTY_VALUE_PART_TYPE);
     this.type = "unknown";
-
     var temp;
     if (/^([+\-]?[\d\.]+)([a-z]+)$/i.test(text)){  //dimension
         this.type = "dimension";
@@ -4193,7 +4179,6 @@ function PropertyValuePart(text, line, col){
             case "dpcm":
                 this.type = "resolution";
                 break;
-
         }
 
     } else if (/^([+\-]?[\d\.]+)%$/i.test(text)){  //percentage
@@ -4414,7 +4399,6 @@ Specificity.calculate = function(selector){
 var h = /^[0-9a-fA-F]$/,
     nonascii = /^[\u0080-\uFFFF]$/,
     nl = /\n|\r\n|\r|\f/;
-
 
 function isHexDigit(c){
     return c !== null && h.test(c);
@@ -4842,7 +4826,6 @@ TokenStream.prototype = mix(new TokenStreamBase(), {
             value   = first + this.readWhitespace();
         return this.createToken(Tokens.S, value, startLine, startCol);
     },
-
     readUnicodeRangePart: function(allowQuestionMark){
         var reader  = this._reader,
             part = "",
@@ -4859,7 +4842,6 @@ TokenStream.prototype = mix(new TokenStreamBase(), {
                 c = reader.peek();
             }
         }
-
         return part;
     },
 
@@ -5989,7 +5971,6 @@ var CSSLint = (function(){
 
         return report;
     };
-
     return api;
 
 })();
@@ -8071,6 +8052,8 @@ oop.inherits(Worker, Mirror);
 
 ace.define("ace/lib/es5-shim",[], function(require, exports, module) {
 
+//
+//
 function Empty() {}
 
 if (!Function.prototype.bind) {
@@ -8083,7 +8066,6 @@ if (!Function.prototype.bind) {
         var bound = function () {
 
             if (this instanceof bound) {
-
                 var result = target.apply(
                     this,
                     args.concat(slice.call(arguments))
@@ -8107,6 +8089,7 @@ if (!Function.prototype.bind) {
             bound.prototype = new Empty();
             Empty.prototype = null;
         }
+        //
         return bound;
     };
 }
@@ -8127,6 +8110,9 @@ if ((supportsAccessors = owns(prototypeOfObject, "__defineGetter__"))) {
     lookupGetter = call.bind(prototypeOfObject.__lookupGetter__);
     lookupSetter = call.bind(prototypeOfObject.__lookupSetter__);
 }
+
+//
+//
 if ([1,2].splice(0).length != 2) {
     if(function() { // test IE < 9 to splice bug - see issue #138
         function makeArray(l) {
@@ -8449,6 +8435,9 @@ if (!Array.prototype.lastIndexOf || ([0, 1].lastIndexOf(0, -3) != -1)) {
         return -1;
     };
 }
+
+//
+//
 if (!Object.getPrototypeOf) {
     Object.getPrototypeOf = function getPrototypeOf(object) {
         return object.__proto__ || (
@@ -8532,7 +8521,6 @@ if (!Object.create) {
         return object;
     };
 }
-
 function doesDefinePropertyWork(object) {
     try {
         Object.defineProperty(object, "sentinel", {});
@@ -8698,11 +8686,18 @@ if (!Object.keys) {
     };
 
 }
+
+//
+//
 if (!Date.now) {
     Date.now = function now() {
         return new Date().getTime();
     };
 }
+
+
+//
+//
 var ws = "\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u180E\u2000\u2001\u2002\u2003" +
     "\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028" +
     "\u2029\uFEFF";
@@ -8715,6 +8710,8 @@ if (!String.prototype.trim || ws.trim()) {
     };
 }
 
+//
+//
 function toInteger(n) {
     n = +n;
     if (n !== n) { // isNaN

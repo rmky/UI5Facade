@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/ui/core/Renderer', './ToolbarRenderer', "sap/m/BarInPageEnabler"],
-	function(Renderer, ToolbarRenderer, BarInPageEnabler) {
+sap.ui.define(['sap/ui/core/Renderer', './ToolbarRenderer'],
+	function(Renderer, ToolbarRenderer) {
 		"use strict";
 
 
@@ -18,7 +18,7 @@ sap.ui.define(['sap/ui/core/Renderer', './ToolbarRenderer', "sap/m/BarInPageEnab
 		OverflowToolbarRenderer.renderBarContent = function(rm, oToolbar) {
 
 			oToolbar._getVisibleContent().forEach(function(oControl) {
-				BarInPageEnabler.addChildClassTo(oControl,oToolbar);
+				sap.m.BarInPageEnabler.addChildClassTo(oControl,oToolbar);
 				rm.renderControl(oControl);
 			});
 
@@ -29,7 +29,7 @@ sap.ui.define(['sap/ui/core/Renderer', './ToolbarRenderer', "sap/m/BarInPageEnab
 
 		OverflowToolbarRenderer.renderOverflowButton = function(rm,oToolbar) {
 			var oOverflowButton = oToolbar._getOverflowButton();
-			BarInPageEnabler.addChildClassTo(oOverflowButton,oToolbar);
+			sap.m.BarInPageEnabler.addChildClassTo(oOverflowButton,oToolbar);
 			rm.renderControl(oOverflowButton);
 		};
 

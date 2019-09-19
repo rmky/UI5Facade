@@ -62,7 +62,7 @@ sap.ui.define(['sap/ui/core/IconPool', 'sap/ui/Device'],
             oRm.writeAttribute("tabindex", "-1");
             bEnabled ? oRm.addClass("sapMRIDisplayOnly") : oRm.addClass("sapMRIDisabled");
         }
-
+	    oRm.writeAttribute("aria-readonly", !bEditable);
 	    oRm.addClass("sapMRI");
         oRm.addClass("sapUiRatingIndicator" + oControl._getIconSizeLabel(this._fIconSize));
         oRm.writeStyles();
@@ -110,7 +110,6 @@ sap.ui.define(['sap/ui/core/IconPool', 'sap/ui/Device'],
 			"role": "slider",
 			"orientation": "horizontal",
 			"valuemin": 0,
-			"readonly": null,
 			"disabled": !oControl.getEnabled() || oControl.getDisplayOnly(),
 			"labelledby": {
 				value: this._sLabelID,

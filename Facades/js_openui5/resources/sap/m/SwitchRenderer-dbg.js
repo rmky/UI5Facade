@@ -14,9 +14,7 @@ sap.ui.define(["sap/ui/Device", "sap/m/library"], function(Device, library) {
 		 * Switch renderer.
 		 * @namespace
 		 */
-		var SwitchRenderer = {
-			apiVersion: 2
-		};
+		var SwitchRenderer = {};
 
 		/**
 		 * CSS class to be applied to the HTML root element of the Switch control.
@@ -38,50 +36,52 @@ sap.ui.define(["sap/ui/Device", "sap/m/library"], function(Device, library) {
 				bEnabled = oSwitch.getEnabled(),
 				sName = oSwitch.getName(),
 				bAccessibilityEnabled = sap.ui.getCore().getConfiguration().getAccessibility(),
-				bAnimate = sap.ui.getCore().getConfiguration().getAnimation(),
 				CSS_CLASS = SwitchRenderer.CSS_CLASS;
 
-			oRm.openStart("div", oSwitch);
-			oRm.class(CSS_CLASS + "Cont");
+			oRm.write("<div");
+			oRm.addClass(CSS_CLASS + "Cont");
 
 			if (!bEnabled) {
-				oRm.class(CSS_CLASS + "ContDisabled");
+				oRm.addClass(CSS_CLASS + "ContDisabled");
 			}
 
+			oRm.writeClasses();
+			oRm.writeStyles();
+			oRm.writeControlData(oSwitch);
+
 			if (bEnabled) {
-				oRm.attr("tabindex", "0");
+				oRm.writeAttribute("tabindex", "0");
 			}
 
 			if (sTooltip) {
-				oRm.attr("title", sTooltip);
+				oRm.writeAttributeEscaped("title", sTooltip);
 			}
 
 			if (bAccessibilityEnabled) {
 				this.writeAccessibilityState(oRm, oSwitch);
 			}
 
-			oRm.openEnd();
-			oRm.openStart("div", oSwitch.getId() + "-switch");
-			oRm.attr("aria-hidden", "true");
-			oRm.class(CSS_CLASS);
-			if (bAnimate) {
-				oRm.class(CSS_CLASS + "Trans");
-			}
-			oRm.class(bState ? CSS_CLASS + "On" : CSS_CLASS + "Off");
-			oRm.class(CSS_CLASS + oSwitch.getType());
+			oRm.write("><div");
+			oRm.writeAttribute("id", oSwitch.getId() + "-switch");
+			oRm.writeAttribute("aria-hidden", "true");
+			oRm.addClass(CSS_CLASS);
+			oRm.addClass(bState ? CSS_CLASS + "On" : CSS_CLASS + "Off");
+			oRm.addClass(CSS_CLASS + oSwitch.getType());
 
 			if (Device.system.desktop && bEnabled) {
-				oRm.class(CSS_CLASS + "Hoverable");
+				oRm.addClass(CSS_CLASS + "Hoverable");
 			}
 
 			if (!bEnabled) {
-				oRm.class(CSS_CLASS + "Disabled");
+				oRm.addClass(CSS_CLASS + "Disabled");
 			}
 
-			oRm.openEnd();
-			oRm.openStart("div", oSwitch.getId() + "-inner");
-			oRm.class(CSS_CLASS + "Inner");
-			oRm.openEnd();
+			oRm.writeClasses();
+			oRm.write("><div");
+			oRm.addClass(CSS_CLASS + "Inner");
+			oRm.writeAttribute("id", oSwitch.getId() + "-inner");
+			oRm.writeClasses();
+			oRm.write(">");
 
 			// text
 			this.renderText(oRm, oSwitch);
@@ -89,8 +89,8 @@ sap.ui.define(["sap/ui/Device", "sap/m/library"], function(Device, library) {
 			// handle
 			this.renderHandle(oRm, oSwitch, sState);
 
-			oRm.close("div");
-			oRm.close("div");
+			oRm.write("</div>");
+			oRm.write("</div>");
 
 			if (sName) {
 
@@ -105,7 +105,7 @@ sap.ui.define(["sap/ui/Device", "sap/m/library"], function(Device, library) {
 				});
 			}
 
-			oRm.close("div");
+			oRm.write("</div>");
 		};
 
 		SwitchRenderer.renderText = function(oRm, oSwitch) {
@@ -113,65 +113,72 @@ sap.ui.define(["sap/ui/Device", "sap/m/library"], function(Device, library) {
 				bDefaultType = oSwitch.getType() === SwitchType.Default;
 
 			// on
-			oRm.openStart("div", oSwitch.getId() + "-texton");
-			oRm.class(CSS_CLASS + "Text");
-			oRm.class(CSS_CLASS + "TextOn");
-			oRm.openEnd();
-			oRm.openStart("span");
-			oRm.class(CSS_CLASS + "Label");
-			oRm.class(CSS_CLASS + "LabelOn");
-			oRm.openEnd();
+			oRm.write("<div");
+			oRm.addClass(CSS_CLASS + "Text");
+			oRm.addClass(CSS_CLASS + "TextOn");
+			oRm.writeAttribute("id", oSwitch.getId() + "-texton");
+			oRm.writeClasses();
+			oRm.write(">");
+			oRm.write("<span");
+			oRm.addClass(CSS_CLASS + "Label");
+			oRm.addClass(CSS_CLASS + "LabelOn");
+			oRm.writeClasses();
+			oRm.write(">");
 
 			if (bDefaultType) {
-				oRm.text(oSwitch._sOn);
+				oRm.writeEscaped(oSwitch._sOn);
 			}
 
-			oRm.close("span");
-			oRm.close("div");
+			oRm.write("</span>");
+			oRm.write("</div>");
 
 			// off
-			oRm.openStart("div", oSwitch.getId() + "-textoff");
-			oRm.class(CSS_CLASS + "Text");
-			oRm.class(CSS_CLASS + "TextOff");
-			oRm.openEnd();
-			oRm.openStart("span");
-			oRm.class(CSS_CLASS + "Label");
-			oRm.class(CSS_CLASS + "LabelOff");
-			oRm.openEnd();
+			oRm.write("<div");
+			oRm.addClass(CSS_CLASS + "Text");
+			oRm.addClass(CSS_CLASS + "TextOff");
+			oRm.writeAttribute("id", oSwitch.getId() + "-textoff");
+			oRm.writeClasses();
+			oRm.write(">");
+			oRm.write("<span");
+			oRm.addClass(CSS_CLASS + "Label");
+			oRm.addClass(CSS_CLASS + "LabelOff");
+			oRm.writeClasses();
+			oRm.write(">");
 
 			if (bDefaultType) {
-				oRm.text(oSwitch._sOff);
+				oRm.writeEscaped(oSwitch._sOff);
 			}
 
-			oRm.close("span");
-			oRm.close("div");
+			oRm.write("</span>");
+			oRm.write("</div>");
 		};
 
 		SwitchRenderer.renderHandle = function(oRm, oSwitch, sState) {
 			var CSS_CLASS = SwitchRenderer.CSS_CLASS;
 
-			oRm.openStart("div", oSwitch.getId() + "-handle");
-			oRm.attr("data-sap-ui-swt", sState);
-			oRm.class(CSS_CLASS + "Handle");
-			oRm.openEnd();
-			oRm.close("div");
+			oRm.write("<div");
+			oRm.writeAttribute("id", oSwitch.getId() + "-handle");
+			oRm.writeAttributeEscaped("data-sap-ui-swt", sState);
+			oRm.addClass(CSS_CLASS + "Handle");
+			oRm.writeClasses();
+			oRm.write("></div>");
 		};
 
 		SwitchRenderer.renderCheckbox = function(oRm, oSwitch, sState) {
-			oRm.voidStart("input", oSwitch.getId() + "-input");
-			oRm.attr("type", "checkbox");
-			oRm.attr("name", oSwitch.getName());
-			oRm.attr("value", sState);
+			oRm.write('<input type="checkbox"');
+			oRm.writeAttribute("id", oSwitch.getId() + "-input");
+			oRm.writeAttributeEscaped("name", oSwitch.getName());
+			oRm.writeAttributeEscaped("value", sState);
 
 			if (oSwitch.getState()) {
-				oRm.attr("checked", "checked");
+				oRm.writeAttribute("checked", "checked");
 			}
 
 			if (!oSwitch.getEnabled()) {
-				oRm.attr("disabled", "disabled");
+				oRm.writeAttribute("disabled", "disabled");
 			}
 
-			oRm.voidEnd();
+			oRm.write(">");
 		};
 
 		/**
@@ -198,7 +205,7 @@ sap.ui.define(["sap/ui/Device", "sap/m/library"], function(Device, library) {
 				labelledby: mAriaLabelledby
 			};
 
-			oRm.accessibilityState(oSwitch, mAccessibilityStates);
+			oRm.writeAccessibilityState(oSwitch, mAccessibilityStates);
 		};
 
 		/**
@@ -212,12 +219,14 @@ sap.ui.define(["sap/ui/Device", "sap/m/library"], function(Device, library) {
 		 * @param {object} mOptions
 		 */
 		SwitchRenderer.renderInvisibleElement = function(oRm, oSwitch, mOptions) {
-			oRm.openStart("span", mOptions.id);
-			oRm.attr("aria-hidden", "true");
-			oRm.class("sapUiInvisibleText");
-			oRm.openEnd();
-			oRm.text(mOptions.text);
-			oRm.close("span");
+			oRm.write("<span");
+			oRm.writeAttribute("id", mOptions.id);
+			oRm.writeAttribute("aria-hidden", "true");
+			oRm.addClass("sapUiInvisibleText");
+			oRm.writeClasses();
+			oRm.write(">");
+			oRm.writeEscaped(mOptions.text);
+			oRm.write("</span>");
 		};
 
 		return SwitchRenderer;

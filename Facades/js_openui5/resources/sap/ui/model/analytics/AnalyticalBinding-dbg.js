@@ -1603,10 +1603,6 @@ sap.ui.define([
 			aContext = this._getLoadedContextsForGroup(sParentGroupId, iStartIndex, iLength, bSupressRequest);
 			bLoadContexts = false;
 			if (!bSupressRequest) {
-				if (this._oWatermark && sParentGroupId === this._oWatermark.groupID) {
-					// use a large value, but do not omit $top, else GW might use a small default
-					iThreshold = 10000;
-				}
 				oGroupSection = this._calculateRequiredGroupSection(sParentGroupId, iStartIndex, iLength, iThreshold);
 				var bPreloadContexts = oGroupSection.length > 0 && iLength < oGroupSection.length;
 				bLoadContexts = (aContext.length != iLength
@@ -3313,7 +3309,7 @@ sap.ui.define([
 			}
 
 			// if we got data and the results + startindex is larger than the length we just apply this value to the length
-			if (!(sGroupId in this.mServiceLength) || this.mServiceLength[sGroupId] < iServiceStartIndex + iODataResultsLength) {
+			if (this.mServiceLength[sGroupId] < iServiceStartIndex + iODataResultsLength) {
 				this.mServiceLength[sGroupId] = iServiceStartIndex + iODataResultsLength;
 				this.mLength[sGroupId] = iStartIndex + iODataResultsLength - iDiscardedEntriesCount;
 				this.mFinalLength[sGroupId] = false;
@@ -3434,11 +3430,10 @@ sap.ui.define([
 				// pendant to bIncompleteGroupMembersSet: set the finalLength of the previous group
 				var sParentGroupId = that._getParentGroupId(oGroupMembersRequestDetails.sGroupId);
 				var iPositionInParentGroup = that._findKeyIndex(sParentGroupId, that.mEntityKey[oGroupMembersRequestDetails.sGroupId]);
-				if (iPositionInParentGroup < 0) {
+				if (iPositionInParentGroup == -1) {
 					oLogger.fatal("assertion failed: failed to determine position of " + oGroupMembersRequestDetails.sGroupId + " in group " + sParentGroupId);
-				} else if (!iPositionInParentGroup) {
-					that.mFinalLength[oRequestDetails.sGroupId_Missing_AtLevel] = true;
-				} else if (that._getKey(sParentGroupId, iPositionInParentGroup - 1) !== undefined) {
+				}
+				if (iPositionInParentGroup > 0 && that._getKey(sParentGroupId, iPositionInParentGroup - 1) !== undefined) {
 					var sPreviousGroupMemberKey = that._getKey(sParentGroupId, iPositionInParentGroup - 1);
 					var sPreviousGroupId = that._getGroupIdFromContext(that.oModel.getContext('/' + sPreviousGroupMemberKey),
 							that._getGroupIdLevel(oGroupMembersRequestDetails.sGroupId));

@@ -20,8 +20,7 @@ sap.ui.define([
 	'sap/ui/model/Context',
 	"sap/base/Log",
 	"sap/base/assert",
-	"sap/ui/thirdparty/jquery",
-	"sap/base/util/isEmptyObject"
+	"sap/ui/thirdparty/jquery"
 ],
 	function(
 		TreeBinding,
@@ -38,8 +37,7 @@ sap.ui.define([
 		Context,
 		Log,
 		assert,
-		jQuery,
-		isEmptyObject
+		jQuery
 	) {
 	"use strict";
 
@@ -2061,7 +2059,7 @@ sap.ui.define([
 				this._fireChange({ reason: ChangeReason.Context });
 			} else {
 				// path could not be resolved, but some data was already available, so we fire a context-change
-				if (!isEmptyObject(this.oAllKeys) || !isEmptyObject(this.oKeys) || !isEmptyObject(this._aNodes)) {
+				if (!jQuery.isEmptyObject(this.oAllKeys) || !jQuery.isEmptyObject(this.oKeys) || !jQuery.isEmptyObject(this._aNodes)) {
 					this.resetData();
 					this._fireChange({ reason: ChangeReason.Context });
 				}
@@ -2106,8 +2104,8 @@ sap.ui.define([
 			this.detachEvent("selectionChanged", fnFunction, oListener);
 			return this;
 		};
-		this.fireSelectionChanged = this.fireSelectionChanged || function(oParameters) {
-			this.fireEvent("selectionChanged", oParameters);
+		this.fireSelectionChanged = this.fireSelectionChanged || function(mArguments) {
+			this.fireEvent("selectionChanged", mArguments);
 			return this;
 		};
 

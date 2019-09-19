@@ -9,10 +9,9 @@ sap.ui.define([
 	'sap/base/util/ObjectPath',
 	"sap/base/assert",
 	"sap/base/Log",
-	"sap/base/util/isPlainObject",
-	'sap/base/util/resolveReference'
+	"sap/base/util/isPlainObject"
 ],
-	function(ObjectPath, assert, Log, isPlainObject, resolveReference) {
+	function(ObjectPath, assert, Log, isPlainObject) {
 	"use strict";
 
 
@@ -450,15 +449,24 @@ sap.ui.define([
 							"simple identifiers (A-Z, 0-9, _ or $) only, but was '" + sValue + "'");
 					}
 
+					// TODO implementation should be moved to / shared with EventHandlerResolver
 					var fnResult,
-						oContext = _oOptions && _oOptions.context,
-						oLocals = _oOptions && _oOptions.locals;
+						bLocal,
+						contextObj = _oOptions && _oOptions.context;
 
-					fnResult = resolveReference(sValue,
-						Object.assign({".": oContext}, oLocals));
+					if ( sValue[0] === '.' ) {
+						// starts with a dot, must be a controller local function
+						// usage of ObjectPath.get to allow addressing functions in properties
+						if ( contextObj ) {
+							fnResult = ObjectPath.get(sValue.slice(1), contextObj);
+							bLocal = true;
+						}
+					} else {
+						fnResult = ObjectPath.get(sValue);
+					}
 
 					if ( fnResult && this.isValid(fnResult) ) {
-						return fnResult;
+						return bLocal ? fnResult.bind(contextObj) : fnResult;
 					}
 
 					throw new TypeError("The string '" + sValue + "' couldn't be resolved to a function");
@@ -625,7 +633,7 @@ sap.ui.define([
 	 * Only purpose is to enable the {@link #isInterfaceType} check.
 	 * @param {string[]} aTypes interface types to be registered
 	 * @private
-	 * @ui5-restricted sap.ui.base,sap.ui.core.Core
+	 * @sap-restricted sap.ui.base,sap.ui.core.Core
 	 */
 	DataType.registerInterfaceTypes = function(aTypes) {
 		for (var i = 0; i < aTypes.length; i++) {
@@ -637,12 +645,11 @@ sap.ui.define([
 	 * @param {string} sType name of type to check
 	 * @returns {boolean} whether the given type is known to be an interface type
 	 * @private
-	 * @ui5-restricted sap.ui.base,sap.ui.core.Core
+	 * @sap-restricted sap.ui.base,sap.ui.core.Core
 	 */
 	DataType.isInterfaceType = function(sType) {
 		return mInterfaces.hasOwnProperty(sType) && ObjectPath.get(sType) === mInterfaces[sType];
 	};
-
 
 	return DataType;
 

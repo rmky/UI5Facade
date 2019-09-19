@@ -11,11 +11,6 @@
 			"theme": "sap_fiori_3"
 		},
 		{
-			"name": "BlockBase.less",
-			"designtime": true,
-			"theme": "sap_fiori_3"
-		},
-		{
 			"name": "HierarchicalSelect.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"

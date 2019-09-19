@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.70.0"
+      "version": "1.68.1"
     },
     "title": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
     "description": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
@@ -22,17 +22,17 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.70",
+      "minUI5Version": "1.68",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.70.0"
+          "minVersion": "1.68.1"
         },
         "sap.ui.layout": {
-          "minVersion": "1.70.0",
+          "minVersion": "1.68.1",
           "lazy": true
         },
         "sap.ui.unified": {
-          "minVersion": "1.70.0",
+          "minVersion": "1.68.1",
           "lazy": true
         }
       }
@@ -62,6 +62,7 @@
           "sap.m.CustomListItem",
           "sap.m.CustomTile",
           "sap.m.CustomTreeItem",
+          "sap.m.ColumnHeader",
           "sap.m.DatePicker",
           "sap.m.DateRangeSelection",
           "sap.m.DateTimeField",
@@ -163,7 +164,6 @@
           "sap.m.SimpleFixFlex",
           "sap.m.SinglePlanningCalendar",
           "sap.m.SinglePlanningCalendarGrid",
-          "sap.m.SinglePlanningCalendarMonthGrid",
           "sap.m.Slider",
           "sap.m.SliderTooltip",
           "sap.m.SliderTooltipBase",
@@ -201,6 +201,7 @@
           "sap.m.upload.UploadSet",
           "sap.m.VBox",
           "sap.m.ViewSettingsDialog",
+          "sap.m.ViewSettingsPopover",
           "sap.m.Wizard",
           "sap.m.WizardStep",
           "sap.m.semantic.DetailPage",
@@ -289,7 +290,6 @@
         "types": [
           "sap.m.BackgroundDesign",
           "sap.m.BarDesign",
-          "sap.m.BreadcrumbsSeparatorStyle",
           "sap.m.ButtonType",
           "sap.m.CarouselArrowsPlacement",
           "sap.m.DateTimeInputType",

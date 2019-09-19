@@ -32,7 +32,7 @@ function(
 	 * @alias sap.ui.fl.Cache
 	 * @experimental Since 1.25.0
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 */
 	var Cache = function () {
 	};
@@ -103,8 +103,8 @@ function(
 	/**
 	 * Clears whole entries stored in the cache.
 	 *
-	 * @private
-	 * @ui5-restricted sap.ui.fl
+	 * @protected
+	 * @sap-restricted sap.ui.fl
 	 */
 	Cache.clearEntries = function () {
 		Cache._entries = {};
@@ -144,8 +144,8 @@ function(
 	 * @param {string} sComponentName - Name of the application component
 	 * @param {string} sAppVersion - Current running version of application
 	 *
-	 * @private
-	 * @ui5-restricted sap.ui.fl
+	 * @protected
+	 * @sap-restricted sap.ui.fl
 	 */
 	Cache.clearEntry = function (sComponentName, sAppVersion) {
 		Cache.getEntry(sComponentName, sAppVersion);
@@ -159,7 +159,7 @@ function(
 	 * @param {string} sAppVersion - Current running version of application
 	 *
 	 * @private
-	 * @ui5-restricted sap.ui.fl
+	 * @sap-restricted sap.ui.fl
 	 */
 	Cache._deleteEntry = function (sComponentName, sAppVersion) {
 		if (Cache._entries[sComponentName] && Cache._entries[sComponentName][sAppVersion]) {
@@ -308,7 +308,7 @@ function(
 		}
 
 		var oConfiguration = sap.ui.getCore().getConfiguration();
-		if (oConfiguration.getDebug() || oConfiguration.getComponentPreload() === "off" || oConfiguration.isFlexBundleRequestForced()) {
+		if (oConfiguration.getDebug() || oConfiguration.isFlexBundleRequestForced()) {
 			// try to load the source in case a debugging takes place and the component could have no Component-preload
 			try {
 				return Promise.resolve(LoaderExtensions.loadResource(sResourcePath));

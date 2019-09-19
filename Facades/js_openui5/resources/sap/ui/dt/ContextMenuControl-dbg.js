@@ -16,10 +16,7 @@ sap.ui.define([
 	"sap/m/Button",
 	"sap/m/FlexItemData",
 	"sap/ui/dt/OverlayRegistry",
-	"sap/ui/dt/DOMUtil",
-	"sap/ui/Device",
-	// jQuery Plugin "rect"
-	"sap/ui/dom/jquery/rect"
+	"sap/ui/dt/DOMUtil"
 ], function (
 	jQuery,
 	ManagedObject,
@@ -31,8 +28,7 @@ sap.ui.define([
 	Button,
 	FlexItemData,
 	OverlayRegistry,
-	DOMUtil,
-	Device
+	DOMUtil
 ) {
 	"use strict";
 
@@ -46,7 +42,7 @@ sap.ui.define([
 	 * @class A simple ContextMenu.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @experimental
@@ -518,7 +514,7 @@ sap.ui.define([
 		 * @return {float} the height of a popover arrow
 		 */
 		_getArrowHeight: function (bCompact) {
-			if (Device.browser.msie || Device.browser.edge) {
+			if (sap.ui.Device.browser.msie || sap.ui.Device.browser.edge) {
 				return bCompact ? 0.5 : 0.5;
 			}
 			return bCompact ? 0.5625 : 0.5625;
@@ -538,7 +534,6 @@ sap.ui.define([
 		 * @return {object} the dimensions of the overlay
 		 */
 		_getOverlayDimensions: function (sOverlayId) {
-			// jQuery Plugin "rect"
 			var oOverlayDimensions = jQuery("#" + sOverlayId).rect();
 			oOverlayDimensions.right = oOverlayDimensions.left + oOverlayDimensions.width;
 			oOverlayDimensions.bottom = oOverlayDimensions.top + oOverlayDimensions.height;
@@ -576,14 +571,14 @@ sap.ui.define([
 		 * @public
 		 */
 		addOverflowButton: function() {
-			var sOverflowButtonId = "OVERFLOW_BUTTON";
-			var oButtonOptions = {
-				icon: "sap-icon://overflow",
-				type: "Transparent",
-				enabled: true,
-				press: this._onOverflowPress.bind(this),
-				layoutData: new FlexItemData({})
-			};
+			var sOverflowButtonId = "OVERFLOW_BUTTON",
+				oButtonOptions = {
+					icon: "sap-icon://overflow",
+					type: "Transparent",
+					enabled: true,
+					press: this._onOverflowPress.bind(this),
+					layoutData: new FlexItemData({})
+				};
 			return this._addButton(sOverflowButtonId, oButtonOptions);
 		},
 
@@ -952,4 +947,4 @@ sap.ui.define([
 	});
 
 	return ContextMenu;
-});
+}, /* bExport= */ true);

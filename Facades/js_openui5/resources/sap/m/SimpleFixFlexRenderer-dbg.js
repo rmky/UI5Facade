@@ -44,24 +44,15 @@ sap.ui.define([],
 		 * @param {sap.ui.core.Control} oControl an object representation of the control that should be rendered
 		 */
 		SimpleFixFlexRenderer.renderFlexContentContainer = function (oRm, oControl) {
-			var aFlexContent = oControl.getFlexContent();
+			var oFlexContent = oControl.getFlexContent();
 
 			oRm.write('<div');
 			oRm.addClass('sapUiSimpleFixFlexFlexContentContainer');
 			oRm.writeClasses();
 			oRm.write('>');
 
-			if (aFlexContent) {
-				oRm.write('<div');
-				oRm.addClass('sapUiSimpleFixFlexFlexContent');
-				oRm.writeClasses();
-				oRm.write('>');
-
-				aFlexContent.forEach(function(oControl) {
-					oRm.renderControl(oControl);
-				});
-
-				oRm.write('</div>');
+			if (oFlexContent) {
+				oRm.renderControl(oFlexContent.addStyleClass('sapUiSimpleFixFlexFlexContent'));
 			}
 
 			oRm.write('</div>');

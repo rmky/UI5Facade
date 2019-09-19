@@ -20,7 +20,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/RuntimeAuthoring.js" size="56789" compressedSize="27390">
+  <module name="sap/ui/rta/RuntimeAuthoring.js" size="57057" compressedSize="27456">
     <description>Provides class sap.ui.rta.Main.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -72,12 +72,11 @@
       <module name="sap/ui/rta/util/PopupManager.js"/>
       <module name="sap/ui/rta/util/ServiceEventBus.js"/>
       <module name="sap/ui/rta/util/StylesLoader.js"/>
-      <module name="sap/ui/rta/util/validateFlexEnabled.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/Utils.js" size="23145" compressedSize="7061">
+  <module name="sap/ui/rta/Utils.js" size="23074" compressedSize="7076">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -116,10 +115,11 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/appVariant/AppVariantManager.js" size="12338" compressedSize="4138">
+  <module name="sap/ui/rta/appVariant/AppVariantManager.js" size="14299" compressedSize="4776">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/base/ManagedObject.js"/>
+      <module name="sap/ui/core/BusyIndicator.js"/>
       <module name="sap/ui/rta/appVariant/AppVariantDialog.js"/>
       <module name="sap/ui/rta/appVariant/AppVariantUtils.js"/>
       <module name="sap/ui/rta/appVariant/Feature.js"/>
@@ -127,7 +127,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/appVariant/AppVariantOverviewDialog.js" size="2153" compressedSize="1528">
+  <module name="sap/ui/rta/appVariant/AppVariantOverviewDialog.js" size="2104" compressedSize="1491">
     <description>Provides control sap.ui.rta.appVariant.AppVariantOverviewDialog.</description>
     <requires>
       <module name="sap/m/Dialog.js"/>
@@ -138,7 +138,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/appVariant/AppVariantUtils.js" size="15543" compressedSize="7571">
+  <module name="sap/ui/rta/appVariant/AppVariantUtils.js" size="19086" compressedSize="9575">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -146,53 +146,53 @@
       <module name="sap/m/MessageBox.js"/>
       <module name="sap/ui/core/BusyIndicator.js"/>
       <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js"/>
+      <module name="sap/ui/fl/descriptorRelated/api/DescriptorVariantFactory.js"/>
       <module name="sap/ui/fl/descriptorRelated/internal/Utils.js"/>
-      <module name="sap/ui/fl/write/api/ChangesWriteAPI.js"/>
-      <module name="sap/ui/fl/write/api/PersistenceWriteAPI.js"/>
+      <module name="sap/ui/fl/transport/TransportSelection.js"/>
+      <module name="sap/ui/fl/transport/Transports.js"/>
       <module name="sap/ui/rta/Utils.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/appVariant/Feature.js" size="16316" compressedSize="5485">
+  <module name="sap/ui/rta/appVariant/Feature.js" size="15457" compressedSize="5105">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/UriParameters.js"/>
-      <module name="sap/base/util/merge.js"/>
       <module name="sap/ui/core/BusyIndicator.js"/>
       <module name="sap/ui/fl/Utils.js"/>
-      <module name="sap/ui/fl/descriptorRelated/api/DescriptorVariantFactory.js"/>
-      <module name="sap/ui/fl/registry/Settings.js"/>
       <module name="sap/ui/rta/appVariant/AppVariantUtils.js"/>
+      <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/appVariant/S4HanaCloudBackend.js" size="5337" compressedSize="2064">
+  <module name="sap/ui/rta/appVariant/S4HanaCloudBackend.js" size="5325" compressedSize="2060">
     <description>Module provides access to functionality related to an S4HANA Cloud backend</description>
     <requires>
-      <module name="sap/base/Log.js"/>
       <module name="sap/ui/base/ManagedObject.js"/>
       <module name="sap/ui/model/odata/v2/ODataModel.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/appVariant/Utils.js" size="8608" compressedSize="4001">
+  <module name="sap/ui/rta/appVariant/Utils.js" size="8697" compressedSize="4069">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/i18n/ResourceBundle.js"/>
       <module name="sap/ui/fl/LrepConnector.js"/>
       <module name="sap/ui/fl/registry/Settings.js"/>
       <module name="sap/ui/rta/appVariant/AppVariantUtils.js"/>
+      <module name="sap/ui/rta/appVariant/Feature.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/appVariant/manageApps/webapp/Component.js" size="1203" compressedSize="747">
+  <module name="sap/ui/rta/appVariant/manageApps/webapp/Component.js" size="1103" compressedSize="684">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/core/UIComponent.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/appVariant/manageApps/webapp/controller/ManageApps.controller.js" size="8206" compressedSize="4675">
+  <module name="sap/ui/rta/appVariant/manageApps/webapp/controller/ManageApps.controller.js" size="8096" compressedSize="4610">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/i18n/ResourceBundle.js"/>
@@ -368,7 +368,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/command/CommandFactory.js" size="18340" compressedSize="7485">
+  <module name="sap/ui/rta/command/CommandFactory.js" size="18169" compressedSize="7385">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/merge.js"/>
@@ -407,7 +407,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/command/ControlVariantSetTitle.js" size="3422" compressedSize="1877">
+  <module name="sap/ui/rta/command/ControlVariantSetTitle.js" size="3421" compressedSize="1869">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/core/util/reflection/JsControlTreeModifier.js"/>
@@ -416,7 +416,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/command/ControlVariantSwitch.js" size="2605" compressedSize="1304">
+  <module name="sap/ui/rta/command/ControlVariantSwitch.js" size="2599" compressedSize="1296">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/core/util/reflection/JsControlTreeModifier.js"/>
@@ -439,7 +439,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/command/FlexCommand.js" size="9701" compressedSize="4149">
+  <module name="sap/ui/rta/command/FlexCommand.js" size="9458" compressedSize="4080">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -453,7 +453,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/command/LREPSerializer.js" size="8009" compressedSize="3725">
+  <module name="sap/ui/rta/command/LREPSerializer.js" size="10376" compressedSize="4560">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -517,7 +517,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/command/Stack.js" size="8880" compressedSize="4530">
+  <module name="sap/ui/rta/command/Stack.js" size="8897" compressedSize="4554">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/base/ManagedObject.js"/>
@@ -536,7 +536,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/enablement/elementActionTest.js" size="17763" compressedSize="8828">
+  <module name="sap/ui/rta/enablement/elementActionTest.js" size="17743" compressedSize="8805">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/core/ComponentContainer.js"/>
@@ -545,7 +545,6 @@
       <module name="sap/ui/dt/DesignTime.js"/>
       <module name="sap/ui/dt/DesignTimeStatus.js"/>
       <module name="sap/ui/dt/OverlayRegistry.js"/>
-      <module name="sap/ui/fl/Cache.js"/>
       <module name="sap/ui/fl/ChangePersistence.js"/>
       <module name="sap/ui/fl/library.js"/>
       <module name="sap/ui/fl/registry/Settings.js"/>
@@ -558,12 +557,11 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/library-h2-preload.js" size="17801">
+  <module name="sap/ui/rta/library-h2-preload.js" size="17347">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/i18n/ResourceBundle.js"/>
       <module name="sap/base/strings/capitalize.js"/>
-      <module name="sap/base/util/ObjectPath.js"/>
       <module name="sap/base/util/UriParameters.js"/>
       <module name="sap/base/util/deepEqual.js"/>
       <module name="sap/base/util/includes.js"/>
@@ -571,7 +569,6 @@
       <module name="sap/base/util/merge.js"/>
       <module name="sap/base/util/uid.js"/>
       <module name="sap/m/Button.js"/>
-      <module name="sap/m/ButtonType.js"/>
       <module name="sap/m/Column.js"/>
       <module name="sap/m/ColumnListItem.js"/>
       <module name="sap/m/CustomListItem.js"/>
@@ -586,7 +583,6 @@
       <module name="sap/m/Input.js"/>
       <module name="sap/m/InstanceManager.js"/>
       <module name="sap/m/Label.js"/>
-      <module name="sap/m/Link.js"/>
       <module name="sap/m/List.js"/>
       <module name="sap/m/Menu.js"/>
       <module name="sap/m/MenuButton.js"/>
@@ -655,7 +651,6 @@
       <module name="sap/ui/dt/plugin/ToolHooks.js"/>
       <module name="sap/ui/dt/util/ZIndexManager.js"/>
       <module name="sap/ui/events/KeyCodes.js"/>
-      <module name="sap/ui/fl/Cache.js"/>
       <module name="sap/ui/fl/Change.js"/>
       <module name="sap/ui/fl/ChangePersistence.js"/>
       <module name="sap/ui/fl/LrepConnector.js"/>
@@ -668,10 +663,11 @@
       <module name="sap/ui/fl/library.js"/>
       <module name="sap/ui/fl/registry/ChangeRegistry.js"/>
       <module name="sap/ui/fl/registry/Settings.js"/>
+      <module name="sap/ui/fl/transport/TransportSelection.js"/>
+      <module name="sap/ui/fl/transport/Transports.js"/>
       <module name="sap/ui/fl/variants/VariantManagement.js"/>
       <module name="sap/ui/fl/write/api/ChangesWriteAPI.js"/>
       <module name="sap/ui/fl/write/api/PersistenceWriteAPI.js"/>
-      <module name="sap/ui/layout/HorizontalLayout.js"/>
       <module name="sap/ui/layout/VerticalLayout.js"/>
       <module name="sap/ui/layout/form/ResponsiveGridLayout.js"/>
       <module name="sap/ui/layout/form/SimpleForm.js"/>
@@ -772,18 +768,14 @@
       <module name="sap/ui/rta/util/ServiceEventBus.js"/>
       <module name="sap/ui/rta/util/StylesLoader.js"/>
       <module name="sap/ui/rta/util/UrlParser.js"/>
-      <module name="sap/ui/rta/util/hasStableId.js"/>
-      <module name="sap/ui/rta/util/showMessageBox.js"/>
-      <module name="sap/ui/rta/util/validateFlexEnabled.js"/>
       <module name="sap/ui/rta/view/RemoveElementDialog.fragment.xml"/>
     </includes>
   </module>
-  <module name="sap/ui/rta/library-preload.js" size="274260">
+  <module name="sap/ui/rta/library-preload.js" size="272475">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/i18n/ResourceBundle.js"/>
       <module name="sap/base/strings/capitalize.js"/>
-      <module name="sap/base/util/ObjectPath.js"/>
       <module name="sap/base/util/UriParameters.js"/>
       <module name="sap/base/util/deepEqual.js"/>
       <module name="sap/base/util/includes.js"/>
@@ -791,7 +783,6 @@
       <module name="sap/base/util/merge.js"/>
       <module name="sap/base/util/uid.js"/>
       <module name="sap/m/Button.js"/>
-      <module name="sap/m/ButtonType.js"/>
       <module name="sap/m/Column.js"/>
       <module name="sap/m/ColumnListItem.js"/>
       <module name="sap/m/CustomListItem.js"/>
@@ -806,7 +797,6 @@
       <module name="sap/m/Input.js"/>
       <module name="sap/m/InstanceManager.js"/>
       <module name="sap/m/Label.js"/>
-      <module name="sap/m/Link.js"/>
       <module name="sap/m/List.js"/>
       <module name="sap/m/Menu.js"/>
       <module name="sap/m/MenuButton.js"/>
@@ -875,7 +865,6 @@
       <module name="sap/ui/dt/plugin/ToolHooks.js"/>
       <module name="sap/ui/dt/util/ZIndexManager.js"/>
       <module name="sap/ui/events/KeyCodes.js"/>
-      <module name="sap/ui/fl/Cache.js"/>
       <module name="sap/ui/fl/Change.js"/>
       <module name="sap/ui/fl/ChangePersistence.js"/>
       <module name="sap/ui/fl/LrepConnector.js"/>
@@ -888,10 +877,11 @@
       <module name="sap/ui/fl/library.js"/>
       <module name="sap/ui/fl/registry/ChangeRegistry.js"/>
       <module name="sap/ui/fl/registry/Settings.js"/>
+      <module name="sap/ui/fl/transport/TransportSelection.js"/>
+      <module name="sap/ui/fl/transport/Transports.js"/>
       <module name="sap/ui/fl/variants/VariantManagement.js"/>
       <module name="sap/ui/fl/write/api/ChangesWriteAPI.js"/>
       <module name="sap/ui/fl/write/api/PersistenceWriteAPI.js"/>
-      <module name="sap/ui/layout/HorizontalLayout.js"/>
       <module name="sap/ui/layout/VerticalLayout.js"/>
       <module name="sap/ui/layout/form/ResponsiveGridLayout.js"/>
       <module name="sap/ui/layout/form/SimpleForm.js"/>
@@ -992,9 +982,225 @@
       <module name="sap/ui/rta/util/ServiceEventBus.js"/>
       <module name="sap/ui/rta/util/StylesLoader.js"/>
       <module name="sap/ui/rta/util/UrlParser.js"/>
-      <module name="sap/ui/rta/util/hasStableId.js"/>
-      <module name="sap/ui/rta/util/showMessageBox.js"/>
-      <module name="sap/ui/rta/util/validateFlexEnabled.js"/>
+      <module name="sap/ui/rta/view/RemoveElementDialog.fragment.xml"/>
+    </includes>
+  </module>
+  <module name="sap/ui/rta/library-preload.json" size="0">
+    <requires>
+      <module name="sap/base/Log.js"/>
+      <module name="sap/base/i18n/ResourceBundle.js"/>
+      <module name="sap/base/strings/capitalize.js"/>
+      <module name="sap/base/util/UriParameters.js"/>
+      <module name="sap/base/util/deepEqual.js"/>
+      <module name="sap/base/util/includes.js"/>
+      <module name="sap/base/util/isPlainObject.js"/>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/base/util/uid.js"/>
+      <module name="sap/m/Button.js"/>
+      <module name="sap/m/Column.js"/>
+      <module name="sap/m/ColumnListItem.js"/>
+      <module name="sap/m/CustomListItem.js"/>
+      <module name="sap/m/Dialog.js"/>
+      <module name="sap/m/DialogRenderer.js"/>
+      <module name="sap/m/FlexItemData.js"/>
+      <module name="sap/m/GenericTile.js"/>
+      <module name="sap/m/HBox.js"/>
+      <module name="sap/m/HBoxRenderer.js"/>
+      <module name="sap/m/Image.js"/>
+      <module name="sap/m/ImageContent.js"/>
+      <module name="sap/m/Input.js"/>
+      <module name="sap/m/InstanceManager.js"/>
+      <module name="sap/m/Label.js"/>
+      <module name="sap/m/List.js"/>
+      <module name="sap/m/Menu.js"/>
+      <module name="sap/m/MenuButton.js"/>
+      <module name="sap/m/MenuItem.js"/>
+      <module name="sap/m/MessageBox.js"/>
+      <module name="sap/m/MessageToast.js"/>
+      <module name="sap/m/ObjectIdentifier.js"/>
+      <module name="sap/m/OverflowToolbar.js"/>
+      <module name="sap/m/OverflowToolbarLayoutData.js"/>
+      <module name="sap/m/Popover.js"/>
+      <module name="sap/m/ScrollContainer.js"/>
+      <module name="sap/m/SearchField.js"/>
+      <module name="sap/m/SegmentedButton.js"/>
+      <module name="sap/m/SegmentedButtonItem.js"/>
+      <module name="sap/m/SelectDialog.js"/>
+      <module name="sap/m/Shell.js"/>
+      <module name="sap/m/StandardListItem.js"/>
+      <module name="sap/m/Table.js"/>
+      <module name="sap/m/Text.js"/>
+      <module name="sap/m/TextArea.js"/>
+      <module name="sap/m/TileContent.js"/>
+      <module name="sap/m/Toolbar.js"/>
+      <module name="sap/m/ToolbarSpacer.js"/>
+      <module name="sap/m/VBox.js"/>
+      <module name="sap/m/delegate/ValueStateMessage.js"/>
+      <module name="sap/m/library-preload.json"/>
+      <module name="sap/m/library.js"/>
+      <module name="sap/ui/Device.js"/>
+      <module name="sap/ui/base/ManagedObject.js"/>
+      <module name="sap/ui/core/BusyIndicator.js"/>
+      <module name="sap/ui/core/Component.js"/>
+      <module name="sap/ui/core/ComponentContainer.js"/>
+      <module name="sap/ui/core/Core.js"/>
+      <module name="sap/ui/core/Element.js"/>
+      <module name="sap/ui/core/EventBus.js"/>
+      <module name="sap/ui/core/Fragment.js"/>
+      <module name="sap/ui/core/Icon.js"/>
+      <module name="sap/ui/core/InvisibleText.js"/>
+      <module name="sap/ui/core/Renderer.js"/>
+      <module name="sap/ui/core/StashedControlSupport.js"/>
+      <module name="sap/ui/core/Title.js"/>
+      <module name="sap/ui/core/UIComponent.js"/>
+      <module name="sap/ui/core/library-preload.json"/>
+      <module name="sap/ui/core/library.js"/>
+      <module name="sap/ui/core/mvc/Controller.js"/>
+      <module name="sap/ui/core/mvc/XMLView.js"/>
+      <module name="sap/ui/core/postmessage/Bus.js"/>
+      <module name="sap/ui/core/util/reflection/JsControlTreeModifier.js"/>
+      <module name="sap/ui/dt/AggregationOverlay.js"/>
+      <module name="sap/ui/dt/DOMUtil.js"/>
+      <module name="sap/ui/dt/DesignTime.js"/>
+      <module name="sap/ui/dt/DesignTimeStatus.js"/>
+      <module name="sap/ui/dt/ElementDesignTimeMetadata.js"/>
+      <module name="sap/ui/dt/ElementOverlay.js"/>
+      <module name="sap/ui/dt/ElementUtil.js"/>
+      <module name="sap/ui/dt/MetadataPropagationUtil.js"/>
+      <module name="sap/ui/dt/Overlay.js"/>
+      <module name="sap/ui/dt/OverlayRegistry.js"/>
+      <module name="sap/ui/dt/OverlayUtil.js"/>
+      <module name="sap/ui/dt/Plugin.js"/>
+      <module name="sap/ui/dt/Util.js"/>
+      <module name="sap/ui/dt/library-preload.json"/>
+      <module name="sap/ui/dt/library.js"/>
+      <module name="sap/ui/dt/plugin/ContextMenu.js"/>
+      <module name="sap/ui/dt/plugin/ControlDragDrop.js"/>
+      <module name="sap/ui/dt/plugin/CutPaste.js"/>
+      <module name="sap/ui/dt/plugin/ElementMover.js"/>
+      <module name="sap/ui/dt/plugin/TabHandling.js"/>
+      <module name="sap/ui/dt/plugin/ToolHooks.js"/>
+      <module name="sap/ui/dt/util/ZIndexManager.js"/>
+      <module name="sap/ui/events/KeyCodes.js"/>
+      <module name="sap/ui/fl/Change.js"/>
+      <module name="sap/ui/fl/ChangePersistence.js"/>
+      <module name="sap/ui/fl/LrepConnector.js"/>
+      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/changeHandler/JsControlTreeModifier.js"/>
+      <module name="sap/ui/fl/descriptorRelated/api/DescriptorChangeFactory.js"/>
+      <module name="sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js"/>
+      <module name="sap/ui/fl/descriptorRelated/api/DescriptorVariantFactory.js"/>
+      <module name="sap/ui/fl/descriptorRelated/internal/Utils.js"/>
+      <module name="sap/ui/fl/library-preload.json"/>
+      <module name="sap/ui/fl/library.js"/>
+      <module name="sap/ui/fl/registry/ChangeRegistry.js"/>
+      <module name="sap/ui/fl/registry/Settings.js"/>
+      <module name="sap/ui/fl/transport/TransportSelection.js"/>
+      <module name="sap/ui/fl/transport/Transports.js"/>
+      <module name="sap/ui/fl/variants/VariantManagement.js"/>
+      <module name="sap/ui/fl/write/api/ChangesWriteAPI.js"/>
+      <module name="sap/ui/fl/write/api/PersistenceWriteAPI.js"/>
+      <module name="sap/ui/layout/VerticalLayout.js"/>
+      <module name="sap/ui/layout/form/ResponsiveGridLayout.js"/>
+      <module name="sap/ui/layout/form/SimpleForm.js"/>
+      <module name="sap/ui/layout/library-preload.json"/>
+      <module name="sap/ui/model/Filter.js"/>
+      <module name="sap/ui/model/FilterOperator.js"/>
+      <module name="sap/ui/model/Model.js"/>
+      <module name="sap/ui/model/Sorter.js"/>
+      <module name="sap/ui/model/json/JSONModel.js"/>
+      <module name="sap/ui/model/odata/v2/ODataModel.js"/>
+      <module name="sap/ui/performance/Measurement.js"/>
+      <module name="sap/ui/thirdparty/URI.js"/>
+      <module name="sap/ui/thirdparty/jquery.js"/>
+      <module name="sap/ui/thirdparty/sinon-4.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+    <includes>
+      <module name="sap/ui/rta/Client.js"/>
+      <module name="sap/ui/rta/ControlTreeModifier.js"/>
+      <module name="sap/ui/rta/RuntimeAuthoring.js"/>
+      <module name="sap/ui/rta/Utils.js"/>
+      <module name="sap/ui/rta/appVariant/AppVariantDialog.js"/>
+      <module name="sap/ui/rta/appVariant/AppVariantManager.js"/>
+      <module name="sap/ui/rta/appVariant/AppVariantOverviewDialog.js"/>
+      <module name="sap/ui/rta/appVariant/AppVariantUtils.js"/>
+      <module name="sap/ui/rta/appVariant/Feature.js"/>
+      <module name="sap/ui/rta/appVariant/S4HanaCloudBackend.js"/>
+      <module name="sap/ui/rta/appVariant/Utils.js"/>
+      <module name="sap/ui/rta/appVariant/manageApps/webapp/Component.js"/>
+      <module name="sap/ui/rta/appVariant/manageApps/webapp/controller/ManageApps.controller.js"/>
+      <module name="sap/ui/rta/appVariant/manageApps/webapp/index.js"/>
+      <module name="sap/ui/rta/appVariant/manageApps/webapp/manifest.json"/>
+      <module name="sap/ui/rta/appVariant/manageApps/webapp/model/models.js"/>
+      <module name="sap/ui/rta/appVariant/manageApps/webapp/view/ManageApps.view.xml"/>
+      <module name="sap/ui/rta/command/AddODataProperty.js"/>
+      <module name="sap/ui/rta/command/AddXML.js"/>
+      <module name="sap/ui/rta/command/AppDescriptorCommand.js"/>
+      <module name="sap/ui/rta/command/BaseCommand.js"/>
+      <module name="sap/ui/rta/command/BindProperty.js"/>
+      <module name="sap/ui/rta/command/Combine.js"/>
+      <module name="sap/ui/rta/command/CommandFactory.js"/>
+      <module name="sap/ui/rta/command/CompositeCommand.js"/>
+      <module name="sap/ui/rta/command/ControlVariantConfigure.js"/>
+      <module name="sap/ui/rta/command/ControlVariantDuplicate.js"/>
+      <module name="sap/ui/rta/command/ControlVariantSetTitle.js"/>
+      <module name="sap/ui/rta/command/ControlVariantSwitch.js"/>
+      <module name="sap/ui/rta/command/CreateContainer.js"/>
+      <module name="sap/ui/rta/command/CustomAdd.js"/>
+      <module name="sap/ui/rta/command/FlexCommand.js"/>
+      <module name="sap/ui/rta/command/LREPSerializer.js"/>
+      <module name="sap/ui/rta/command/Move.js"/>
+      <module name="sap/ui/rta/command/Property.js"/>
+      <module name="sap/ui/rta/command/Remove.js"/>
+      <module name="sap/ui/rta/command/Rename.js"/>
+      <module name="sap/ui/rta/command/Reveal.js"/>
+      <module name="sap/ui/rta/command/Settings.js"/>
+      <module name="sap/ui/rta/command/Split.js"/>
+      <module name="sap/ui/rta/command/Stack.js"/>
+      <module name="sap/ui/rta/command/appDescriptor/AddLibrary.js"/>
+      <module name="sap/ui/rta/enablement/elementActionTest.js"/>
+      <module name="sap/ui/rta/library.js"/>
+      <module name="sap/ui/rta/manifest.json"/>
+      <module name="sap/ui/rta/plugin/Combine.js"/>
+      <module name="sap/ui/rta/plugin/ControlVariant.js"/>
+      <module name="sap/ui/rta/plugin/CreateContainer.js"/>
+      <module name="sap/ui/rta/plugin/CutPaste.js"/>
+      <module name="sap/ui/rta/plugin/DragDrop.js"/>
+      <module name="sap/ui/rta/plugin/EasyAdd.js"/>
+      <module name="sap/ui/rta/plugin/EasyRemove.js"/>
+      <module name="sap/ui/rta/plugin/Plugin.js"/>
+      <module name="sap/ui/rta/plugin/RTAElementMover.js"/>
+      <module name="sap/ui/rta/plugin/Remove.js"/>
+      <module name="sap/ui/rta/plugin/Rename.js"/>
+      <module name="sap/ui/rta/plugin/RenameHandler.js"/>
+      <module name="sap/ui/rta/plugin/Selection.js"/>
+      <module name="sap/ui/rta/plugin/Settings.js"/>
+      <module name="sap/ui/rta/plugin/Split.js"/>
+      <module name="sap/ui/rta/plugin/Stretch.js"/>
+      <module name="sap/ui/rta/plugin/additionalElements/AddElementsDialog.js"/>
+      <module name="sap/ui/rta/plugin/additionalElements/AdditionalElementsAnalyzer.js"/>
+      <module name="sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin.js"/>
+      <module name="sap/ui/rta/service/Action.js"/>
+      <module name="sap/ui/rta/service/ControllerExtension.js"/>
+      <module name="sap/ui/rta/service/Outline.js"/>
+      <module name="sap/ui/rta/service/Property.js"/>
+      <module name="sap/ui/rta/service/Receiver.js"/>
+      <module name="sap/ui/rta/service/Selection.js"/>
+      <module name="sap/ui/rta/service/index.js"/>
+      <module name="sap/ui/rta/toolbar/Adaptation.js"/>
+      <module name="sap/ui/rta/toolbar/AdaptationRenderer.js"/>
+      <module name="sap/ui/rta/toolbar/Base.js"/>
+      <module name="sap/ui/rta/toolbar/BaseRenderer.js"/>
+      <module name="sap/ui/rta/toolbar/Fiori.js"/>
+      <module name="sap/ui/rta/toolbar/Personalization.js"/>
+      <module name="sap/ui/rta/toolbar/Standalone.js"/>
+      <module name="sap/ui/rta/util/Animation.js"/>
+      <module name="sap/ui/rta/util/BindingsExtractor.js"/>
+      <module name="sap/ui/rta/util/PopupManager.js"/>
+      <module name="sap/ui/rta/util/ServiceEventBus.js"/>
+      <module name="sap/ui/rta/util/StylesLoader.js"/>
+      <module name="sap/ui/rta/util/UrlParser.js"/>
       <module name="sap/ui/rta/view/RemoveElementDialog.fragment.xml"/>
     </includes>
   </module>
@@ -1011,91 +1217,91 @@
   </module>
   <module name="sap/ui/rta/manifest.json" size="1133">
   </module>
-  <module name="sap/ui/rta/messagebundle.properties" size="16225">
+  <module name="sap/ui/rta/messagebundle.properties" size="15516">
   </module>
-  <module name="sap/ui/rta/messagebundle_ar.properties" size="34870">
+  <module name="sap/ui/rta/messagebundle_ar.properties" size="32945">
   </module>
-  <module name="sap/ui/rta/messagebundle_bg.properties" size="44189">
+  <module name="sap/ui/rta/messagebundle_bg.properties" size="41948">
   </module>
-  <module name="sap/ui/rta/messagebundle_ca.properties" size="17989">
+  <module name="sap/ui/rta/messagebundle_ca.properties" size="17191">
   </module>
-  <module name="sap/ui/rta/messagebundle_cs.properties" size="18442">
+  <module name="sap/ui/rta/messagebundle_cs.properties" size="17540">
   </module>
-  <module name="sap/ui/rta/messagebundle_da.properties" size="16461">
+  <module name="sap/ui/rta/messagebundle_da.properties" size="15716">
   </module>
-  <module name="sap/ui/rta/messagebundle_de.properties" size="17778">
+  <module name="sap/ui/rta/messagebundle_de.properties" size="17025">
   </module>
-  <module name="sap/ui/rta/messagebundle_el.properties" size="41664">
+  <module name="sap/ui/rta/messagebundle_el.properties" size="39551">
   </module>
-  <module name="sap/ui/rta/messagebundle_en.properties" size="16172">
+  <module name="sap/ui/rta/messagebundle_en.properties" size="15462">
   </module>
-  <module name="sap/ui/rta/messagebundle_en_US_sappsd.properties" size="47825">
+  <module name="sap/ui/rta/messagebundle_en_US_sappsd.properties" size="45094">
   </module>
-  <module name="sap/ui/rta/messagebundle_en_US_saptrc.properties" size="19346">
+  <module name="sap/ui/rta/messagebundle_en_US_saptrc.properties" size="18541">
   </module>
-  <module name="sap/ui/rta/messagebundle_es.properties" size="17941">
+  <module name="sap/ui/rta/messagebundle_es.properties" size="17163">
   </module>
-  <module name="sap/ui/rta/messagebundle_et.properties" size="16808">
+  <module name="sap/ui/rta/messagebundle_et.properties" size="16061">
   </module>
-  <module name="sap/ui/rta/messagebundle_fi.properties" size="17964">
+  <module name="sap/ui/rta/messagebundle_fi.properties" size="17179">
   </module>
-  <module name="sap/ui/rta/messagebundle_fr.properties" size="18082">
+  <module name="sap/ui/rta/messagebundle_fr.properties" size="17264">
   </module>
-  <module name="sap/ui/rta/messagebundle_hi.properties" size="38631">
+  <module name="sap/ui/rta/messagebundle_hi.properties" size="36874">
   </module>
-  <module name="sap/ui/rta/messagebundle_hr.properties" size="17939">
+  <module name="sap/ui/rta/messagebundle_hr.properties" size="17114">
   </module>
-  <module name="sap/ui/rta/messagebundle_hu.properties" size="19843">
+  <module name="sap/ui/rta/messagebundle_hu.properties" size="18882">
   </module>
-  <module name="sap/ui/rta/messagebundle_it.properties" size="17016">
+  <module name="sap/ui/rta/messagebundle_it.properties" size="16272">
   </module>
-  <module name="sap/ui/rta/messagebundle_iw.properties" size="31438">
+  <module name="sap/ui/rta/messagebundle_iw.properties" size="29810">
   </module>
-  <module name="sap/ui/rta/messagebundle_ja.properties" size="25189">
+  <module name="sap/ui/rta/messagebundle_ja.properties" size="23938">
   </module>
-  <module name="sap/ui/rta/messagebundle_kk.properties" size="39358">
+  <module name="sap/ui/rta/messagebundle_kk.properties" size="37178">
   </module>
-  <module name="sap/ui/rta/messagebundle_ko.properties" size="22301">
+  <module name="sap/ui/rta/messagebundle_ko.properties" size="21232">
   </module>
-  <module name="sap/ui/rta/messagebundle_lt.properties" size="18326">
+  <module name="sap/ui/rta/messagebundle_lt.properties" size="17505">
   </module>
-  <module name="sap/ui/rta/messagebundle_lv.properties" size="19220">
+  <module name="sap/ui/rta/messagebundle_lv.properties" size="18305">
   </module>
-  <module name="sap/ui/rta/messagebundle_ms.properties" size="16551">
+  <module name="sap/ui/rta/messagebundle_ms.properties" size="15823">
   </module>
-  <module name="sap/ui/rta/messagebundle_nl.properties" size="16708">
+  <module name="sap/ui/rta/messagebundle_nl.properties" size="15961">
   </module>
-  <module name="sap/ui/rta/messagebundle_no.properties" size="16377">
+  <module name="sap/ui/rta/messagebundle_no.properties" size="15624">
   </module>
-  <module name="sap/ui/rta/messagebundle_pl.properties" size="18156">
+  <module name="sap/ui/rta/messagebundle_pl.properties" size="17562">
   </module>
-  <module name="sap/ui/rta/messagebundle_pt.properties" size="17751">
+  <module name="sap/ui/rta/messagebundle_pt.properties" size="16953">
   </module>
-  <module name="sap/ui/rta/messagebundle_ro.properties" size="18429">
+  <module name="sap/ui/rta/messagebundle_ro.properties" size="17606">
   </module>
-  <module name="sap/ui/rta/messagebundle_ru.properties" size="39304">
+  <module name="sap/ui/rta/messagebundle_ru.properties" size="36927">
   </module>
-  <module name="sap/ui/rta/messagebundle_sh.properties" size="17840">
+  <module name="sap/ui/rta/messagebundle_sh.properties" size="16986">
   </module>
-  <module name="sap/ui/rta/messagebundle_sk.properties" size="18770">
+  <module name="sap/ui/rta/messagebundle_sk.properties" size="17909">
   </module>
-  <module name="sap/ui/rta/messagebundle_sl.properties" size="17197">
+  <module name="sap/ui/rta/messagebundle_sl.properties" size="16443">
   </module>
-  <module name="sap/ui/rta/messagebundle_sv.properties" size="16933">
+  <module name="sap/ui/rta/messagebundle_sv.properties" size="16175">
   </module>
-  <module name="sap/ui/rta/messagebundle_th.properties" size="38333">
+  <module name="sap/ui/rta/messagebundle_th.properties" size="36252">
   </module>
-  <module name="sap/ui/rta/messagebundle_tr.properties" size="18667">
+  <module name="sap/ui/rta/messagebundle_tr.properties" size="17728">
   </module>
-  <module name="sap/ui/rta/messagebundle_uk.properties" size="40023">
+  <module name="sap/ui/rta/messagebundle_uk.properties" size="37936">
   </module>
-  <module name="sap/ui/rta/messagebundle_vi.properties" size="26761">
+  <module name="sap/ui/rta/messagebundle_vi.properties" size="25355">
   </module>
-  <module name="sap/ui/rta/messagebundle_zh_CN.properties" size="20210">
+  <module name="sap/ui/rta/messagebundle_zh_CN.properties" size="19260">
   </module>
-  <module name="sap/ui/rta/messagebundle_zh_TW.properties" size="21039">
+  <module name="sap/ui/rta/messagebundle_zh_TW.properties" size="20036">
   </module>
-  <module name="sap/ui/rta/plugin/Combine.js" size="7089" compressedSize="2543">
+  <module name="sap/ui/rta/plugin/Combine.js" size="7174" compressedSize="2574">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/dt/Util.js"/>
@@ -1104,7 +1310,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/plugin/ControlVariant.js" size="27188" compressedSize="11283">
+  <module name="sap/ui/rta/plugin/ControlVariant.js" size="27112" compressedSize="11190">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -1123,7 +1329,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/plugin/CreateContainer.js" size="9356" compressedSize="3711">
+  <module name="sap/ui/rta/plugin/CreateContainer.js" size="9207" compressedSize="3630">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/uid.js"/>
@@ -1134,7 +1340,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/plugin/CutPaste.js" size="5886" compressedSize="2830">
+  <module name="sap/ui/rta/plugin/CutPaste.js" size="5902" compressedSize="2822">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/dt/Util.js"/>
@@ -1156,7 +1362,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/plugin/EasyAdd.js" size="7928" compressedSize="3940">
+  <module name="sap/ui/rta/plugin/EasyAdd.js" size="7696" compressedSize="3913">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/m/Button.js"/>
@@ -1175,20 +1381,20 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/plugin/Plugin.js" size="12884" compressedSize="5675">
+  <module name="sap/ui/rta/plugin/Plugin.js" size="14535" compressedSize="6348">
     <description>Provides class sap.ui.rta.plugin.Plugin.</description>
     <requires>
       <module name="sap/ui/dt/ElementOverlay.js"/>
       <module name="sap/ui/dt/OverlayRegistry.js"/>
       <module name="sap/ui/dt/OverlayUtil.js"/>
       <module name="sap/ui/dt/Plugin.js"/>
+      <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/changeHandler/JsControlTreeModifier.js"/>
       <module name="sap/ui/fl/registry/ChangeRegistry.js"/>
-      <module name="sap/ui/rta/util/hasStableId.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/plugin/RTAElementMover.js" size="12341" compressedSize="4418">
+  <module name="sap/ui/rta/plugin/RTAElementMover.js" size="12276" compressedSize="4435">
     <description>Provides class sap.ui.rta.plugin.RTAElementMover.</description>
     <requires>
       <module name="sap/ui/dt/MetadataPropagationUtil.js"/>
@@ -1201,7 +1407,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/plugin/Remove.js" size="9870" compressedSize="3879">
+  <module name="sap/ui/rta/plugin/Remove.js" size="9940" compressedSize="3910">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -1213,7 +1419,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/plugin/Rename.js" size="6670" compressedSize="2918">
+  <module name="sap/ui/rta/plugin/Rename.js" size="6741" compressedSize="2941">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -1249,7 +1455,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/plugin/Settings.js" size="10262" compressedSize="4268">
+  <module name="sap/ui/rta/plugin/Settings.js" size="10179" compressedSize="4213">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -1259,7 +1465,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/plugin/Split.js" size="5245" compressedSize="2065">
+  <module name="sap/ui/rta/plugin/Split.js" size="5252" compressedSize="2070">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/uid.js"/>
@@ -1280,12 +1486,11 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/plugin/additionalElements/AddElementsDialog.js" size="12651" compressedSize="6479">
+  <module name="sap/ui/rta/plugin/additionalElements/AddElementsDialog.js" size="12645" compressedSize="6471">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/m/Button.js"/>
-      <module name="sap/m/ButtonType.js"/>
       <module name="sap/m/CustomListItem.js"/>
       <module name="sap/m/Dialog.js"/>
       <module name="sap/m/Label.js"/>
@@ -1307,7 +1512,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/plugin/additionalElements/AdditionalElementsAnalyzer.js" size="22999" compressedSize="7393">
+  <module name="sap/ui/rta/plugin/additionalElements/AdditionalElementsAnalyzer.js" size="22993" compressedSize="7385">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -1318,7 +1523,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin.js" size="42570" compressedSize="18544">
+  <module name="sap/ui/rta/plugin/additionalElements/AdditionalElementsPlugin.js" size="40381" compressedSize="17440">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -1342,7 +1547,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/service/ControllerExtension.js" size="4738" compressedSize="1916">
+  <module name="sap/ui/rta/service/ControllerExtension.js" size="4686" compressedSize="1868">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/dt/OverlayRegistry.js"/>
@@ -1368,8 +1573,8 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/service/Property.js" size="17636" compressedSize="4231">
-    <description>global Map</description>
+  <module name="sap/ui/rta/service/Property.js" size="16410" compressedSize="3837">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/merge.js"/>
       <module name="sap/ui/dt/OverlayRegistry.js"/>
@@ -1399,7 +1604,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/toolbar/Adaptation.js" size="12798" compressedSize="6879">
+  <module name="sap/ui/rta/toolbar/Adaptation.js" size="11655" compressedSize="6378">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/m/Button.js"/>
@@ -1442,7 +1647,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/toolbar/Fiori.js" size="3138" compressedSize="1669">
+  <module name="sap/ui/rta/toolbar/Fiori.js" size="3131" compressedSize="1665">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -1483,7 +1688,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/rta/util/PopupManager.js" size="18986" compressedSize="7711">
+  <module name="sap/ui/rta/util/PopupManager.js" size="18962" compressedSize="7695">
     <description>global Map</description>
     <requires>
       <module name="sap/m/Dialog.js"/>
@@ -1518,37 +1723,6 @@
   <module name="sap/ui/rta/util/UrlParser.js" size="949" compressedSize="491">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/rta/util/hasStableId.js" size="1785" compressedSize="762">
-    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="sap/ui/dt/OverlayUtil.js"/>
-      <module name="sap/ui/fl/Utils.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/rta/util/showMessageBox.js" size="2767" compressedSize="1216">
-    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="sap/m/Link.js"/>
-      <module name="sap/m/MessageBox.js"/>
-      <module name="sap/m/Text.js"/>
-      <module name="sap/ui/layout/HorizontalLayout.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/rta/util/validateFlexEnabled.js" size="2324" compressedSize="1469">
-    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="sap/base/Log.js"/>
-      <module name="sap/base/util/ObjectPath.js"/>
-      <module name="sap/m/MessageBox.js"/>
-      <module name="sap/ui/fl/Utils.js"/>
-      <module name="sap/ui/rta/Utils.js"/>
-      <module name="sap/ui/rta/util/hasStableId.js"/>
-      <module name="sap/ui/rta/util/showMessageBox.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>

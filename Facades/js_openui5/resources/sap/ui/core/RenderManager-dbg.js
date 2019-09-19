@@ -156,7 +156,7 @@ sap.ui.define([
 	 *
 	 * @extends Object
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @alias sap.ui.core.RenderManager
 	 * @public
 	 */
@@ -521,9 +521,7 @@ sap.ui.define([
 		/**
 		 * Sets the given HTML markup without any encoding or sanitizing.
 		 *
-		 * This must not be used for plain texts; use the <code>text</code> method instead.
-		 *
-		 * @param {string} sHtml Well-formed, valid HTML markup
+		 * @param {string} sHtml HTML markup
 		 * @return {sap.ui.core.RenderManager} Reference to <code>this</code> in order to allow method chaining
 		 * @public
 		 * @since 1.67
@@ -861,15 +859,6 @@ sap.ui.define([
 			}
 			aRenderStack.unshift(oControl.getId());
 
-			// start performance measurement
-			Measurement.start(oControl.getId() + "---renderControl", "Rendering of " + oControl.getMetadata().getName(), ["rendering","control"]);
-
-			// Trigger onBeforeRendering before checking visibility, as visible property might be changed in handler
-			triggerBeforeRendering(oControl);
-
-			Measurement.pause(oControl.getId() + "---renderControl");
-			// don't measure getRenderer because if Load needed its measured in Ajax call
-
 			// Either render the control normally, or invoke the InvisibleRenderer in case the control
 			// uses the default visible property
 			var oRenderer;
@@ -897,7 +886,10 @@ sap.ui.define([
 					: oMetadata.getRenderer();
 			}
 
-			Measurement.resume(oControl.getId() + "---renderControl");
+			// start performance measurement
+			Measurement.start(oControl.getId() + "---renderControl","Rendering of " + oControl.getMetadata().getName(), ["rendering","control"]);
+
+			triggerBeforeRendering(oControl);
 
 			// unbind any generically bound browser event handlers
 			var aBindings = oControl.aBindParameters;
@@ -1849,7 +1841,7 @@ sap.ui.define([
 	 * @param {function} fnListener listener function
 	 * @param {object} [oContext=RenderManager] context for the listener function
 	 * @private
-	 * @ui5-restricted sap.ui.richtexteditor.RichTextEditor
+	 * @sap-restricted sap.ui.richtexteditor.RichTextEditor
 	 */
 	RenderManager.attachPreserveContent = function(fnListener, oContext) {
 		// discard duplicates first
@@ -1865,7 +1857,7 @@ sap.ui.define([
 	 *
 	 * @param {function} fnListener listener function
 	 * @private
-	 * @ui5-restricted sap.ui.richtexteditor.RichTextEditor
+	 * @sap-restricted sap.ui.richtexteditor.RichTextEditor
 	 */
 	RenderManager.detachPreserveContent = function(fnListener) {
 		aPreserveContentListeners = aPreserveContentListeners.filter(function(oListener) {

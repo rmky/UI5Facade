@@ -86,7 +86,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -244,7 +244,6 @@ function(
 			 * prevent the sticky elements of the control from becoming fixed at the top of the viewport.</li>
 			 * <li>If sticky column headers are enabled in the <code>sap.m.Table</code> control, setting focus on the column headers will let the table scroll to the top.</li>
 			 * <li>A transparent toolbar design is not supported for sticky bars. The toolbar will automatically get an intransparent background color.</li>
-			 * <li>This feature supports only the default height of the toolbar control.<li>
 			 * </ul>
 			 *
 			 * @since 1.58
@@ -536,7 +535,7 @@ function(
 
 		// invalidate item navigation for desktop
 		if (Device.system.desktop) {
-			this._startItemNavigation(true);
+			this._bItemNavigationInvalidated = true;
 		}
 	};
 
@@ -1288,57 +1287,7 @@ function(
 
 	// this gets called from item when selection is changed via checkbox/radiobutton/press event
 	ListBase.prototype.onItemSelect = function(oListItem, bSelected) {
-		var sMode = this.getMode();
-
-		if (this._mRangeSelection) {
-			// if this._mRangeSelection.selected == false, then simply select the item
-			if (!this._mRangeSelection.selected) {
-				this._fireSelectionChangeEvent([oListItem]);
-				// update the _mRangeSelection object so that RangeSelection mode can be resumed as expected by the user
-				this._mRangeSelection.index = this.getVisibleItems().indexOf(oListItem);
-				this._mRangeSelection.selected = bSelected;
-				return;
-			}
-
-			// if the item is deselected in rangeSelection mode, then this action should be prevented
-			if (!bSelected) {
-				oListItem.setSelected(true);
-				return;
-			}
-
-			var iListItemIndex = this.indexOfItem(oListItem),
-				aItems = this.getItems(),
-				iItemsRangeToSelect,
-				oItemToSelect,
-				aSelectedItemsRange = [],
-				iDirection;
-
-			if (iListItemIndex < this._mRangeSelection.index) {
-				iItemsRangeToSelect = this._mRangeSelection.index - iListItemIndex;
-				iDirection = -1;
-			} else {
-				iItemsRangeToSelect = iListItemIndex - this._mRangeSelection.index;
-				iDirection = 1;
-			}
-
-			for (var i = 1; i <= iItemsRangeToSelect; i++) {
-				oItemToSelect = aItems[this._mRangeSelection.index + (i * iDirection)];
-
-				// if item is not visible or item is already selected then do not fire the selectionChange event
-				if (oItemToSelect.isSelectable() && oItemToSelect.getVisible() && !oItemToSelect.getSelected()) {
-					oItemToSelect.setSelected(true);
-					aSelectedItemsRange.push(oItemToSelect);
-				} else if (oItemToSelect === oListItem) {
-					// oListItem.getSelected() === true, hence just add item to the aSelectedItemsRange array
-					aSelectedItemsRange.push(oItemToSelect);
-				}
-			}
-
-			this._fireSelectionChangeEvent(aSelectedItemsRange);
-			return;
-		}
-
-		if (sMode === ListMode.MultiSelect) {
+		if (this.getMode() == ListMode.MultiSelect) {
 			this._fireSelectionChangeEvent([oListItem]);
 		} else if (this._bSelectionMode && bSelected) {
 			this._fireSelectionChangeEvent([oListItem]);
@@ -1388,36 +1337,6 @@ function(
 				srcControl : oSrcControl
 			});
 		}.bind(this), 0);
-	};
-
-	ListBase.prototype.onItemKeyDown = function (oItem, oEvent) {
-		if (!oEvent.shiftKey || this.getMode() !== ListMode.MultiSelect || !oItem.isSelectable()) {
-			return;
-		}
-
-		var aVisibleItems = this.getVisibleItems(),
-			bHasVisibleSelectedItems = aVisibleItems.some(function(oVisibleItem) {
-				return !!oVisibleItem.getSelected();
-			});
-
-		// if there are no visible selected items then no action required in rangeSelection mode
-		if (!bHasVisibleSelectedItems) {
-			return;
-		}
-
-		if (!this._mRangeSelection) {
-			this._mRangeSelection = {
-				index: aVisibleItems.indexOf(oItem),
-				selected: oItem.getSelected()
-			};
-		}
-	};
-
-	ListBase.prototype.onItemKeyUp = function(oItem, oEvent) {
-		// end of range selection when SHIFT key is released
-		if (oEvent.which === KeyCodes.SHIFT) {
-			this._mRangeSelection = null;
-		}
 	};
 
 	// insert or remove given item's path from selection array
@@ -1870,7 +1789,7 @@ function(
 		// if focus is not on the navigation items then only invalidate the item navigation
 		var oNavigationRoot = this.getNavigationRoot();
 		var iTabIndex = (sKeyboardMode == mKeyboardMode.Edit) ? -1 : 0;
-		if (bIfNeeded && oNavigationRoot && !oNavigationRoot.contains(document.activeElement)) {
+		if (bIfNeeded && !oNavigationRoot.contains(document.activeElement)) {
 			this._bItemNavigationInvalidated = true;
 			if (!oNavigationRoot.getAttribute("tabindex")) {
 				oNavigationRoot.tabIndex = iTabIndex;
@@ -1882,7 +1801,7 @@ function(
 		if (!this._oItemNavigation) {
 			this._oItemNavigation = new ItemNavigation();
 			this._oItemNavigation.setCycling(false);
-			this.addDelegate(this._oItemNavigation);
+			this.addEventDelegate(this._oItemNavigation);
 
 			// set the tab index of active items
 			this._setItemNavigationTabIndex(iTabIndex);
@@ -2131,11 +2050,6 @@ function(
 		if (this._bItemNavigationInvalidated) {
 			this._startItemNavigation();
 		}
-
-		// prevent text selection when preforming range selection with SHIFT + mouse click
-		if (oEvent.shiftKey && this._mRangeSelection && oEvent.srcControl.getId().includes("-selectMulti")) {
-			oEvent.preventDefault();
-		}
 	};
 
 	// focus to previously focused element known in item navigation
@@ -2243,43 +2157,6 @@ function(
 			}
 
 			oContextMenu.openAsContextMenu(oEvent, oLI);
-		}
-	};
-
-	ListBase.prototype.onItemUpDownModifiers = function(oItem, oEvent, iDirection) {
-		if (!this._mRangeSelection) {
-			return;
-		}
-
-		// range seleection with shift + arrow up/down only works with visible items
-		var aVisibleItems = this.getVisibleItems(),
-			iItemIndex = aVisibleItems.indexOf(oItem),
-			oItemToSelect = aVisibleItems[iItemIndex + iDirection],
-			bItemSelected = oItemToSelect.getSelected();
-
-		if (this._mRangeSelection.direction === undefined) {
-			// store the direction when first called
-			// -1 indicates "up"
-			// 1 indicates "down"
-			this._mRangeSelection.direction = iDirection;
-		} else if (this._mRangeSelection.direction !== iDirection) {
-			if (this._mRangeSelection.index !== aVisibleItems.indexOf(oItem)) {
-				// When moving back up/down to the item where the range selection started, the item always get deselected
-				oItemToSelect = oItem;
-				bItemSelected = oItemToSelect.getSelected();
-				if (this._mRangeSelection.selected && bItemSelected) {
-					this.setSelectedItem(oItemToSelect, false, true);
-					return;
-				}
-			} else {
-				// store the new direction once the above condition is met, so that the selection/deseelction can be handled accordingly
-				this._mRangeSelection.direction = iDirection;
-			}
-		}
-
-		if (this._mRangeSelection.selected !== bItemSelected && oItemToSelect.isSelectable()) {
-			// selection change should only happen on selectable items
-			this.setSelectedItem(oItemToSelect, this._mRangeSelection.selected, true);
 		}
 	};
 

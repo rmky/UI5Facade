@@ -82,7 +82,7 @@ function(
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -166,7 +166,21 @@ function(
 			 * @since 1.61
 			 * @private
 			 */
-			editableParent: { type: "boolean", group: "Behavior", defaultValue: true, visibility: "hidden"}
+			editableParent: { type: "boolean", group: "Behavior", defaultValue: true, visibility: "hidden"},
+
+			/**
+			 * Specifies the aria-posinset of the RadioButton.
+			 * @since 1.61
+			 * @private
+			 */
+			posinset: {type: "string", group: "Data", defaultValue: "", visibility: "hidden"},
+
+			/**
+			 * Specifies the aria-setsize of the RadioButton.
+			 * @since 1.61
+			 * @private
+			 */
+			setsize: {type: "string", group: "Data", defaultValue: "", visibility: "hidden"}
 		},
 		events : {
 
@@ -582,6 +596,11 @@ function(
 		return this._changeGroupName(this.getGroupName());
 	};
 
+	RadioButton.prototype.onAfterRendering = function() {
+		var sGroupName = this.getGroupName();
+		this._setAriaPositionAttributes(sGroupName);
+	};
+
 	/**
 	 * Destroys all related objects to the RadioButton
 	 * @public
@@ -660,6 +679,7 @@ function(
 
 		if (aOldGroup && aOldGroup.indexOf(this) !== -1) {
 			aOldGroup.splice(aOldGroup.indexOf(this), 1);
+			this._setAriaPositionAttributes(sOldGroupName);
 		}
 
 		if (!aNewGroup) {
@@ -668,11 +688,44 @@ function(
 
 		if (aNewGroup.indexOf(this) === -1) {
 			aNewGroup.push(this);
+			this._setAriaPositionAttributes(sNewGroupName);
 		}
+
+	};
+
+	/**
+	 * Recalculates and sets the correct aria-posinset and aria-setsize attribute values
+	 * This is done based on the rendered in the DOM radio buttons which are in the provided group.
+	 *
+	 * @param {string} [sGroupName] The name of the group for which the ARIA attributes should be recalculated
+	 * @private
+	 */
+	RadioButton.prototype._setAriaPositionAttributes = function (sGroupName) {
+		var aGroup = this._groupNames[sGroupName],
+			iRenderedIndex = 0,
+			iRenderedInGroupCount;
+
+		if (!aGroup.length || !this.getDomRef()) {
+			return;
+		}
+
+		// Find how many buttons are rendered in the group
+		iRenderedInGroupCount = aGroup.reduce(function (iRenderedInGroupCount, oRadioButton) {
+			return oRadioButton.getDomRef() ? ++iRenderedInGroupCount : iRenderedInGroupCount;
+		}, 0);
+
+		// For every radio button in the group - recalculate its index and set its properties
+		aGroup.forEach(function(oRadioButton) {
+			var oRadioDom = oRadioButton.getDomRef();
+			if (oRadioDom) {
+				oRadioDom.setAttribute("aria-posinset", ++iRenderedIndex);
+				oRadioDom.setAttribute("aria-setsize", iRenderedInGroupCount);
+			}
+		});
 	};
 
 	// Private properties setter generation
-	["editableParent"].forEach(function(privatePropName) {
+	["editableParent", "posinset", "setsize"].forEach(function(privatePropName) {
 		RadioButton.prototype["_set" + capitalize(privatePropName)] = function (vValue) {
 			// prevent invalidation as the parent will rerender its children
 			return this.setProperty(privatePropName, vValue, true);

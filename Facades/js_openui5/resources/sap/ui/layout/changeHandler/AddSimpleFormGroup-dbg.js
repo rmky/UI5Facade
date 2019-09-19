@@ -5,13 +5,13 @@
  */
 
 sap.ui.define([
-	"sap/ui/fl/changeHandler/Base",
-	"sap/ui/fl/changeHandler/JsControlTreeModifier",
-	"sap/base/Log"
+	'sap/ui/fl/Utils',
+	'sap/ui/fl/changeHandler/Base',
+	'sap/ui/fl/changeHandler/JsControlTreeModifier'
 ], function (
+	Utils,
 	Base,
-	JsControlTreeModifier,
-	Log
+	JsControlTreeModifier
 ) {
 	"use strict";
 
@@ -19,7 +19,7 @@ sap.ui.define([
 		* Change handler for adding a simple form group.
 		* @alias sap.ui.layout.changeHandler.AddSimpleFormGroup
 		* @author SAP SE
-		* @version 1.70.0
+		* @version 1.68.1
 		* @experimental Since 1.27.0
 		*/
 	var AddSimpleFormGroup = {};
@@ -126,7 +126,7 @@ sap.ui.define([
 			oModifier.insertAggregation(oForm, "content", oTitle, iInsertIndex, oView);
 
 		} else {
-			Log.error("Change does not contain sufficient information to be applied: [" + oChange.layer + "]" + oChange.namespace + "/" + oChange.fileName + "." + oChange.fileType);
+			Utils.log.error("Change does not contain sufficient information to be applied: [" + oChange.layer + "]" + oChange.namespace + "/" + oChange.fileName + "." + oChange.fileType);
 			//however subsequent changes should be applied
 		}
 

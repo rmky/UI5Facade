@@ -8,13 +8,14 @@
  * This class provides the possibility to declare the "view" part of a composite control
  * in an XML fragment which will automatically define the rendering accordingly.
  *
- * <b>Note:</b> If you use aggregation forwarding with <code>idSuffix</code> as defined
+ * <b>Note:</b> If you use aggregation forwarding with <code>idSuffix</<code> as defined
  * in {@link sap.ui.base.ManagedObject ManagedObject} and refer to IDs defined in the XML fragment
- * of the XML composite control, then these types of <code>idSuffix</code> have the form
+ * of the XML composite control, then these types of <code>idSuffix</<code> have the form
  * "--ID" where ID is the ID that you have defined in the XML fragment.
  *
  */
 sap.ui.define([
+	'sap/ui/thirdparty/jquery',
 	'sap/ui/core/Control',
 	'sap/ui/core/XMLCompositeMetadata',
 	'sap/ui/model/base/ManagedObjectModel',
@@ -27,6 +28,7 @@ sap.ui.define([
 	'sap/ui/performance/Measurement'
 ],
 	function(
+		jQuery,
 		Control,
 		XMLCompositeMetadata,
 		ManagedObjectModel,
@@ -149,7 +151,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.70.0
+		 * @version 1.68.1
 		 * @since 1.56.0
 		 * @alias sap.ui.core.XMLComposite
 		 * @see {@link topic:b83a4dcb7d0e46969027345b8d32fd44 XML Composite Controls}
@@ -282,11 +284,11 @@ sap.ui.define([
 		 */
 		XMLComposite.prototype.setProperty = function (sName, oValue, bSuppressInvalidate) {
 			var oMetadata = this.getMetadata(),
-				oProperty = oMetadata.getManagedProperty(sName);
+				oProperty = oMetadata.getProperty(sName);
 			if (!oProperty) {
 				return this;
 			}
-			bSuppressInvalidate = oMetadata._suppressInvalidate(oProperty, bSuppressInvalidate);
+			bSuppressInvalidate = this.getMetadata()._suppressInvalidate(oProperty, bSuppressInvalidate);
 			return Control.prototype.setProperty.apply(this, [sName, oValue, bSuppressInvalidate]);
 		};
 

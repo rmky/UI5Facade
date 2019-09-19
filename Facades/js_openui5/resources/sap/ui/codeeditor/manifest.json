@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.70.0"
+      "version": "1.68.1"
     },
     "title": "UI5 library: sap.ui.codeeditor",
     "description": "UI5 library: sap.ui.codeeditor",
@@ -27,10 +27,10 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.70",
+      "minUI5Version": "1.68",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.70.0"
+          "minVersion": "1.68.1"
         }
       }
     },

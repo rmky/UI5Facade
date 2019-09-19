@@ -36,11 +36,6 @@
 			"theme": "sap_fiori_3"
 		},
 		{
-			"name": "GridListItem.less",
-			"designtime": true,
-			"theme": "sap_fiori_3"
-		},
-		{
 			"name": "ShellBar.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"

@@ -68,14 +68,12 @@ function(
 	* A multi-input field allows the user to enter multiple values, which are displayed as {@link sap.m.Token tokens}.
 	* You can enable auto-complete suggestions or value help to help the user choose the correct entry. You can define
 	* validator functions to define what token values are accepted.
-	*
 	* <b>Notes:</b>
 	* <ul>
 	* <li> New valid tokens are created, when the user presses Enter, selects a value from the suggestions drop-down, or when the focus leaves the field.</li>
 	* <li> When multiple values are copied and pasted in the field, separate tokens are created for each of them.</li>
 	* <li> When a single value is copied and pasted in the field, it is shown as a text value, as further editing might be required before it is converted into a token.</li>
 	* <li> Provide meaningful labels for all input fields. Do not use the placeholder as a replacement for the label.</li>
-	* <li> The <code>showValueHelp</code> property is overwritten and after initialization of the control, its value becomes <code>truthy</code>.</li>
 	* </ul>
 	* <h3>Usage</h3>
 	* <h4>When to use:</h4>
@@ -112,7 +110,7 @@ function(
 	* @extends sap.m.Input
 	*
 	* @author SAP SE
-	* @version 1.70.0
+	* @version 1.68.1
 	*
 	* @constructor
 	* @public
@@ -262,7 +260,10 @@ function(
 
 		this.attachLiveChange(this._onLiveChange, this);
 
-		this.attachValueHelpRequest(this._onValueHelpRequested, this);
+		this.attachValueHelpRequest(function () {
+			// Register the click on value help.
+			this._bValueHelpOpen = true;
+		}, this);
 
 		this._getValueHelpIcon().setProperty("visible", true, true);
 		this._modifySuggestionPicker();
@@ -293,11 +294,6 @@ function(
 		}
 
 		this._deregisterResizeHandler();
-	};
-
-	MultiInput.prototype.onBeforeRendering = function () {
-		Input.onBeforeRendering.apply(this, arguments);
-		this._tokenizer.setEnabled(this.getEnabled());
 	};
 
 	/**
@@ -458,11 +454,6 @@ function(
 		}
 	};
 
-	MultiInput.prototype._onValueHelpRequested = function () {
-		// Register the click on value help.
-		this._bValueHelpOpen = true;
-	};
-
 	MultiInput.prototype._onLiveChange = function (eventArgs) {
 		this._tokenizer._removeSelectedTokens();
 	};
@@ -559,12 +550,8 @@ function(
 	/**
 	 * Function adds a validation callback called before any new token gets added to the tokens aggregation
 	 *
+	 * @param {function} fValidator The validation callback
 	 * @public
-	 * @param {function} fValidator The validation callback whose parameter contains the following properties:
-	 * @param {string} fValidator.text The source text
-	 * @param {sap.m.Token} [fValidator.suggestedToken] Suggested token
-	 * @param {object} [fValidator.suggestionObject] Any object used to find the suggested token, this property is available when the multiInput has a list or tabular suggestions
-	 * @param {function} [fValidator.asyncCallback] Callback which accepts {sap.m.Token} as a parameter and gets called after validation has finished
 	 */
 	MultiInput.prototype.addValidator = function (fValidator) {
 		this._tokenizer.addValidator(fValidator);
@@ -667,9 +654,6 @@ function(
 	 * @private
 	 */
 	MultiInput.prototype.onkeydown = function (oEvent) {
-		if (!this.getEnabled()) {
-			return;
-		}
 
 		if (oEvent.which === KeyCodes.TAB) {
 			this._tokenizer._changeAllTokensSelection(false);
@@ -850,10 +834,8 @@ function(
 			}
 		}
 
-		if (oEvent.keyCode === KeyCodes.ARROW_UP) {
-			// prevent scroll of the page
-			oEvent.preventDefault();
-		}
+		// prevent scroll of the page
+		oEvent.preventDefault();
 	};
 
 	/**
@@ -1278,32 +1260,6 @@ function(
 		return item;
 	};
 
-	/**
-	 * Clones the <code>sap.m.MultiInput</code> control.
-	 *
-	 * @public
-	 * @return {sap.ui.core.Element} reference to the newly created clone
-	 */
-	MultiInput.prototype.clone = function () {
-		var oClone;
-
-		this.detachSuggestionItemSelected(this._onSuggestionItemSelected, this);
-		this.detachLiveChange(this._onLiveChange, this);
-		this._tokenizer.detachTokenChange(this._onTokenChange, this);
-		this._tokenizer.detachTokenUpdate(this._onTokenUpdate, this);
-		this.detachValueHelpRequest(this._onValueHelpRequested, this);
-
-		oClone = Input.prototype.clone.apply(this, arguments);
-
-		this.attachSuggestionItemSelected(this._onSuggestionItemSelected, this);
-		this.attachLiveChange(this._onLiveChange, this);
-		this._tokenizer.attachTokenChange(this._onTokenChange, this);
-		this._tokenizer.attachTokenUpdate(this._onTokenUpdate, this);
-		this.attachValueHelpRequest(this._onValueHelpRequested, this);
-
-		return oClone;
-	};
-
 	MultiInput.getMetadata().forwardAggregation(
 		"tokens",
 		{
@@ -1713,12 +1669,8 @@ function(
 			return oToken.getId() === sSelectedId;
 		})[0];
 
-		if (oTokenToDelete.getEditable()) {
-			this._tokenizer._onTokenDelete(oTokenToDelete);
-			this._getTokensList().removeItem(oListItem);
-		}
-
-		this.focus();
+		this._tokenizer._onTokenDelete(oTokenToDelete);
+		this._getTokensList().removeItem(oListItem);
 	};
 
 	/**

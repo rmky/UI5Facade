@@ -11,16 +11,6 @@
 			"theme": "sap_fiori_3"
 		},
 		{
-			"name": "Dialogs.less",
-			"designtime": true,
-			"theme": "sap_fiori_3"
-		},
-		{
-			"name": "FieldRepository.less",
-			"designtime": true,
-			"theme": "sap_fiori_3"
-		},
-		{
 			"name": "Overlay.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"

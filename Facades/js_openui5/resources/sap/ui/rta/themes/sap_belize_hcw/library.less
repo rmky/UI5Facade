@@ -20,28 +20,26 @@
 
 .sapUiRtaToolbar {
 
-	.sapMSegBBtn.sapMSegBBtnFocusable {
+	.sapMSegBBtn.sapMSegBBtnFocusable{
 
-		&:hover .sapMSegBBtnInner,
-		&.sapMSegBBtnSel:hover .sapMSegBBtnInner {
+		&:hover,
+		&.sapMSegBBtnSel:hover {
 			background-color: @sapHC_HighlightBackground;
 			color: @_sap_ui_rta_Toolbar_Base_TextColor;
 		}
 
-		&.sapMSegBBtnSel:hover .sapMSegBBtnInner::after{
+		&.sapMSegBBtnSel:hover::after{
 			border-bottom: 2px solid @_sap_ui_rta_Toolbar_Base_TextColor;
 		}
 	}
 
 	.sapMSegBBtnFocusable.sapMBtnActive:hover {
-		.sapMSegBBtnInner {
-			background-color: @_sap_ui_rta_Toolbar_Base_BaseColor;
-		}
-		& .sapMSegBBtnInner::after {
+		background-color: @_sap_ui_rta_Toolbar_Base_BaseColor;
+		&::after {
 			border-bottom: 2px solid @_sap_ui_rta_Toolbar_Base_TextColor;
 		}
 	}
-	.sapMSegB .sapMSegBBtn.sapMSegBtnLastVisibleButton:not(.sapMSegBBtnDis) .sapMSegBBtnInner {
+	.sapMSegB .sapMSegBBtn.sapMSegBtnLastVisibleButton:not(.sapMSegBBtnDis){
 		border-right: none;
 	}
 }

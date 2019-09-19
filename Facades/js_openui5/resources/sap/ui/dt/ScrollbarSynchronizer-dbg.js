@@ -24,7 +24,7 @@ function(
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @private
@@ -183,4 +183,4 @@ function(
 	};
 
 	return ScrollbarSynchronizer;
-});
+}, true);

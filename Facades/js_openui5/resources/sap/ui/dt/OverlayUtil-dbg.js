@@ -20,7 +20,7 @@ function(
 	 *
 	 * @class Utility functionality to work with overlays
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @private
 	 * @static
 	 * @since 1.30
@@ -102,10 +102,7 @@ function(
 	 * @private
 	 */
 	OverlayUtil.getGeometry = function(aGeometry) {
-		var minLeft;
-		var maxRight;
-		var minTop;
-		var maxBottom;
+		var minLeft, maxRight, minTop, maxBottom;
 		aGeometry.forEach(function(oElementGeometry) {
 			if (oElementGeometry) {
 				if (!minLeft || oElementGeometry.position.left < minLeft) {
@@ -203,8 +200,7 @@ function(
 	 * @private
 	 */
 	OverlayUtil.getAllChildOverlays = function(oElementOverlay) {
-		var aChildElementOverlays = [];
-		var aChildren = [];
+		var aChildElementOverlays = [], aChildren = [];
 		if (!oElementOverlay) {
 			return aChildElementOverlays;
 		}

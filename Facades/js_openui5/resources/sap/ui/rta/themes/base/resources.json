@@ -16,11 +16,6 @@
 			"theme": "base"
 		},
 		{
-			"name": "MessageBox.less",
-			"designtime": true,
-			"theme": "base"
-		},
-		{
 			"name": "Overlay.less",
 			"designtime": true,
 			"theme": "base"

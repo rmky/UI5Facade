@@ -44,7 +44,7 @@ function (
 	 * Constructor for a new sap.ui.rta.util.PopupManager
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @constructor
 	 * @private
 	 * @since 1.48
@@ -124,8 +124,7 @@ function (
 	 * @public
 	 */
 	PopupManager.prototype.getCategorizedOpenPopups = function() {
-		var aOpenDialogs;
-		var aOpenPopovers;
+		var aOpenDialogs, aOpenPopovers;
 
 		// check if dialogs are already open when RTA is started
 		aOpenDialogs = InstanceManager.getOpenDialogs();
@@ -465,8 +464,7 @@ function (
 	 * @private
 	 */
 	PopupManager.prototype._getAppComponentForControl = function(oControl) {
-		var oComponent;
-		var oAppComponent;
+		var oComponent, oAppComponent;
 
 		if (oControl instanceof Component) {
 			oComponent = oControl;
@@ -488,9 +486,7 @@ function (
 	 * @private
 	 */
 	PopupManager.prototype._getComponentForControl = function(oControl) {
-		var oComponent;
-		var oRootComponent;
-		var oParentControl;
+		var oComponent, oRootComponent, oParentControl;
 		if (oControl) {
 			oComponent = Component.getOwnerComponentFor(oControl);
 			if (

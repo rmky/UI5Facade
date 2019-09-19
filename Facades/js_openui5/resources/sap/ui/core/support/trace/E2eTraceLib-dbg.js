@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/ui/Device', "sap/ui/performance/trace/Passport", "sap/base/Log"],
-	function(Device, Passport, Log) {
+sap.ui.define(['jquery.sap.global', 'sap/ui/Device', "sap/ui/performance/trace/Passport", "sap/base/Log"],
+	function(jQuery, Device, Passport, Log) {
 		"use strict";
 
 		/*global alert, confirm, performance */

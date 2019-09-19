@@ -71,11 +71,11 @@ sap.ui.define(['sap/ui/base/Object', "sap/base/assert", "sap/base/Log"],
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 * @alias sap.ui.core.service.Service
 	 * @abstract
 	 * @private
-	 * @ui5-restricted sap.ushell
+	 * @sap-restricted sap.ushell
 	 * @since 1.37.0
 	 */
 	var Service = BaseObject.extend("sap.ui.core.service.Service", /** @lends sap.ui.service.Service.prototype */ {

@@ -13,8 +13,7 @@ sap.ui.define([
   'sap/ui/core/Popup',
   './MessageToast',
   './MessageList',
-  './MessageBarRenderer',
-  'sap/ui/dom/jquery/rect' // jQuery Plugin "rect"
+  './MessageBarRenderer'
 ],
 	function(
 	  jQuery,
@@ -44,7 +43,7 @@ sap.ui.define([
 	 * @class
 	 * Creates an instance of a MessageBar Control, for displaying messages.
 	 * @extends sap.ui.core.Control
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @public
@@ -182,7 +181,6 @@ sap.ui.define([
 
 
 	  // MessageBar start position:
-		// jQuery Plugin "rect"
 		this.oMsgBarDragStartPosition       = this.$().rect();
 		this.oMsgBarDragStartPosition.right = Number(this.$().css('right').replace("px", ""));
 

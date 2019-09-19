@@ -306,11 +306,6 @@
 			"theme": "sap_belize_hcw"
 		},
 		{
-			"name": "SinglePlanningCalendarMonthGrid.less",
-			"designtime": true,
-			"theme": "sap_belize_hcw"
-		},
-		{
 			"name": "SlideTile.less",
 			"designtime": true,
 			"theme": "sap_belize_hcw"

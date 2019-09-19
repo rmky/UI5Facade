@@ -106,7 +106,6 @@ var JavaHighlightRules = function() {
         "constant.language": buildinConstants,
         "support.function": langClasses
     }, "identifier");
-
     this.$rules = {
         "start" : [
             {
@@ -261,7 +260,6 @@ var DroolsHighlightRules = function() {
         "support.class" : langClasses,
         "support.function" : "retract|update|modify|insert"
     }, "identifier");
-
     var stringRules = function() {
       return [{
         token : "string", // single line
@@ -487,7 +485,8 @@ oop.inherits(Mode, TextMode);
 
 exports.Mode = Mode;
 
-});                (function() {
+});
+                (function() {
                     ace.require(["ace/mode/drools"], function(m) {
                         if (typeof module == "object" && typeof exports == "object" && module) {
                             module.exports = m;

@@ -7,14 +7,12 @@
 sap.ui.define([
 	"sap/ui/base/ManagedObject",
 	"sap/ui/dt/ElementUtil",
-	"sap/ui/dt/Util",
-	"sap/base/util/isEmptyObject"
+	"sap/ui/dt/Util"
 ],
 function(
 	ManagedObject,
 	ElementUtil,
-	Util,
-	isEmptyObject
+	Util
 ) {
 	"use strict";
 
@@ -25,7 +23,7 @@ function(
 	 * Static registry for Overlays
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @private
 	 * @static
@@ -110,7 +108,7 @@ function(
 	 * @public
 	 */
 	OverlayRegistry.hasOverlays = function() {
-		return !isEmptyObject(mOverlays);
+		return !jQuery.isEmptyObject(mOverlays);
 	};
 
 	function isOverlay(oOverlay) {

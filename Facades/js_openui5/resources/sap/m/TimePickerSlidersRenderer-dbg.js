@@ -11,9 +11,7 @@ sap.ui.define(["sap/ui/Device"], function(Device) {
 	 * TimePickerSlidersRenderer renderer.
 	 * @namespace
 	 */
-	var TimePickerSlidersRenderer = {
-		apiVersion: 2
-	};
+	var TimePickerSlidersRenderer = {};
 
 	/**
 	 * Renders the HTML for the given {@link sap.m.TimePickerSliders} control, using the provided {@link sap.ui.core.RenderManager}.
@@ -28,25 +26,29 @@ sap.ui.define(["sap/ui/Device"], function(Device) {
 			iSliderIndex,
 			bRtl = sap.ui.getCore().getConfiguration().getRTL();
 
-		oRM.openStart("div", oControl);
-		oRM.class("sapMTimePickerContainer");
-		oRM.style("width", oControl.getWidth());
-		oRM.style("height", oControl.getHeight());
+		oRM.write("<div");
+		oRM.writeControlData(oControl);
+		oRM.addClass("sapMTimePickerContainer");
+		oRM.addStyle("width", oControl.getWidth());
+		oRM.addStyle("height", oControl.getHeight());
+		oRM.writeClasses();
+		oRM.writeStyles();
 
 		//WAI-ARIA region
-		oRM.accessibilityState(oControl, {
+		oRM.writeAccessibilityState(oControl, {
 			label: (sLabelText + " " + oRb.getText("TIMEPICKER_SCREENREADER_TAG")).trim()
 		});
 
-		oRM.openEnd();
+		oRM.write(">");
 
 		if (!Device.system.desktop) {
-			oRM.openStart("div", oControl.getId() + "-label");
-			oRM.class("sapMTimePickerContainerLabel");
-			oRM.openEnd();
-			oRM.style("display", "block");
-			oRM.text(sLabelText);
-			oRM.close("div");
+			oRM.write("<div id=\"" + oControl.getId() + "-label" + "\"");
+			oRM.addClass("sapMTimePickerContainerLabel");
+			oRM.writeClasses();
+			oRM.write(">");
+			oRM.addStyle("display", "block");
+			oRM.writeEscaped(sLabelText);
+			oRM.write("</div>");
 		}
 
 		if (bRtl) {
@@ -59,8 +61,10 @@ sap.ui.define(["sap/ui/Device"], function(Device) {
 			}
 		}
 
-		oRM.close("div");
+		oRM.write("</div>");
 	};
 
+
 	return TimePickerSlidersRenderer;
+
 }, /* bExport= */ true);

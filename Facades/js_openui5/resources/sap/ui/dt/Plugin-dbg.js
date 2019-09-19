@@ -25,7 +25,7 @@ function(
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.70.0
+	 * @version 1.68.1
 	 *
 	 * @constructor
 	 * @private
@@ -283,7 +283,7 @@ function(
 		var oElement = oOverlay.getElement();
 		if (vName) {
 			if (typeof vName === "function") {
-				return vName(oElement);
+				return vName.call(null, oElement);
 			}
 			return oOverlay.getDesignTimeMetadata() ? oOverlay.getDesignTimeMetadata().getLibraryText(oElement, vName) : "";
 		}

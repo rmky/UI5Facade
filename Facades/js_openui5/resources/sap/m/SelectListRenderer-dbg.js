@@ -12,9 +12,7 @@ sap.ui.define(["sap/ui/core/Element", "sap/ui/core/Icon", "sap/ui/core/IconPool"
 		 *
 		 * @namespace
 		 */
-		var SelectListRenderer = {
-			apiVersion: 2
-		};
+		var SelectListRenderer = {};
 
 		/**
 		 * CSS class to be applied to the  root element of the SelectList.
@@ -39,30 +37,30 @@ sap.ui.define(["sap/ui/core/Element", "sap/ui/core/Icon", "sap/ui/core/IconPool"
 		SelectListRenderer.writeOpenListTag = function(oRm, oList, mStates) {
 			var CSS_CLASS = SelectListRenderer.CSS_CLASS;
 
+			oRm.write("<ul");
 			if (mStates.elementData) {
-				oRm.openStart("ul", oList);
-			} else {
-				oRm.openStart("ul");
+				oRm.writeControlData(oList);
 			}
-
-			oRm.class(CSS_CLASS);
+			oRm.addClass(CSS_CLASS);
 
 			if (oList.getShowSecondaryValues()) {
-				oRm.class(CSS_CLASS + "TableLayout");
+				oRm.addClass(CSS_CLASS + "TableLayout");
 			}
 
 			if (!oList.getEnabled()) {
-				oRm.class(CSS_CLASS + "Disabled");
+				oRm.addClass(CSS_CLASS + "Disabled");
 			}
 
-			oRm.style("width", oList.getWidth());
-			oRm.style("max-width", oList.getMaxWidth());
+			oRm.addStyle("width", oList.getWidth());
+			oRm.addStyle("max-width", oList.getMaxWidth());
+			oRm.writeStyles();
+			oRm.writeClasses();
 			this.writeAccessibilityState(oRm, oList);
-			oRm.openEnd();
+			oRm.write(">");
 		};
 
 		SelectListRenderer.writeCloseListTag = function(oRm, oList) {
-			oRm.close("ul");
+			oRm.write("</ul>");
 		};
 
 		/**
@@ -113,90 +111,92 @@ sap.ui.define(["sap/ui/core/Element", "sap/ui/core/Icon", "sap/ui/core/IconPool"
 				sTooltip = oItem.getTooltip_AsString(),
 				bShowSecondaryValues = oList.getShowSecondaryValues();
 
-			oRm.openStart("li", mStates.elementData ? oItem : null);
+			oRm.write("<li");
 
-			if (oItem.getIcon && oItem.getIcon()) {
-				oRm.class("sapMSelectListItemWithIcon");
+			if (mStates.elementData) {
+				oRm.writeElementData(oItem);
 			}
 
 			if (oItem instanceof sap.ui.core.SeparatorItem) {
-				oRm.class(CSS_CLASS + "SeparatorItem");
+				oRm.addClass(CSS_CLASS + "SeparatorItem");
 
 				if (bShowSecondaryValues) {
-					oRm.class(CSS_CLASS + "Row");
+					oRm.addClass(CSS_CLASS + "Row");
 				}
 			} else {
 
-				oRm.class(CSS_CLASS + "ItemBase");
+				oRm.addClass(CSS_CLASS + "ItemBase");
 
 				if (bShowSecondaryValues) {
-					oRm.class(CSS_CLASS + "Row");
+					oRm.addClass(CSS_CLASS + "Row");
 				} else {
-					oRm.class(CSS_CLASS + "Item");
+					oRm.addClass(CSS_CLASS + "Item");
 				}
 
 				if (oItem.bVisible === false) {
-					oRm.class(CSS_CLASS + "ItemBaseInvisible");
+					oRm.addClass(CSS_CLASS + "ItemBaseInvisible");
 				}
 
 				if (!bEnabled) {
-					oRm.class(CSS_CLASS + "ItemBaseDisabled");
+					oRm.addClass(CSS_CLASS + "ItemBaseDisabled");
 				}
 
 				if (bEnabled && Device.system.desktop) {
-					oRm.class(CSS_CLASS + "ItemBaseHoverable");
+					oRm.addClass(CSS_CLASS + "ItemBaseHoverable");
 				}
 
 				if (oItem === oSelectedItem) {
-					oRm.class(CSS_CLASS + "ItemBaseSelected");
+					oRm.addClass(CSS_CLASS + "ItemBaseSelected");
 				}
 
 				if (bEnabled) {
-					oRm.attr("tabindex", "0");
+					oRm.writeAttribute("tabindex", "0");
 				}
 			}
 
-			oRm.style("max-width", oList.getMaxWidth());
+			oRm.writeClasses();
 
 			if (sTooltip) {
-				oRm.attr("title", sTooltip);
+				oRm.writeAttributeEscaped("title", sTooltip);
 			}
 
 			this.writeItemAccessibilityState.apply(this, arguments);
 
-			oRm.openEnd();
+			oRm.write(">");
 
 			if (bShowSecondaryValues) {
 
-				oRm.openStart("span");
-				oRm.class(CSS_CLASS + "Cell");
-				oRm.class(CSS_CLASS + "FirstCell");
-				oRm.attr("disabled", "disabled"); // fixes span obtaining focus in IE
-				oRm.openEnd();
+				oRm.write("<span");
+				oRm.addClass(CSS_CLASS + "Cell");
+				oRm.addClass(CSS_CLASS + "FirstCell");
+				oRm.writeClasses();
+				oRm.writeAttribute("disabled", "disabled"); // fixes span obtaining focus in IE
+				oRm.write(">");
 
 				this._renderIcon(oRm, oItem);
 
-				oRm.text(oItem.getText());
-				oRm.close("span");
+				oRm.writeEscaped(oItem.getText());
+				oRm.write("</span>");
 
-				oRm.openStart("span");
-				oRm.class(CSS_CLASS + "Cell");
-				oRm.class(CSS_CLASS + "LastCell");
-				oRm.attr("disabled", "disabled"); // fixes span obtaining focus in IE
-				oRm.openEnd();
+				oRm.write("<span");
+				oRm.addClass(CSS_CLASS + "Cell");
+				oRm.addClass(CSS_CLASS + "LastCell");
+				oRm.writeClasses();
+				oRm.writeAttribute("disabled", "disabled"); // fixes span obtaining focus in IE
+				oRm.write(">");
 
 				if (typeof oItem.getAdditionalText === "function") {
-					oRm.text(oItem.getAdditionalText());
+					oRm.writeEscaped(oItem.getAdditionalText());
 				}
 
-				oRm.close("span");
+				oRm.write("</span>");
 			} else {
 				this._renderIcon(oRm, oItem);
 
-				oRm.text(oItem.getText());
+				oRm.writeEscaped(oItem.getText());
 			}
 
-			oRm.close("li");
+			oRm.write("</li>");
 		};
 
 		/**
@@ -207,7 +207,7 @@ sap.ui.define(["sap/ui/core/Element", "sap/ui/core/Icon", "sap/ui/core/IconPool"
 		 * @param {sap.ui.core.Control} oList An object representation of the control that should be rendered.
 		 */
 		SelectListRenderer.writeAccessibilityState = function(oRm, oList) {
-			oRm.accessibilityState(oList, {
+			oRm.writeAccessibilityState(oList, {
 				role: "listbox"
 			});
 		};
@@ -233,7 +233,7 @@ sap.ui.define(["sap/ui/core/Element", "sap/ui/core/Icon", "sap/ui/core/IconPool"
 				}
 			}
 
-			oRm.accessibilityState(oItem, {
+			oRm.writeAccessibilityState(oItem, {
 				role: sRole,
 				selected: mStates.selected,
 				setsize: mStates.setsize,
@@ -244,9 +244,11 @@ sap.ui.define(["sap/ui/core/Element", "sap/ui/core/Icon", "sap/ui/core/IconPool"
 
 		SelectListRenderer._renderIcon = function(oRm, oItem) {
 			if (oItem.getIcon && oItem.getIcon()) {
-				oRm.icon(oItem.getIcon(), SelectListRenderer.CSS_CLASS + "ItemIcon", {
-					id: oItem.getId() + "-icon"
-				});
+				var oIcon = new Icon({src: oItem.getIcon()});
+
+				oIcon.addStyleClass("sapMSelectListItemIcon");
+
+				oRm.renderControl(oIcon);
 			}
 		};
 

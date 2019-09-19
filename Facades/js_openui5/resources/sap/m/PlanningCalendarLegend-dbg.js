@@ -5,8 +5,8 @@
  */
 
 // Provides control sap.m.PlanningCalendarLegend.
-sap.ui.define(['sap/ui/unified/CalendarLegend', 'sap/ui/unified/CalendarAppointment', './PlanningCalendarLegendRenderer'],
-	function(CalendarLegend, CalendarAppointment, PlanningCalendarLegendRenderer) {
+sap.ui.define(['sap/ui/unified/CalendarLegend', './PlanningCalendarLegendRenderer'],
+	function(CalendarLegend, PlanningCalendarLegendRenderer) {
 		"use strict";
 
 
@@ -23,7 +23,7 @@ sap.ui.define(['sap/ui/unified/CalendarLegend', 'sap/ui/unified/CalendarAppointm
 		 * @extends sap.ui.unified.CalendarLegend
 		 *
 		 * @author SAP SE
-		 * @version 1.70.0
+		 * @version 1.68.1
 		 *
 		 * @constructor
 		 * @public
@@ -70,43 +70,6 @@ sap.ui.define(['sap/ui/unified/CalendarLegend', 'sap/ui/unified/CalendarAppointm
 				sWidth = PlanningCalendarLegend._COLUMN_WIDTH_DEFAULT;
 			}
 			return this.setProperty("columnWidth", sWidth);
-		};
-
-		/*
-		* Finds the legend text for a given appointment or legend item.
-		*
-		* @param {sap.m.PlanningCalendarLegend} oLegend A legend
-		* @param {sap.ui.unified.CalendarLegendItem|sap.ui.unified.CalendarAppointment} oSpecialItem An appointment or a legend type
-		* @returns {string} The matching legend item's default text.
-		* @private
-		*/
-		PlanningCalendarLegend.findLegendItemForItem = function(oLegend, oSpecialItem) {
-			var aLegendAppointments = oLegend ? oLegend.getAppointmentItems() : null,
-				aLegendItems = oLegend ? oLegend.getItems() : null,
-				bAppointmentItem = oSpecialItem instanceof CalendarAppointment,
-				aItems = bAppointmentItem ? aLegendAppointments : aLegendItems,
-				oItemType = bAppointmentItem ? oSpecialItem.getType() : oSpecialItem.type,
-				oItem,
-				sLegendItemText,
-				i;
-
-			if (aItems && aItems.length) {
-				for (i = 0; i < aItems.length; i++) {
-					oItem = aItems[i];
-					if (oItem.getType() === oItemType) {
-						sLegendItemText = oItem.getText();
-						break;
-					}
-				}
-			}
-
-			// if the special item's type is not present in the legend's items,
-			// the screen reader has to read it's type
-			if (!sLegendItemText) {
-				sLegendItemText = oItemType;
-			}
-
-			return sLegendItemText;
 		};
 
 		return PlanningCalendarLegend;

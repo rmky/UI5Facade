@@ -837,6 +837,17 @@ sap.ui.define([
 	 * @private
 	 */
 	ObjectPageHeader.prototype._adaptLayoutForDomElement = function ($headerDomRef, oEvent) {
+		var $domElement;
+
+		if ($headerDomRef) {
+			$domElement = $headerDomRef.length ? $headerDomRef[0] : $headerDomRef;
+		} else {
+			$domElement = this.getDomRef();
+		}
+
+		if (isDomElementHidden($domElement)) {
+			return;
+		}
 
 		var $identifierLine = this._findById($headerDomRef, "identifierLine"),
 			iIdentifierContWidth = $identifierLine.width(),
@@ -1247,6 +1258,11 @@ sap.ui.define([
 	ObjectPageHeader.prototype._toggleFocusableState = function (bFocusable) {
 
 	};
+
+	// util
+	function isDomElementHidden($domElem) {
+		return $domElem && !$domElem.offsetWidth && !$domElem.offsetHeight;
+	}
 
 	return ObjectPageHeader;
 });

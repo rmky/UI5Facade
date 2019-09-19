@@ -15,9 +15,7 @@ function(Device, getScrollbarSize) {
 	 * @namespace
 	 * @alias sap.m.ScrollBarRenderer
 	 */
-	var ScrollBarRenderer = {
-		apiVersion: 2
-	};
+	var ScrollBarRenderer = {};
 
 
 	/**
@@ -28,45 +26,58 @@ function(Device, getScrollbarSize) {
 	 */
 	ScrollBarRenderer.render = function(oRm, oControl){
 
-		var sScrollBarTouchClass = "sapMScrollBarTouch",
+		var bRTL = sap.ui.getCore().getConfiguration().getRTL(),
+			sScrollBarTouchClass = "sapMScrollBarTouch",
 			sContentSize = oControl.getContentSize(),
 			sControlId = oControl.getId(),
-			bDeviceSupportsTouch = Device.support.touch;
+			bDeviceSupportsTouch = Device.support.touch,
+			oBSS = getScrollbarSize(bDeviceSupportsTouch ? sScrollBarTouchClass : undefined),
+			// Fix for Fiori Client and Edge in Mobile Mode on Win8 and Win10
+			iWidth = (Device.browser.edge && !oBSS.width) ? 15 : oBSS.width;
 
 		// First div
-		oRm.openStart("div", oControl);
-		oRm.class("sapMScrollBarOuterDiv");
+		oRm.write("<div");
+		oRm.writeControlData(oControl);
+		oRm.addClass("sapMScrollBarOuterDiv");
 		if (bDeviceSupportsTouch) {
-			oRm.class(sScrollBarTouchClass);
+			oRm.addClass(sScrollBarTouchClass);
 		}
-		oRm.openEnd();
+		oRm.addStyle("width", iWidth + "px");
+		oRm.writeClasses();
+		oRm.writeStyles();
+		oRm.write(">");
 
-			// Middle div - ScrollBar itself.
-			oRm.openStart("div", sControlId + "-sb");
-			oRm.class("sapMScrollBarInnerDiv");
-			oRm.openEnd();
+		// Middle div - ScrollBar itself.
+		oRm.write("<div");
+		oRm.writeAttribute("id", sControlId + "-sb");
+		oRm.addClass("sapMScrollBarInnerDiv");
+		oRm.addStyle("width", (iWidth * 2) + "px");
+		oRm.addStyle((bRTL ? "margin-right" : "margin-left"), -Math.abs(iWidth) + "px");
+		oRm.writeClasses();
+		oRm.writeStyles();
+		oRm.write(">");
 
-				oRm.openStart("div", sControlId + "-sbcnt");
-				oRm.style("width", "0.75rem");
-				oRm.style("height", sContentSize);
-				oRm.openEnd();
+		oRm.write("<div");
+		oRm.writeAttribute("id", sControlId + "-sbcnt");
+		oRm.addStyle("width", iWidth + "px");
+		if (sContentSize) {
+			oRm.addStyle("height", sContentSize);
+		}
+		oRm.writeStyles();
+		oRm.write(">");
+		oRm.write("</div>");
+		oRm.write("</div>");
 
-				oRm.close("div");
+		oRm.write("<div>");
+		oRm.write("<span");
+		oRm.writeAttribute("id", sControlId + "-ffsize");
+		oRm.addClass("sapMScrollBarDistantSpan");
+		oRm.writeClasses();
+		oRm.write(">");
+		oRm.write("</span>");
+		oRm.write("</div>");
 
-			oRm.close("div");
-
-			oRm.openStart("div");
-			oRm.openEnd();
-
-				oRm.openStart("span", sControlId + "-ffsize");
-				oRm.class("sapMScrollBarDistantSpan");
-				oRm.openEnd();
-
-				oRm.close("span");
-
-			oRm.close("div");
-
-		oRm.close("div");
+		oRm.write("</div>");
 
 	};
 

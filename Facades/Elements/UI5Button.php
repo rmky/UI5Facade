@@ -24,7 +24,6 @@ class UI5Button extends UI5AbstractElement
     
     use JqueryButtonTrait {
         buildJsInputRefresh as buildJsInputRefreshViaTrait;
-        buildJsClickCallServerAction as buildJsClickCallServerActionViaTrait;
     }
     
     /**

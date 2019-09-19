@@ -865,7 +865,7 @@ JS;
                                 addAction = false;
                                 callActions = false;
                                 console.error('No value given for required parameter: ', param);
-                                {$this->getElement()->buildJsShowError('"No value given for parameter:  " + param + " - at selected row: " + j', '"ERROR"')}
+                                {$this->getElement()->buildJsShowError('"No value given for parameter \"" + param + "\" at selected row: " + j', '"ERROR"')}
                                 {$this->getElement()->buildJsBusyIconHide()}
                             }
                         }
@@ -950,7 +950,7 @@ JS;
                     response = $.parseJSON({$oErrorJs}.responseText);
                     var errorText = response.error.message.value;
                 } catch (e) {
-                    var errorText = '<p> No Error description send! </p>';
+                    var errorText = 'No error description send!';
                 }
                 {$this->getElement()->buildJsShowError('errorText', "{$oErrorJs}.statusCode + ' ' + {$oErrorJs}.statusText")}
                 {$this->getElement()->buildJsBusyIconHide()}

@@ -9,6 +9,8 @@ use exface\Core\Widgets\Button;
 use exface\Core\Interfaces\Actions\iShowDialog;
 use exface\Core\Interfaces\Actions\iRunFacadeScript;
 use exface\Core\DataTypes\StringDataType;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryDisableConditionTrait;
+use exface\Core\CommonLogic\Constants\Icons;
 
 /**
  * Generates jQuery Mobile buttons for ExFace
@@ -20,7 +22,7 @@ use exface\Core\DataTypes\StringDataType;
  */
 class UI5Button extends UI5AbstractElement
 {
-    
+    use JqueryDisableConditionTrait;
     use JqueryButtonTrait {
         buildJsInputRefresh as buildJsInputRefreshViaTrait;
         buildJsNavigateToPage as buildJsNavigateToPageViaTrait;
@@ -51,6 +53,10 @@ class UI5Button extends UI5AbstractElement
                 }
             }
         }
+        
+        // Register conditional reactions
+        $this->registerDisableConditionAtLinkedElement();
+        $this->getController()->addOnInitScript($this->buildJsDisableConditionInitializer());
         
         return <<<JS
 new sap.m.Button("{$this->getId()}", { 
@@ -343,5 +349,25 @@ JS;
     public function buildJsBusyIconHide($global = false)
     {
         return parent::buildJsBusyIconHide(true);
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsEnabler()
+     */
+    public function buildJsEnabler()
+    {
+        return "sap.ui.getCore().byId('{$this->getId()}').setEnabled(true)";
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsDisabler()
+     */
+    public function buildJsDisabler()
+    {
+        return "sap.ui.getCore().byId('{$this->getId()}').setEnabled(false)";
     }
 }

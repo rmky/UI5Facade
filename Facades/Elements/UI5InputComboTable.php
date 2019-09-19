@@ -21,6 +21,8 @@ class UI5InputComboTable extends UI5Input
     
     protected function init()
     {
+        parent::init();
+        
         // If the combo does not allow new values, we need to force the UI5 input to
         // check any input via autosuggest _before_ any other action is taken.
         // TODO this only works if there was no value before and needs to be

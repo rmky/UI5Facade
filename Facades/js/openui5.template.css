@@ -70,3 +70,12 @@ img.sapMImg:not(.sapUxAPObjectPageHeaderObjectImage) {display: block; max-width:
 .sapUxAPObjectPageHeaderContent {padding-top: 1rem;}
 /* sap.m.Table group header rows barely different from striped rows */
 .sapMGHLICell {padding: 0 1rem; border-top: 2px solid #ccc !important; font-weight: bold;}
+
+/* jExcel */
+.jexcel_container {width: 100%}
+.jexcel_content {width: 100%}
+table.jexcel {width: 100%}
+.jexcel_row, .jexcel_selectall {padding-left: 5px !important; padding-right: 5px !important; max-width: 4em}
+.jexcel>thead.footer>tr>td {background-color: white; font-weight: bold; border-top: 1px solid #666;}
+.jexcel td {overflow: hidden; text-overflow: ellipsis;}
+.jdropdown-container.slide-bottom-in {bottom: initial !important;}

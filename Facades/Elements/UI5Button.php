@@ -10,6 +10,8 @@ use exface\Core\Interfaces\Actions\iShowDialog;
 use exface\Core\Interfaces\Actions\iRunFacadeScript;
 use exface\Core\DataTypes\StringDataType;
 use exface\UI5Facade\Facades\Elements\ServerAdapters\UI5FacadeServerAdapter;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryDisableConditionTrait;
+use exface\Core\CommonLogic\Constants\Icons;
 
 /**
  * Generates jQuery Mobile buttons for ExFace
@@ -21,9 +23,10 @@ use exface\UI5Facade\Facades\Elements\ServerAdapters\UI5FacadeServerAdapter;
  */
 class UI5Button extends UI5AbstractElement
 {
-    
+    use JqueryDisableConditionTrait;
     use JqueryButtonTrait {
         buildJsInputRefresh as buildJsInputRefreshViaTrait;
+        buildJsNavigateToPage as buildJsNavigateToPageViaTrait;
     }
     
     /**
@@ -51,6 +54,10 @@ class UI5Button extends UI5AbstractElement
                 }
             }
         }
+        
+        // Register conditional reactions
+        $this->registerDisableConditionAtLinkedElement();
+        $this->getController()->addOnInitScript($this->buildJsDisableConditionInitializer());
         
         return <<<JS
 new sap.m.Button("{$this->getId()}", { 
@@ -201,19 +208,34 @@ JS;
                                         id: sViewId,
                                         viewName: "{$this->getFacade()->getViewName($targetWidget, $this->getController()->getWebapp()->getRootPage())}"
                                     }).then(function(oView){
+                                        if (oView.getModel('view') === undefined) {
+                                            oView.setModel(new sap.ui.model.json.JSONModel(), 'view');    
+                                        }
                                         oView.getModel('view').setProperty("/_route", {params: xhrSettings.data});
                                         setTimeout(function() {
                                             var oDialog = oView.getContent()[0];
-                                            oDialog.attachAfterClose(function() {
-                                                {$this->buildJsInputRefresh($widget, $input_element)}
-                                            });
-                                            oDialog.open();
+                                            if (oDialog instanceof sap.m.Dialog) {
+                                                oDialog.attachAfterClose(function() {
+                                                    {$this->buildJsInputRefresh($widget, $input_element)}
+                                                });
+                                                oDialog.open();
+                                            } else {
+                                                if (oDialog instanceof sap.m.Page || oDialog instanceof sap.m.MessagePage) {
+                                                    oDialog.setShowNavButton(false);
+                                                }
+                                                {$this->buildJsOpenDialogForUnexpectedView('oDialog')};
+                                            }
                                         });
                                     });
                                 });
                             } else {
                                 oView.getModel('view').setProperty("/_route", {params: xhrSettings.data});
-                                oView.getContent()[0].open();
+                                var oDialog = oView.getContent()[0];
+                                if (oDialog instanceof sap.m.Dialog) {
+                                    oDialog.open();
+                                } else {
+                                    {$this->buildJsOpenDialogForUnexpectedView('oDialog')};
+                                }
                             }
                         }, xhrSettings);
                         
@@ -223,13 +245,42 @@ JS;
         return $output;
     }
     
+    protected function buildJsOpenDialogForUnexpectedView(string $oViewContent) : string
+    {
+        return <<<JS
+
+                                                var oWrapper = new sap.m.Dialog({
+                                                    stretch: true,
+                                                    verticalScrolling: false,
+                                                    title: "{$this->getCaption()}",
+                                        			content: [ {$oViewContent} ],
+                                                    buttons: [
+                                                        new sap.m.Button({
+                                                            icon: "{$this->getIconSrc(Icons::CLOSE)}",
+                                                            text: "{$this->getWorkbench()->getCoreApp()->getTranslator()->translate('WIDGET.DIALOG.CLOSE_BUTTON_CAPTION')}",
+                                                            press: function() {oWrapper.close();},
+                                                        })
+                                                    ]
+                                        		}).open();
+
+JS;
+    }
+    
     /**
      * 
      * {@inheritdoc}
      * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryButtonTrait::buildJsNavigateToPage
      */
-    protected function buildJsNavigateToPage(string $pageSelector, string $urlParams = '', AbstractJqueryElement $inputElement) : string
+    protected function buildJsNavigateToPage(string $pageSelector, string $urlParams = '', AbstractJqueryElement $inputElement, bool $newWindow = false) : string
     {
+        if ($newWindow === true) {
+            return <<<JS
+            
+                        {$this->buildJsNavigateToPageViaTrait($pageSelector, $urlParams, $inputElement, $newWindow)}
+                        {$inputElement->buildJsBusyIconHide()}
+JS;
+        }
+        
         return <<<JS
 						var sUrlParams = '{$urlParams}';
                         var oUrlParams = {};
@@ -386,5 +437,24 @@ JS;
                                 
             return $output;
     }
-}
+
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsEnabler()
+     */
+    public function buildJsEnabler()
+    {
+        return "sap.ui.getCore().byId('{$this->getId()}').setEnabled(true)";
+    }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsDisabler()
+     */
+    public function buildJsDisabler()
+    {
+        return "sap.ui.getCore().byId('{$this->getId()}').setEnabled(false)";
+    }
+}

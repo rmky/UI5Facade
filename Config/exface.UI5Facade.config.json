@@ -61,6 +61,11 @@
 	"LIBS.FACADE.CSS": "exface/UI5Facade/Facades/js/openui5.template.css",
 	"LIBS.FACADE.CUSTOM_CONTROLS": "exface/UI5Facade/Facades/js/openui5.controls.js",
 	
+	"LIBS.JEXCEL.JS": "npm-asset/jexcel/dist/jexcel.js",
+   	"LIBS.JEXCEL.JS_JSUITES": "npm-asset/jsuites/dist/jsuites.js",
+   	"LIBS.JEXCEL.CSS": "npm-asset/jexcel/dist/jexcel.min.css",
+ 	"LIBS.JEXCEL.CSS_JSUITES": "npm-asset/jsuites/dist/jsuites.css",
+	
 	"LIBS.JSONEDITOR.CSS": "bower-asset/jsoneditor/dist/jsoneditor.min.css",
 	"LIBS.JSONEDITOR.JS": "bower-asset/jsoneditor/dist/jsoneditor.min.js",
 	

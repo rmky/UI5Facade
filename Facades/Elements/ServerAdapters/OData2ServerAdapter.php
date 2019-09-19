@@ -434,7 +434,7 @@ JS;
         
         return <<<JS
 
-                    switch (cond.comparator) {
+                    switch ({$condJs}.comparator) {
                         case '{$opIS}':
                             var oOperator = "Contains";
                             break;
@@ -462,9 +462,9 @@ JS;
                         default:
                             var oOperator = "EQ";
                     }
-                    if (cond.value !== "") {
-                        if ({$timeAttributes}.indexOf(cond.expression) > -1) {
-                            var d = cond.value;
+                    if ({$condJs}.value !== "") {
+                        if ({$timeAttributes}.indexOf({$condJs}.expression) > -1) {
+                            var d = {$condJs}.value;
                             var timeParts = d.split(':');
                             if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
                                 timeParts[3] = "00";
@@ -475,10 +475,10 @@ JS;
                             var timeString = "PT" + timeParts[0] + "H" + timeParts[1] + "M" + timeParts[3] + "S";
                             var value = timeString;
                         } else {
-                            var value = cond.value;
+                            var value = {$condJs}.value;
                         }
                         var filter = new sap.ui.model.Filter({
-                            path: cond.expression,
+                            path: {$condJs}.expression,
                             operator: oOperator,
                             value1: value
                         });

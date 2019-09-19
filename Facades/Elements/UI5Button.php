@@ -9,7 +9,6 @@ use exface\Core\Widgets\Button;
 use exface\Core\Interfaces\Actions\iShowDialog;
 use exface\Core\Interfaces\Actions\iRunFacadeScript;
 use exface\Core\DataTypes\StringDataType;
-use exface\UI5Facade\Facades\Elements\ServerAdapters\UI5FacadeServerAdapter;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryDisableConditionTrait;
 use exface\Core\CommonLogic\Constants\Icons;
 

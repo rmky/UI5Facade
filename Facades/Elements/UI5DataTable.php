@@ -510,6 +510,34 @@ function(){
 
 JS;
     }
+        
+    /**
+     * Returns an inline JS-condition, that evaluates to TRUE if the given oTargetDom JS expression
+     * is a DOM element inside a list item or table row.
+     * 
+     * This is important for handling browser events like dblclick. They can only be attached to
+     * the entire control via attachBrowserEvent, while we actually only need to react to events
+     * on the items, not on headers, footers, etc.
+     * 
+     * @param string $oTargetDomJs
+     * @return string
+     */
+    protected function buildJsClickListenerIsTargetRowCheck(string $oTargetDomJs = 'oTargetDom') : string
+    {
+        if ($this->isUiTable()) {
+            return "{$oTargetDomJs} !== undefined && $({$oTargetDomJs}).parents('.sapUiTableCCnt').length > 0";
+        }
+        
+        if ($this->isMTable()) {
+            return "{$oTargetDomJs} !== undefined && $({$oTargetDomJs}).parents('tr.sapMListTblRow:not(.sapMListTblHeader)').length > 0";
+        }
+        
+        if ($this->isMList()) {
+            return "{$oTargetDomJs} !== undefined && $({$oTargetDomJs}).parents('li.sapMSLI').length > 0";
+        }
+        
+        return 'true';
+    }
     
     protected function buildJsClickListeners($oControllerJsVar = 'oController')
     {
@@ -523,6 +551,9 @@ JS;
             $js .= <<<JS
             
             .attachBrowserEvent("dblclick", function(oEvent) {
+                var oTargetDom = oEvent.target;
+                if(! ({$this->buildJsClickListenerIsTargetRowCheck('oTargetDom')})) return;
+
         		{$this->getFacade()->getElement($dblclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
             })
 JS;
@@ -539,6 +570,9 @@ JS;
             $js .= <<<JS
             
             .attachBrowserEvent("contextmenu", function(oEvent) {
+                var oTargetDom = oEvent.target;
+                if(! ({$this->buildJsClickListenerIsTargetRowCheck('oTargetDom')})) return;
+
                 oEvent.preventDefault();
                 {$rightclick_script}
         	})
@@ -552,7 +586,10 @@ JS;
                 $js .= <<<JS
                 
             .attachBrowserEvent("click", function(oEvent) {
-        		{$this->getFacade()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
+        		var oTargetDom = oEvent.target;
+                if(! ({$this->buildJsClickListenerIsTargetRowCheck('oTargetDom')})) return;
+
+                {$this->getFacade()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
             })
 JS;
             } else {

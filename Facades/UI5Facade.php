@@ -31,15 +31,10 @@ use exface\Core\Exceptions\LogicException;
 use exface\UI5Facade\Facades\Interfaces\UI5ViewInterface;
 use exface\UI5Facade\UI5View;
 use exface\Core\Facades\AbstractAjaxFacade\Formatters\JsEnumFormatter;
-use exface\Core\DataTypes\NumberDataType;
 use exface\UI5Facade\Facades\Formatters\UI5EnumFormatter;
 use exface\Core\Interfaces\DataSheets\DataSheetInterface;
 use exface\UI5Facade\Facades\Formatters\UI5TimeFormatter;
-use Psr\Http\Message\RequestInterface;
-use GuzzleHttp\Psr7\Response;
 use exface\Core\DataTypes\DateTimeDataType;
-use exface\Core\Facades\AbstractAjaxFacade\Interfaces\JsDataTypeFormatterInterface;
-
 /**
  * 
  * @method ui5AbstractElement getElement()
@@ -424,4 +419,3 @@ JS;
         return false;
     }
 }
-?>

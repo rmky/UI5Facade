@@ -25,6 +25,7 @@ use exface\Core\Factories\DataSheetFactory;
 use exface\Core\DataTypes\DateTimeDataType;
 use exface\Core\Interfaces\Actions\iModifyData;
 use exface\Core\Interfaces\Actions\iShowWidget;
+use exface\Core\CommonLogic\UxonObject;
 
 /**
  * Generates the code for a selected Fiori Webapp project.
@@ -80,7 +81,10 @@ class ExportFioriWebapp extends AbstractAction implements iModifyData
         $rootPage = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $row['root_page_alias']);
         $facade = FacadeFactory::createFromString($this->facadeSelectorString, $this->getWorkbench());
         
-        $facade->getConfig()->setOption('DEFAULT_SERVER_ADAPTER_CLASS', $facade->getConfig('WEBAPP_EXPORT.SERVER_ADAPTER_CLASS'));
+        // Always use oData server adapter
+        $facade->getConfig()->setOption('DEFAULT_SERVER_ADAPTER_CLASS', $facade->getConfig()->getOption('WEBAPP_EXPORT.SERVER_ADAPTER_CLASS'));
+        // Disable all global actions as they cannot be used with the oData adapter
+        $facade->getWorkbench()->getConfig()->setOption('WIDGET.DATATOOLBAR.GLOBAL_ACTIONS', new UxonObject());
         
         $webappFolder = $this->exportWebapp($rootPage, $facade, $row);
         
@@ -189,7 +193,7 @@ class ExportFioriWebapp extends AbstractAction implements iModifyData
             $widget = $page->getWidgetRoot();
             $this->exportWidget($webapp, $widget, $exportFolder, $linkDepth);
         } catch (\Throwable $e) {
-            throw new FacadeRuntimeError('Cannot export view for page "' . $page->getAliasWithNamespace() . '": ' . $e->getMessage());
+            throw new FacadeRuntimeError('Cannot export view for page "' . $page->getAliasWithNamespace() . '": ' . $e->getMessage(), null, $e);
         }
         
         return $this;
@@ -207,7 +211,7 @@ class ExportFioriWebapp extends AbstractAction implements iModifyData
             $controllerJs = $controller->buildJsController();
             //$controllerJs = $this->escapeUnicode($controllerJs);
         } catch (\Throwable $e) {
-            throw new FacadeRuntimeError('Cannot export view for widget "' . $widget->getId() . '" in page "' . $widget->getPage()->getAliasWithNamespace() . '": ' . $e->getMessage());
+            throw new FacadeRuntimeError('Cannot export view for widget "' . $widget->getId() . '" in page "' . $widget->getPage()->getAliasWithNamespace() . '": ' . $e->getMessage(), null, $e);
         }
         
         // Copy external includes and replace their paths in the controller

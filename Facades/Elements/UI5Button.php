@@ -9,6 +9,7 @@ use exface\Core\Widgets\Button;
 use exface\Core\Interfaces\Actions\iShowDialog;
 use exface\Core\Interfaces\Actions\iRunFacadeScript;
 use exface\Core\DataTypes\StringDataType;
+use exface\UI5Facade\Facades\Elements\ServerAdapters\UI5FacadeServerAdapter;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryDisableConditionTrait;
 use exface\Core\CommonLogic\Constants\Icons;
 
@@ -387,6 +388,56 @@ JS;
         return parent::buildJsBusyIconHide(true);
     }
     
+    protected function buildJsClickCallServerAction(ActionInterface $action, AbstractJqueryElement $input_element)
+    {
+        $widget = $this->getWidget();
+        
+        $onModelLoadedJs = <<<JS
+
+								{$this->buildJsCloseDialog($widget, $input_element)}
+								{$this->buildJsInputRefresh($widget, $input_element)}
+		                       	{$this->buildJsBusyIconHide()}
+		                       	$('#{$this->getId()}').trigger('{$action->getAliasWithNamespace()}.action.performed', [requestData, '{$input_element->getId()}']);
+								{$this->buildJsOnSuccessScript()}
+
+                                /* TODO redirects do not work in UI5 that easily. Additionally server adapters don't return any response variable.
+                                if (response.success || response.undoURL){
+		                       		{$this->buildJsShowMessageSuccess("response.success + (response.undoable ? ' <a href=\"" . $this->buildJsUndoUrl($action, $input_element) . "\" style=\"display:block; float:right;\">UNDO</a>' : '')")}
+									if(response.redirect){
+										if (response.redirect.indexOf('target=_blank') !== 0) {
+											window.open(response.redirect.replace('target=_blank',''), '_newtab');
+										}
+										else {
+											window.location.href = response.redirect;
+										}
+                   					}
+								}
+                                */
+JS;
+		
+        $output = $this->buildJsRequestDataCollector($action, $input_element);
+        $output .= <<<JS
+                
+				if ({$input_element->buildJsValidator()}) {
+					{$this->buildJsBusyIconShow()}
+                    var oModel = new sap.ui.model.json.JSONModel();
+                    var params = {
+							action: "{$widget->getActionAlias()}",
+							resource: "{$widget->getPage()->getAliasWithNamespace()}",
+							element: "{$widget->getId()}",
+							object: "{$widget->getMetaObject()->getId()}",
+							data: requestData
+					}
+                    {$this->getServerAdapter()->buildJsServerRequest($action, 'oModel', 'params', $onModelLoadedJs, '', '')}	    
+				} else {
+					{$input_element->buildJsValidationError()}
+				}
+
+JS;
+                                
+            return $output;
+    }
+
     /**
      * 
      * {@inheritDoc}

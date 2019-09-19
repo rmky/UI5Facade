@@ -431,9 +431,24 @@ JS;
             $rows = "oTable.getModel().getData().rows";
         } else {
             if ($this->isUiTable()) {
-                $rows = "(oTable.getSelectedIndex() > -1 ? [oTable.getModel().getData().rows[oTable.getSelectedIndex()]] : [])";
+                $rows = '[];' . <<<JS
+        
+        var aSelectedIndices = oTable.getSelectedIndices();
+        var aDataRows = oTable.getModel().getData().rows;
+        for (var i in aSelectedIndices) {
+            rows.push(aDataRows[aSelectedIndices[i]]);
+        }
+
+JS;
             } else {
-                $rows = "(oTable.getSelectedItem() ? [oTable.getSelectedItem().getBindingContext().getObject()] : [])";
+                $rows = '[];' . <<<JS
+                
+        var aSelectedContexts = oTable.getSelectedContexts();
+        for (var i in aSelectedContexts) {
+            rows.push(aSelectedContexts[i].getObject());
+        }
+        
+JS;
             }
         }
         return <<<JS

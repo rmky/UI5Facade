@@ -8,7 +8,7 @@ use exface\UI5Facade\Facades\Elements\UI5AbstractElement;
 use exface\Core\DataTypes\StringDataType;
 use exface\UI5Facade\Facades\Interfaces\UI5ModelInterface;
 
-class UI5View implements ui5ViewInterface
+class UI5View implements UI5ViewInterface
 {
     private $isBuilt = false;
     

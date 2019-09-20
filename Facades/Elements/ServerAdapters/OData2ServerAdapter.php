@@ -31,6 +31,27 @@ use exface\UI5Facade\Exceptions\UI5ExportUnsupportedWidgetException;
  * 
  * @author Ralf Mulansky
  * 
+ * The OData2ServerAdapter performs actions by directly sending requests to an OData2 service.
+ * To do so it evaluates what actions can be performed by widgets and builds the corresponding
+ * java script codes for those actions. To do so it transforms the give parameter for that action
+ * to fit the OData2 services. The adapter creates a new ODataModel object for each action
+ * and adds the transformed parameters to that model. Then it calls the corresponding ODataModel
+ * method to the wanted action and adds the success and error handler for the server response.
+ * Read request are send to the server via the ODataModel 'read' method.
+ * 'Create', 'Update', 'Delete' and 'Function Import' requests are send via the 'submitChanges' method.
+ * By default each action request is send as a single server request, because the default OData2 service
+ * implementation for CRUD operations does not support multiple operation requests send in a single
+ * request, stacked via $batch.
+ * It is possible to activate $batch requests my changing the following options in the
+ * 'exface.UI5Facade.config.json' file:
+ * 
+ * "WEBAPP_EXPORT.ODATA.USE_BATCH_DELETES" : false
+ * "WEBAPP_EXPORT.ODATA.USE_BATCH_WRITES" : false
+ * "WEBAPP_EXPORT.ODATA.USE_BATCH_FUNCTION_IMPORTS" : false
+ * 
+ * Changing those options to true will enable the $batch requests for 'Delete' and/or 'Create'/'Update'
+ * and/or 'Function Import' actions.
+ * 
  * Known issues:
  * 
  * - Local filtering will not yield expected results if pagination is enabled. However,
@@ -146,15 +167,13 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
             case get_class($action) === SaveData::class:
                 return $this->buildJsDataWrite($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             default:
-                // FIXME #fiori-export throw new UI5ExportUnsupportedActionException('Action "' . $action->getAliasWithNamespace() . '" cannot be used with Fiori export!');
+                throw new UI5ExportUnsupportedActionException('Action "' . $action->getAliasWithNamespace() . '" cannot be used with Fiori export!');
                 return <<<JS
 
         console.error('Unsupported action {$action->getAliasWithNamespace()}', {$oParamsJs});
 
 JS;
         }
-        
-        return '';
     }
     
     /**

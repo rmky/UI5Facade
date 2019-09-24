@@ -25,6 +25,11 @@ The opening window shows the configuration for that new app export with the foll
 
 All other configurations should be left at their default value.
 
+It is possible to export the app so it uses relative connection paths, instead of absolut ones, to access OData2 services. To enable that feature you have to change the following option:
+- `WEBAPP_EXPORT.MANIFEST.DATASOURCES_USE_RELATIVE_URLS`
+
+The option is located in the configuration json file `exface.UI5Facade.config.json`. Setting it to true will enable relative paths, setting it to of will enable absolut paths.
+
 After creating the project export the app by clicking the `Export` button. The app will be exported to the folder given in the `Export folder` option.
 
 To deploy the exported app on a NetWeaver see [Deploy an exported app on ABAP NetWeaver Gateway](deploy_on_netweaver.md).

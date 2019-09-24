@@ -26,6 +26,7 @@ use exface\UI5Facade\Exceptions\UI5ExportUnsupportedActionException;
 use exface\Core\Interfaces\WidgetInterface;
 use exface\Core\Widgets\Data;
 use exface\UI5Facade\Exceptions\UI5ExportUnsupportedWidgetException;
+use exface\Core\CommonLogic\UxonObject;
 
 /**
  * 
@@ -221,8 +222,8 @@ JS;
         $opNE = EXF_COMPARATOR_EQUALS_NOT;
         
         return <<<JS
-
-            var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});  
+            
+            var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
             var oDataReadParams = {};
             var oDataReadFiltersSearch = [];
             var oDataReadFiltersQuickSearch = [];
@@ -583,24 +584,57 @@ JS;
             throw new FacadeLogicError('Cannot use direct OData 2 connections with object "' . $object->getName() . '" (' . $object->getAliasWithNamespace() . ')!');
         }
         
-        $params = [];
-        $params['serviceUrl'] = rtrim($connection->getUrl(), "/") . '/';
+        $dataSourceAlias = $object->getDataSource()->getId();
+        $config = $this->getElement()->getFacade()->getConfig();
+        /* @var $sourcesUxon \exface\Core\CommonLogic\UxonObject */
+        $sourcesUxon = $config->getOption('WEBAPP_EXPORT.MANIFEST.DATASOURCES');
+        $url = rtrim($connection->getUrl(), "/") . '/';
+        if ($config->getOption('WEBAPP_EXPORT.MANIFEST.DATASOURCES_USE_RELATIVE_URLS')) {
+            $url = parse_url($url, PHP_URL_PATH);
+        }
+        $sourcesUxon->setProperty($dataSourceAlias, new UxonObject([
+            'uri' => $url
+        ]));
+        $config->setOption('WEBAPP_EXPORT.MANIFEST.DATASOURCES', $sourcesUxon);
+        
+        $params = '';
+        $serivceUrl = <<<JS
+            function(){
+                var sConfigUrl = {$this->getElement()->getController()->buildJsComponentGetter()}.getManifestEntry("/.../{$dataSourceAlias}/uri");
+                return sConfigUrl || '{$url}';
+            }()
+
+JS;
+        $auth = '';
         if ($connection->getUser()) {
             if ($this->getUseConnectionCredentials() === true) {
-                $params['user'] = $connection->getUser();
-                $params['password'] = $connection->getPassword();
+                $auth = "user: '{$connection->getUser()}',";
+                $auth .= "password: '{$connection->getPassword()}',";
             }
-            $params['withCredentials'] = true;
-            //$params['headers'] = ['Authorization' => 'Basic TU9WX0RFVjpzY2h1ZXJlcjVh'];
+            $auth .= "withCredentials: true,";
         }
+        $metadataUrlParams = '';
+        $serviceUrlParams = '';
         if ($fixedParams = $connection->getFixedUrlParams()) {     
             $fixedParamsArr = [];
             parse_str($fixedParams, $fixedParamsArr);
-            $params['serviceUrlParams'] = array_merge($params['serviceUrlParams'] ?? [], $fixedParamsArr);
-            $params['metadataUrlParams'] = array_merge($params['metadataUrlParams'] ?? [], $fixedParamsArr);
+            $serviceUrlParams = json_encode(array_merge($params['serviceUrlParams'] ?? [], $fixedParamsArr));
+            $metadataUrlParams = json_encode(array_merge($params['metadataUrlParams'] ?? [], $fixedParamsArr));
+            $serviceUrlParamsJs = "serviceUrlParams: {$serviceUrlParams},";
+            $metadataUrlParamsJs = "metadataUrlParams: {$metadataUrlParams}";
         }
         
-        return json_encode($params);
+        
+        
+        return <<<JS
+                {
+                    serviceUrl: {$serivceUrl},
+                    {$auth}
+                    {$serviceUrlParamsJs}
+                    {$metadataUrlParamsJs}
+                }
+
+JS;
     }
     
     /**

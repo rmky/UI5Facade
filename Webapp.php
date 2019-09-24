@@ -242,6 +242,8 @@ class Webapp implements WorkbenchDependantInterface
             $json["display"] = "standalone";
         }
         
+        $json['sap.app']['dataSources'] = $this->facade->getConfig()->getOption('WEBAPP_EXPORT.MANIFEST.DATASOURCES')->toArray();
+        
         return json_encode($json, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
     }
     

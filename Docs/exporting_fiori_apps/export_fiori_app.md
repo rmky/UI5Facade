@@ -30,7 +30,7 @@ After creating the project export the app by clicking the `Export` button. The a
 To deploy the exported app on a NetWeaver see [Deploy an exported app on ABAP NetWeaver Gateway](deploy_on_netweaver.md).
 
 ## How the export works
-All pages that belong to the same page as the  `Root Page` get exported and therefore are accessible in the exported app.
+All pages that belong to the same app as the  `Root Page` get exported and therefore are accessible in the exported app.
 The export changes the default server adapter, which uses PowerUI to communicate with the OData2 services, to the `OData2ServerAdapter`. This server adapter communicates directly with the OData2 services, without the need of PowerUI.
 The export also disables the global actions of the datatoolbar (`ExportCSV, ExportCSV, FavoritesAdd, ObjectBasketAdd`) as those are not supported by the `OData2ServerAdapter`.
 

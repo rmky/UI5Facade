@@ -13,7 +13,7 @@ To Export an existing Power UI App as a Fiori App go to `Menu->Administration->S
 The pages shows an overview of the already existing Fiori webapp export projects on the machine. To create a new project click the `New` button.
 The opening window shows the configuration for that new app export with the following important configurations:
 
-- `Project Name` - name of the project as it appears in the list of Fiori Webapps proejects
+- `Project Name` - name of the project as it appears in the list of Fiori Webapps projects
 - `Root Page` - desired landing page for the exported app
 - `Export Folder` - folder the app will get exported to, default is `export/fiori/[#app_id#]`
 - `Current Version` - version of the exported app, default is `1.0.0`

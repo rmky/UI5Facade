@@ -137,13 +137,13 @@ class ExportFioriWebapp extends AbstractAction implements iModifyData
             Filemanager::pathConstruct($webcontentPath . 'libs');
         }
         
-        $this
-            ->exportFile($webapp, 'manifest.json', $webcontentPath)
+        $this            
             ->exportFile($webapp, 'index.html', $webcontentPath)
             ->exportFile($webapp, 'Component.js', $webcontentPath)
             ->exportTranslations($rootPage->getApp(), $webapp, $webcontentPath)
             ->exportStaticViews($webapp, $webcontentPath)
-            ->exportPages($webapp, $webcontentPath);
+            ->exportPages($webapp, $webcontentPath)
+            ->exportFile($webapp, 'manifest.json', $webcontentPath);
         
         return $appPath;
     }

@@ -26,10 +26,32 @@ use exface\UI5Facade\Exceptions\UI5ExportUnsupportedActionException;
 use exface\Core\Interfaces\WidgetInterface;
 use exface\Core\Widgets\Data;
 use exface\UI5Facade\Exceptions\UI5ExportUnsupportedWidgetException;
+use exface\Core\CommonLogic\UxonObject;
 
 /**
  * 
  * @author Ralf Mulansky
+ * 
+ * The OData2ServerAdapter performs actions by directly sending requests to an OData2 service.
+ * To do so it evaluates what actions can be performed by widgets and builds the corresponding
+ * java script codes for those actions. To do so it transforms the give parameter for that action
+ * to fit the OData2 services. The adapter creates a new ODataModel object for each action
+ * and adds the transformed parameters to that model. Then it calls the corresponding ODataModel
+ * method to the wanted action and adds the success and error handler for the server response.
+ * Read request are send to the server via the ODataModel 'read' method.
+ * 'Create', 'Update', 'Delete' and 'Function Import' requests are send via the 'submitChanges' method.
+ * By default each action request is send as a single server request, because the default OData2 service
+ * implementation for CRUD operations does not support multiple operation requests send in a single
+ * request, stacked via $batch.
+ * It is possible to activate $batch requests my changing the following options in the
+ * 'exface.UI5Facade.config.json' file:
+ * 
+ * "WEBAPP_EXPORT.ODATA.USE_BATCH_DELETES" : false
+ * "WEBAPP_EXPORT.ODATA.USE_BATCH_WRITES" : false
+ * "WEBAPP_EXPORT.ODATA.USE_BATCH_FUNCTION_IMPORTS" : false
+ * 
+ * Changing those options to true will enable the $batch requests for 'Delete' and/or 'Create'/'Update'
+ * and/or 'Function Import' actions.
  * 
  * Known issues:
  * 
@@ -146,15 +168,13 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
             case get_class($action) === SaveData::class:
                 return $this->buildJsDataWrite($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             default:
-                // FIXME #fiori-export throw new UI5ExportUnsupportedActionException('Action "' . $action->getAliasWithNamespace() . '" cannot be used with Fiori export!');
+                throw new UI5ExportUnsupportedActionException('Action "' . $action->getAliasWithNamespace() . '" cannot be used with Fiori export!');
                 return <<<JS
 
         console.error('Unsupported action {$action->getAliasWithNamespace()}', {$oParamsJs});
 
 JS;
         }
-        
-        return '';
     }
     
     /**
@@ -202,8 +222,8 @@ JS;
         $opNE = EXF_COMPARATOR_EQUALS_NOT;
         
         return <<<JS
-
-            var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});  
+            
+            var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
             var oDataReadParams = {};
             var oDataReadFiltersSearch = [];
             var oDataReadFiltersQuickSearch = [];
@@ -434,7 +454,7 @@ JS;
         
         return <<<JS
 
-                    switch (cond.comparator) {
+                    switch ({$condJs}.comparator) {
                         case '{$opIS}':
                             var oOperator = "Contains";
                             break;
@@ -462,9 +482,9 @@ JS;
                         default:
                             var oOperator = "EQ";
                     }
-                    if (cond.value !== "") {
-                        if ({$timeAttributes}.indexOf(cond.expression) > -1) {
-                            var d = cond.value;
+                    if ({$condJs}.value !== "") {
+                        if ({$timeAttributes}.indexOf({$condJs}.expression) > -1) {
+                            var d = {$condJs}.value;
                             var timeParts = d.split(':');
                             if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
                                 timeParts[3] = "00";
@@ -475,10 +495,10 @@ JS;
                             var timeString = "PT" + timeParts[0] + "H" + timeParts[1] + "M" + timeParts[3] + "S";
                             var value = timeString;
                         } else {
-                            var value = cond.value;
+                            var value = {$condJs}.value;
                         }
                         var filter = new sap.ui.model.Filter({
-                            path: cond.expression,
+                            path: {$condJs}.expression,
                             operator: oOperator,
                             value1: value
                         });
@@ -564,24 +584,57 @@ JS;
             throw new FacadeLogicError('Cannot use direct OData 2 connections with object "' . $object->getName() . '" (' . $object->getAliasWithNamespace() . ')!');
         }
         
-        $params = [];
-        $params['serviceUrl'] = rtrim($connection->getUrl(), "/") . '/';
+        $dataSourceAlias = $object->getDataSource()->getId();
+        $config = $this->getElement()->getFacade()->getConfig();
+        /* @var $sourcesUxon \exface\Core\CommonLogic\UxonObject */
+        $sourcesUxon = $config->getOption('WEBAPP_EXPORT.MANIFEST.DATASOURCES');
+        $url = rtrim($connection->getUrl(), "/") . '/';
+        if ($config->getOption('WEBAPP_EXPORT.MANIFEST.DATASOURCES_USE_RELATIVE_URLS')) {
+            $url = parse_url($url, PHP_URL_PATH);
+        }
+        $sourcesUxon->setProperty($dataSourceAlias, new UxonObject([
+            'uri' => $url
+        ]));
+        $config->setOption('WEBAPP_EXPORT.MANIFEST.DATASOURCES', $sourcesUxon);
+        
+        $params = '';
+        $serivceUrl = <<<JS
+            function(){
+                var sConfigUrl = {$this->getElement()->getController()->buildJsComponentGetter()}.getManifestEntry("/.../{$dataSourceAlias}/uri");
+                return sConfigUrl || '{$url}';
+            }()
+
+JS;
+        $auth = '';
         if ($connection->getUser()) {
             if ($this->getUseConnectionCredentials() === true) {
-                $params['user'] = $connection->getUser();
-                $params['password'] = $connection->getPassword();
+                $auth = "user: '{$connection->getUser()}',";
+                $auth .= "password: '{$connection->getPassword()}',";
             }
-            $params['withCredentials'] = true;
-            //$params['headers'] = ['Authorization' => 'Basic TU9WX0RFVjpzY2h1ZXJlcjVh'];
+            $auth .= "withCredentials: true,";
         }
+        $metadataUrlParams = '';
+        $serviceUrlParams = '';
         if ($fixedParams = $connection->getFixedUrlParams()) {     
             $fixedParamsArr = [];
             parse_str($fixedParams, $fixedParamsArr);
-            $params['serviceUrlParams'] = array_merge($params['serviceUrlParams'] ?? [], $fixedParamsArr);
-            $params['metadataUrlParams'] = array_merge($params['metadataUrlParams'] ?? [], $fixedParamsArr);
+            $serviceUrlParams = json_encode(array_merge($params['serviceUrlParams'] ?? [], $fixedParamsArr));
+            $metadataUrlParams = json_encode(array_merge($params['metadataUrlParams'] ?? [], $fixedParamsArr));
+            $serviceUrlParamsJs = "serviceUrlParams: {$serviceUrlParams},";
+            $metadataUrlParamsJs = "metadataUrlParams: {$metadataUrlParams}";
         }
         
-        return json_encode($params);
+        
+        
+        return <<<JS
+                {
+                    serviceUrl: {$serivceUrl},
+                    {$auth}
+                    {$serviceUrlParamsJs}
+                    {$metadataUrlParamsJs}
+                }
+
+JS;
     }
     
     /**

@@ -168,7 +168,7 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
             case get_class($action) === SaveData::class:
                 return $this->buildJsDataWrite($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             default:
-                throw new UI5ExportUnsupportedActionException('Action "' . $action->getAliasWithNamespace() . '" cannot be used with Fiori export!');
+                //throw new UI5ExportUnsupportedActionException('Action "' . $action->getAliasWithNamespace() . '" cannot be used with Fiori export!');
                 return <<<JS
 
         console.error('Unsupported action {$action->getAliasWithNamespace()}', {$oParamsJs});
@@ -333,8 +333,8 @@ JS;
                                 var attr = {$dateAttributes}[j].toString();
                                 var d = resultRows[i][attr];
                                 if (d !== undefined && d !== "" && d !== null) {
-                                    var oDateFormat = sap.ui.core.format.DateFormat.getDateTimeInstance();
-                                    var newVal = oDateFormat.format(d);                                   
+                                    var oDateFormat = sap.ui.core.format.DateFormat.getDateTimeInstance({pattern:'yyyy-MM-dd HH:mm:ss'});
+                                    var newVal = oDateFormat.format(d);                                 
                                     resultRows[i][attr] = newVal;
                                 }
                             }

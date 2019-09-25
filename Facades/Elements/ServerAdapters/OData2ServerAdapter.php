@@ -333,8 +333,8 @@ JS;
                                 var attr = {$dateAttributes}[j].toString();
                                 var d = resultRows[i][attr];
                                 if (d !== undefined && d !== "" && d !== null) {
-                                    var oDateFormat = sap.ui.core.format.DateFormat.getDateTimeInstance();
-                                    var newVal = oDateFormat.format(d);                                   
+                                    var oDateFormat = sap.ui.core.format.DateFormat.getDateTimeInstance({pattern:'yyyy-MM-dd HH:mm:ss'});
+                                    var newVal = oDateFormat.format(d);                                 
                                     resultRows[i][attr] = newVal;
                                 }
                             }

@@ -359,58 +359,8 @@ JS;
         // FIXME #DataPreloader this will force the form to use any preload - regardless of the columns.
         if ($widget->isPreloadDataEnabled() === true) {
             $this->getController()->addOnDefineScript("exfPreloader.addPreload('{$this->getMetaObject()->getAliasWithNamespace()}');");
-            $loadPrefillData = $this->buildJsPrefillLoaderFromPreload($triggerWidget, $oViewJs, 'oViewModel');
-        } else {
-            $loadPrefillData = $this->buildJsPrefillLoaderFromServer($triggerWidget, $oViewJs, 'oViewModel');
-        }
+        } 
         
-        return <<<JS
-        
-            {$this->buildJsBusyIconShow()}
-            {$oViewJs}.getModel().setData({});
-            var oViewModel = {$oViewJs}.getModel('view');
-            oViewModel.setProperty('/_prefill/pending', true);
-            {$loadPrefillData}
-			
-JS;
-    }
-            
-    protected function buildJsPrefillLoaderFromPreload(WidgetInterface $triggerWidget, string $oViewJs = 'oView', string $oViewModelJs = 'oViewModel') : string
-    {
-        $widget = $this->getWidget();
-        return <<<JS
-        
-                exfPreloader
-                .getPreload('{$widget->getMetaObject()->getAliasWithNamespace()}')
-                .then(preload => {
-                    var failed = false;
-                    if (preload !== undefined && preload.response !== undefined && preload.response.rows !== undefined) {
-                        var uid = {$oViewModelJs}.getProperty('/_route').params.data.rows[0]['{$widget->getMetaObject()->getUidAttributeAlias()}'];
-                        var aData = preload.response.rows.filter(oRow => {
-                            return oRow['{$widget->getMetaObject()->getUidAttributeAlias()}'] == uid;
-                        });
-                        if (aData.length === 1) {
-                            var response = $.extend({}, preload.response, {rows: aData});
-                            {$this->buildJsPrefillLoaderSuccess('response', $oViewJs, $oViewModelJs)}
-                        } else {
-                            failed = true;
-                        }
-                    } else {
-                        failed = true;
-                    }
-
-                    if (failed == true) {
-                        console.warn('Failed to prefill dialog from preload data: falling back to server request');
-                        {$this->buildJsPrefillLoaderFromServer($triggerWidget, $oViewJs, $oViewModelJs)}
-                    }
-                });
-                
-JS;
-    }
-                        
-    protected function buildJsPrefillLoaderFromServer(WidgetInterface $triggerWidget, string $oViewJs = 'oView', string $oViewModelJs = 'oViewModel') : string
-    {
-        $widget = $this->getWidget();
         // If the prefill cannot be fetched due to being offline, show the offline message view
         // (if the dialog is a page) or an error-popup (if the dialog is a regular dialog).
         if ($this->isMaximized()) {
@@ -426,27 +376,33 @@ JS;
         
         $action = ActionFactory::createFromString($this->getWorkbench(), 'exface.Core.ReadPrefill', $widget);
         
-        $js = <<<JS
+        // FIXME use buildJsPrefillLoaderSuccess here somewere?
+        
+        return <<<JS
+        
+            {$this->buildJsBusyIconShow()}
+            {$oViewJs}.getModel().setData({});
+            var oViewModel = {$oViewJs}.getModel('view');
+            oViewModel.setProperty('/_prefill/pending', true);
 
-            var oRouteParams = {$oViewModelJs}.getProperty('/_route');
+            var oRouteParams = oViewModel.getProperty('/_route');
             var data = $.extend({}, {
                 action: "exface.Core.ReadPrefill",
 				resource: "{$widget->getPage()->getAliasWithNamespace()}",
 				element: "{$triggerWidget->getId()}",
             }, oRouteParams.params);
-            
             var oResultModel = {$oViewJs}.getModel();
-                    
+
+            {$this->getServerAdapter()->buildJsServerRequest(
+                $action,
+                'oResultModel',
+                'data',
+                "console.log('prefill done!'); {$this->buildJsBusyIconHide()}; oViewModel.setProperty('/_prefill/pending', false);",
+                "console.log('prefill error!'); {$this->buildJsBusyIconHide()}; oViewModel.setProperty('/_prefill/pending', false);",
+                $offlineError
+            )}
+			
 JS;
-        $js .= $this->getServerAdapter()->buildJsServerRequest(
-            $action, 
-            'oResultModel', 
-            'data',
-            "{$this->buildJsBusyIconHide()}; {$oViewModelJs}.setProperty('/_prefill/pending', false);",
-            "{$this->buildJsBusyIconHide()}; {$oViewModelJs}.setProperty('/_prefill/pending', false);",
-            $offlineError
-        );
-        return $js;
     }
                         
     protected function buildJsPrefillLoaderSuccess(string $responseJs = 'response', string $oViewJs = 'oView', string $oViewModelJs = 'oViewModel') : string

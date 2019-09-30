@@ -6,6 +6,7 @@ use exface\UI5Facade\Facades\Interfaces\UI5ServerAdapterInterface;
 use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\Core\Actions\ReadData;
 use exface\Core\Interfaces\Widgets\iHaveQuickSearch;
+use exface\Core\Actions\ReadPrefill;
 
 class PreloadServerAdapter implements UI5ServerAdapterInterface
 {
@@ -33,6 +34,8 @@ class PreloadServerAdapter implements UI5ServerAdapterInterface
     {
         $fallBackRequest = $this->getFallbackAdapter()->buildJsServerRequest($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onOfflineJs);
         switch (true) {
+            case $action instanceof ReadPrefill:
+                return $this->buildJsPrefillLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onOfflineJs, $fallBackRequest);
             case $action instanceof ReadData:
                 return $this->buildJsDataLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onOfflineJs, $fallBackRequest);
         }
@@ -40,10 +43,51 @@ class PreloadServerAdapter implements UI5ServerAdapterInterface
         return $fallBackRequest;
     }
     
-    protected function buildJsDataLoader(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onOfflineJs, string $fallBackRequest) : string
+    protected function buildJsPrefillLoader(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onOfflineJs, string $fallBackRequest) : string
+    {
+        $uidComp = EXF_COMPARATOR_EQUALS;
+        return <<<JS
+
+                var uid;
+                if ($oParamsJs.data && $oParamsJs.data.rows && $oParamsJs.data.rows[0]) {
+                    uid = $oParamsJs.data.rows[0]['{$this->getElement()->getMetaObject()->getUidAttribute()->getDataAddress()}'];
+                } else {
+                    console.error('Cannot fetch preload data: no request data rows selected!');
+                }
+
+                if (uid === undefined || uid === '') {
+                    console.error('Cannot prefill from preload data: no UID value found in input rows!');
+                }
+
+                if ($oParamsJs.data.filters === undefined) {
+                    $oParamsJs.data.filters = {};
+                }
+
+                if ($oParamsJs.data.filters.conditions === undefined) {
+                    $oParamsJs.data.filters.conditions = [];
+                }     
+
+                $oParamsJs.data.filters.conditions.push({
+                    expression: '{$this->getElement()->getMetaObject()->getUidAttribute()->getDataAddress()}',
+                    comparator: '{$uidComp}',
+                    value: uid,
+                    object_alias: '{$this->getElement()->getMetaObject()->getAliasWithNamespace()}'
+                });
+
+                {$this->buildJsDataLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onOfflineJs, $fallBackRequest, true)}
+
+JS;
+    }
+    protected function buildJsDataLoader(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onOfflineJs, string $fallBackRequest, bool $useFirstRowOnly = false) : string
     {
         $element = $this->getElement();
         $widget = $element->getWidget();
+        
+        if ($useFirstRowOnly === true) {
+            $newData = "aData[0]";
+        } else {
+            $newData = "$.extend({}, preload.response, {rows: aData, recordsFiltered: iFiltered})";
+        }
         
         return <<<JS
         
@@ -99,7 +143,7 @@ class PreloadServerAdapter implements UI5ServerAdapterInterface
                             aData = aData.slice({$oParamsJs}.start, {$oParamsJs}.start+{$oParamsJs}.length);
                         }
                         
-                        {$oModelJs}.setData($.extend({}, preload.response, {rows: aData, recordsFiltered: iFiltered}));
+                        {$oModelJs}.setData($newData);
                         {$onModelLoadedJs}
                     } else {
                         console.log('No preloaded data found: falling back to server request');

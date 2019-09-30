@@ -5,6 +5,7 @@ use exface\UI5Facade\Facades\Elements\UI5AbstractElement;
 use exface\UI5Facade\Facades\Interfaces\UI5ServerAdapterInterface;
 use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\Core\Actions\ReadData;
+use exface\Core\Interfaces\Widgets\iHaveQuickSearch;
 
 class PreloadServerAdapter implements UI5ServerAdapterInterface
 {
@@ -30,35 +31,19 @@ class PreloadServerAdapter implements UI5ServerAdapterInterface
     
     public function buildJsServerRequest(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onOfflineJs = '') : string
     {
+        $fallBackRequest = $this->getFallbackAdapter()->buildJsServerRequest($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onOfflineJs);
         switch (true) {
             case $action instanceof ReadData:
-                return $this->buildJsDataLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onOfflineJs);
+                return $this->buildJsDataLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onOfflineJs, $fallBackRequest);
         }
         
-        return $this->getFallbackAdapter()->buildJsServerRequest($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onOfflineJs);
+        return $fallBackRequest;
     }
     
-    protected function buildJsDataLoader(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onOfflineJs = '') : string
+    protected function buildJsDataLoader(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onOfflineJs, string $fallBackRequest) : string
     {
         $element = $this->getElement();
         $widget = $element->getWidget();
-        
-        // TODO need a better check quick search handler! Maybe $widget instanceof iHaveQuickSearch?
-        if (method_exists($element, 'buildJsQuickSearch')) {
-            $quickSearchFilter = <<<JS
-                            
-                            if ({$oParamsJs}.q !== undefined && {$oParamsJs}.q !== '') {
-                                var sQuery = {$oParamsJs}.q.toString().toLowerCase();
-                                aData = aData.filter(oRow => {
-                                    if (oRow[cond.expression] === undefined) return false;
-                                    return {$element->buildJsQuickSearch('sQuery', 'oRow')};
-                                });
-                            }
-
-JS;
-        } else {
-            $quickSearchFilter = '';
-        }
         
         return <<<JS
         
@@ -70,7 +55,7 @@ JS;
                         if ({$oParamsJs}.data && {$oParamsJs}.data.filters && {$oParamsJs}.data.filters.conditions) {
                             var conditions = {$oParamsJs}.data.filters.conditions;
                             var fnFilter;
-                            
+                            console.log({$oParamsJs});
                             for (var i in conditions) {
                                 var cond = conditions[i];
                                 if (cond.value === undefined || cond.value === null || cond.value === '') continue;
@@ -102,7 +87,10 @@ JS;
                                 }
                             }
 
-                            {$quickSearchFilter}
+                            if ({$oParamsJs}.q !== undefined && {$oParamsJs}.q !== '') {
+                                var sQuery = {$oParamsJs}.q.toString().toLowerCase();
+                                {$this->buildJsQuickSearchFilter('sQuery', 'oRow')}
+                            }
                             
                             var iFiltered = aData.length;
                         }
@@ -111,15 +99,52 @@ JS;
                             aData = aData.slice({$oParamsJs}.start, {$oParamsJs}.start+{$oParamsJs}.length);
                         }
                         
-                        {$oModelJs}.setData($.extend({}, preload.response, {data: aData, recordsFiltered: iFiltered}));
+                        {$oModelJs}.setData($.extend({}, preload.response, {rows: aData, recordsFiltered: iFiltered}));
                         {$onModelLoadedJs}
                         {$element->buildJsBusyIconHide()}
                     } else {
                         console.log('No preloaded data found: falling back to server request');
-                        {$this->getFallbackAdapter()->buildJsDataLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onOfflineJs)}
+                        {$fallBackRequest}
                     }
                 });
                 
+JS;
+    }
+    
+    /**
+     * Returns an inline JS-snippet to test if a given JS row object matches the quick search string.
+     *  
+     * @param string $sQueryJs
+     * @param string $oRowJs
+     * @return string
+     */
+    protected function buildJsQuickSearchFilter(string $sQueryJs = 'sQuery', string $aDataJs = 'aData') : string
+    {
+        $widget = $this->getElement()->getWidget();
+        
+        if (! $widget instanceof iHaveQuickSearch) {
+            return '';
+        }
+        
+        $filters = [];
+        foreach ($widget->getAttributesForQuickSearch() as $attr) {
+            $filters[] = "(oRow['{$attr->getAliasWithRelationPath()}'].toString().toLowerCase().indexOf({$sQueryJs}) !== -1)";
+        }
+        
+        if (! empty($filters)) {
+            $filterJs = implode(' || ', $filters);
+        } else {
+            return ''; 
+        }
+        
+        return <<<JS
+
+                            
+                                {$aDataJs} = {$aDataJs}.filter(oRow => {
+                                    if (oRow[cond.expression] === undefined) return false;
+                                    return {$filterJs};
+                                });
+
 JS;
     }
 }

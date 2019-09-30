@@ -584,7 +584,7 @@ const exfPreloader = {};
 				);
 				if (aImageCols && aImageCols.length > 0) {
 					for (i in aImageCols) {
-						var urls = data.data.map(function(value,index) { return value[aImageCols[i]]; });
+						var urls = data.rows.map(function(value,index) { return value[aImageCols[i]]; });
 						promises.push(_preloader.syncImages(urls));
 					}
 				}

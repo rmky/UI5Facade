@@ -55,7 +55,7 @@ class PreloadServerAdapter implements UI5ServerAdapterInterface
                         if ({$oParamsJs}.data && {$oParamsJs}.data.filters && {$oParamsJs}.data.filters.conditions) {
                             var conditions = {$oParamsJs}.data.filters.conditions;
                             var fnFilter;
-console.log({$oParamsJs});
+
                             for (var i in conditions) {
                                 var cond = conditions[i];
                                 if (cond.value === undefined || cond.value === null || cond.value === '') continue;

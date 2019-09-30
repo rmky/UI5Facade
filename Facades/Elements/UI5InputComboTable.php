@@ -29,7 +29,7 @@ class UI5InputComboTable extends UI5Input
         // extended to work with changing values too.
         if (! $this->getWidget()->getAllowNewValues()) {
             $onChange = <<<JS
-    console.log('change!');
+
                         var oInput = oEvent.getSource();
                         if (oInput.getValue() !== '' && oInput.getSelectedKey() === ''){
                             oInput.fireSuggest({suggestValue: {q: oInput.getValue()}});

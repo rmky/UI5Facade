@@ -68,13 +68,11 @@ class UI5FacadeServerAdapter implements UI5ServerAdapterInterface
 				                   	if (response.success){
 										{$onModelLoadedJs}
 				                    } else {
-										{$this->getElement()->buildJsBusyIconHide()}
 										{$this->getElement()->buildJsShowMessageError('response.error', '"Server error"')}
                                         {$onErrorJs}
 				                    }
 								},
 								error: function(jqXHR, textStatus, errorThrown){
-									{$this->getElement()->buildJsBusyIconHide()}
                                     {$onErrorJs}
                                     if (navigator.onLine === false) {
                                         {$onOfflineJs}
@@ -92,7 +90,6 @@ JS;
         return <<<JS
         
                 var fnCompleted = function(oEvent){
-                    {$this->getElement()->buildJsBusyIconHide()}
         			if (oEvent.getParameters().success) {
                         {$onModelLoadedJs}
                     } else {
@@ -134,12 +131,10 @@ JS;
                     if (Array.isArray(response.rows) && response.rows.length === 1) {
                         {$oModelJs}.setData(response.rows[0]);
                     }
-                    {$this->getElement()->buildJsBusyIconHide()}
                     {$onModelLoadedJs}
                 },
                 error: function(jqXHR, textStatus, errorThrown){
                     {$onErrorJs}
-                    {$this->getElement()->buildJsBusyIconHide()}
                     if (navigator.onLine === false) {
                         {$onOfflineJs}
                     } else {

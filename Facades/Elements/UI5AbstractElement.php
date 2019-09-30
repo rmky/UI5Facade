@@ -475,7 +475,7 @@ JS;
         return $this;
     }
     
-    protected function getServerAdapter() : UI5ServerAdapterInterface
+    public function getServerAdapter() : UI5ServerAdapterInterface
     {
         $widget = $this->getWidget();
         

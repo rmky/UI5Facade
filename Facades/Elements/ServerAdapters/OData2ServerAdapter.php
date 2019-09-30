@@ -430,7 +430,6 @@ JS;
                     
                     {$oModelJs}.setData(oRowData);
                     {$onModelLoadedJs}
-                    {$this->getElement()->buildJsBusyIconHide()}
                 },
                 error: function(oError){
                     {$onErrorJs}
@@ -958,7 +957,7 @@ JS;
                                 callActions = false;
                                 console.error('No value given for required parameter: ', param);
                                 {$this->getElement()->buildJsShowError('"No value given for parameter \"" + param + "\" at selected row: " + j', '"ERROR"')}
-                                {$this->getElement()->buildJsBusyIconHide()}
+                                {$onErrorJs}
                             }
                         }
                     }
@@ -972,7 +971,7 @@ JS;
                 }
             } else {                
                 {$this->getElement()->buildJsShowError('"No row selected!"', '"ERROR"')}
-                {$this->getElement()->buildJsBusyIconHide()}
+                {$onErrorJs}
             }
             
 JS;
@@ -1045,7 +1044,6 @@ JS;
                     var errorText = 'No error description send!';
                 }
                 {$this->getElement()->buildJsShowError('errorText', "{$oErrorJs}.statusCode + ' ' + {$oErrorJs}.statusText")}
-                {$this->getElement()->buildJsBusyIconHide()}
                 
 JS;
                 

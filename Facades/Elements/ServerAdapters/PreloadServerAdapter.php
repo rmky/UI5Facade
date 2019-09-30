@@ -55,7 +55,7 @@ class PreloadServerAdapter implements UI5ServerAdapterInterface
                         if ({$oParamsJs}.data && {$oParamsJs}.data.filters && {$oParamsJs}.data.filters.conditions) {
                             var conditions = {$oParamsJs}.data.filters.conditions;
                             var fnFilter;
-
+console.log({$oParamsJs});
                             for (var i in conditions) {
                                 var cond = conditions[i];
                                 if (cond.value === undefined || cond.value === null || cond.value === '') continue;
@@ -101,7 +101,6 @@ class PreloadServerAdapter implements UI5ServerAdapterInterface
                         
                         {$oModelJs}.setData($.extend({}, preload.response, {rows: aData, recordsFiltered: iFiltered}));
                         {$onModelLoadedJs}
-                        {$element->buildJsBusyIconHide()}
                     } else {
                         console.log('No preloaded data found: falling back to server request');
                         {$fallBackRequest}

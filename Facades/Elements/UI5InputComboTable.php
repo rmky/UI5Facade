@@ -29,7 +29,7 @@ class UI5InputComboTable extends UI5Input
         // extended to work with changing values too.
         if (! $this->getWidget()->getAllowNewValues()) {
             $onChange = <<<JS
-    
+    console.log('change!');
                         var oInput = oEvent.getSource();
                         if (oInput.getValue() !== '' && oInput.getSelectedKey() === ''){
                             oInput.fireSuggest({suggestValue: {q: oInput.getValue()}});
@@ -78,8 +78,7 @@ JS;
             $controller->addOnDefineScript("exfPreloader.addPreload('{$widget->getTableObject()->getAliasWithNamespace()}', ['{$cols}'], [], '{$widget->getPage()->getId()}', '{$widget->getTable()->getId()}');");
         }
         
-        $controller->addMethod('onSuggestFromServer', $this, 'oEvent', $this->buildJsDataLoderFromServer('oEvent'));
-        $controller->addMethod('onSuggestFromPreload', $this, 'oEvent', $this->buildJsDataLoaderFromPreload('oEvent'));
+        $controller->addMethod('onSuggest', $this, 'oEvent', $this->buildJsDataLoder('oEvent'));
         
         if (! $this->isValueBoundToModel() && $value = $widget->getValueWithDefaults()) {
             // If the widget value is set explicitly, we either set the key only or the 
@@ -187,7 +186,7 @@ JS;
             showTableSuggestionValueHelp: false,
             filterSuggests: false,
             showValueHelp: true,
-			suggest: {$this->buildJsPropertySuggest()},
+			suggest: {$this->buildJsPropertySuggest($oControllerJs)},
             suggestionRows: {
                 path: "{$this->getModelNameForAutosuggest()}>/rows",
                 template: new sap.m.ColumnListItem({
@@ -234,27 +233,25 @@ JS;
      * 
      * @return string
      */
-    protected function buildJsPropertySuggest()
-    {
-        $widget = $this->getWidget();
-        
-        if ($widget->isPreloadDataEnabled()) {
-            $js = $this->getController()->buildJsMethodCallFromController('onSuggestFromPreload', $this, 'oEvent', 'oController');
-        } else {
-            $js = $this->getController()->buildJsMethodCallFromController('onSuggestFromServer', $this, 'oEvent', 'oController');
-        }
-        
+    protected function buildJsPropertySuggest(string $oControllerJs)
+    {        
         return <<<JS
             function(oEvent) {
-                {$js}
+                {$this->getController()->buildJsMethodCallFromController('onSuggest', $this, 'oEvent', $oControllerJs)}
     		}
 JS;
     }
-        
-    protected function buildJsDataLoderFromServer(string $oEventJs = 'oEvent') : string
+     
+    /**
+     * 
+     * @param string $oEventJs
+     * @return string
+     */
+    protected function buildJsDataLoder(string $oEventJs = 'oEvent') : string
     {
         $widget = $this->getWidget();
         $configuratorElement = $this->getFacade()->getElement($widget->getTable()->getConfiguratorWidget());
+        $serverAdapter = $this->getFacade()->getElement($widget->getTable())->getServerAdapter();
         
         return <<<JS
 
@@ -301,83 +298,8 @@ JS;
                     };
                     oModel.attachRequestCompleted(silencer);
                 }
-                oModel.loadData("{$this->getAjaxUrl()}", params);
 
-JS;
-    }
-    
-    /**
-     * Returns the code for a controller method to load suggestion data from a preload.
-     * 
-     * If no preload data is there, the server data loader method will be called as fallback. So
-     * it is important to keep both methods in the controller.
-     * 
-     * @param string $oEventJs
-     * @return string
-     */
-    protected function buildJsDataLoaderFromPreload(string $oEventJs = 'oEvent') : string
-    {
-        $widget = $this->getWidget();
-        return <<<JS
-                
-                var oInput = {$oEventJs}.getSource();
-                var q = {$oEventJs}.getParameter("suggestValue");
-                var qParams = {};
-                var silent = false;
-
-                if (typeof q == 'object') {
-                    qParams = q;
-                    silent = true;
-                } else {
-                    qParams.q = q;
-                }
-
-                // Copy the event for the server fallback in case there is no preloaded data.
-                // Need to use a copy, because otherwise the event is emptied before we
-                // actually come to the fallback.
-                var oSuggestEvent = jQuery.extend({}, oEvent);
-                
-                var oModel = oInput.getModel('{$this->getModelNameForAutosuggest()}');
-                
-                exfPreloader
-                .getPreload('{$widget->getTableObject()->getAliasWithNamespace()}')
-                .then(preload => {
-                    if (preload !== undefined && preload.response !== undefined && preload.response.data !== undefined) {
-                        var curKey = oInput.getSelectedKey();
-                        oModel.setData(preload.response);
-                        if (silent && curKey !== undefined && curKey !== '') {
-                            var oContext = oInput
-                                .getBinding('suggestionRows')
-                                .filter([
-                                    new sap.ui.model.Filter(
-                        				"{$widget->getValueColumn()->getDataColumnName()}",
-                        				sap.ui.model.FilterOperator.EQ, 
-                                        curKey
-                                    )
-                                ])
-                                .getCurrentContexts()[0];
-                            if (oContext !== undefined) {
-                                var item = oContext.getProperty();
-                                oInput.setValue(item['{$widget->getTextColumn()->getDataColumnName()}']).setSelectedKey(item['{$widget->getValueColumn()->getDataColumnName()}']);
-                                oInput.closeSuggestions();
-                                oInput.setValueState(sap.ui.core.ValueState.None);
-                            } else {
-                                oInput.setSelectedKey("");
-                                oInput.setValueState(sap.ui.core.ValueState.Error);
-                            }
-                        } else {
-                            oInput.getBinding('suggestionRows').filter([
-                                new sap.ui.model.Filter(
-                    				"{$widget->getTextColumn()->getDataColumnName()}",
-                    				sap.ui.model.FilterOperator.Contains, 
-                                    qParams.q
-                    			)
-                            ]);
-                        }  
-                    } else {
-                        {$this->getController()->buildJsMethodCallFromController('onSuggestFromServer', $this, 'oSuggestEvent', 'this')}
-                    }
-                });
+                {$serverAdapter->buildJsServerRequest($widget->getLazyLoadingAction(), 'oModel', 'params', $this->buildJsBusyIconHide(), $this->buildJsBusyIconHide())}
 
 JS;
     }

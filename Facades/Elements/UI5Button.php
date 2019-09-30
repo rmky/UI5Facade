@@ -393,7 +393,9 @@ JS;
         
         $onModelLoadedJs = <<<JS
 
-								{$this->buildJsCloseDialog($widget, $input_element)}
+								
+								{$this->buildJsBusyIconHide()}
+                                {$this->buildJsCloseDialog($widget, $input_element)}
 								{$this->buildJsInputRefresh($widget, $input_element)}
 		                       	{$this->buildJsBusyIconHide()}
 		                       	$('#{$this->getId()}').trigger('{$action->getAliasWithNamespace()}.action.performed', [requestData, '{$input_element->getId()}']);
@@ -427,7 +429,7 @@ JS;
 							object: "{$widget->getMetaObject()->getId()}",
 							data: requestData
 					}
-                    {$this->getServerAdapter()->buildJsServerRequest($action, 'oModel', 'params', $onModelLoadedJs, '', '')}	    
+                    {$this->getServerAdapter()->buildJsServerRequest($action, 'oModel', 'params', $onModelLoadedJs, $this->buildJsBusyIconHide())}	    
 				} else {
 					{$input_element->buildJsValidationError()}
 				}

@@ -442,8 +442,8 @@ JS;
             $action, 
             'oResultModel', 
             'data',
-            "{$oViewModelJs}.setProperty('/_prefill/pending', false);",
-            "{$oViewModelJs}.setProperty('/_prefill/pending', false);",
+            "{$this->buildJsBusyIconHide()}; {$oViewModelJs}.setProperty('/_prefill/pending', false);",
+            "{$this->buildJsBusyIconHide()}; {$oViewModelJs}.setProperty('/_prefill/pending', false);",
             $offlineError
         );
         return $js;

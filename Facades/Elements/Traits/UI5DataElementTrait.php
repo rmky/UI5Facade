@@ -417,8 +417,8 @@ JS;
             $widget->getLazyLoadingAction(),
             'oModel',
             'params',
-            $this->buildJsDataLoaderOnLoaded('oModel'),
-            '',
+            $this->buildJsBusyIconHide() . '; ' . $this->buildJsDataLoaderOnLoaded('oModel'),
+            $this->buildJsBusyIconHide(),
             $this->buildJsOfflineHint('oTable')
         );
         

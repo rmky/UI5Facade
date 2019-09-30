@@ -55,7 +55,7 @@ class PreloadServerAdapter implements UI5ServerAdapterInterface
                         if ({$oParamsJs}.data && {$oParamsJs}.data.filters && {$oParamsJs}.data.filters.conditions) {
                             var conditions = {$oParamsJs}.data.filters.conditions;
                             var fnFilter;
-                            console.log({$oParamsJs});
+
                             for (var i in conditions) {
                                 var cond = conditions[i];
                                 if (cond.value === undefined || cond.value === null || cond.value === '') continue;
@@ -89,7 +89,7 @@ class PreloadServerAdapter implements UI5ServerAdapterInterface
 
                             if ({$oParamsJs}.q !== undefined && {$oParamsJs}.q !== '') {
                                 var sQuery = {$oParamsJs}.q.toString().toLowerCase();
-                                {$this->buildJsQuickSearchFilter('sQuery', 'oRow')}
+                                {$this->buildJsQuickSearchFilter('sQuery', 'aData')}
                             }
                             
                             var iFiltered = aData.length;
@@ -128,7 +128,7 @@ JS;
         
         $filters = [];
         foreach ($widget->getAttributesForQuickSearch() as $attr) {
-            $filters[] = "(oRow['{$attr->getAliasWithRelationPath()}'].toString().toLowerCase().indexOf({$sQueryJs}) !== -1)";
+            $filters[] = "((oRow['{$attr->getAliasWithRelationPath()}'] || '').toString().toLowerCase().indexOf({$sQueryJs}) !== -1)";
         }
         
         if (! empty($filters)) {

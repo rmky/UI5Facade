@@ -42,7 +42,8 @@ class UI5Display extends UI5Value
      */
     public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
-        if ($this->getWidget()->getValueDataType() instanceof BooleanDataType) {
+        $widget = $this->getWidget();
+        if ($widget->getValueDataType() instanceof BooleanDataType) {
             if ($this->getWidget()->getParent() instanceof DataColumn) {
                 $icon_yes = 'sap-icon://accept';
                 $icon_no = '';
@@ -64,6 +65,11 @@ class UI5Display extends UI5Value
         })
 
 JS;
+        } elseif($widget instanceof iHaveColorScale && $widget->hasColorScale()) {
+            $objStatus = new UI5ObjectStatus($widget, $this->getFacade());
+            $objStatus->setTitle('');
+            $objStatus->setValueBindingPrefix($this->getValueBindingPrefix());
+            $js = $objStatus->buildJsConstructorForMainControl($oControllerJs);
         } else {
             $js = parent::buildJsConstructorForMainControl();
         }
@@ -137,7 +143,6 @@ JS;
             {$this->buildJsPropertyHeight()}
             {$this->buildJsPropertyAlignment()}
             {$this->buildJsPropertyWrapping()}
-            {$this->buildJsPropertyState()}
 JS;
     }
             
@@ -257,15 +262,6 @@ JS;
         return parent::addOnChangeScript($script);
     }
     
-    protected function buildJsPropertyState() : string
-    {
-        if ($this->getWidget() instanceof iHaveColorScale) {            
-            $stateJs = $this->buildJsColorValue();
-        }
-        
-        return $stateJs ? 'state: ' . $stateJs . ',' : '';
-    }
-    
     protected function buildJsColorValue() : string
     {
         $widget = $this->getWidget();
@@ -304,7 +300,7 @@ JS;
     
     protected function buildJsColorCssSetter(string $oControlJs, string $sColorJs) : string
     {
-        return "setTimeout(function(){console.log($oControlJs.$()); $oControlJs.$().css('color', $sColorJs); }, 0)";
+        return "setTimeout(function(){ $oControlJs.$().css('color', $sColorJs); }, 0)";
     }
 }
 ?>

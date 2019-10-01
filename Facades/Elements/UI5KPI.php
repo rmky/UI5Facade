@@ -244,16 +244,6 @@ JS;
     
     /**
      * 
-     * {@inheritDoc}
-     * @see \exface\UI5Facade\Facades\Elements\UI5Display::buildJsPropertyState()
-     */
-    protected function buildJsPropertyState() : string
-    {        
-        return '';
-    }
-    
-    /**
-     * 
      * @return string
      */
     protected function buildJsPropertyValueColor() : string

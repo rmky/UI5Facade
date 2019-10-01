@@ -2,7 +2,7 @@
 namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\ProgressBar;
-use exface\Core\Facades\AbstractAjaxFacade\Elements\HtmlProgressBarTrait;
+use exface\Core\Interfaces\Widgets\iHaveColorScale;
 
 /**
  *
@@ -30,6 +30,7 @@ class UI5ProgressBar extends UI5Display
     		percentValue: {$this->buildJsValuePercent()},
             displayValue: {$this->buildJsDisplayValue()},
             {$this->buildJsProperties()}
+            {$this->buildJsPropertyState()}
     	})
     	
 JS;
@@ -129,5 +130,24 @@ JS;
     protected function buildJsColorCssSetter(string $oControlJs, string $sColorJs) : string
     {
         return "setTimeout(function(){ $oControlJs.$().find('.sapMPIBar').css('background-color', $sColorJs); }, 0)";
+    }
+    
+    protected function buildJsPropertyState() : string
+    {
+        if ($this->getWidget() instanceof iHaveColorScale) {
+            $stateJs = $this->buildJsColorValue();
+        }
+        
+        return $stateJs ? 'state: ' . $stateJs . ',' : '';
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5Display::buildJsColorValueNoColor()
+     */
+    protected function buildJsColorValueNoColor() : string
+    {
+        return 'sap.ui.core.ValueState.None';
     }
 }

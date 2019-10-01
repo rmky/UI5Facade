@@ -31,8 +31,9 @@ class UI5ColorIndicator extends UI5Display
             // See if the user forced to not use color-only mode
             $colorOnly = $widget->getColorOnly($colorOnly);
         }
-        
-        $icon = <<<JS
+            
+        if ($colorOnly === true) {
+            return <<<JS
         
         new sap.ui.core.Icon("{$this->getid()}", {
             src: "sap-icon://circle-task-2",
@@ -41,22 +42,14 @@ class UI5ColorIndicator extends UI5Display
     	})
     	
 JS;
-            
-        if ($colorOnly === true) {
-            return $icon;
         } else {
-            $text = parent::buildJsConstructorForMainControl($oControllerJs);
-            return <<<JS
-
-        new sap.m.FlexBox({
-            alignItems: "Center",
-            items: [
-                $icon.addStyleClass("sapUiSmallMarginEnd"),
-                $text
-            ]
-        })
-
-JS;
+            $objStatus = new UI5ObjectStatus($widget, $this->getFacade());
+            $objStatus->setTitle('');
+            $objStatus->setValueBindingPrefix($this->getValueBindingPrefix());
+            if ($widget->getFill() === true) {
+                $objStatus->setInverted(true);
+            }
+            return $objStatus->buildJsConstructorForMainControl($oControllerJs);
         }
     }
     
@@ -66,16 +59,6 @@ JS;
      * @see \exface\UI5Facade\Facades\Elements\UI5Display::buildJsPropertyAlignment()
      */
     protected function buildJsPropertyAlignment()
-    {
-        return '';
-    }
-    
-    /**
-     * 
-     * {@inheritDoc}
-     * @see \exface\UI5Facade\Facades\Elements\UI5Display::buildJsPropertyState()
-     */
-    protected function buildJsPropertyState() : string
     {
         return '';
     }

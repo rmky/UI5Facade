@@ -11,6 +11,7 @@ use exface\Core\Interfaces\Widgets\iHaveColorScale;
  * 
  * ```
  * $element = new UI5ObjectStatus($widget, $this->getFacade());
+ * 
  * ```
  *
  * @author Andrej Kabachnik
@@ -25,9 +26,6 @@ class UI5ObjectStatus extends UI5Display
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
-        if ($this->getWidget() instanceof iHaveColorScale) {
-            $this->registerColorResolver($oControllerJs);
-        }
         return $this->buildJsConstructorForMainControl($oControllerJs);
     }
     

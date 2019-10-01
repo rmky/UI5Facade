@@ -4,6 +4,7 @@ namespace exface\UI5Facade\Facades\Elements;
 use exface\Core\Interfaces\Widgets\iShowData;
 use exface\Core\Widgets\KPI;
 use exface\Core\CommonLogic\Constants\Colors;
+use exface\Core\Interfaces\Widgets\iHaveColorScale;
 
 /**
  * Generates sap.m.NumericContent controls for KPI widgets
@@ -40,6 +41,7 @@ class UI5KPI extends UI5Display
                     nullifyValue: false,
                     {$this->buildJsPropertyIcon()}
                     {$this->buildJsPropertyValue()}
+                    {$this->buildJsPropertyValueColor()}
                 })
                 {$modelInit}
                 {$this->buildJsPseudoEventHandlers()}
@@ -240,18 +242,47 @@ JS;
         return $semCols;
     }
     
-    protected function buildJsColorSetter(string $colorValueJs, bool $isSemanticColor) : string
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5Display::buildJsPropertyState()
+     */
+    protected function buildJsPropertyState() : string
+    {        
+        return '';
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    protected function buildJsPropertyValueColor() : string
     {
-        if ($isSemanticColor) {
-            return "sap.ui.getCore().byId('{$this->getId()}').setValueColor({$colorValueJs});";
-        } else {
-            // TODO
-            return <<<JS
-            
-        console.warn('Cannot set color "' + {$colorValueJs} + '" - only UI5 semantic colors currently supported!');
-        
-JS;
+        if ($this->getWidget() instanceof iHaveColorScale) {
+            $colorResolver = $this->buildJsColorValue();
         }
+        
+        return $colorResolver ? 'valueColor: ' . $colorResolver . ',' : '';
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5Display::buildJsColorCssSetter()
+     */
+    protected function buildJsColorCssSetter(string $oControlJs, string $sColorJs) : string
+    {
+        return "setTimeout(function(){ $oControlJs.$().find('.sapMNCValue.Neutral').css('color', $sColorJs); },0)";
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5Display::buildJsColorValueNoColor()
+     */
+    protected function buildJsColorValueNoColor() : string
+    {
+        return 'sap.m.ValueColor.Neutral';
     }
 }
 ?>

@@ -7,6 +7,7 @@ use exface\Core\DataTypes\BooleanDataType;
 use exface\Core\Widgets\DataColumn;
 use exface\Core\CommonLogic\Constants\Colors;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JsValueScaleTrait;
+use exface\Core\Interfaces\Widgets\iHaveColorScale;
 
 /**
  * Generates sap.m.Text controls for Display widgets.
@@ -31,7 +32,6 @@ class UI5Display extends UI5Value
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
-        $this->registerColorResolver($oControllerJs);
         return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl($oControllerJs));
     }
     
@@ -137,6 +137,7 @@ JS;
             {$this->buildJsPropertyHeight()}
             {$this->buildJsPropertyAlignment()}
             {$this->buildJsPropertyWrapping()}
+            {$this->buildJsPropertyState()}
 JS;
     }
             
@@ -226,56 +227,6 @@ JS;
     {
         return "getText()";
     }
-    
-    protected function registerColorResolver(string $oControllerJs = 'oController') : UI5Display
-    {
-        $controller = $this->getController();
-        
-        // Create a controller method to compute the color for the current value and set it for the control
-        $controller->addMethod('resolveColor', $this, '', $this->buildJsColorScaleResolver());
-        // Make sure, the color resolver is called when the control is initially rendered
-        $this->addPseudoEventHandler('onAfterRendering', $oControllerJs . '.' . $controller->buildJsMethodName('resolveColor', $this) . '()');
-        
-        return $this;
-    }
-    
-    protected function buildJsColorScaleResolver() : string
-    {
-        $widget = $this->getWidget();
-        if ($widget->hasColorScale() === false) {
-            return '';
-        }
-        
-        $semColsJs = json_encode($this->getColorScaleSemanticColorMap());
-        
-        return <<<JS
-        
-    var sColor = {$this->buildJsScaleResolverForNumbers($this->buildJsValueGetter(), $widget->getColorScale())};
-    var sValueColor;
-    if (sColor.startsWith('~')) {
-        var oColorScale = {$semColsJs};
-        sValueColor = oColorScale[sColor];
-        {$this->buildJsColorSetter('sValueColor', true)}
-    } else if (sColor) {
-        {$this->buildJsColorSetter('sColor', false)}
-    }
-    
-JS;
-    }
-        
-    protected function buildJsColorSetter(string $colorValueJs, bool $isSemanticColor) : string
-    {
-        if ($isSemanticColor) {
-            return "sap.ui.getCore().byId('{$this->getId()}').setState({$colorValueJs});";
-        } else {
-            // TODO
-            return <<<JS
-
-        console.warn('Cannot set color "' + {$colorValueJs} + '" - only UI5 semantic colors currently supported!');
-
-JS;
-        }
-    }
         
     protected function getColorScaleSemanticColorMap() : array
     {
@@ -304,6 +255,56 @@ JS;
             $this->onChangeHandlerRegistered = true;
         }
         return parent::addOnChangeScript($script);
+    }
+    
+    protected function buildJsPropertyState() : string
+    {
+        if ($this->getWidget() instanceof iHaveColorScale) {            
+            $stateJs = $this->buildJsColorValue();
+        }
+        
+        return $stateJs ? 'state: ' . $stateJs . ',' : '';
+    }
+    
+    protected function buildJsColorValue() : string
+    {
+        $widget = $this->getWidget();
+        if (! ($widget instanceof iHaveColorScale && $widget->hasColorScale() !== false)) {
+            return '';
+        }
+        
+        if (! $this->isValueBoundToModel()) {
+            $value = ''; // TODO
+        } else {
+            $semColsJs = json_encode($this->getColorScaleSemanticColorMap());
+            $bindingOptions = <<<JS
+                formatter: function(value){
+                    var sColor = {$this->buildJsScaleResolver('value', $widget->getColorScale(), $widget->isColorScaleRangeBased())};
+                    var sValueColor;
+                    var oCtrl = this;
+                    if (sColor.startsWith('~')) {
+                        var oColorScale = {$semColsJs};
+                        return oColorScale[sColor];
+                    } else if (sColor) {
+                        {$this->buildJsColorCssSetter('oCtrl', 'sColor')}
+                    }
+                    return {$this->buildJsColorValueNoColor()};
+                }
+                
+JS;
+            $value = $this->buildJsValueBinding($bindingOptions);
+        }
+        return $value;
+    }
+    
+    protected function buildJsColorValueNoColor() : string
+    {
+        return 'sap.ui.core.ValueState.None';
+    }
+    
+    protected function buildJsColorCssSetter(string $oControlJs, string $sColorJs) : string
+    {
+        return "setTimeout(function(){console.log($oControlJs.$()); $oControlJs.$().css('color', $sColorJs); }, 0)";
     }
 }
 ?>

@@ -120,4 +120,14 @@ JS;
     {
         return '';
     }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5Display::buildJsColorCssSetter()
+     */
+    protected function buildJsColorCssSetter(string $oControlJs, string $sColorJs) : string
+    {
+        return "setTimeout(function(){ $oControlJs.$().find('.sapMPIBar').css('background-color', $sColorJs); }, 0)";
+    }
 }

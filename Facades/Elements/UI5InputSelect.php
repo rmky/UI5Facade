@@ -70,12 +70,35 @@ JS;
      */
     protected function buildJsPropertyValue()
     {
+        $widget = $this->getWidget();
+        
         if ($this->isValueBoundToModel()) {
             $value = $this->buildJsValueBinding();
         } else {
-            $value = '"' . $this->escapeJsTextValue($this->getWidget()->getValueWithDefaults()) . '"';
+            if ($widget->getMultiSelect() === true) {
+                $val = $widget->getValueWithDefaults();
+                switch (true) {
+                    case is_array($val) === true:
+                        $value = json_encode($val);
+                        break;
+                    case $val === null:
+                        $value = '[]';
+                        break;
+                    case (stripos($val, $widget->getMultiSelectValueDelimiter()) !== false):
+                        $vals = explode($widget->getMultiSelectValueDelimiter(), $val);
+                        $value = json_encode($vals);
+                        break;
+                    default:
+                        $value = '["' . $this->escapeJsTextValue($val) . '"]';
+                        break;
+                }
+            } else {
+                $value = '"' . $this->escapeJsTextValue($widget->getValueWithDefaults()) . '"';
+            }
         }
-        return ($value ? 'selectedKey: ' . $value . ',' : '');
+        
+        $property = $widget->getMultiSelect() ? 'selectedKeys' : 'selectedKey';
+        return ($value ? $property . ': ' . $value . ',' : '');
     }
     
     /**
@@ -100,7 +123,18 @@ JS;
     public function buildJsValueSetterMethod($value)
     {
         if ($this->getWidget()->getMultiSelect()) {
-            return "setSelectedKeys().fireSelectionChange()";
+            return "setSelectedKeys(function(){
+    var val = $value;
+    if (Array.isArray(val)) {
+        return val;
+    } else if (val === undefined || val === null || val === '') {
+        return [];
+    } else if (val.toString().indexOf('{$this->getWidget()->getMultiSelectValueDelimiter()}') > -1) {
+        return val.toString().split('{$this->getWidget()->getMultiSelectValueDelimiter()}');
+    } else {
+        return [val]
+    }
+}).fireSelectionChange()";
         } else {
             return "setSelectedKey({$value}).fireChange({value: {$value}})";
         }

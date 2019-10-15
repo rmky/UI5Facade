@@ -122,9 +122,13 @@ sap.ui.define([
     	 * @return sap.m.Dialog
     	 */
     	showHtmlInDialog : function (sTitle, sHtml, sState) {
-    		var oContent = new sap.ui.core.HTML({
-    			content: sHtml
-    		});
+    		try {
+	    		var oContent = new sap.ui.core.HTML({
+	    			content: sHtml
+	    		});
+    		} catch (e) {
+    			return this.showErrorDialog('Unkown error', sTitle, 'string');
+    		}
     		return this.showDialog(sTitle, oContent, sState);
     	},
 		

@@ -84,7 +84,7 @@ class UI5DataTable extends UI5AbstractElement
             		fixedLayout: false,
                     alternateRowColors: {$striped},
                     noDataText: "{$this->translate('WIDGET.DATATABLE.NO_DATA_HINT')}",
-            		itemPress: {$this->getController()->buildJsEventHandler($this, 'change')},
+            		itemPress: {$this->buildJsFireChange()},
                     mode: {$mode},
                     headerToolbar: [
                         {$this->buildJsToolbar($oControllerJs)}
@@ -111,6 +111,17 @@ class UI5DataTable extends UI5AbstractElement
         })
         
 JS;
+    }
+             
+    /**
+     * Fires the onChange event and triggers all onChange-scripts if the current value really changed.
+     * 
+     * @return string
+     */
+    protected function buildJsFireChange() : string
+    {
+        // TODO check if the selected row and it's data really changed - like in jEasyUI
+        return $this->getController()->buildJsEventHandler($this, 'change');
     }
     
     protected function buildJsConstructorForMTableFooter(string $oControllerJs = 'oController') : string
@@ -177,7 +188,7 @@ JS;
                 enableColumnFreeze: true,
         		filter: {$controller->buildJsMethodCallFromView('onLoadData', $this)},
         		sort: {$controller->buildJsMethodCallFromView('onLoadData', $this)},
-                rowSelectionChange: {$controller->buildJsEventHandler($this, 'change')},
+                rowSelectionChange: {$this->buildJsFireChange()},
         		toolbar: [
         			{$this->buildJsToolbar($oControllerJs, $this->getPaginatorElement()->buildJsConstructor($oControllerJs))}
         		],
@@ -777,6 +788,7 @@ JS;
 
             {$paginator->buildJsSetTotal($oModelJs . '.getProperty("/recordsFiltered")', 'oController')};
             {$paginator->buildJsRefresh('oController')};  
+            {$this->buildJsFireChange()}
             {$singleResultJs} 
             {$sortOrderFix}         
             

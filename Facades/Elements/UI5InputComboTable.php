@@ -186,6 +186,7 @@ JS;
             showTableSuggestionValueHelp: false,
             filterSuggests: false,
             showValueHelp: true,
+            valueHelpRequest: {$this->buildJsPropertyValueHelpRequest()}
 			suggest: {$this->buildJsPropertySuggest($oControllerJs)},
             suggestionRows: {
                 path: "{$this->getModelNameForAutosuggest()}>/rows",
@@ -241,6 +242,43 @@ JS;
     		}
 JS;
     }
+       
+    /**
+     * Returns the value of the property valueHelpRequest.
+     * 
+     * @return string
+     */
+    protected function buildJsPropertyValueHelpRequest() : string
+    {
+        // Currently, the value-help-button will simply trigger the autosuggest by firing the suggest
+        // event with a special callback, that forces the input to show suggestions. This callback
+        // is needed because just firing the suggest event will only show the suggestions if the
+        // current text differs from the previous suggestion - don't know if this is a feature or
+        // a bug. But with an explicit .showItems() it works well.
+        return <<<JS
+
+            function(oEvent) {
+                var oInput = oEvent.getSource();
+                {$this->buildJsBusyIconShow()};
+                
+                var sVal = oInput.getValue();
+                if (sVal === undefined || sVal === '') {
+                    sVal = ' ';
+                }
+                
+                oInput.fireSuggest({
+                    suggestValue: sVal, 
+                    onLoaded: function(){
+                        sap.ui.getCore().byId('{$this->getId()}')
+                        .showItems(function(oItem){
+                            return oItem;
+                        })
+                    }
+                });
+            },
+
+JS;
+    }
      
     /**
      * 
@@ -257,6 +295,7 @@ JS;
 
                 var oInput = {$oEventJs}.getSource();
                 var q = {$oEventJs}.getParameter("suggestValue");
+                var fnCallback = {$oEventJs}.getParameter("onLoaded");
                 var qParams = {};
                 var silent = false;
 
@@ -276,7 +315,7 @@ JS;
                     data: {$configuratorElement->buildJsDataGetter($widget->getTable()->getLazyLoadingAction(), true)}
                 };
                 $.extend(params, qParams);
-        		
+        		console.log(params);
                 var oModel = oInput.getModel('{$this->getModelNameForAutosuggest()}');
                 if (silent) {
                     {$this->buildJsBusyIconShow()}
@@ -297,6 +336,12 @@ JS;
                         {$this->buildJsBusyIconHide()}
                     };
                     oModel.attachRequestCompleted(silencer);
+                }
+                if (fnCallback) {
+                    oModel.attachRequestCompleted(function(){
+                        fnCallback();
+                        oModel.detachRequestCompleted(fnCallback);
+                    });
                 }
 
                 {$serverAdapter->buildJsServerRequest($widget->getLazyLoadingAction(), 'oModel', 'params', $this->buildJsBusyIconHide(), $this->buildJsBusyIconHide())}

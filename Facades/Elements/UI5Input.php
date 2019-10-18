@@ -24,6 +24,7 @@ class UI5Input extends UI5Value
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         $this->registerConditionalBehaviors();
+        $this->registerOnChangeValidation();
         return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl($oControllerJs));
     }
     
@@ -239,6 +240,36 @@ JS;
         $contoller->addOnInitScript($this->buildJsDisableConditionInitializer());
         
         return;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsValidationError()
+     */
+    public function buildJsValidationError()
+    {
+        return "sap.ui.getCore().byId('{$this->getId()}').setValueState('Error')";
+    }
+    
+    protected function registerOnChangeValidation()
+    {
+        $validator = $this->buildJsValidator();
+        if ($validator !== 'true') {#
+            $invalidText = json_encode($this->getValidationErrorText());
+            $onChangeValidation = <<<JS
+
+    sap.ui.getCore().byId('{$this->getId()}').setValueStateText($invalidText)           
+    if(! {$this->buildJsValidator()} ) {
+        {$this->buildJsValidationError()};
+    } else {
+        sap.ui.getCore().byId('{$this->getId()}').setValueState('None');
+    }
+    
+JS;
+            $this->addOnChangeScript($onChangeValidation);
+            
+        }
     }
 }
 ?>

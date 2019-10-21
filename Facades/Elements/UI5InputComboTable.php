@@ -28,16 +28,21 @@ class UI5InputComboTable extends UI5Input
         // TODO this only works if there was no value before and needs to be
         // extended to work with changing values too.
         if (! $this->getWidget()->getAllowNewValues()) {
+            if ($this->getWidget()->getMultiSelect() === false) {
+                $missingKeyCheckJs = "oInput.getSelectedKey() === ''";
+            } else {
+                $missingKeyCheckJs = "oInput.getTokens().length === 0";
+            }
             $onChange = <<<JS
 
                         var oInput = oEvent.getSource();
-                        if (oInput.getValue() !== '' && oInput.getSelectedKey() === ''){
+                        if (oInput.getValue() !== '' && $missingKeyCheckJs){
                             oInput.fireSuggest({suggestValue: {q: oInput.getValue()}});
                             oEvent.cancelBubble();
                             oEvent.preventDefault();
                             return false;
                         }
-                        if (oInput.getValue() === '' && oInput.getSelectedKey() === ''){
+                        if (oInput.getValue() === '' && $missingKeyCheckJs){
                             oInput.setValueState(sap.ui.core.ValueState.None);
                         }
 JS;
@@ -48,7 +53,7 @@ JS;
             $onEnter = <<<JS
                 
                         var oInput = oEvent.srcControl;
-                        if (oInput.getValue() !== '' && oInput.getSelectedKey() === ''){
+                        if (oInput.getValue() !== '' && {$missingKeyCheckJs}){
                             oEvent.stopPropagation();
                             oEvent.preventDefault();
                             return false;
@@ -91,8 +96,7 @@ JS;
             } else {
                 $value_init_js = <<<JS
 
-        .setValue("{$widget->getValueText()}")
-        .setSelectedKey("{$this->escapeJsTextValue($value)}")
+        .{$this->buildJsSetSelectedKeyMethod($this->escapeJsTextValue($value), $widget->getValueText())}
 JS;
             }
         } else {
@@ -104,7 +108,7 @@ JS;
 
         .attachModelContextChange(function(oEvent) {
             var oInput = oEvent.getSource();
-            var sKey = sap.ui.getCore().byId('{$this->getId()}').getSelectedKey();
+            var sKey = sap.ui.getCore().byId('{$this->getId()}').{$this->buildJsValueGetterMethod()};
             var sVal = oInput.getValue();
             if (sKey !== '' && sVal === '') {
                 oInput.{$this->buildJsValueSetterMethod('sKey')};
@@ -174,9 +178,11 @@ JS;
             throw new WidgetLogicError($widget, 'Text column not found for ' . $this->getWidget()->getWidgetType() . ' with id "' . $this->getWidget()->getId() . '"!');
         }
         
+        $control = $widget->getMultiSelect() ? 'sap.m.MultiInput' : 'sap.m.Input';
+        
         return <<<JS
 
-	   new sap.m.Input("{$this->getId()}", {
+	   new {$control}("{$this->getId()}", {
 			{$this->buildJsProperties()}
             {$this->buildJsPropertyType()}
 			textFormatMode: "ValueKey",
@@ -196,15 +202,7 @@ JS;
 				   ]
 				})
             },
-            suggestionItemSelected: function(oEvent){
-                var oItem = oEvent.getParameter("selectedRow");
-                if (! oItem) return;
-				var aCells = oEvent.getParameter("selectedRow").getCells();
-                var oInput = sap.ui.getCore().byId("{$this->getId()}");
-                oInput.setValue(aCells[ {$text_idx} ].getText());
-                oInput.setSelectedKey(aCells[ {$value_idx} ].getText());
-                oInput.setValueState(sap.ui.core.ValueState.None);
-			},
+            suggestionItemSelected: {$this->buildJsPropertySuggestionItemSelected($value_idx, $text_idx)}
 			suggestionColumns: [
 				{$columns}
             ]
@@ -240,6 +238,24 @@ JS;
             function(oEvent) {
                 {$this->getController()->buildJsMethodCallFromController('onSuggest', $this, 'oEvent', $oControllerJs)}
     		}
+JS;
+    }
+                
+    protected function buildJsPropertySuggestionItemSelected(int $valueColIdx, int $textColIdx) : string
+    {
+        $varJs = <<<JS
+                var oItem = oEvent.getParameter("selectedRow");
+                if (! oItem) return;
+				var aCells = oEvent.getParameter("selectedRow").getCells();
+                var oInput = oEvent.getSource();
+JS;
+            
+        return <<<JS
+function(oEvent){
+                $varJs
+                oInput.{$this->buildJsSetSelectedKeyMethod("aCells[ {$valueColIdx} ].getText()", "aCells[ {$textColIdx} ].getText()")};
+                oInput.setValueState(sap.ui.core.ValueState.None);
+			},
 JS;
     }
        
@@ -315,16 +331,16 @@ JS;
                     data: {$configuratorElement->buildJsDataGetter($widget->getTable()->getLazyLoadingAction(), true)}
                 };
                 $.extend(params, qParams);
-        		console.log(params);
+
                 var oModel = oInput.getModel('{$this->getModelNameForAutosuggest()}');
                 if (silent) {
                     {$this->buildJsBusyIconShow()}
                     var silencer = function(oEvent){
                         if (oEvent.getParameters().success) {
                             var data = this.getProperty('/rows');
-                            var curKey = oInput.getSelectedKey();
+                            var curKey = oInput.{$this->buildJsValueGetterMethod()};
                             if (parseInt(this.getProperty("/recordsTotal")) == 1 && (curKey === '' || data[0]['{$widget->getValueColumn()->getDataColumnName()}'] == curKey)) {
-                                oInput.setValue(data[0]['{$widget->getTextColumn()->getDataColumnName()}']).setSelectedKey(data[0]['{$widget->getValueColumn()->getDataColumnName()}']);
+                                oInput.{$this->buildJsSetSelectedKeyMethod("data[0]['{$widget->getValueColumn()->getDataColumnName()}']", "data[0]['{$widget->getTextColumn()->getDataColumnName()}']")}
                                 oInput.closeSuggestions();
                                 oInput.setValueState(sap.ui.core.ValueState.None);
                             } else {
@@ -378,7 +394,12 @@ JS;
      */
     public function buildJsValueGetterMethod()
     {
-        return "getSelectedKey()";
+        if ($this->getWidget()->getMultiSelect() === false) {
+            return "getSelectedKey()";
+        } else {
+            $delim = $this->getWidget()->getMultiSelectTextDelimiter();
+            return "getTokens().reduce(function(sList, oToken, iIdx, aTokens){ return sList + (sList !== '' ? '$delim' : '') + oToken.getKey() }, '')";
+        }
     }
     
     /**
@@ -410,6 +431,20 @@ JS;
     protected function getModelNameForAutosuggest() : string
     {
         return 'suggest';
+    }
+    
+    protected function buildJsSetSelectedKeyMethod(string $keyJs, string $valueJs = null) : string
+    {
+        if ($this->getWidget()->getMultiSelect() === false) {
+            if ($valueJs !== null) {
+                $setValue = "setValue($valueJs).";
+            } else {
+                $setValue = '';
+            }
+            return "{$setValue}setSelectedKey($keyJs)";
+        } else {
+            return "addToken(new sap.m.Token({key: $keyJs, text: $valueJs}))";
+        }
     }
 }
 ?>

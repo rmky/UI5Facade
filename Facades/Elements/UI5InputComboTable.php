@@ -244,16 +244,14 @@ JS;
                 
     protected function buildJsPropertySuggestionItemSelected(int $valueColIdx, int $textColIdx) : string
     {
-        $varJs = <<<JS
+        return <<<JS
+
+            function(oEvent){
                 var oItem = oEvent.getParameter("selectedRow");
                 if (! oItem) return;
 				var aCells = oEvent.getParameter("selectedRow").getCells();
                 var oInput = oEvent.getSource();
-JS;
-            
-        return <<<JS
-function(oEvent){
-                $varJs
+console.log('selected');
                 oInput.{$this->buildJsSetSelectedKeyMethod("aCells[ {$valueColIdx} ].getText()", "aCells[ {$textColIdx} ].getText()")};
                 oInput.setValueState(sap.ui.core.ValueState.None);
 			},
@@ -462,9 +460,9 @@ JS;
             $partValidator = parent::buildJsValidatorCheckDataType('part', $onFailJs, $type);
             return <<<JS
 if ($valueJs !== undefined) {
-    $valueJs.toString().split("{$widget->getMultiSelectValueDelimiter()}").each(part => {
+    $valueJs.toString().split("{$widget->getMultiSelectValueDelimiter()}").forEach(part => {
         $partValidator
-    })
+    });
 }
 
 JS;

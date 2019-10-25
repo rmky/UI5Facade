@@ -152,7 +152,7 @@ JS;
     }
     
     /**
-     * 
+     *
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Elements\UI5Input::buildJsValidatorCheckDataType()
      */
@@ -165,9 +165,9 @@ JS;
             $partValidator = parent::buildJsValidatorCheckDataType('part', $onFailJs, $type);
             return <<<JS
 if ($valueJs !== undefined) {
-    $valueJs.toString().split("{$widget->getMultiSelectValueDelimiter()}").each(part => {
+    $valueJs.toString().split("{$widget->getMultiSelectValueDelimiter()}").forEach(part => {
         $partValidator
-    })
+    });
 }
 
 JS;

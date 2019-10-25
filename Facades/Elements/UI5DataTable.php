@@ -208,27 +208,10 @@ JS;
                 ],
                 rows: "{/rows}"
         	})
-            {$this->buildJsScrollHandlerForUiTable()}
             {$this->buildJsClickListeners('oController')}
 JS;
             
             return $js;
-    }
-    
-    protected function buildJsScrollHandlerForUiTable() : string
-    {
-        return <<<JS
-        
-            .attachFirstVisibleRowChanged(function(oEvent) {
-                var oTable = oEvent.getSource();
-                var oPaginator = {$this->getPaginatorElement()->buildJsGetPaginator('oController')};
-                var lastVisibleRow = oTable.getFirstVisibleRow() + oTable.getVisibleRowCount();
-                if ((oPaginator.pageSize - lastVisibleRow <= 1) && (oPaginator.end() + 1 !== oPaginator.total)) {
-                    oPaginator.increasePageSize();
-                    {$this->buildJsRefresh(true, true)}
-                }
-            })
-JS;
     }
     
     /**
@@ -296,7 +279,7 @@ JS;
      *
      * @return string
      */
-    protected function buildJsDataLoaderFromLocal($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'keep_page_pos', $growingJsVar = 'growing')
+    protected function buildJsDataLoaderFromLocal($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'keep_page_pos')
     {
         $widget = $this->getWidget();
         $data = $widget->prepareDataSheetToRead($widget->getValuesDataSheet());
@@ -412,14 +395,13 @@ JS;
      * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsRefresh()
      *
      * @param bool $keep_page_pos
-     * @param bool $growing
      * @param string $oControllerJsVar
      *
      * @return UI5DataTable
      */
-    public function buildJsRefresh($keep_page_pos = false, $growing = false, string $oControllerJsVar = null)
+    public function buildJsRefresh($keep_page_pos = false, string $oControllerJsVar = null)
     {
-        $params = "undefined, " . ($keep_page_pos ? 'true' : 'false') . ', ' . ($growing ? 'true' : 'false');
+        $params = "undefined, " . ($keep_page_pos ? 'true' : 'false');
         if ($oControllerJsVar === null) {
             return $this->getController()->buildJsMethodCallFromController('onLoadData', $this, $params);
         } else {

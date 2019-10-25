@@ -36,7 +36,7 @@ class UI5DataPaginator extends UI5AbstractElement
             enabled: false,
             press: function() {
                 {$this->buildJsGetPaginator($oControllerJs)}.previous();
-                {$this->buildJsDataRefresh(true, false, $oControllerJs)}
+                {$this->buildJsDataRefresh(true, $oControllerJs)}
             }
         }),
         new sap.m.OverflowToolbarButton("{$this->getId()}_next", {
@@ -48,7 +48,7 @@ class UI5DataPaginator extends UI5AbstractElement
             enabled: false,
             press: function() {
                 {$this->buildJsGetPaginator($oControllerJs)}.next();
-                {$this->buildJsDataRefresh(true, false, $oControllerJs)}
+                {$this->buildJsDataRefresh(true, $oControllerJs)}
             }
         }),     
 JS;
@@ -58,13 +58,12 @@ JS;
      * Returns the output of buildJsRefresh() of the connected data widget
      * 
      * @param boolean $keep_page_pos
-     * @param boolean $growing
      * @param string $oControllerJsVar
      * @return string
      */
-    protected function buildJsDataRefresh($keep_page_pos = false, $growing = false, string $oControllerJsVar = 'oController') : string
+    protected function buildJsDataRefresh($keep_page_pos = false, string $oControllerJsVar = 'oController') : string
     {
-        return $this->getFacade()->getElement($this->getWidget()->getDataWidget())->buildJsRefresh($keep_page_pos, $growing, $oControllerJsVar);
+        return $this->getFacade()->getElement($this->getWidget()->getDataWidget())->buildJsRefresh($keep_page_pos, $oControllerJsVar);
     }
     
     /**
@@ -177,12 +176,6 @@ JS;
                         this.pageSize = {$defaultPageSize};
                         this.total = 0;
                         this.hasMoreRows = false;
-                    },
-                    growingLoadStart: function() {
-                        return this.start + this.pageSize - {$defaultPageSize};
-                    },
-                    growingLoadPageSize: function() {
-                        return {$defaultPageSize};
                     }
                 },
                 

@@ -5,6 +5,7 @@ use exface\Core\Widgets\Value;
 use exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface;
 use exface\UI5Facade\Facades\Interfaces\UI5CompoundControlInterface;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryLiveReferenceTrait;
+use exface\Core\Interfaces\Widgets\iTakeInput;
 
 /**
  * Generates sap.m.Text controls for Value widgets
@@ -116,15 +117,23 @@ JS;
     protected function buildJsLabelWrapper($element_constructor)
     {
         $widget = $this->getWidget();
+        
+        $labelAppearance = '';
         if ($widget->getHideCaption() === true) {
-            $labelVisible = 'visible: false,';
+            $labelAppearance .= 'visible: false,';
+        } else {
+            if ($widget instanceof iTakeInput) {
+                if ($widget->isRequired()) {
+                    $labelAppearance .= 'required: true,';
+                }
+            }
         }
         
         $label = <<<JS
         new sap.m.Label({
             text: "{$this->getCaption()}",
             {$this->buildJsPropertyTooltip()}
-            {$labelVisible}
+            {$labelAppearance}
         }),
 
 JS;

@@ -401,10 +401,10 @@ JS;
 		                       	$('#{$this->getId()}').trigger('{$action->getAliasWithNamespace()}.action.performed', [requestData, '{$input_element->getId()}']);
 								{$this->buildJsOnSuccessScript()}
 
-                                /* TODO redirects do not work in UI5 that easily. Additionally server adapters don't return any response variable.
                                 if (response.success || response.undoURL){
 		                       		{$this->buildJsShowMessageSuccess("response.success + (response.undoable ? ' <a href=\"" . $this->buildJsUndoUrl($action, $input_element) . "\" style=\"display:block; float:right;\">UNDO</a>' : '')")}
-									if(response.redirect){
+									/* TODO redirects do not work in UI5 that easily. Additionally server adapters don't return any response variable.
+                                    if(response.redirect){
 										if (response.redirect.indexOf('target=_blank') !== 0) {
 											window.open(response.redirect.replace('target=_blank',''), '_newtab');
 										}
@@ -412,8 +412,8 @@ JS;
 											window.location.href = response.redirect;
 										}
                    					}
+                                    */
 								}
-                                */
 JS;
 		
         $output = $this->buildJsRequestDataCollector($action, $input_element);

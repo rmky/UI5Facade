@@ -2,6 +2,7 @@
 namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\InputSelect;
+use exface\Core\Interfaces\DataTypes\DataTypeInterface;
 
 /**
  * Generates OpenUI5 CobmoBox or MultiComboBox to represent a select widget
@@ -148,6 +149,29 @@ JS;
     public function buildJsValueBindingPropertyName() : string
     {
         return 'selectedKey';
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5Input::buildJsValidatorCheckDataType()
+     */
+    protected function buildJsValidatorCheckDataType(string $valueJs, string $onFailJs, DataTypeInterface $type) : string
+    {
+        $widget = $this->getWidget();
+        if ($widget->getMultiSelect() === false) {
+            return parent::buildJsValidatorCheckDataType($valueJs, $onFailJs, $type);
+        } else {
+            $partValidator = parent::buildJsValidatorCheckDataType('part', $onFailJs, $type);
+            return <<<JS
+if ($valueJs !== undefined) {
+    $valueJs.toString().split("{$widget->getMultiSelectValueDelimiter()}").each(part => {
+        $partValidator
+    })
+}
+
+JS;
+        }
     }
 }
 ?>

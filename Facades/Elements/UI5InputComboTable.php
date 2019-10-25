@@ -7,6 +7,7 @@ use exface\Core\Exceptions\Widgets\WidgetHasNoUidColumnError;
 use exface\Core\Exceptions\Widgets\WidgetLogicError;
 use exface\Core\Factories\DataSheetFactory;
 use exface\Core\DataTypes\UrlDataType;
+use exface\Core\Interfaces\DataTypes\DataTypeInterface;
 
 /**
  * Generates OpenUI5 selects
@@ -444,6 +445,29 @@ JS;
             return "{$setValue}setSelectedKey($keyJs)";
         } else {
             return "addToken(new sap.m.Token({key: $keyJs, text: $valueJs}))";
+        }
+    }
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5Input::buildJsValidatorCheckDataType()
+     */
+    protected function buildJsValidatorCheckDataType(string $valueJs, string $onFailJs, DataTypeInterface $type) : string
+    {
+        $widget = $this->getWidget();
+        if ($widget->getMultiSelect() === false) {
+            return parent::buildJsValidatorCheckDataType($valueJs, $onFailJs, $type);
+        } else {
+            $partValidator = parent::buildJsValidatorCheckDataType('part', $onFailJs, $type);
+            return <<<JS
+if ($valueJs !== undefined) {
+    $valueJs.toString().split("{$widget->getMultiSelectValueDelimiter()}").each(part => {
+        $partValidator
+    })
+}
+
+JS;
         }
     }
 }

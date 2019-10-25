@@ -83,7 +83,7 @@ class UI5DataTable extends UI5AbstractElement
                 new sap.m.Table("{$this->getId()}", {
             		fixedLayout: false,
                     alternateRowColors: {$striped},
-                    noDataText: "{$this->translate('WIDGET.DATATABLE.NO_DATA_HINT')}",
+                    noDataText: "{$this->getWidget()->getEmptyText()}",
             		itemPress: {$this->buildJsFireChange()},
                     mode: {$mode},
                     headerToolbar: [
@@ -195,6 +195,17 @@ JS;
         		columns: [
         			{$this->buildJsColumnsForUiTable()}
         		],
+                noData: [
+                    new sap.m.FlexBox({
+                        height: "100%",
+                        width: "100%",
+                        justifyContent: "Center",
+                        alignItems: "Center",
+                        items: [
+                            new sap.m.Text("{$this->getId()}_noData", {text: "{$widget->getEmptyText()}"})
+                        ]
+                    })
+                ],
                 rows: "{/rows}"
         	})
             {$this->buildJsScrollHandlerForUiTable()}
@@ -802,11 +813,7 @@ JS;
      */
     protected function buildJsDataLoaderPrepare() : string
     {
-        if ($this->isMList()) {
-            return "sap.ui.getCore().byId('{$this->getId()}').setNoDataText('{$this->translate('WIDGET.DATATABLE.NO_DATA_HINT')}');";
-        }
-        
-        return '';
+        return $this->buildJsShowMessageOverlay($this->getWidget()->getEmptyText());
     }
     
     /**
@@ -923,5 +930,20 @@ var {$rowIdxJs} = function() {
 }();
 
 JS;
+    }
+    
+    /**
+     * 
+     * @see UI5DataElementTrait::buildJsShowMessageOverlay()
+     */
+    protected function buildJsShowMessageOverlay(string $message) : string
+    {
+        $hint = $this->escapeJsTextValue($message);
+        if ($this->isMList() || $this->isMTable()) {
+            $setNoData = "sap.ui.getCore().byId('{$this->getId()}').setNoDataText('{$hint}')";
+        } elseif ($this->isUiTable()) {
+            $setNoData = "sap.ui.getCore().byId('{$this->getId()}_noData').setText('{$hint}')";
+        }
+        return $this->buildJsDataResetter() . ';' . $setNoData;
     }
 }

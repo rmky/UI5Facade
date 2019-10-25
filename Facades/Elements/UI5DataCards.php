@@ -17,7 +17,7 @@ class UI5DataCards extends UI5DataTable
             items: [
                 new sap.f.GridList("{$this->getId()}", {
                     mode: {$mode},
-                    noDataText: "{$this->translate('WIDGET.DATATABLE.NO_DATA_HINT')}",
+                    noDataText: "{$this->getWidget()->getEmptyText()}",
             		itemPress: {$this->getController()->buildJsEventHandler($this, 'change')},
                     headerToolbar: [
                         {$this->buildJsToolbar()}

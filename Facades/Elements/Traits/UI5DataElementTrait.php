@@ -441,7 +441,7 @@ JS;
                 var oData = oModel.getData();
                 var oController = this;
                 
-                {$this->buildJsCheckRequiredFilters($this->buildJsNoDataHint() . "; return;")}
+                {$this->buildJsCheckRequiredFilters($this->buildJsShowMessageOverlay($widget->getAutoloadDisabledHint()) . "; return;")}
                 
                 {$this->buildJsBusyIconShow()}
                 
@@ -469,9 +469,12 @@ JS;
      * Returns a JS snippet to show a message instead of data: e.g. "Please set filters first"
      * or the autoload_disabled_hint of the data widget.
      * 
+     * NOTE: by default, this methos simply empties the control using the data resetter. If you want
+     * a message to be shown, override this mehtod!
+     * 
      * @return string
      */
-    protected function buildJsNoDataHint() : string
+    protected function buildJsShowMessageOverlay(string $message) : string
     {
         return $this->buildJsDataResetter();
     }

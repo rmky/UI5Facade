@@ -42,7 +42,6 @@
 	"WIDGET.DATATABLE.OFFLINE_HINT": "Diese Daten sind nur online verfügbar!",
 	"WIDGET.DATATABLE.OFFLINE_ERROR": "Diese Daten sind nur online verfügbar!",
 	"WIDGET.DATATABLE.OFFLINE_ERROR_TITLE": "Sie sind offline...",
-	"WIDGET.DATATABLE.NO_DATA_HINT": "Keine Daten gefunden!",
 	"WIDGET.DATATABLE.SETTINGS_DIALOG.TITLE": "Tabelleneinstellungen",
 	"WIDGET.DATATABLE.SETTINGS_DIALOG.FILTERS": "Filter",
 	"WIDGET.DATATABLE.SETTINGS_DIALOG.COLUMNS": "Spalten",

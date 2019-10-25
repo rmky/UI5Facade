@@ -366,10 +366,10 @@ JS;
     
     /**
      * {@inheritdoc}
-     * @see \exface\UI5Facade\Facades\Elements\Traits\UI5DataElementTrait::buildJsNoDataHint()
+     * @see \exface\UI5Facade\Facades\Elements\Traits\UI5DataElementTrait::buildJsShowMessageOverlay()
      */
-    protected function buildJsNoDataHint() : string
+    protected function buildJsShowMessageOverlay(string $message) : string
     {
-        return $this->buildJsDataResetter() . ';' . $this->buildJsMessageOverlayShow($this->getWidget()->getData()->getAutoloadDisabledHint());
+        return $this->buildJsDataResetter() . ';' . $this->buildJsMessageOverlayShow($message);
     }
 }

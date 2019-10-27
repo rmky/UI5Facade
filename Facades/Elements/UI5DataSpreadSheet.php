@@ -25,23 +25,42 @@ class UI5DataSpreadSheet extends UI5AbstractElement
         $controller->addMethod('onFixedFooterSpread', $this, '', $this->buildJsFixedFootersSpreadFunctionBody());
         
         $controller->addExternalModule('exface.openui5.jexcel', $this->getFacade()->buildUrlToSource("LIBS.JEXCEL.JS"), 'jexcel');
-        $this->getController()->addExternalCss($this->getFacade()->buildUrlToSource('LIBS.JEXCEL.CSS'));
+        $controller->addExternalCss($this->getFacade()->buildUrlToSource('LIBS.JEXCEL.CSS'));
         $controller->addExternalModule('exface.openui5.jsuites', $this->getFacade()->buildUrlToSource("LIBS.JEXCEL.JS_JSUITES"), 'jsuites');
-        $this->getController()->addExternalCss($this->getFacade()->buildUrlToSource('LIBS.JEXCEL.CSS_JSUITES'));
+        $controller->addExternalCss($this->getFacade()->buildUrlToSource('LIBS.JEXCEL.CSS_JSUITES'));
+        $controller->addOnDefineScript($this->buildJsFixJqueryImportUseStrict());
         
         $chart = <<<JS
         
                 new sap.ui.core.HTML("{$this->getId()}", {
                     content: "<div id=\"{$this->getId()}_jexcel\" class=\"{$this->buildCssElementClass()}\"></div>",
                     afterRendering: function(oEvent) {
+                        {$this->buildJsDestroy()}
                         {$this->buildJsJExcelInit()}
                         {$this->buildJsRefresh()}
+                        {$this->buildJsFixOverflowVisibility()}
                     }
                 })
                 
 JS;
                             
         return $this->buildJsPanelWrapper($chart, $oControllerJs);
+    }
+    
+    protected function buildJsFixOverflowVisibility() : string
+    {
+        return <<<JS
+
+                        var aParents = {$this->buildJsJqueryElement()}.parents();
+                        for (var i = 0; i < aParents.length; i++) {
+                            var jqParent = $(aParents[i]);
+                            if (jqParent.hasClass('sapUiRespGrid ') === true) {
+                                break;
+                            }
+                            $(jqParent).css('overflow', 'visible');
+                        }
+
+JS;
     }
     
     /**

@@ -22,13 +22,14 @@ class UI5DataSpreadSheet extends UI5AbstractElement
         $this->registerReferencesAtLinkedElements();
         
         $controller = $this->getController();
+        $controller->addOnDefineScript($this->buildJsFixJqueryImportUseStrict());
+        
         $controller->addMethod('onFixedFooterSpread', $this, '', $this->buildJsFixedFootersSpreadFunctionBody());
         
         $controller->addExternalModule('exface.openui5.jexcel', $this->getFacade()->buildUrlToSource("LIBS.JEXCEL.JS"), 'jexcel');
         $controller->addExternalCss($this->getFacade()->buildUrlToSource('LIBS.JEXCEL.CSS'));
         $controller->addExternalModule('exface.openui5.jsuites', $this->getFacade()->buildUrlToSource("LIBS.JEXCEL.JS_JSUITES"), 'jsuites');
         $controller->addExternalCss($this->getFacade()->buildUrlToSource('LIBS.JEXCEL.CSS_JSUITES'));
-        $controller->addOnDefineScript($this->buildJsFixJqueryImportUseStrict());
         
         $chart = <<<JS
         

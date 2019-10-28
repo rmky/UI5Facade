@@ -151,15 +151,17 @@ class ExportFioriWebapp extends AbstractAction implements iModifyData
     protected function exportTranslations(AppInterface $app, Webapp $webapp, string $exportFolder) : ExportFioriWebapp
     {
         $defaultLang = $app->getLanguageDefault();
-        $i18nFolder = $exportFolder . 'i18n' . DIRECTORY_SEPARATOR;
-        if (! file_exists($i18nFolder)) {
-            Filemanager::pathConstruct($i18nFolder);
+        $i18nFolder = 'i18n' . DIRECTORY_SEPARATOR;
+        $i18nFolderPathAbs = $exportFolder . $i18nFolder;
+        if (! file_exists($i18nFolderPathAbs)) {
+            Filemanager::pathConstruct($i18nFolderPathAbs);
         }
         
         foreach ($app->getLanguages() as $lang) {
-            $i18nSuffix = (strcasecmp($lang, $defaultLang) === 0) ? '' : '_' . $lang;
+            $i18nSuffix = (strcasecmp($lang, $defaultLang) === 0) ? '' : '_' . $lang; 
             $i18nFile = $i18nFolder . 'i18n' . $i18nSuffix . '.properties';
-            file_put_contents($i18nFile, $webapp->get($i18nFile));
+            $i18nRoute = Filemanager::pathNormalize($i18nFile, '/');
+            file_put_contents($exportFolder . $i18nFile, $webapp->get($i18nRoute));
         }
         return $this;
     }

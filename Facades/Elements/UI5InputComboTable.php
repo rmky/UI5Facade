@@ -45,7 +45,7 @@ class UI5InputComboTable extends UI5Input
                         }
                         if (oInput.getValue() === '' && $missingKeyCheckJs){
                             oInput.setValueState(sap.ui.core.ValueState.None);
-                        }
+                        }console.log('onChange');
 JS;
             $this->addOnChangeScript($onChange);
             
@@ -251,7 +251,6 @@ JS;
                 if (! oItem) return;
 				var aCells = oEvent.getParameter("selectedRow").getCells();
                 var oInput = oEvent.getSource();
-console.log('selected');
                 oInput.{$this->buildJsSetSelectedKeyMethod("aCells[ {$valueColIdx} ].getText()", "aCells[ {$textColIdx} ].getText()")};
                 oInput.setValueState(sap.ui.core.ValueState.None);
 			},
@@ -399,6 +398,32 @@ JS;
             $delim = $this->getWidget()->getMultiSelectTextDelimiter();
             return "getTokens().reduce(function(sList, oToken, iIdx, aTokens){ return sList + (sList !== '' ? '$delim' : '') + oToken.getKey() }, '')";
         }
+    }
+    
+    public function buildJsValueGetter($column = null, $row = null)
+    {
+        $selectedKeyGetter = parent::buildJsValueGetter();
+        if (($column === null || $column == $this->getWidget()->getValueAttributeAlias()) && ($row === null || $row === 0)) {
+            return $selectedKeyGetter;
+        }
+        
+        return <<<JS
+function(){
+    var sSelectedKey = {$selectedKeyGetter};
+    if (sSelectedKey === undefined || sSelectedKey === undefined === '' || sSelectedKey === null) {
+        return undefined;
+    }
+    var oInput = sap.ui.getCore().byId('{$this->getId()}');
+    var oModel = oInput.getModel('{$this->getModelNameForAutosuggest()}');
+    console.log(oModel);
+    var oItem = oModel.getData().rows.find(function(element, index, array){
+        return element['{$this->getWidget()->getValueAttributeAlias()}'] == sSelectedKey;
+    });
+    console.log(oItem);
+    return oItem['$column'];
+}()
+
+JS;
     }
     
     /**

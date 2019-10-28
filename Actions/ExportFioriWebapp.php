@@ -18,7 +18,7 @@ use exface\Core\Exceptions\Facades\FacadeRuntimeError;
 use exface\Core\Interfaces\WidgetInterface;
 use exface\Core\Interfaces\Widgets\iTriggerAction;
 use exface\Core\Interfaces\DataSources\DataTransactionInterface;
-use exface\Core\CommonLogic\AbstractAction;
+use exface\Core\CommonLogic\AbstractActionDeferred;
 use exface\Core\Interfaces\Tasks\ResultInterface;
 use exface\Core\Factories\ResultFactory;
 use exface\Core\Factories\DataSheetFactory;
@@ -26,6 +26,11 @@ use exface\Core\DataTypes\DateTimeDataType;
 use exface\Core\Interfaces\Actions\iModifyData;
 use exface\Core\Interfaces\Actions\iShowWidget;
 use exface\Core\CommonLogic\UxonObject;
+use exface\Core\Interfaces\Actions\iCanBeCalledFromCLI;
+use exface\Core\CommonLogic\Tasks\ResultMessageStream;
+use exface\Core\CommonLogic\Actions\ServiceParameter;
+use exface\Core\Interfaces\Tasks\CliTaskInterface;
+use exface\Core\DataTypes\ComparatorDataType;
 
 /**
  * Generates the code for a selected Fiori Webapp project.
@@ -35,7 +40,7 @@ use exface\Core\CommonLogic\UxonObject;
  * @method UI5FacadeApp getApp()
  *
  */
-class ExportFioriWebapp extends AbstractAction implements iModifyData
+class ExportFioriWebapp extends AbstractActionDeferred implements iModifyData, iCanBeCalledFromCLI
 {
     private $facadeSelectorString = 'exface\\UI5Facade\\Facades\\UI5Facade';
     
@@ -50,8 +55,12 @@ class ExportFioriWebapp extends AbstractAction implements iModifyData
     
     protected function perform(TaskInterface $task, DataTransactionInterface $transaction) : ResultInterface
     {
-        // Export app
-        $input = $this->getInputDataSheet($task);
+        if ($task instanceof CliTaskInterface) {
+            $input = DataSheetFactory::createFromObject($this->getInputObjectExpected());
+            $input->addFilterFromString('app_id', $task->getCliArgument('app_id'), ComparatorDataType::EQUALS);
+        } else {
+            $input = $this->getInputDataSheet($task);
+        }
         $columns = $input->getColumns();
         $columns->addFromExpression('root_page_alias');
         $columns->addFromExpression('export_folder');
@@ -69,7 +78,9 @@ class ExportFioriWebapp extends AbstractAction implements iModifyData
         $columns->addFromExpression('MODIFIED_ON');
         
         if (! $input->isFresh()) {
-            $input->addFilterFromColumnValues($input->getUidColumn());
+            if ($input->hasUidColumn(true) === true) {
+                $input->addFilterFromColumnValues($input->getUidColumn());
+            }
             $input->dataRead();
         }
         
@@ -86,19 +97,31 @@ class ExportFioriWebapp extends AbstractAction implements iModifyData
         // Disable all global actions as they cannot be used with the oData adapter
         $facade->getWorkbench()->getConfig()->setOption('WIDGET.DATATOOLBAR.GLOBAL_ACTIONS', new UxonObject());
         
-        $webappFolder = $this->exportWebapp($rootPage, $facade, $row);
+        $result = new ResultMessageStream($task);
+        $generator = function() use ($rootPage, $facade, $row, $input, $transaction, $result) {
+            $appGen = $this->exportWebapp($rootPage, $facade, $row);
+            yield from $appGen;
+            $webappFolder = $appGen->getReturn();
+            
+            // Update build-timestamp
+            $updSheet = DataSheetFactory::createFromObject($input->getMetaObject());
+            $updSheet->addRow([
+                $input->getMetaObject()->getUidAttributeAlias() => $row[$input->getUidColumn()->getName()],
+                'current_version_date' => DateTimeDataType::now(),
+                'MODIFIED_ON' => $row['MODIFIED_ON']
+            ]);
+            // Do not pass the transaction to the update to force autocommit
+            $updSheet->dataUpdate(false, $transaction);
+            
+            yield PHP_EOL . 'Exported to ' . $webappFolder;
+            
+            // Trigger regular action post-processing as required by AbstractActionDeferred.
+            $this->performAfterDeferred($result, $transaction);
+        };
         
-        // Update build-timestamp
-        $updSheet = DataSheetFactory::createFromObject($input->getMetaObject());
-        $updSheet->addRow([
-            $input->getMetaObject()->getUidAttributeAlias() => $row[$input->getUidColumn()->getName()],
-            'current_version_date' => DateTimeDataType::now(),
-            'MODIFIED_ON' => $row['MODIFIED_ON']
-        ]);
-        // Do not pass the transaction to the update to force autocommit
-        $updSheet->dataUpdate(false);
+        $result->setMessageStreamGenerator($generator);
         
-        return ResultFactory::createMessageResult($task, 'Exported to ' . $webappFolder);
+        return $result;
     }
     
     protected function getExportPath(array $appData) : string
@@ -113,7 +136,7 @@ class ExportFioriWebapp extends AbstractAction implements iModifyData
         return $path;
     }
     
-    protected function exportWebapp(UiPageInterface $rootPage, UI5Facade $facade, array $appDataRow) : string
+    protected function exportWebapp(UiPageInterface $rootPage, UI5Facade $facade, array $appDataRow) : \Generator
     {
         $appPath = $this->getExportPath($appDataRow);
         $webcontentPath = $appPath . DIRECTORY_SEPARATOR . 'WebContent';
@@ -136,19 +159,20 @@ class ExportFioriWebapp extends AbstractAction implements iModifyData
         if (! file_exists($webcontentPath . 'libs')) {
             Filemanager::pathConstruct($webcontentPath . 'libs');
         }
-        
-        $this            
-            ->exportFile($webapp, 'index.html', $webcontentPath)
-            ->exportFile($webapp, 'Component.js', $webcontentPath)
-            ->exportTranslations($rootPage->getApp(), $webapp, $webcontentPath)
-            ->exportStaticViews($webapp, $webcontentPath)
-            ->exportPages($webapp, $webcontentPath)
-            ->exportFile($webapp, 'manifest.json', $webcontentPath);
+             
+        yield 'Exporting to ' . $appPath . ':' . PHP_EOL . PHP_EOL;
+        yield from $this->exportFile($webapp, 'index.html', $webcontentPath, '  ');
+        yield from $this->exportFile($webapp, 'Component.js', $webcontentPath, '  ');
+        yield from $this->exportTranslations($rootPage->getApp(), $webapp, $webcontentPath, '  ');
+        yield '  view' . DIRECTORY_SEPARATOR . ' + controller' . DIRECTORY_SEPARATOR . PHP_EOL;
+        yield from $this->exportStaticViews($webapp, $webcontentPath, '    ');
+        yield from $this->exportPages($webapp, $webcontentPath, '    ');
+        yield from $this->exportFile($webapp, 'manifest.json', $webcontentPath, '  ');
         
         return $appPath;
     }
     
-    protected function exportTranslations(AppInterface $app, Webapp $webapp, string $exportFolder) : ExportFioriWebapp
+    protected function exportTranslations(AppInterface $app, Webapp $webapp, string $exportFolder, string $msgIndent) : \Generator
     {
         $defaultLang = $app->getLanguageDefault();
         $i18nFolder = 'i18n' . DIRECTORY_SEPARATOR;
@@ -157,13 +181,16 @@ class ExportFioriWebapp extends AbstractAction implements iModifyData
             Filemanager::pathConstruct($i18nFolderPathAbs);
         }
         
+        yield $msgIndent . $i18nFolder . PHP_EOL;
+        
         foreach ($app->getLanguages() as $lang) {
             $i18nSuffix = (strcasecmp($lang, $defaultLang) === 0) ? '' : '_' . $lang; 
-            $i18nFile = $i18nFolder . 'i18n' . $i18nSuffix . '.properties';
-            $i18nRoute = Filemanager::pathNormalize($i18nFile, '/');
-            file_put_contents($exportFolder . $i18nFile, $webapp->get($i18nRoute));
+            $i18nFile = 'i18n' . $i18nSuffix . '.properties';
+            $i18nFilePath = $exportFolder . $i18nFolder . $i18nFile;
+            $i18nRoute = Filemanager::pathNormalize($i18nFolder . $i18nFile, '/');
+            file_put_contents($i18nFilePath, $webapp->get($i18nRoute));
+            yield $msgIndent.$msgIndent . $i18nFile . PHP_EOL;
         }
-        return $this;
     }
     
     /**
@@ -172,36 +199,32 @@ class ExportFioriWebapp extends AbstractAction implements iModifyData
      * @param string $exportFolder
      * @return ExportFioriWebapp
      */
-    protected function exportStaticViews(Webapp $webapp, string $exportFolder) : ExportFioriWebapp
+    protected function exportStaticViews(Webapp $webapp, string $exportFolder, string $msgIndent) : \Generator
     {
         foreach ($webapp->getBaseViews() as $route) {
-            $this->exportFile($webapp, $route, $exportFolder);
+            yield from $this->exportFile($webapp, $route, $exportFolder, $msgIndent);
         }
         foreach ($webapp->getBaseControllers() as $route) {
-            $this->exportFile($webapp, $route, $exportFolder);
+            yield from $this->exportFile($webapp, $route, $exportFolder, $msgIndent);
         }
-        return $this;
     }
     
-    protected function exportPages(Webapp $webapp, string $exportFolder) : ExportFioriWebapp
+    protected function exportPages(Webapp $webapp, string $exportFolder, string $msgIndent) : \Generator
     {
-        $this->exportPage($webapp, $webapp->getRootPage(), $exportFolder);
-        return $this;
+        yield from $this->exportPage($webapp, $webapp->getRootPage(), $exportFolder, $msgIndent);
     }
     
-    protected function exportPage(Webapp $webapp, UiPageInterface $page, string $exportFolder, int $linkDepth = 5) : ExportFioriWebapp
+    protected function exportPage(Webapp $webapp, UiPageInterface $page, string $exportFolder, string $msgIndent, int $linkDepth = 5) : \Generator
     {     
         try {
             $widget = $page->getWidgetRoot();
-            $this->exportWidget($webapp, $widget, $exportFolder, $linkDepth);
+            yield from $this->exportWidget($webapp, $widget, $exportFolder, $linkDepth, $msgIndent);
         } catch (\Throwable $e) {
             throw new FacadeRuntimeError('Cannot export view for page "' . $page->getAliasWithNamespace() . '": ' . $e->getMessage(), null, $e);
         }
-        
-        return $this;
     }
     
-    protected function exportWidget(Webapp $webapp, WidgetInterface $widget, string $exportFolder, int $linkDepth) : ExportFioriWebapp
+    protected function exportWidget(Webapp $webapp, WidgetInterface $widget, string $exportFolder, int $linkDepth, string $msgIndent) : \Generator
     {
         try {
             //$widget = $webapp->handlePrefill($widget, $task);
@@ -233,15 +256,15 @@ class ExportFioriWebapp extends AbstractAction implements iModifyData
         }
         
         file_put_contents($viewFile, $viewJs);
+        yield $msgIndent . StringDataType::substringAfter($view->getPath(), $webapp->getComponentPath() . '/') . PHP_EOL;
         file_put_contents($controllerFile, $controllerJs);
+        yield $msgIndent . StringDataType::substringAfter($controller->getPath(), $webapp->getComponentPath() . '/') . PHP_EOL;
         
         if ($linkDepth > 0) {
             foreach ($this->findLinkedViewWidgets($widget) as $dialog) {
-                $this->exportWidget($webapp, $dialog, $exportFolder, ($linkDepth-1));
+                yield from $this->exportWidget($webapp, $dialog, $exportFolder, ($linkDepth-1), $msgIndent);
             }
         }
-        
-        return $this;
     }
     
     protected function findLinkedViewWidgets(WidgetInterface $widget) : array
@@ -330,10 +353,10 @@ class ExportFioriWebapp extends AbstractAction implements iModifyData
         return $destination;
     }
     
-    protected function exportFile(Webapp $webapp, string $route, string $exportFolder) : ExportFioriWebapp
+    protected function exportFile(Webapp $webapp, string $route, string $exportFolder, string $msgIndent) : \Generator
     {
         file_put_contents($exportFolder . $route, $webapp->get($route));
-        return $this;
+        yield $msgIndent . $route . PHP_EOL;
     }
     
     /**
@@ -354,6 +377,31 @@ class ExportFioriWebapp extends AbstractAction implements iModifyData
         $string = preg_replace('/&#x([0-9a-f]{4});/i', '\u$1', $string);
         
         return $string;
+    }
+    
+    /**
+     *
+     * {@inheritdoc}
+     * @see iCanBeCalledFromCLI::getCliArguments()
+     */
+    public function getCliArguments() : array
+    {
+        return [
+            (new ServiceParameter($this))
+            ->setName('app_id')
+            ->setDescription('Fiori app id to be exported. By default it is the full alias (with namespace) of the root page of the app')
+            ->setRequired(true)
+        ];
+    }
+    
+    /**
+     *
+     * {@inheritdoc}
+     * @see iCanBeCalledFromCLI::getCliOptions()
+     */
+    public function getCliOptions() : array
+    {
+        return [];
     }
     
 }

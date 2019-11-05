@@ -753,4 +753,19 @@ JS;
     {
         return $this->getFacade()->getElement($this->getWidget()->getConfiguratorWidget());
     }
+    
+    /**
+     * Fires the onChange event and triggers all onChange-scripts if the current value really changed.
+     * 
+     * Set $buildForView=true if the snippet is to be used in a view (i.e. as value of a control property)
+     * and $buildForView=false if you simply need to call the event handler from some other controller code.
+     * 
+     * @param bool $buildForView
+     * @return string
+     */
+    protected function buildJsOnChangeTrigger(bool $buildForView) : string
+    {
+        // TODO check if the selected row and it's data really changed - like in jEasyUI
+        return $this->getController()->buildJsEventHandler($this, 'change', $buildForView);
+    }
 }

@@ -91,7 +91,7 @@ class UI5DataTable extends UI5AbstractElement
             		fixedLayout: false,
                     alternateRowColors: {$striped},
                     noDataText: "{$this->getWidget()->getEmptyText()}",
-            		itemPress: {$this->buildJsFireChange(true)},
+            		itemPress: {$this->buildJsOnChangeTrigger(true)},
                     mode: {$mode},
                     headerToolbar: [
                         {$this->buildJsToolbar($oControllerJs)}
@@ -118,17 +118,6 @@ class UI5DataTable extends UI5AbstractElement
         })
         
 JS;
-    }
-             
-    /**
-     * Fires the onChange event and triggers all onChange-scripts if the current value really changed.
-     * 
-     * @return string
-     */
-    protected function buildJsFireChange(bool $buildForView) : string
-    {
-        // TODO check if the selected row and it's data really changed - like in jEasyUI
-        return $this->getController()->buildJsEventHandler($this, 'change', $buildForView);
     }
     
     protected function buildJsConstructorForMTableFooter(string $oControllerJs = 'oController') : string
@@ -195,7 +184,7 @@ JS;
                 enableColumnFreeze: true,
         		filter: {$controller->buildJsMethodCallFromView('onLoadData', $this)},
         		sort: {$controller->buildJsMethodCallFromView('onLoadData', $this)},
-                rowSelectionChange: {$this->buildJsFireChange(true)},
+                rowSelectionChange: {$this->buildJsOnChangeTrigger(true)},
         		toolbar: [
         			{$this->buildJsToolbar($oControllerJs, $this->getPaginatorElement()->buildJsConstructor($oControllerJs))}
         		],
@@ -468,7 +457,7 @@ JS;
     public function buildJsValueGetter($dataColumnName = null, $rowNr = null)
     {
         if ($this->isUiTable()) {
-            $row = "(oTable.getSelectedIndex() > -1 ? oTable.getModel().getData().rows[oTable.getSelectedIndex()] : [])";
+            $row = "(oTable.getModel().getData().rows[oTable.getSelectedIndex()] || [])";
         } else {
             $row = "(oTable.getSelectedItem() ? oTable.getSelectedItem().getBindingContext().getObject() : [])";
         }
@@ -788,7 +777,7 @@ JS;
 
             {$paginator->buildJsSetTotal($oModelJs . '.getProperty("/recordsFiltered")', 'oController')};
             {$paginator->buildJsRefresh('oController')};  
-            {$this->buildJsFireChange(false)}
+            {$this->buildJsOnChangeTrigger(false)}
             {$singleResultJs} 
             {$sortOrderFix}         
             

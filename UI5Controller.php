@@ -141,18 +141,22 @@ JS;
         return $this;
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::buildJsEventHandlerMethodName()
+     */
     public function buildJsEventHandlerMethodName(string $eventName) : string
     {
         return 'on' . ucfirst($eventName);
     }
 
     /**
-     *
-     * @param UI5AbstractElement $triggerElement
-     * @param string $eventName
-     * @return string
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::buildJsEventHandler()
      */
-    public function buildJsEventHandler(UI5AbstractElement $triggerElement, string $eventName, bool $callFromView = true) : string
+    public function buildJsEventHandler(UI5AbstractElement $triggerElement, string $eventName, bool $buildForView) : string
     {
         $methodName = $this->buildJsEventHandlerMethodName($eventName);
         
@@ -164,7 +168,7 @@ JS;
             $this->addOnEventScript($triggerElement, $eventName, '');
         }
         
-        if ($callFromView === true) {
+        if ($buildForView === true) {
             return $this->buildJsMethodCallFromView($methodName, $triggerElement);
         } else {
             return $this->buildJsMethodCallFromController($methodName, $triggerElement);

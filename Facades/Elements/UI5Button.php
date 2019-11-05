@@ -115,7 +115,7 @@ JS;
         $controller = $this->getController();
         $clickJs = $this->buildJsClickFunction();
         $controller->addOnEventScript($this, 'press', ($clickJs ? $clickJs : $default));
-        return $this->getController()->buildJsEventHandler($this, 'press');        
+        return $this->getController()->buildJsEventHandler($this, 'press', true);        
     }
     
     /**

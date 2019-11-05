@@ -83,8 +83,8 @@ JS;
         return <<<JS
 
         new sap.m.P13nDialog("{$this->getId()}", {
-            ok: {$controller->buildJsEventHandler($this, self::EVENT_BUTTON_OK)},
-            cancel: {$controller->buildJsEventHandler($this, self::EVENT_BUTTON_CANCEL)},
+            ok: {$controller->buildJsEventHandler($this, self::EVENT_BUTTON_OK, true)},
+            cancel: {$controller->buildJsEventHandler($this, self::EVENT_BUTTON_CANCEL, true)},
             showReset: true,
             /*reset: "handleReset",*/
             panels: [

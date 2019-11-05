@@ -91,7 +91,7 @@ class UI5DataTable extends UI5AbstractElement
             		fixedLayout: false,
                     alternateRowColors: {$striped},
                     noDataText: "{$this->getWidget()->getEmptyText()}",
-            		itemPress: {$this->buildJsFireChange()},
+            		itemPress: {$this->buildJsFireChange(true)},
                     mode: {$mode},
                     headerToolbar: [
                         {$this->buildJsToolbar($oControllerJs)}
@@ -125,10 +125,10 @@ JS;
      * 
      * @return string
      */
-    protected function buildJsFireChange() : string
+    protected function buildJsFireChange(bool $buildForView) : string
     {
         // TODO check if the selected row and it's data really changed - like in jEasyUI
-        return $this->getController()->buildJsEventHandler($this, 'change');
+        return $this->getController()->buildJsEventHandler($this, 'change', $buildForView);
     }
     
     protected function buildJsConstructorForMTableFooter(string $oControllerJs = 'oController') : string
@@ -195,7 +195,7 @@ JS;
                 enableColumnFreeze: true,
         		filter: {$controller->buildJsMethodCallFromView('onLoadData', $this)},
         		sort: {$controller->buildJsMethodCallFromView('onLoadData', $this)},
-                rowSelectionChange: {$this->buildJsFireChange()},
+                rowSelectionChange: {$this->buildJsFireChange(true)},
         		toolbar: [
         			{$this->buildJsToolbar($oControllerJs, $this->getPaginatorElement()->buildJsConstructor($oControllerJs))}
         		],
@@ -788,7 +788,7 @@ JS;
 
             {$paginator->buildJsSetTotal($oModelJs . '.getProperty("/recordsFiltered")', 'oController')};
             {$paginator->buildJsRefresh('oController')};  
-            {$this->buildJsFireChange()}
+            {$this->buildJsFireChange(false)}
             {$singleResultJs} 
             {$sortOrderFix}         
             

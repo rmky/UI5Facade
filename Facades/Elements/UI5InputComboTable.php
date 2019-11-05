@@ -45,7 +45,7 @@ class UI5InputComboTable extends UI5Input
                         }
                         if (oInput.getValue() === '' && $missingKeyCheckJs){
                             oInput.setValueState(sap.ui.core.ValueState.None);
-                        }console.log('onChange');
+                        }
 JS;
             $this->addOnChangeScript($onChange);
             

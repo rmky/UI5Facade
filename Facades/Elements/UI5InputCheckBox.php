@@ -95,7 +95,7 @@ JS;
             $this->getController()->addOnEventScript($this, 'change', $script);
         }
         
-        return 'select: ' . $this->getController()->buildJsEventHandler($this, 'change') . ',';
+        return 'select: ' . $this->getController()->buildJsEventHandler($this, 'change', true) . ',';
     }
     
     /**

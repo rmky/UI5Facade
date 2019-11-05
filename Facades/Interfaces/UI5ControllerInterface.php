@@ -26,14 +26,17 @@ interface UI5ControllerInterface {
     /**
      * Returns the handler for the given event, that is usable within a view.
      * 
-     * Use this method to obtain the values for constructor properties like `press`.
+     * Use this method to obtain the values for constructor properties like `press`. Set $buildForView=true 
+     * if the snippet is to be used in a view (i.e. as value of a control property) and $buildForView=false 
+     * if you simply need to call the event handler from some other controller code.
      * 
      * @param UI5AbstractElement $triggerElement
      * @param string $eventName
+     * @param bool $buildForView
      * 
      * @return string
      */
-    public function buildJsEventHandler(UI5AbstractElement $triggerElement, string $eventName) : string;
+    public function buildJsEventHandler(UI5AbstractElement $triggerElement, string $eventName, bool $buildForView) : string;
     
     /**
      * Adds a JS script to be performed on the given event.

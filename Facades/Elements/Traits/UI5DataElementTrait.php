@@ -65,7 +65,7 @@ trait UI5DataElementTrait {
     protected function init()
     {
         parent::init();
-        $configuratorElement = $this->getFacade()->getElement($this->getWidget()->getConfiguratorWidget());
+        $configuratorElement = $this->getConfiguratorElement();
         $configuratorElement->setModelNameForConfig($this->getModelNameForConfigurator());
         
         if ($this->isWrappedInDynamicPage()) {
@@ -301,7 +301,7 @@ JS;
         
                     new sap.m.OverflowToolbarButton({
                         type: sap.m.ButtonType.{$buttonType},
-                        icon: "sap-icon://drop-down-list",
+                        icon: "sap-icon://action-settings",
                         text: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.TITLE')}",
                         tooltip: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.TITLE')}",
                         layoutData: new sap.m.OverflowToolbarLayoutData({priority: "High"}),
@@ -747,5 +747,10 @@ JS;
         } else {
             return "(JSON.stringify({$leftRowJs}) == JSON.stringify({$rightRowJs}))";
         }
+    }
+    
+    protected function getConfiguratorElement() : UI5DataConfigurator
+    {
+        return $this->getFacade()->getElement($this->getWidget()->getConfiguratorWidget());
     }
 }

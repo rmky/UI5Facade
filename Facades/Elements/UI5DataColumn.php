@@ -5,6 +5,7 @@ use exface\Core\Widgets\DataColumn;
 use exface\UI5Facade\Facades\Interfaces\UI5BindingFormatterInterface;
 use exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface;
 use exface\UI5Facade\Facades\Interfaces\UI5CompoundControlInterface;
+use exface\Core\DataTypes\WidgetVisibilityDataType;
 
 /**
  *
@@ -31,21 +32,23 @@ class UI5DataColumn extends UI5AbstractElement
      */
     public function buildJsConstructorForUiColumn()
     {
-        $widget = $this->getWidget();
+        $col = $this->getWidget();
         
         return <<<JS
-	 new sap.ui.table.Column({
+	 new sap.ui.table.Column('{$this->getId()}', {
 	    label: new sap.ui.commons.Label({
             text: "{$this->getCaption()}"
         }),
         autoResizable: true,
         template: {$this->buildJsConstructorForCell()},
-	    sortProperty: "{$widget->getAttributeAlias()}",
-	    filterProperty: "{$widget->getAttributeAlias()}",
+	    sortProperty: "{$col->getAttributeAlias()}",
+	    filterProperty: "{$col->getAttributeAlias()}",
         {$this->buildJsPropertyTooltip()}
 	    {$this->buildJsPropertyVisibile()}
 	    {$this->buildJsPropertyWidth()}
 	})
+	.data('_exfAttributeAlias', '{$col->getAttributeAlias()}')
+	.data('_exfDataColumnName', '{$col->getDataColumnName()}')
 JS;
     }
 	
@@ -88,7 +91,7 @@ JS;
         
         return <<<JS
         
-                    new sap.m.Column({
+                    new sap.m.Column('{$this->getId()}', {
 						popinDisplay: {$popinDisplay},
 						demandPopin: true,
 						{$this->buildJsPropertyMinScreenWidth()}
@@ -101,9 +104,21 @@ JS;
                         ],
                         {$alignment}
                         {$this->buildJsPropertyVisibile()}
-					}).data('_exfAttributeAlias', '{$col->getAttributeAlias()}')
+					})
+					.data('_exfAttributeAlias', '{$col->getAttributeAlias()}')
+					.data('_exfDataColumnName', '{$col->getDataColumnName()}')
 					
 JS;
+    }
+                        
+    protected function buildJsPropertyVisibile()
+    {
+        switch ($this->getWidget()->getVisibility()) {
+            case EXF_WIDGET_VISIBILITY_OPTIONAL:
+            case EXF_WIDGET_VISIBILITY_HIDDEN:
+                return 'visible: false,';
+        }
+        return '';
     }
     
     /**

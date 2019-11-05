@@ -21,7 +21,13 @@ class UI5DataConfigurator extends UI5Tabs
         buildJsDataGetter as buildJsDataGetterViaTrait;
     }
     
+    const EVENT_BUTTON_OK = 'ok';
+    const EVENT_BUTTON_CANCEL = 'cancel';
+        
+    
     private $include_filter_tab = true;
+    
+    private $include_columns_tab = false;
     
     private $modelNameForConfig = null;
        
@@ -59,21 +65,26 @@ class UI5DataConfigurator extends UI5Tabs
     {
         $controller = $this->getController();
         
+        $dataElement = $this->getDataElement();
+        if ($dataElement instanceof UI5DataTable) {
+            $refreshP13n = $dataElement->buildJsRefreshPersonalization();
+        }
         $okScript = <<<JS
                 
                     oEvent.getSource().close();
-                    {$this->getFacade()->getElement($this->getWidget()->getWidgetConfigured())->buildJsRefresh()};
+                    {$refreshP13n}
+                    {$dataElement->buildJsRefresh()};
 
 
 JS;
-        $controller->addOnEventScript($this, 'ok', $okScript);
-        $controller->addOnEventScript($this, 'cancel', 'oEvent.getSource().close();');           
+        $controller->addOnEventScript($this, self::EVENT_BUTTON_OK, $okScript);
+        $controller->addOnEventScript($this, self::EVENT_BUTTON_CANCEL, 'oEvent.getSource().close();');           
         
         return <<<JS
 
         new sap.m.P13nDialog("{$this->getId()}", {
-            ok: {$controller->buildJsEventHandler($this, 'ok')},
-            cancel: {$controller->buildJsEventHandler($this, 'cancel')},
+            ok: {$controller->buildJsEventHandler($this, self::EVENT_BUTTON_OK)},
+            cancel: {$controller->buildJsEventHandler($this, self::EVENT_BUTTON_CANCEL)},
             showReset: true,
             /*reset: "handleReset",*/
             panels: [
@@ -205,20 +216,72 @@ JS;
         if ($this->hasTabColumns() === false) {
             return '';
         }
+        
+        /* This script sorts the columns in the panel's list to be sorted exactly the way, they
+         * are positioned in the table - regardless of their visibility. By default, unchecked
+         * columns are placed at the end of the the list. This forces the user to move them
+         * after enabling. This fix makes sure, the position of the column is kept when enabling/disabling
+         * and allows table designers to position optional columns meaningfully.
+         */
+        $fixColumnSorting = <<<JS
+                        try {
+                            var oPanel = oEvent.getSource();                        
+                            var oTable = oPanel.getAggregation('content')[1].getAggregation('content')[0];
+                            var oTableModel = oTable.getModel();
+                            var oConfigModel = oPanel.getModel('{$this->getModelNameForConfig()}');
+                            if (oTableModel === undefined || oConfigModel === undefined) return;
+                            setTimeout(function(){
+                                var aColsConfig = oConfigModel.getProperty('/columns');
+                                var aItems = oTableModel.getProperty('/items');
+                                var aItemsNew = [];
+                                aColsConfig.forEach(oColConfig => {
+                                    aItems.forEach(oItem => {
+                                        if (oItem.columnKey === oColConfig.column_id) {
+                                            aItemsNew.push(oItem);
+                                            return;
+                                        }
+                                    })
+                                });
+        
+                                oTableModel.setProperty('/items', aItemsNew);
+                            });
+                        } catch (e) {
+                            console.warn('Cannot properly sort columns for personalization - using default sorting: ', e);
+                        }
+
+JS;
+        
         return <<<JS
 
                 new sap.m.P13nColumnsPanel({
                     title: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.COLUMNS')}",
                     visible: true,
-                    /*addColumnsItem: "onAddColumnsItem",*/
+                    changeColumnsItems: function(oEvent){
+                        var aItems = oEvent.getParameters().items;
+                        var oModel = oEvent.getSource().getModel('{$this->getModelNameForConfig()}');
+                        var aNewColModel = [];
+                        aItems.forEach(oItem => {
+                            oModel.getData()['columns'].forEach(oColConf => {
+                                if (oColConf.column_id === oItem.columnKey) {
+                                    oColConf.visible = oItem.visible;
+                                    aNewColModel.push(oColConf);
+                                    return;
+                                }
+                            });
+                        });
+                        oModel.setProperty('/columns', aNewColModel);
+                    },
                     type: "columns",
                     items: {
                         path: '{$this->getModelNameForConfig()}>/columns',
                         template: new sap.m.P13nItem({
-                            columnKey: "{{$this->getModelNameForConfig()}>column_name}",
+                            columnKey: "{{$this->getModelNameForConfig()}>column_id}",
                             text: "{{$this->getModelNameForConfig()}>caption}",
                             visible: "{{$this->getModelNameForConfig()}>visible}"
                         })
+                    },
+                    beforeNavigationTo: function(oEvent) {
+                        {$fixColumnSorting}                        
                     }
                 }),
 JS;
@@ -277,14 +340,18 @@ JS;
         $data = [];
         if ($this->hasTabColumns() === true) {
             foreach ($this->getWidget()->getDataWidget()->getColumns() as $col) {
-                if (! $col->isBoundToAttribute()) {
+                if ($col->isBoundToAttribute() === false) {
+                    continue;
+                }
+                if ($col->isHidden() === true) {
                     continue;
                 }
                 $data[] = [
                     "attribute_alias" => $col->getAttributeAlias(),
+                    "column_id" => $this->getFacade()->getElement($col)->getId(),
                     "column_name" => $col->getDataColumnName(),
                     "caption" => $col->getCaption(),
-                    "visible" => $col->isHidden() ? false : true
+                    "visible" => $col->isHidden() || $col->getVisibility() === EXF_WIDGET_VISIBILITY_OPTIONAL ? false : true
                 ];
             }
         }
@@ -440,8 +507,28 @@ JS;
         return $this;
     }
     
+    public function setIncludeColumnsTab(bool $trueOrFalse) : UI5DataConfigurator
+    {
+        $this->include_columns_tab = $trueOrFalse;
+        return $this;
+    }
+    
     protected function hasTabColumns() : bool
     {
-        return $this->getWidget()->getWidgetConfigured() instanceof iHaveColumns;
+        return $this->include_columns_tab;
+    }
+    
+    /**
+     * 
+     * @return UI5AbstractElement
+     */
+    protected function getDataElement() : UI5AbstractElement
+    {
+        return $this->getFacade()->getElement($this->getWidget()->getDataWidget());
+    }
+    
+    public function buildJsP13nColumnConfig() : string
+    {
+        return "sap.ui.getCore().byId('{$this->getId()}').getModel('{$this->getModelNameForConfig()}').getData()['columns']";
     }
 }

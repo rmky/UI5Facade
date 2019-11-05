@@ -28,6 +28,13 @@ class UI5DataTable extends UI5AbstractElement
        buildJsDataLoaderOnLoaded as buildJsDataLoaderOnLoadedViaTrait;
        buildJsConstructor as buildJsConstructorViaTrait;
        getCaption as getCaptionViaTrait;
+       init as initViaTrait;
+    }
+    
+    protected function init()
+    {
+        $this->initViaTrait();
+        $this->getConfiguratorElement()->setIncludeColumnsTab(true);
     }
     
     /**
@@ -416,7 +423,7 @@ JS;
         } elseif ($action instanceof iReadData) {
             // If we are reading, than we need the special data from the configurator
             // widget: filters, sorters, etc.
-            return $this->getFacade()->getElement($this->getWidget()->getConfiguratorWidget())->buildJsDataGetter($action);
+            return $this->getConfiguratorElement()->buildJsDataGetter($action);
         } elseif ($this->isEditable() && $action->implementsInterface('iModifyData')) {
             $rows = "oTable.getModel().getData().rows";
         } else {
@@ -927,5 +934,62 @@ JS;
             $setNoData = "sap.ui.getCore().byId('{$this->getId()}_noData').setText('{$hint}')";
         }
         return $this->buildJsDataResetter() . ';' . $setNoData;
+    }
+    
+    public function buildJsRefreshPersonalization() : string
+    {
+        if ($this->isUiTable() === true) {
+            return <<<JS
+
+                        var aColsConfig = {$this->getConfiguratorElement()->buildJsP13nColumnConfig()};
+                        var oTable = sap.ui.getCore().byId('{$this->getId()}');
+                        var aColumns = oTable.getColumns();
+                        
+                        var aColumnsNew = [];
+                        var bOrderChanged = false;
+                        aColsConfig.forEach(function(oColConfig, iConfIdx) {
+                            aColumns.forEach(function(oColumn, iColIdx) {
+                                if (oColumn.getId() === oColConfig.column_id) {
+                                    if (iColIdx !== iConfIdx) bOrderChanged = true;
+                                    oColumn.setVisible(oColConfig.visible);
+                                    aColumnsNew.push(oColumn);
+                                    return;
+                                }
+                            });
+                        });
+                        if (bOrderChanged === true) {
+                            oTable.removeAllColumns();
+                            aColumnsNew.forEach(oColumn => {
+                                oTable.addColumn(oColumn);
+                            });
+                        }
+
+JS;
+        } else {
+            return <<<JS
+
+                        var aColsConfig = {$this->getConfiguratorElement()->buildJsP13nColumnConfig()};
+                        var oTable = sap.ui.getCore().byId('{$this->getId()}');
+                        var aColumns = oTable.getColumns();
+                        
+                        var bOrderChanged = false;
+                        aColsConfig.forEach(function(oColConfig, iConfIdx) {
+                            aColumns.forEach(function(oColumn, iColIdx) {
+                                if (oColumn.getId() === oColConfig.column_id) {
+                                    if (oColumn.getVisible() !== oColConfig.visible) {
+                                        oColumn.setVisible(oColConfig.visible);
+                                    } else {
+                                        if (iColIdx !== iConfIdx) bOrderChanged = true;
+                                    }                                    
+                                    return;
+                                }
+                            });
+                        });
+                        if (bOrderChanged === true) {
+                            {$this->buildJsShowMessageError("'Moving columns currently not supported for responsive tables'")}
+                        }
+
+JS;
+        }
     }
 }

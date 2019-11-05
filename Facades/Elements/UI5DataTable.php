@@ -35,6 +35,22 @@ class UI5DataTable extends UI5AbstractElement
     {
         $this->initViaTrait();
         $this->getConfiguratorElement()->setIncludeColumnsTab(true);
+   
+        $valueChangedChecker = <<<JS
+            
+            // Check, if selection actually changed. Return here if not.
+            if ((function(){
+                var oTable = sap.ui.getCore().byId('{$this->getId()}');
+                var newSelection = {$this->buildJsGetSelectedRows('oTable')};
+                var oldSelection = oTable.data('exfPreviousSelection');
+                oTable.data('exfPreviousSelection', newSelection);
+                return {$this->buildJsRowCompare('oldSelection', 'newSelection', false)};
+            })()) {
+                return;
+            }
+
+JS;
+        $this->addOnChangeScript($valueChangedChecker);
     }
     
     /**
@@ -456,12 +472,7 @@ JS;
      */
     public function buildJsValueGetter($dataColumnName = null, $rowNr = null)
     {
-        if ($this->isUiTable()) {
-            $row = "(oTable.getModel().getData().rows[oTable.getSelectedIndex()] || [])";
-        } else {
-            $row = "(oTable.getSelectedItem() ? oTable.getSelectedItem().getBindingContext().getObject() : [])";
-        }
-        
+        $row = $this->buildJsGetSelectedRows('oTable');
         $col = $dataColumnName !== null ? '["' . $dataColumnName . '"]' : '';
         
         return <<<JS
@@ -472,6 +483,16 @@ function(){
 }()
 
 JS;
+    }
+        
+    protected function buildJsGetSelectedRows(string $oTableJs) : string
+    {
+        if ($this->isUiTable()) {
+            $row = "($oTableJs.getModel().getData().rows[$oTableJs.getSelectedIndex()] || [])";
+        } else {
+            $row = "($oTableJs.getSelectedItem() ? $oTableJs.getSelectedItem().getBindingContext().getObject() : [])";
+        }
+        return $row;
     }
         
     /**

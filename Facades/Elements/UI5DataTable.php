@@ -50,7 +50,7 @@ class UI5DataTable extends UI5AbstractElement
             }
 
 JS;
-        $this->addOnChangeScript($valueChangedChecker);
+        //$this->addOnChangeScript($valueChangedChecker);
     }
     
     /**

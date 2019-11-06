@@ -220,7 +220,8 @@ class ExportFioriWebapp extends AbstractActionDeferred implements iModifyData, i
             $widget = $page->getWidgetRoot();
             yield from $this->exportWidget($webapp, $widget, $exportFolder, $linkDepth, $msgIndent);
         } catch (\Throwable $e) {
-            throw new FacadeRuntimeError('Cannot export view for page "' . $page->getAliasWithNamespace() . '": ' . $e->getMessage(), null, $e);
+            $err = new FacadeRuntimeError('Cannot export view for page "' . $page->getAliasWithNamespace() . '": ' . $e->getMessage(), null, $e);
+            yield 'ERROR exporting view for page "' . $page->getAliasWithNamespace() . '": ' . PHP_EOL . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine() . PHP_EOL;
         }
     }
     

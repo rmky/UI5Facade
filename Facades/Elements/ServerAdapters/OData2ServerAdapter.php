@@ -27,6 +27,7 @@ use exface\Core\Interfaces\WidgetInterface;
 use exface\Core\Widgets\Data;
 use exface\UI5Facade\Exceptions\UI5ExportUnsupportedWidgetException;
 use exface\Core\CommonLogic\UxonObject;
+use exface\Core\Actions\Autosuggest;
 
 /**
  * 
@@ -156,6 +157,7 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
             case get_class($action) === ReadPrefill::class:
                 return $this->buildJsPrefillLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             case get_class($action) === ReadData::class:
+            case get_class($action) === Autosuggest::class:
                 return $this->buildJsDataLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             case get_class($action) === CallOData2Operation::class:
                 return $this->buildJsCallFunctionImport($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);

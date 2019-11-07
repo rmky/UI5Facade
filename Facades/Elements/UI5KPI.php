@@ -225,9 +225,9 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\UI5Facade\Facades\Elements\UI5Display::getColorScaleSemanticColorMap()
+     * @see \exface\UI5Facade\Facades\Elements\UI5Display::getColorSemanticMap()
      */
-    protected function getColorScaleSemanticColorMap() : array
+    protected function getColorSemanticMap() : array
     {
         $semCols = [];
         foreach (Colors::getSemanticColors() as $semCol) {

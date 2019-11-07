@@ -73,7 +73,7 @@ JS;
         if (! $this->isValueBoundToModel()) {
             $value = $this->buildJsColorValueNoColor(); // TODO
         } else {
-            $semColsJs = json_encode($this->getColorScaleSemanticColorMap());
+            $semColsJs = json_encode($this->getColorSemanticMap());
             $bindingOptions = <<<JS
                 formatter: function(value){
                     var sColor = {$this->buildJsScaleResolver('value', $this->getWidget()->getColorScale(), $this->getWidget()->isColorScaleRangeBased())};
@@ -120,7 +120,7 @@ JS;
         return "getTooltip()";
     }
     
-    protected function getColorScaleSemanticColorMap() : array
+    protected function getColorSemanticMap() : array
     {
         $semCols = [];
         foreach (Colors::getSemanticColors() as $semCol) {

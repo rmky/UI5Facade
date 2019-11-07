@@ -233,7 +233,7 @@ JS;
         return "getText()";
     }
         
-    protected function getColorScaleSemanticColorMap() : array
+    protected function getColorSemanticMap() : array
     {
         $semCols = [];
         foreach (Colors::getSemanticColors() as $semCol) {
@@ -272,7 +272,7 @@ JS;
         if (! $this->isValueBoundToModel()) {
             $value = ''; // TODO
         } else {
-            $semColsJs = json_encode($this->getColorScaleSemanticColorMap());
+            $semColsJs = json_encode($this->getColorSemanticMap());
             $bindingOptions = <<<JS
                 formatter: function(value){
                     var sColor = {$this->buildJsScaleResolver('value', $widget->getColorScale(), $widget->isColorScaleRangeBased())};

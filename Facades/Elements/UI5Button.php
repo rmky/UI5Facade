@@ -11,6 +11,8 @@ use exface\Core\Interfaces\Actions\iRunFacadeScript;
 use exface\Core\DataTypes\StringDataType;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryDisableConditionTrait;
 use exface\Core\CommonLogic\Constants\Icons;
+use exface\Core\CommonLogic\Constants\Colors;
+use exface\Core\Exceptions\Facades\FacadeUnsupportedWidgetPropertyWarning;
 
 /**
  * Generates jQuery Mobile buttons for ExFace
@@ -70,11 +72,26 @@ JS;
         $widget = $this->getWidget();
         switch ($widget->getVisibility()) {
             case EXF_WIDGET_VISIBILITY_PROMOTED: 
-                $visibility = 'type: "Emphasized", layoutData: new sap.m.OverflowToolbarLayoutData({priority: "High"}),'; break;
+                $type = 'type: "Emphasized",';
+                $layoutData = 'layoutData: new sap.m.OverflowToolbarLayoutData({priority: "High"}),'; break;
             case EXF_WIDGET_VISIBILITY_OPTIONAL: 
-                $visibility = 'type: "Default", layoutData: new sap.m.OverflowToolbarLayoutData({priority: "AlwaysOverflow"}),'; break;
+                $type = 'type: "Default",';
+                $layoutData = 'layoutData: new sap.m.OverflowToolbarLayoutData({priority: "AlwaysOverflow"}),'; break;
             case EXF_WIDGET_VISIBILITY_NORMAL: 
-            default: $visibility = 'type: "Default",';
+            default: 
+                if ($color = $widget->getColor()) {
+                    if (Colors::isSemantic($color) === true) {
+                        if ($semType = $this->getColorSemanticMap()[$color]) {
+                            $type = 'type: "' . $semType . '",';
+                        } else {
+                            $err = new FacadeUnsupportedWidgetPropertyWarning('Color "' . $color . '" not supported for button widget in UI5 - only semantic colors usable!');
+                            $this->getWorkbench()->getLogger()->logException($err);
+                            $type = 'type: "Default"';
+                        }
+                    }
+                } else {
+                    $type = 'type: "Default",';
+                }
             
         }
         
@@ -86,7 +103,8 @@ JS;
 
     text: "{$this->getCaption()}",
     {$icon}
-    {$visibility}
+    {$type}
+    {$layoutData}
     {$press}
     {$this->buildJsPropertyTooltip()}
     {$this->buildJsPropertyVisibile()}
@@ -457,5 +475,19 @@ JS;
     public function buildJsDisabler()
     {
         return "sap.ui.getCore().byId('{$this->getId()}').setEnabled(false)";
+    }
+    
+    protected function getColorSemanticMap() : array
+    {
+        $semCols = [];
+        foreach (Colors::getSemanticColors() as $semCol) {
+            switch ($semCol) {
+                case Colors::SEMANTIC_ERROR: $btnType = 'Reject'; break;
+                case Colors::SEMANTIC_WARNING: $btnType = 'Reject'; break;
+                case Colors::SEMANTIC_OK: $btnType = 'Accept'; break;
+            }
+            $semCols[$semCol] = $btnType;
+        }
+        return $semCols;
     }
 }

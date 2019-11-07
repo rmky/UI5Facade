@@ -6,6 +6,7 @@ use exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface;
 use exface\UI5Facade\Facades\Interfaces\UI5CompoundControlInterface;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryLiveReferenceTrait;
 use exface\Core\Interfaces\Widgets\iTakeInput;
+use exface\Core\Widgets\Input;
 
 /**
  * Generates sap.m.Text controls for Value widgets
@@ -161,7 +162,17 @@ JS;
         }
         
         // Otherwise assume model binding unless the widget has an explicit value
-        return $widget->hasValue() === true && $widget->getValueExpression()->isStatic() === true ? false : true;
+        if ($widget->hasValue() === true) {
+            $valueExpr = $widget->getValueExpression();
+        } elseif ($widget instanceof Input && $widget->hasDefaultValue()) {
+            $valueExpr = $widget->getDefaultValueExpression();
+        } 
+        
+        if ($valueExpr && $valueExpr->isStatic() === true) {
+            return false;
+        }
+        
+        return true;
     }
     
     /**

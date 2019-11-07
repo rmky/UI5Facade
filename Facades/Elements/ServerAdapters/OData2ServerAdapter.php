@@ -216,8 +216,8 @@ JS;
                 $timeAttributes[] = $qpart->getAlias();
             }
         }
-        $dateAttributes = json_encode($dateAttributes);
-        $timeAttributes = json_encode($timeAttributes);
+        $dateAttributesJson = json_encode($dateAttributes);
+        $timeAttributesJson = json_encode($timeAttributes);
         
         $opISNOT = EXF_COMPARATOR_IS_NOT;
         $opEQ = EXF_COMPARATOR_EQUALS;
@@ -235,6 +235,10 @@ JS;
             var oDataReadFiltersArray = [];
             var oQuickSearchFilters = {$quickSearchFilters};
             var oLocalFilters = {$localFilters};
+            var oAttrsByDataType = {
+                date: $dateAttributesJson,
+                time: $timeAttributesJson
+            };
             
             // Pagination
             if ({$oParamsJs}.hasOwnProperty('length') === true) {
@@ -251,7 +255,7 @@ JS;
                 var conditionsCount = conditions.length;               
                 for (var i = 0; i < conditionsCount; i++) {
                     var cond = conditions[i];
-                    {$this->buildJsAddConditionToFilter($timeAttributes, 'oDataReadFiltersSearch', 'cond')}
+                    {$this->buildJsAddConditionToFilter('oAttrsByDataType', 'oDataReadFiltersSearch', 'cond')}
 
                     //QuickSearch
                     if ({$oParamsJs}.q !== undefined && {$oParamsJs}.q !== "" ) {
@@ -277,7 +281,7 @@ JS;
                     var conditionsCount = conditions.length;              
                     for (var i = 0; i < conditionsCount; i++) {
                         var cond = conditions[i];
-                        {$this->buildJsAddConditionToFilter($timeAttributes, 'oDataReadFiltersTempGroup', 'cond')}
+                        {$this->buildJsAddConditionToFilter('oAttrsByDataType', 'oDataReadFiltersTempGroup', 'cond')}
                     }
                     if (oDataReadFiltersTempGroup.length !== 0) {
                         var tempFilter = new sap.ui.model.Filter({filters: oDataReadFiltersTempGroup, and: true})
@@ -329,10 +333,10 @@ JS;
                     var resultRows = oData.results;
 
                     //Date Conversion
-                    if ({$dateAttributes}[0] !== undefined) {
+                    if (oAttrsByDataType.date[0] !== undefined) {
                         for (var i = 0; i < resultRows.length; i++) {
-                            for (var j = 0; j < {$dateAttributes}.length; j++) {
-                                var attr = {$dateAttributes}[j].toString();
+                            for (var j = 0; j < oAttrsByDataType.date.length; j++) {
+                                var attr = oAttrsByDataType.date[j].toString();
                                 var d = resultRows[i][attr];
                                 if (d !== undefined && d !== "" && d !== null) {
                                     var oDateFormat = sap.ui.core.format.DateFormat.getDateTimeInstance({pattern:'yyyy-MM-dd HH:mm:ss'});
@@ -343,10 +347,10 @@ JS;
                         }
                     }
                     //Time Conversion
-                    if ({$timeAttributes}[0] !== undefined) {
+                    if (oAttrsByDataType.time[0] !== undefined) {
                         for (var i = 0; i < resultRows.length; i++) {
-                            for (var j = 0; j < {$timeAttributes}.length; j++) {
-                                var attr = {$timeAttributes}[j].toString();
+                            for (var j = 0; j < oAttrsByDataType.time.length; j++) {
+                                var attr = oAttrsByDataType.time[j].toString();
                                 var d = resultRows[i][attr];
                                 if (d.ms !== undefined && d.ms !== "" && d.ms !== null) {
                                     var hours = Math.floor(d.ms / (1000 * 60 * 60));
@@ -442,7 +446,7 @@ JS;
 JS;
     }
     
-    protected function buildJsAddConditionToFilter (string $timeAttributes, string $filterArrayJs, string $condJs = 'cond') : string
+    protected function buildJsAddConditionToFilter (string $oAttrsByDataTypeJs, string $filterArrayJs, string $condJs = 'cond') : string
     {
         $opIS = EXF_COMPARATOR_IS;
         $opISNOT = EXF_COMPARATOR_IS_NOT;
@@ -454,37 +458,38 @@ JS;
         $opGE = EXF_COMPARATOR_GREATER_THAN_OR_EQUALS;
         
         return <<<JS
-
+                    
+                    var sOperator, value;
                     switch ({$condJs}.comparator) {
                         case '{$opIS}':
-                            var oOperator = "Contains";
+                            sOperator = "Contains";
                             break;
                         case '{$opISNOT}':
-                            var oOperator = "NotContains";
+                            sOperator = "NotContains";
                             break;
                         case '{$opEQ}':
-                            var oOperator = "EQ";
+                            sOperator = "EQ";
                             break;                            
                         case '{$opNE}':
-                            var oOperator = "NE";
+                            sOperator = "NE";
                             break;
                         case '{$opLT}':
-                            var oOperator = "LT";
+                            sOperator = "LT";
                             break;
                         case '{$opLE}':
-                            var oOperator = "LE";
+                            sOperator = "LE";
                             break;
                         case '{$opGT}':
-                            var oOperator = "GT";
+                            sOperator = "GT";
                             break;
                         case '{$opGE}':
-                            var oOperator ="GE";
+                            sOperator ="GE";
                             break;
                         default:
-                            var oOperator = "EQ";
+                            var sOperator = "EQ";
                     }
                     if ({$condJs}.value !== "") {
-                        if ({$timeAttributes}.indexOf({$condJs}.expression) > -1) {
+                        if ({$oAttrsByDataTypeJs}.time.indexOf({$condJs}.expression) > -1) {
                             var d = {$condJs}.value;
                             var timeParts = d.split(':');
                             if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
@@ -494,13 +499,21 @@ JS;
                                 timeParts[j] = ('0'+(timeParts[j])).slice(-2);
                             }                            
                             var timeString = "PT" + timeParts[0] + "H" + timeParts[1] + "M" + timeParts[3] + "S";
-                            var value = timeString;
+                            value = timeString;
+                            if (sOperator === "Contains") {
+                                sOperator = "EQ";
+                            }
+                        } else if ({$oAttrsByDataTypeJs}.date.indexOf({$condJs}.expression) > -1) {
+                            value = {$condJs}.value + ' GMT+0000';
+                            if (sOperator === "Contains") {
+                                sOperator = "EQ";
+                            }
                         } else {
-                            var value = {$condJs}.value;
+                            value = {$condJs}.value;
                         }
                         var filter = new sap.ui.model.Filter({
                             path: {$condJs}.expression,
-                            operator: oOperator,
+                            operator: sOperator,
                             value1: value
                         });
                         {$filterArrayJs}.push(filter); 

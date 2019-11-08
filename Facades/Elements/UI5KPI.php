@@ -42,11 +42,21 @@ class UI5KPI extends UI5Display
                     {$this->buildJsPropertyIcon()}
                     {$this->buildJsPropertyValue()}
                     {$this->buildJsPropertyValueColor()}
+                    {$this->buildJsPropertyScale()}
                 })
                 {$modelInit}
                 {$this->buildJsPseudoEventHandlers()}
                 
 JS;
+    }
+                
+    protected function buildJsPropertyScale() : string
+    {
+        $unit = $this->getWidget()->getUnit();
+        if ($unit) {
+            return 'scale: "' . $unit . '",';
+        }
+        return '';
     }
     
     /**

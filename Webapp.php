@@ -88,12 +88,12 @@ class Webapp implements WorkbenchDependantInterface
             
             // Now see, what action, we are dealing with and whether it requires a prefill
             $action = $button->getAction();
-            if (($action instanceof iShowWidget) && ($action->getPrefillWithInputData() || $action->getPrefillWithPrefillData())) {
+            if (($action instanceof iShowWidget) && ($action->getPrefillWithInputData() || $action->getPrefillWithPrefillData() || $action->getPrefillWithFilterContext())) {
                 // If a prefill is required, but there is no input data (e.g. a button with ShowObjectEditDialog was pressed and
                 // the corresponding view or viewcontroller is being loaded), just fake the input data by reading the first row of
                 // the default data for the input widget. Since we are just interested in model bindings, id does not matter, what
                 // data we use as prefill - only it's structure matters!
-                if (! $task->hasInputData()) {
+                if (! $task->hasInputData() && $action->getPrefillWithInputData()) {
                     try {
                         $inputData = $button->getInputWidget()->prepareDataSheetToRead();
                         if ($inputData->getMetaObject()->isReadable() === true && $inputData->getColumns()->isEmpty() === false) {
@@ -101,6 +101,18 @@ class Webapp implements WorkbenchDependantInterface
                             $inputData->dataRead();
                         }
                         $task->setInputData($inputData);
+                    } catch (\Throwable $e) {
+                        throw new FacadeLogicError('Cannot load prefill data for UI5 view. ' . $e->getMessage(), null, $e);
+                    }
+                }
+                if (! $task->hasPrefillData() && $action->getPrefillWithInputData() === false && $action->getPrefillWithPrefillData()) {
+                    try {
+                        $prefillData = $button->getInputWidget()->prepareDataSheetToRead();
+                        if ($prefillData->getMetaObject()->isReadable() === true && $prefillData->getColumns()->isEmpty() === false) {
+                            $prefillData->setRowsLimit(1);
+                            $prefillData->dataRead();
+                        }
+                        $task->setPrefillData($prefillData);
                     } catch (\Throwable $e) {
                         throw new FacadeLogicError('Cannot load prefill data for UI5 view. ' . $e->getMessage(), null, $e);
                     }

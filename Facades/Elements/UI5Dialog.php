@@ -335,8 +335,10 @@ JS;
         $widget = $this->getWidget();
         if ($widget->getParent() instanceof iTriggerAction) {
             $action = $widget->getParent()->getAction();
-            if (($action instanceof iShowWidget) && $action->getPrefillWithInputData()) {
-                return true;
+            if ($action instanceof iShowWidget) {
+                if($action->getPrefillWithInputData() || $action->getPrefillWithPrefillData()) {
+                    return true;
+                }
             }
         } 
         

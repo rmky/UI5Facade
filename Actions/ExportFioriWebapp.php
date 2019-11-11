@@ -332,14 +332,17 @@ class ExportFioriWebapp extends AbstractActionDeferred implements iModifyData, i
         if (! file_exists($file)) {
             throw new RuntimeException('Cannot export external library with path "' . $includePath . '": file "' . $file . '" not found!');
         }
-        $pathParts = explode('/', $pathInVendorFolder);
-        $folder = $pathParts[0] . DIRECTORY_SEPARATOR . $pathParts[1];
+        
+        $folder = pathinfo($pathInVendorFolder, PATHINFO_DIRNAME);
         if (! file_exists($libsFolder . DIRECTORY_SEPARATOR . $folder)) {
-            if (strcasecmp($folder, $this->getApp()->getDirectory()) === 0) {
-                $jsFolder = '/Facades/js';
-                $filemanager->copyDir($filemanager->getPathToVendorFolder() . DIRECTORY_SEPARATOR . $folder . $jsFolder, $libsFolder . DIRECTORY_SEPARATOR . $folder);
-            } else {
-                $filemanager->copyDir($filemanager->getPathToVendorFolder() . DIRECTORY_SEPARATOR . $folder, $libsFolder . DIRECTORY_SEPARATOR . $folder);
+            foreach ($this->getExternalLibFiles($pathInVendorFolder) as $copyFrom => $copyTo) {
+                $copyFrom = $filemanager->getPathToVendorFolder() . DIRECTORY_SEPARATOR . $copyFrom;
+                $copyTo = $libsFolder . DIRECTORY_SEPARATOR . $copyTo;
+                if (is_dir($copyFrom) === true) {
+                    $filemanager->copyDir($copyFrom, $copyTo);
+                } else {
+                    $filemanager->copyFile($copyFrom, $copyTo);
+                }
             }
         }
         
@@ -348,6 +351,40 @@ class ExportFioriWebapp extends AbstractActionDeferred implements iModifyData, i
         }
         
         return pathinfo($libsFolder, PATHINFO_BASENAME) . '/' . $pathInVendorFolder;
+    }
+    
+    protected function getExternalLibFiles(string $libPathInVendorFolder) : array
+    {
+        $pathMap = [];
+        
+        // Copy folder containing the required include
+        $folder = pathinfo($libPathInVendorFolder, PATHINFO_DIRNAME);
+        if (strcasecmp($folder, $this->getApp()->getDirectory()) === 0) {
+            $jsFolder = '/Facades/js';
+            $copyFromFolder = $folder . $jsFolder;
+        } else {
+            $copyFromFolder = $folder;
+        }
+        $pathMap[$copyFromFolder] = $folder;
+        
+        // Look for license and package files, that we should preserve
+        $pathParts = explode('/', $libPathInVendorFolder);
+        $packageRoot = $pathParts[0] . DIRECTORY_SEPARATOR . $pathParts[1] . DIRECTORY_SEPARATOR;
+        $packageRootAbs = $this->getWorkbench()->filemanager()->getPathToVendorFolder() . DIRECTORY_SEPARATOR . $packageRoot;
+        if (file_exists($packageRootAbs . 'package.json')) {
+            $pathMap[$packageRoot . 'package.json'] = $packageRoot . 'package.json';
+        }
+        if (file_exists($packageRootAbs . 'LICENSE')) {
+            $pathMap[$packageRoot . 'LICENSE'] = $packageRoot . 'LICENSE';
+        }
+        if (file_exists($packageRootAbs . 'bower.json')) {
+            $pathMap[$packageRoot . 'bower.json'] = $packageRoot . 'bower.json';
+        }
+        if (file_exists($packageRootAbs . 'composer.json')) {
+            $pathMap[$packageRoot . 'composer.json'] = $packageRoot . 'composer.json';
+        }
+        
+        return $pathMap;
     }
     
     protected function isExternalUrl(string $uri) : bool

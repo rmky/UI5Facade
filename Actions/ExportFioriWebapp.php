@@ -31,6 +31,7 @@ use exface\Core\CommonLogic\Tasks\ResultMessageStream;
 use exface\Core\CommonLogic\Actions\ServiceParameter;
 use exface\Core\Interfaces\Tasks\CliTaskInterface;
 use exface\Core\DataTypes\ComparatorDataType;
+use exface\Core\Exceptions\Actions\ActionRuntimeError;
 
 /**
  * Generates the code for a selected Fiori Webapp project.
@@ -232,12 +233,22 @@ class ExportFioriWebapp extends AbstractActionDeferred implements iModifyData, i
             // IMPORTANT: generate the view first to allow it to add controller methods!
             $view = $webapp->getViewForWidget($widget);
             $controller = $view->getController();
+            
             $viewJs = $view->buildJsView();
-            $viewJs = $this->escapeUnicode($viewJs);
+            $viewJs = StringDataType::encodeUTF8($viewJs);
+            
             $controllerJs = $controller->buildJsController();
-            //$controllerJs = $this->escapeUnicode($controllerJs);
+            //$controllerJs = StringDataType::encodeUTF8($controllerJs);
         } catch (\Throwable $e) {
-            throw new FacadeRuntimeError('Cannot export view for widget "' . $widget->getId() . '" in page "' . $widget->getPage()->getAliasWithNamespace() . '": ' . $e->getMessage(), null, $e);
+            throw new ActionRuntimeError($this, 'Cannot export view/controller for widget "' . $widget->getId() . '" in page "' . $widget->getPage()->getAliasWithNamespace() . '": ' . $e->getMessage(), null, $e);
+        }
+        
+        if (! $viewJs) {
+            throw new ActionRuntimeError($this, 'Cannot export view for for widget "' . $widget->getId() . '" in page "' . $widget->getPage()->getAliasWithNamespace() . '": the generated UI5 view is empty!');
+        }
+        
+        if (! $controllerJs) {
+            throw new ActionRuntimeError($this, 'Cannot export controller for for widget "' . $widget->getId() . '" in page "' . $widget->getPage()->getAliasWithNamespace() . '": the generated UI5 controller is empty!');
         }
         
         // Copy external includes and replace their paths in the controller
@@ -358,26 +369,6 @@ class ExportFioriWebapp extends AbstractActionDeferred implements iModifyData, i
     {
         file_put_contents($exportFolder . $route, $webapp->get($route));
         yield $msgIndent . $route . PHP_EOL;
-    }
-    
-    /**
-     * Converts non-ASCII characters into unicode escape sequences (\uXXXX).
-     * 
-     * @param string $str
-     * @return string
-     */
-    protected function escapeUnicode(string $str) : string
-    {
-        // json_encode automatically escapes unicode, but it also escapes lots of other things
-        $string = json_encode($str);
-        // convert unicode escape sequences to their HTML equivalents, so they survive json_decode()
-        $string = preg_replace('/\\\u([0-9a-f]{4})/i', '&#x$1;', $string);
-        // decode JSON to remove all other escaped stuff (newlines, etc.)
-        $string = json_decode($string);
-        // convert HTML unicode back to \uXXXX notation.
-        $string = preg_replace('/&#x([0-9a-f]{4});/i', '\u$1', $string);
-        
-        return $string;
     }
     
     /**

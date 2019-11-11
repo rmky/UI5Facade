@@ -28,6 +28,7 @@ use exface\Core\Widgets\Data;
 use exface\UI5Facade\Exceptions\UI5ExportUnsupportedWidgetException;
 use exface\Core\CommonLogic\UxonObject;
 use exface\Core\Actions\Autosuggest;
+use exface\Core\Interfaces\Widgets\iHaveColumns;
 
 /**
  * 
@@ -206,6 +207,15 @@ JS;
                 $quickSearchFilters = json_encode($quickSearchFilters);
             }          
         }
+        
+        if ($widget instanceof iHaveColumns) {
+            foreach ($widget->getColumns() as $col) {
+                if ($col->getExpression()->isMetaAttribute() === false) {
+                    throw new UI5ExportUnsupportedWidgetException($col, 'Cannot export column "' . $col->getCaption() . '" (' . $col->getAttributeAlias() . ') - only columns referencing meta attributes currently work in exported apps.');
+                }
+            }
+        }
+        
         $dateAttributes = [];
         $timeAttributes = [];
         foreach ($object->getAttributes() as $qpart) {

@@ -222,7 +222,7 @@ class ExportFioriWebapp extends AbstractActionDeferred implements iModifyData, i
             yield from $this->exportWidget($webapp, $widget, $exportFolder, $linkDepth, $msgIndent);
         } catch (\Throwable $e) {
             $this->getWorkbench()->getLogger()->logException($e);
-            yield 'ERROR exporting views for page "' . $page->getAliasWithNamespace() . '": ' . PHP_EOL . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine() . PHP_EOL;
+            yield 'ERROR exporting views for page "' . $page->getAliasWithNamespace() . '": ' . PHP_EOL . $e->getMessage() . PHP_EOL . '... in ' . $e->getFile() . ' on line ' . $e->getLine() . PHP_EOL;
         }
     }
     

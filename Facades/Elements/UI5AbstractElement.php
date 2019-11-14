@@ -25,6 +25,8 @@ use exface\UI5Facade\Facades\Interfaces\UI5ViewInterface;
  */
 abstract class UI5AbstractElement extends AbstractJqueryElement
 {
+    const EVENT_NAME_CHANGE = 'change';
+    
     private $jsVarName = null;
     
     private $useWidgetId = true;
@@ -471,7 +473,7 @@ JS;
     public function addOnChangeScript($string)
     {
         parent::addOnChangeScript($string);
-        $this->getController()->addOnEventScript($this, 'change', $string);
+        $this->getController()->addOnEventScript($this, self::EVENT_NAME_CHANGE, $string);
         return $this;
     }
     
@@ -486,6 +488,33 @@ JS;
             $adapter = new PreloadServerAdapter($this, $adapter);
         }
         return $adapter;
+    }
+    
+    /**
+     * Allows to add pre-/post-processing to event handler scripts.
+     * 
+     * The controller collects all event handlers via $controller->addOnEventScript() while the view
+     * is rendered. After all elements are were generated, the controller generates event handler
+     * methods for every registered event by calling buildJsOnEventScript() on the trigger element
+     * of this event. 
+     * 
+     * By overriding this method, you can add additional code to certain events - e.g. a filter, that
+     * only actually executes the handlers on certain conditions or stop event propagation once all
+     * handlers are executed to prevent the UI5 logic from further handling the event. 
+     * 
+     * This method is called after all handler script were collected by the controller. These handler 
+     * scripts are passed to this method as $scriptJs. By default the method simply returns $scriptJs 
+     * without changes. Refer to the UI5DataTables class or the included UI5DataElementTrait for usage
+     * examples.
+     * 
+     * @param string $eventName
+     * @param string $scriptJs
+     * @param string $oEventJs
+     * @return string
+     */
+    public function buildJsOnEventScript(string $eventName, string $scriptJs, string $oEventJs) : string 
+    {
+        return $scriptJs;
     }
 }
 ?>

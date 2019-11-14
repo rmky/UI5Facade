@@ -256,7 +256,7 @@ JS;
     public function addOnChangeScript($script)
     {
         if ($this->isValueBoundToModel() && $this->onChangeHandlerRegistered === false) {
-            $this->addOnBindingChangeScript($this->buildJsValueBindingPropertyName(), $this->getController()->buildJsEventHandler($this, 'change', false));
+            $this->addOnBindingChangeScript($this->buildJsValueBindingPropertyName(), $this->getController()->buildJsEventHandler($this, self::EVENT_NAME_CHANGE, false));
             $this->onChangeHandlerRegistered = true;
         }
         return parent::addOnChangeScript($script);

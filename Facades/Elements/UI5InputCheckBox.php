@@ -92,10 +92,10 @@ JS;
 JS;
             }
                 
-            $this->getController()->addOnEventScript($this, 'change', $script);
+            $this->getController()->addOnEventScript($this, self::EVENT_NAME_CHANGE, $script);
         }
         
-        return 'select: ' . $this->getController()->buildJsEventHandler($this, 'change', true) . ',';
+        return 'select: ' . $this->getController()->buildJsEventHandler($this, self::EVENT_NAME_CHANGE, true) . ',';
     }
     
     /**

@@ -96,7 +96,7 @@ JS;
      */
     protected function buildJsPropertyChange()
     {
-        return 'change: ' . $this->getController()->buildJsEventHandler($this, 'change', true) . ',';
+        return 'change: ' . $this->getController()->buildJsEventHandler($this, self::EVENT_NAME_CHANGE, true) . ',';
     }
     
     /**

@@ -766,6 +766,6 @@ JS;
     protected function buildJsOnChangeTrigger(bool $buildForView) : string
     {
         // TODO check if the selected row and it's data really changed - like in jEasyUI
-        return $this->getController()->buildJsEventHandler($this, 'change', $buildForView);
+        return $this->getController()->buildJsEventHandler($this, self::EVENT_NAME_CHANGE, $buildForView);
     }
 }

@@ -35,22 +35,6 @@ class UI5DataTable extends UI5AbstractElement
     {
         $this->initViaTrait();
         $this->getConfiguratorElement()->setIncludeColumnsTab(true);
-   
-        $valueChangedChecker = <<<JS
-            
-            // Check, if selection actually changed. Return here if not.
-            if ((function(){
-                var oTable = sap.ui.getCore().byId('{$this->getId()}');
-                var newSelection = {$this->buildJsGetSelectedRows('oTable')};
-                var oldSelection = oTable.data('exfPreviousSelection');
-                oTable.data('exfPreviousSelection', newSelection);
-                return {$this->buildJsRowCompare('oldSelection', 'newSelection', false)};
-            })()) {
-                return;
-            }
-
-JS;
-        //$this->addOnChangeScript($valueChangedChecker);
     }
     
     /**
@@ -105,6 +89,7 @@ JS;
             items: [
                 new sap.m.Table("{$this->getId()}", {
             		fixedLayout: false,
+                    sticky: [sap.m.Sticky.ColumnHeaders, sap.m.Sticky.HeaderToolbar],
                     alternateRowColors: {$striped},
                     noDataText: "{$this->getWidget()->getEmptyText()}",
             		itemPress: {$this->buildJsOnChangeTrigger(true)},
@@ -1000,6 +985,35 @@ JS;
                         }
 
 JS;
+        }
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsOnEventScript()
+     */
+    public function buildJsOnEventScript(string $eventName, string $scriptJs, string $oEventJs) : string
+    {
+        switch ($eventName) {
+            case self::EVENT_NAME_CHANGE:
+                return <<<JS
+                
+            // Check, if selection actually changed. Return here if not.
+            if ((function(){
+                var oTable = sap.ui.getCore().byId('{$this->getId()}');
+                var newSelection = {$this->buildJsGetSelectedRows('oTable')};
+                var oldSelection = oTable.data('exfPreviousSelection') || [];
+                oTable.data('exfPreviousSelection', newSelection);
+                return {$this->buildJsRowCompare('oldSelection', 'newSelection', false)};
+            })()) {
+                return;
+            }
+            {$scriptJs}
+            
+JS;
+            default:
+                return parent::buildJsOnEventScript($eventName, $scriptJs, $oEventJs);
         }
     }
 }

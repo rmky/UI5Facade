@@ -12,6 +12,7 @@ use exface\Core\Interfaces\Widgets\iTriggerAction;
 use exface\Core\Interfaces\Widgets\iCanPreloadData;
 use exface\Core\Interfaces\Actions\iShowWidget;
 use exface\UI5Facade\Facades\Elements\UI5Dialog;
+use exface\Core\Exceptions\Facades\FacadeRuntimeError;
 
 class UI5Controller implements UI5ControllerInterface
 {
@@ -31,6 +32,21 @@ class UI5Controller implements UI5ControllerInterface
     
     private $onDefineScripts = [];
     
+    /**
+     * Array of the following structure:
+     * 
+     * [
+     *  controller_method_name_of_event_handler => [
+     *      __element   => (UI5AbstractElement) facade_element_instance,
+     *      __eventName => (String) event_name - e.g. UI5AbstractElement::EVENT_NAME_CHANGE,
+     *      0           => (String) handler script 1,
+     *      1           => (String) handler script 2,
+     *      ...
+     *  ]
+     * ]
+     * 
+     * @var array
+     */
     private $onEventScripts = [];
     
     private $externalModules = [];
@@ -123,8 +139,17 @@ class UI5Controller implements UI5ControllerInterface
     protected function createEventHandlerMethods() : UI5ControllerInterface
     {
         foreach ($this->onEventScripts as $methodName => $scripts) {
+            if ($scripts['__element'] !== null) {
+                $element = $scripts['__element'];
+                $eventName = $scripts['__eventName'];
+                unset($scripts['__element']);
+                unset($scripts['__eventName']);
+            }
             if (empty($scripts) === false) {
                 $js = implode("\n", array_unique($scripts));
+                if ($element !== null) {
+                    $js = $element->buildJsOnEventScript($eventName, $js, 'oEvent');
+                }
             } else {
                 $js = '';
             }
@@ -709,6 +734,12 @@ JS;
     public function addOnEventScript(UI5AbstractElement $triggerElement, string $eventName, string $js) : UI5ControllerInterface
     {
         $controllerMethodName = $this->buildJsMethodName($this->buildJsEventHandlerMethodName($eventName), $triggerElement);
+        if ($this->onEventScripts[$controllerMethodName]['__element'] === null) {
+            $this->onEventScripts[$controllerMethodName]['__element'] = $triggerElement;
+            $this->onEventScripts[$controllerMethodName]['__eventName'] = $eventName;
+        } elseif($this->onEventScripts[$controllerMethodName]['__element'] !== $triggerElement) {
+            throw new FacadeRuntimeError('Cannot add event handler for ' . $triggerElement->getWidget()->getWidgetType() . ' "' . $triggerElement->getId() . '": element class changed in the mean time!');
+        }
         $this->onEventScripts[$controllerMethodName][] = $js;
         return $this;
     }

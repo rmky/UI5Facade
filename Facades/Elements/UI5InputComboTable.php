@@ -415,11 +415,11 @@ function(){
     }
     var oInput = sap.ui.getCore().byId('{$this->getId()}');
     var oModel = oInput.getModel('{$this->getModelNameForAutosuggest()}');
-    console.log(oModel);
+    
     var oItem = oModel.getData().rows.find(function(element, index, array){
         return element['{$this->getWidget()->getValueAttributeAlias()}'] == sSelectedKey;
     });
-    console.log(oItem);
+
     return oItem['$column'];
 }()
 
@@ -431,7 +431,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsValueSetter()
      */
-    public function buildJsValueSetterMethod($valueJs)
+    public function buildJsValueSetter($valueJs)
     {
         // After setting the key, we need to fetch the corresponding text value, so we use a trick
         // and pass the given value not directly, but wrapped in an object. The suggest-handler
@@ -439,7 +439,24 @@ JS;
         // we can directly tell it to use our input as a value column filter instead of a regular
         // suggest string.
         $valueFilterParam = UrlDataType::urlEncode($this->getFacade()->getUrlFilterPrefix() . $this->getWidget()->getValueColumn()->getAttributeAlias());
-        return "setSelectedKey({$valueJs}).fireSuggest({suggestValue: {'{$valueFilterParam}': {$valueJs}}}).fireChange({value: {$valueJs}})";
+        return "(function(){
+            var oInput = sap.ui.getCore().byId('{$this->getId()}');
+            var val = {$valueJs};
+            if (val == undefined || val === null || val === '') {
+                oInput.{$this->buildJsEmptyMethod('val', '""')};
+            } else {
+                oInput
+                .setSelectedKey(val)
+                .fireSuggest({
+                    suggestValue: {
+                        '{$valueFilterParam}': val
+                    }
+                });
+            }
+            oInput.fireChange({
+                value: val
+            });
+        })()";
     }
     
     /**
@@ -455,6 +472,15 @@ JS;
     protected function getModelNameForAutosuggest() : string
     {
         return 'suggest';
+    }
+    
+    protected function buildJsEmptyMethod() : string
+    {
+        if ($this->getWidget()->getMultiSelect() === false) {
+            return "setValue('').setSelectedKey('')";
+        } else {
+            return "removeAllTokens()";
+        }
     }
     
     protected function buildJsSetSelectedKeyMethod(string $keyJs, string $valueJs = null) : string

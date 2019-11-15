@@ -33,6 +33,8 @@ class UI5DataColumn extends UI5AbstractElement
     public function buildJsConstructorForUiColumn()
     {
         $col = $this->getWidget();
+        $filterable = $col->isFilterable() === true ? 'true' : 'false';
+        $sortable = $col->isSortable() === true ? 'true' : 'false';
         
         return <<<JS
 	 new sap.ui.table.Column('{$this->getId()}', {
@@ -41,7 +43,9 @@ class UI5DataColumn extends UI5AbstractElement
         }),
         autoResizable: true,
         template: {$this->buildJsConstructorForCell()},
-	    sortProperty: "{$col->getAttributeAlias()}",
+	    showSortMenuEntry: $sortable,
+        sortProperty: "{$col->getAttributeAlias()}",
+        showFilterMenuEntry: $filterable,
 	    filterProperty: "{$col->getAttributeAlias()}",
         {$this->buildJsPropertyTooltip()}
 	    {$this->buildJsPropertyVisibile()}

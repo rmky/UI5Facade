@@ -318,15 +318,52 @@ JS;
 JS;
         
                   
-        if ($this->isUiTable() === true) {
+        if ($this->isUiTable() === true) {            
             $tableParams = <<<JS
         
             // Add filters and sorters from column menus
-    		for (var i=0; i<oTable.getColumns().length; i++){
-    			var oColumn = oTable.getColumns()[i];
-    			if (oColumn.getFiltered()){
+            oTable.getColumns().forEach(oColumn => {
+    			if (oColumn.getFiltered() === true){
     				{$oParamsJs}['{$this->getFacade()->getUrlFilterPrefix()}' + oColumn.getFilterProperty()] = oColumn.getFilterValue();
     			}
+    		});
+            
+            // If filtering just now, make sure the filter from the event is set too (eventually overwriting the previous one)
+    		if ({$oControlEventJsVar} && {$oControlEventJsVar}.getId() == 'filter'){
+                var oColumn = {$oControlEventJsVar}.getParameters().column;
+                var sFltrProp = oColumn.getFilterProperty();
+                var sFltrVal = {$oControlEventJsVar}.getParameters().value;
+                
+                {$oParamsJs}['{$this->getFacade()->getUrlFilterPrefix()}' + sFltrProp] = sFltrVal;
+                
+                if (sFltrVal !== null && sFltrVal !== undefined && sFltrVal !== '') {
+                    oColumn.setFiltered(true).setFilterValue(sFltrVal);
+                } else {
+                    oColumn.setFiltered(false).setFilterValue('');
+                }         
+
+                // Also make sure the built-in UI5-filtering is not applied.
+                $oControlEventJsVar.cancelBubble();
+                $oControlEventJsVar.preventDefault();
+            }
+    		
+    		// If sorting just now, overwrite the sort string and make sure the sorter in the configurator is set too
+    		if ({$oControlEventJsVar} && {$oControlEventJsVar}.getId() == 'sort'){
+                {$oParamsJs}.sort = {$oControlEventJsVar}.getParameters().column.getSortProperty();
+                {$oParamsJs}.order = {$oControlEventJsVar}.getParameters().sortOrder === 'Descending' ? 'desc' : 'asc';
+                
+                sap.ui.getCore().byId('{$this->getP13nElement()->getIdOfSortPanel()}')
+                .destroySortItems()
+                .addSortItem(
+                    new sap.m.P13nSortItem({
+                        columnKey: {$oControlEventJsVar}.getParameters().column.getSortProperty(),
+                        operation: {$oControlEventJsVar}.getParameters().sortOrder
+                    })
+                );
+
+                // Also make sure, the built-in UI5-sorting is not applied.
+                $oControlEventJsVar.cancelBubble();
+                $oControlEventJsVar.preventDefault();
     		}
 
             // Set sorting indicators for columns
@@ -337,28 +374,11 @@ JS;
                 iIdx = aSortProperties.indexOf(oColumn.getSortProperty());
                 if (iIdx > -1) {
                     oColumn.setSorted(true);
-                    oColumn.setSortOrder(aSortOrders[iIdx] === 'desc' ? 'Descending' : 'Ascending');
+                    oColumn.setSortOrder(aSortOrders[iIdx] === 'desc' ? sap.ui.table.SortOrder.Descending : sap.ui.table.SortOrder.Ascending);
                 } else {
                     oColumn.setSorted(false);
                 }
             });
-    		
-    		// If sorting just now, make sure the sorter from the event is set too (eventually overwriting the previous sorting)
-    		if ({$oControlEventJsVar} && {$oControlEventJsVar}.getId() == 'sort'){
-                sap.ui.getCore().byId('{$this->getP13nElement()->getIdOfSortPanel()}')
-                    .destroySortItems()
-                    .addSortItem(
-                        new sap.m.P13nSortItem({
-                            columnKey: {$oControlEventJsVar}.getParameters().column.getSortProperty(),
-                            operation: {$oControlEventJsVar}.getParameters().sortOrder
-                        })
-                    );
-    		}
-    		
-    		// If filtering just now, make sure the filter from the event is set too (eventually overwriting the previous one)
-    		if ({$oControlEventJsVar} && {$oControlEventJsVar}.getId() == 'filter'){
-    			{$oParamsJs}['{$this->getFacade()->getUrlFilterPrefix()}' + {$oControlEventJsVar}.getParameters().column.getFilterProperty()] = {$oControlEventJsVar}.getParameters().value;
-    		}
 		
 JS;
         } elseif ($this->isMTable()) {

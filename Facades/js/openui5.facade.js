@@ -30,13 +30,6 @@ const exfLauncher = {};
 		                    	_oShell.setShowPane(! _oShell.getShowPane());
 		            		}
 		                }),
-		                /*new sap.m.Image({
-							src: "exface/vendor/exface/UI5Facade/Facades/images/sap_50x26.png",
-							height: "26px",
-							width: "50px",
-							densityAware: false,
-							//visible: ! sap.ui.Device.system.phone
-		                }),*/
 		                new sap.m.OverflowToolbarButton("exf-home", {
 		                	text: "{i18n>WEBAPP.SHELL.HOME.TITLE}",
 							icon: "sap-icon://home",
@@ -49,15 +42,19 @@ const exfLauncher = {};
 		                new sap.m.ToolbarSpacer(),
 		                new sap.m.Button("exf-pagetitle", {
 		                    text: "{/_app/home_title}",
-		                    icon: "sap-icon://navigation-down-arrow",
+		                    //icon: "sap-icon://navigation-down-arrow",
 		                    iconFirst: false,
 		                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"}),
 		                    press: function(oEvent) {
+		                    	oBtn = oEvent.getSource();
+		                		sap.ui.core.BusyIndicator.show(0); 
+		                		window.location.href = oBtn.getModel().getProperty('/_app/app_url');
+		                		/*
 		                		if (_oAppMenu !== undefined) {
 		                			var oButton = oEvent.getSource();
 			                		var eDock = sap.ui.core.Popup.Dock;
 			                		_oAppMenu.open(this._bKeyboard, oButton, eDock.BeginTop, eDock.BeginBottom, oButton);
-		                		}
+		                		}*/
 		                	}
 		                }),
 		                new sap.m.ToolbarSpacer(),

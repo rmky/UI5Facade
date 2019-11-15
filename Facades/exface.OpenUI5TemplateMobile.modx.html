@@ -138,7 +138,8 @@
 					setTimeout(function(){
 						oShell.getModel().setProperty('/_app', {
 							home_title: '[*pagetitle*]',
-							home_url: '[(site_url)]'
+							home_url: '[(site_url)]',
+							app_url: '[~[*id*]~]'
 						});
 						oShell.getModel().setProperty('/_user', {
 							avatar: '[!UserManagerInfo? &field=`photo`!]'

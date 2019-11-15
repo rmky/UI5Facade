@@ -108,25 +108,6 @@
 				});
 				
 				oShell.addPaneContent(oNavMenu);
-				
-				var oAppMenu = new sap.ui.unified.Menu("exf_shell_app_menu", {
-					itemSelect: function(){alert('Click!')},
-					items:[
-						[!Wayfinder? &startId=`[*id*]` &level=`1` &hideSubMenus=`1`
-						 &outerTpl=`@CODE: [+wf.wrapper+]`
-						 &innerTpl=`@CODE: [+wf.wrapper+]`
-						 &rowTpl=`@CODE: 
-							 new sap.ui.unified.MenuItem({
-								 text: "[+wf.linktext+]", 
-								 select: function(){
-									 sap.ui.core.BusyIndicator.show(0); 
-									 var alias = 'TODO';
-								 } 
-							 }),`
-					 	!]
-					]
-				});
-				exfLauncher.setAppMenu(oAppMenu);
 			}
 			
 			sap.ui.getCore().attachInit(function () {
@@ -157,7 +138,8 @@
 					setTimeout(function(){
 						oShell.getModel().setProperty('/_app', {
 							home_title: '[*pagetitle*]',
-							home_url: '[(site_url)]'
+							home_url: '[(site_url)]',
+							app_url: '[~[*id*]~]'
 						});
 						oShell.getModel().setProperty('/_user', {
 							avatar: '[!UserManagerInfo? &field=`photo`!]',

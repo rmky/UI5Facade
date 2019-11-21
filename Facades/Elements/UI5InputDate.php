@@ -14,6 +14,30 @@ use exface\Core\Widgets\InputDate;
 class UI5InputDate extends UI5Input
 {
     
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsConstructor()
+     */
+    public function buildJsConstructor($oControllerJs = 'oController') : string
+    {
+        $this->registerConditionalBehaviors();
+        $this->registerOnChangeValidation();
+        $this->getController()->addExternalModule('libs.moment', 'exface/vendor/npm-asset/moment/min/moment.min.js');
+        $this->getController()->addExternalModule('libs.exfTools', 'exface/vendor/exface/Core/Facades/AbstractAjaxFacade/js/exfTools.js');
+        $this->getController()->addExternalModule('libs.DateType', 'exface/vendor/exface/UI5Facade/Facades/js/ui5Custom/DateType.js');
+        $js = <<<JS
+
+            var oModel = new sap.ui.model.json.JSONModel();
+			oModel.setData({
+				dateValue: '2020-11-14',
+			});
+
+JS;
+        $this->getController()->addOnInitScript($js);
+        return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl($oControllerJs));
+    }
     /**
      * 
      * {@inheritDoc}
@@ -38,7 +62,8 @@ JS;
     public function buildJsProperties()
     {
         $options = parent::buildJsProperties() . <<<JS
-            
+
+            value: {path: '/dateValue', type: 'DateType'},            
 			valueFormat: {$this->buildJsValueFormat()},
             displayFormat: {$this->buildJsDisplayFormat()},
 

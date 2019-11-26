@@ -61,7 +61,9 @@
 	"LIBS.FACADE.CSS": "exface/UI5Facade/Facades/js/openui5.template.css",
 	"LIBS.FACADE.CUSTOM_CONTROLS": "exface/UI5Facade/Facades/js/openui5.controls.js",
 	
-	"LIBS.JEXCEL.JS": "npm-asset/jexcel/dist/jexcel.js",
+	"LIBS.EXFTOOLS.JS": "exface/Core/Facades/AbstractAjaxFacade/js/exfTools.js",
+    
+    "LIBS.JEXCEL.JS": "npm-asset/jexcel/dist/jexcel.js",
    	"LIBS.JEXCEL.JS_JSUITES": "npm-asset/jsuites/dist/jsuites.js",
    	"LIBS.JEXCEL.CSS": "npm-asset/jexcel/dist/jexcel.css",
  	"LIBS.JEXCEL.CSS_JSUITES": "npm-asset/jsuites/dist/jsuites.css",
@@ -78,7 +80,9 @@
     "LIBS.ECHARTS.THEME_JS": "exface/UI5Facade/Facades/js/echarts/ui5theme.js",
     "LIBS.ECHARTS.THEME_NAME": "ui5theme",
     
-    "PWA.ENABLED": true,
+    "LIBS.MOMENT.JS": "npm-asset/moment/min/moment.min.js",
+	
+	"PWA.ENABLED": true,
     "PWA.DEFAULT_STYLE.THEME_COLOR": "#3367D6",
     "PWA.DEFAULT_STYLE.BACKGROUND_COLOR": "#3367D6",
     

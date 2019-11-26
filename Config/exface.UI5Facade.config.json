@@ -78,6 +78,12 @@
     "LIBS.ECHARTS.THEME_JS": "exface/UI5Facade/Facades/js/echarts/ui5theme.js",
     "LIBS.ECHARTS.THEME_NAME": "ui5theme",
     
+    "LIBS.MOMENT.JS": "npm-asset/moment/min/moment.min.js",
+    "LIBS.EXFTOOLS.JS": "exface/Core/Facades/AbstractAjaxFacade/js/exfTools.js",
+    
+    "CUSTOM.DATETYPE.JS": "exface/UI5Facade/Facades/js/ui5Custom/dateType.js",
+    "CUSTOM.TIMETYPE.JS": "exface/UI5Facade/Facades/js/ui5Custom/timeType.js",
+            
     "PWA.ENABLED": true,
     "PWA.DEFAULT_STYLE.THEME_COLOR": "#3367D6",
     "PWA.DEFAULT_STYLE.BACKGROUND_COLOR": "#3367D6",

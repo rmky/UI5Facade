@@ -145,7 +145,7 @@ JS;
      */
     protected function buildJsDisplayFormat() : string
     {
-        return '';
+        return '""';
     }
     
     /**

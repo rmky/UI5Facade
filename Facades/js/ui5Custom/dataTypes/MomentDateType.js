@@ -4,8 +4,7 @@ sap.ui.define([
 	"use strict";
 
 
-    return SimpleType.extend("DateType", {
-		
+    return SimpleType.extend("exface.ui5Custom.dataTypes.MomentDateType", {		
 		
 		constructor: function(data) {
 			if (data) {

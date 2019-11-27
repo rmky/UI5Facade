@@ -81,8 +81,8 @@
     "LIBS.MOMENT.JS": "npm-asset/moment/min/moment.min.js",
     "LIBS.EXFTOOLS.JS": "exface/Core/Facades/AbstractAjaxFacade/js/exfTools.js",
     
-    "CUSTOM.DATETYPE.JS": "exface/UI5Facade/Facades/js/ui5Custom/dateType.js",
-    "CUSTOM.TIMETYPE.JS": "exface/UI5Facade/Facades/js/ui5Custom/timeType.js",
+    "CUSTOM.DATETYPE.JS": "exface/UI5Facade/Facades/js/ui5Custom/dataTypes/MomentDateType.js",
+    "CUSTOM.TIMETYPE.JS": "exface/UI5Facade/Facades/js/ui5Custom/dataTypes/MomentTimeType.js",
             
     "PWA.ENABLED": true,
     "PWA.DEFAULT_STYLE.THEME_COLOR": "#3367D6",

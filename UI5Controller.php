@@ -308,9 +308,12 @@ JS;
         $this->getView()->buildJsView();
         
         foreach ($this->externalModules as $name => $properties) {
-            $modules .= ",\n\t\"" . str_replace('.', '/', $name) . '"';
-            $controllerVars .= ', ' . ($properties['var'] ? $properties['var'] : $this->getDefaultVarForModule($name));
+            $modules .= ",\n\t\"" . str_replace('.', '/', $name) . '"';            
+            $controllerArgs .= ', ' . ($properties['var'] ? $properties['var'] : $this->getDefaultVarForModule($name, $properties['globalVarName']));
             $moduleRegistration .= "\n" . $this->buildJsModulePathRegistration($name, $properties['path']);
+            if ($properties['globalVarName'] !== null) {
+                $controllerGlobals .= "\n/* global {$properties['globalVarName']} */";
+            }
         }
         $cssIncludes = $this->buildJsCssIncludes();
         return <<<JS
@@ -320,10 +323,12 @@ JS;
 {$moduleRegistration}
 
 {$this->buildJsOnDefineScript()}
-        
+
+{$controllerGlobals}
+      
 sap.ui.define([
 	"{$this->getWebapp()->getComponentPath()}/controller/BaseController"{$modules}
-], function (BaseController{$controllerVars}) {
+], function (BaseController{$controllerArgs}) {
 	"use strict";
 	
 	return BaseController.extend("{$this->getName()}", {
@@ -554,9 +559,9 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::addExternalModule()
      */
-    public function addExternalModule(string $name, string $urlRelativeToAppRoot, string $var = null) : UI5ControllerInterface
+    public function addExternalModule(string $name, string $urlRelativeToAppRoot, string $controllerArgumentName = null, string $globalVarName = null) : UI5ControllerInterface
     {
-        $this->externalModules[$name] = ['path' => $urlRelativeToAppRoot, 'var' => $var];
+        $this->externalModules[$name] = ['path' => $urlRelativeToAppRoot, 'var' => $controllerArgumentName, 'globalVarName' => $globalVarName];
         return $this;
     }
     
@@ -590,7 +595,7 @@ JS;
      * @param string $moduleName
      * @return string
      */
-    protected function getDefaultVarForModule(string $moduleName) : string
+    protected function getDefaultVarForModule(string $moduleName, string $globalVarName = null) : string
     {
         $split = explode('.', $moduleName);
         $cnt = count($split);
@@ -598,6 +603,11 @@ JS;
             $var .= StringDataType::convertCaseUnderscoreToPascal($split[$i]);
         }
         $var = lcfirst($var);
+        
+        if ($globalVarName !== null && $var === $globalVarName) {
+            $var .= 'JS';
+        }
+        
         return $var;
     }
     

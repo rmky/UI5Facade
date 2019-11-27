@@ -234,7 +234,6 @@ JS;
         $opNE = EXF_COMPARATOR_EQUALS_NOT;
         
         return <<<JS
-            
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
             var oDataReadParams = {};
             var oDataReadFiltersSearch = [];
@@ -349,8 +348,9 @@ JS;
                                 var attr = oAttrsByDataType.date[j].toString();
                                 var d = resultRows[i][attr];
                                 if (d !== undefined && d !== "" && d !== null) {
-                                    var oDateFormat = sap.ui.core.format.DateFormat.getDateTimeInstance({pattern:'yyyy-MM-dd HH:mm:ss'});
-                                    var newVal = oDateFormat.format(d);                                 
+                                    //var oDateFormat = sap.ui.core.format.DateFormat.getDateTimeInstance({pattern:'yyyy-MM-dd HH:mm:ss'});
+                                    //var newVal = oDateFormat.format(d);
+                                    var newVal = exfTools.date.format(d, 'Y-m-d H:i:s');                                 
                                     resultRows[i][attr] = newVal;
                                 }
                             }
@@ -743,7 +743,6 @@ JS;
         
         return <<<JS
 
-            console.log('Params: ', {$oParamsJs});
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
             oDataModel.setUseBatch({$bUseBatchJs});
             var aResponses = [];
@@ -760,13 +759,13 @@ JS;
                         var type = {$attributesType}[key];
                         switch (type) {
                             case 'Edm.DateTimeOffset':
-                                var d = new Date(data[key]);
+                                var d = exfTools.date.parse(data[key]);
                                 var date = d.toISOString();
                                 var datestring = date.replace(/\.[0-9]{3}/, '');
                                 oData[key] = datestring;
                                 break;
                             case 'Edm.DateTime':
-                                var d = new Date(data[key]);                       
+                                var d = exfTools.date.parse(data[key]);                       
                                 var date = d.toISOString();
                                 var datestring = date.substring(0,19);
                                 oData[key] = datestring;
@@ -795,7 +794,6 @@ JS;
                 });
                 {$serverCall}
             }
-            console.log('oData ', oData);
             {$this->buildJsServerSendRequest('oDataModel', $bUseBatchJs, $onModelLoadedJs, $onErrorJs)};
 
 JS;
@@ -841,13 +839,13 @@ JS;
                             oDataUid = "binary" + "'" + oDataUid + "'";
                             break;
                         case 'Edm.DateTimeOffset':
-                            var d = new Date(oDataUid);
+                            var d = exfTools.date.parse(oDataUid);
                             var date = d.toISOString();
                             var datestring = date.replace(/\.[0-9]{3}/, '');
                             oDataUid = "'" + datestring + "'";
                             break;
                         case 'Edm.DateTime':
-                            var d = new Date(oDataUid);
+                            var d = exfTools.date.parse(oDataUid);
                             var date = d.toISOString();
                             var datestring = date.substring(0,19);
                             oDataUid = "'" + datestring + "'";
@@ -945,13 +943,13 @@ JS;
                                 var value = {$oParamsJs}.data.rows[j][param];
                                 switch (type) {
                                     case 'Edm.DateTimeOffset':
-                                        var d = new Date(value);
+                                        var d = exfTools.date.parse(value);
                                         var date = d.toISOString();
                                         var datestring = date.replace(/\.[0-9]{3}/, '');
                                         oDataActionParams[param] = datestring;
                                         break;
                                     case 'Edm.DateTime':
-                                        var d = new Date(value);                            
+                                        var d = exfTools.date.parse(value);                            
                                         var date = d.toISOString();
                                         var datestring = date.substring(0,19);
                                         oDataActionParams[param] = datestring;

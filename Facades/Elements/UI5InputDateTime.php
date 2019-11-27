@@ -25,7 +25,9 @@ class UI5InputDateTime extends UI5InputDate
 
         new sap.m.DateTimePicker("{$this->getId()}", {
             {$this->buildJsProperties()}
-		}){$this->buildJsPseudoEventHandlers()}
+		})
+        {$this->buildJsInternalModelInit()}
+        {$this->buildJsPseudoEventHandlers()}
 
 JS;
     }

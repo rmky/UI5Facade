@@ -514,7 +514,10 @@ JS;
                                 sOperator = "EQ";
                             }
                         } else if ({$oAttrsByDataTypeJs}.date.indexOf({$condJs}.expression) > -1) {
-                            value = {$condJs}.value + ' GMT+0000';
+                            var d = exfTools.date.parse({$condJs}.value);
+                            var date = d.toISOString();
+                            var datestring = date.replace(/\.[0-9]{3}/, '');
+                            var value = datestring;
                             if (sOperator === "Contains") {
                                 sOperator = "EQ";
                             }
@@ -817,7 +820,7 @@ JS;
         $bUseBatchJs = $this->getUseBatchDeletes() ? 'true' : 'false';
         
         return <<<JS
-
+            
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
             oDataModel.setUseBatch({$bUseBatchJs});
             var rowCount = {$oParamsJs}.data.rows.length;

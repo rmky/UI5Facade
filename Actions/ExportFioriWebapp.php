@@ -144,7 +144,7 @@ class ExportFioriWebapp extends AbstractActionDeferred implements iModifyData, i
         if (! file_exists($webcontentPath)) {
             Filemanager::pathConstruct($webcontentPath);
         } else {
-            $this->getWorkbench()->filemanager()->emptyDir($webcontentPath);
+            Filemanager::emptyDir($webcontentPath);
         }
         
         $webcontentPath = $webcontentPath . DIRECTORY_SEPARATOR;

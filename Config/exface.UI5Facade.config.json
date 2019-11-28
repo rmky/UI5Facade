@@ -65,6 +65,8 @@
 	"LIBS.FACADE.CUSTOM_CONTROLS": "exface/UI5Facade/Facades/js/openui5.controls.js",
 	
 	"LIBS.EXFTOOLS.JS": "exface/Core/Facades/AbstractAjaxFacade/js/exfTools.js",
+	"LIBS.UI5CUSTOM.DATETYPE.JS": "exface/UI5Facade/Facades/js/ui5Custom/dataTypes/MomentDateType.js",
+    "LIBS.UI5CUSTOM.CUSTOM.TIMETYPE.JS": "exface/UI5Facade/Facades/js/ui5Custom/dataTypes/MomentTimeType.js",
     
     "LIBS.JEXCEL.JS": "npm-asset/jexcel/dist/jexcel.js",
    	"LIBS.JEXCEL.JS_JSUITES": "npm-asset/jsuites/dist/jsuites.js",

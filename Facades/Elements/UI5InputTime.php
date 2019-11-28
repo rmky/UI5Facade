@@ -27,7 +27,7 @@ class UI5InputTime extends UI5InputDate
         
         $controller->addExternalModule('libs.moment.moment', $this->getFacade()->buildUrlToSource("LIBS.MOMENT.JS"), null, 'moment');
         $controller->addExternalModule('libs.exface.exfTools', $this->getFacade()->buildUrlToSource("LIBS.EXFTOOLS.JS"), null, 'exfTools');
-        $controller->addExternalModule('libs.exface.ui5Custom.dataTypes.MomentTimeType', $this->getFacade()->buildUrlToSource("CUSTOM.TIMETYPE.JS"));
+        $controller->addExternalModule('libs.exface.ui5Custom.dataTypes.MomentTimeType', $this->getFacade()->buildUrlToSource("LIBS.UI5CUSTOM.TIMETYPE.JS"));
         
         return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl($oControllerJs));
     }

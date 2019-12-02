@@ -15,16 +15,16 @@ sap.ui.define([
 			}
 		},
 		
-		parseValue: function (date) {
-			return exfTools.time.parse(date);
+		parseValue: function (sTime) {
+			return exfTools.time.parse(sTime);
 		},			
 		
-		formatValue: function (sDate) {
+		formatValue: function (sTime) {
 			var phpFormat = undefined;
 			if (this.options.dateFormat) {
 				phpFormat = this.options.dateFormat;
 			}
-			return exfTools.time.format(sDate, phpFormat);			
+			return exfTools.time.format(sTime, phpFormat);			
 		},
 		
 		validateValue: function (sInternalValue) {			

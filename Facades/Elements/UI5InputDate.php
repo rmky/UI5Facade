@@ -60,7 +60,7 @@ JS;
         if ($this->hasInternalDateModel() === true) {
             $prop = $this->getWidget()->getDataColumnName();
             $defaultValue = $this->getWidget()->getValueWithDefaults();
-            if ($defaultValue) {
+            if ($defaultValue !== null && $defaultValue !== '') {
                 $initialModel = "{ $prop : {$this->getDateFormatter()->buildJsFormatParserToJsDate("'$defaultValue'")} }";
             }
             return ".setModel(new sap.ui.model.json.JSONModel($initialModel), '{$this->getInternalDateModelName()}')";

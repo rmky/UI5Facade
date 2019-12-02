@@ -8,6 +8,7 @@ use exface\Core\Exceptions\Widgets\WidgetLogicError;
 use exface\Core\Factories\DataSheetFactory;
 use exface\Core\DataTypes\UrlDataType;
 use exface\Core\Interfaces\DataTypes\DataTypeInterface;
+use exface\Core\Exceptions\Facades\FacadeLogicError;
 
 /**
  * Generates OpenUI5 selects
@@ -90,9 +91,10 @@ JS;
             // If the widget value is set explicitly, we either set the key only or the 
             // key and the text (= value of the input)
             if ($widget->getValueText() === null || $widget->getValueText() === '') {
+                $valueJs = '"' . $this->escapeJsTextValue($value) . '"';
                 $value_init_js = <<<JS
 
-        .{$this->buildJsValueSetterMethod('"' . $this->escapeJsTextValue($value) . '"')}
+        .{$this->buildJsSetSelectedKeyMethod($valueJs, null, true)}.fireChange({value: {$valueJs}})
 JS;
             } else {
                 $value_init_js = <<<JS
@@ -112,7 +114,7 @@ JS;
             var sKey = sap.ui.getCore().byId('{$this->getId()}').{$this->buildJsValueGetterMethod()};
             var sVal = oInput.getValue();
             if (sKey !== '' && sVal === '') {
-                oInput.{$this->buildJsValueSetterMethod('sKey')};
+                {$this->buildJsValueSetter('sKey')};
             }
         })
 JS;
@@ -245,7 +247,6 @@ JS;
     protected function buildJsPropertySuggestionItemSelected(int $valueColIdx, int $textColIdx) : string
     {
         return <<<JS
-
             function(oEvent){
                 var oItem = oEvent.getParameter("selectedRow");
                 if (! oItem) return;
@@ -270,7 +271,6 @@ JS;
         // current text differs from the previous suggestion - don't know if this is a feature or
         // a bug. But with an explicit .showItems() it works well.
         return <<<JS
-
             function(oEvent) {
                 var oInput = oEvent.getSource();
                 {$this->buildJsBusyIconShow()};
@@ -427,6 +427,25 @@ JS;
     }
     
     /**
+     * Returns a special parameter for the oInput.fireSuggest() method, that
+     * cases a silent lookup of the value matching the given key - without actually
+     * opening the suggestions.
+     * 
+     * @return string
+     */
+    protected function buildJsFireSuggestParamForSilentKeyLookup(string $keyJs) : string
+    {
+        $filterParam = UrlDataType::urlEncode($this->getFacade()->getUrlFilterPrefix() . $this->getWidget()->getValueColumn()->getAttributeAlias());
+        return <<<JS
+{
+                    suggestValue: {
+                        '{$filterParam}': $keyJs
+                    }
+                }
+JS;
+    }
+    
+    /**
      * 
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsValueSetter()
@@ -438,7 +457,6 @@ JS;
         // above will recognize this and use merge this object with the request parameters, so
         // we can directly tell it to use our input as a value column filter instead of a regular
         // suggest string.
-        $valueFilterParam = UrlDataType::urlEncode($this->getFacade()->getUrlFilterPrefix() . $this->getWidget()->getValueColumn()->getAttributeAlias());
         return "(function(){
             var oInput = sap.ui.getCore().byId('{$this->getId()}');
             var val = {$valueJs};
@@ -447,16 +465,23 @@ JS;
             } else {
                 oInput
                 .setSelectedKey(val)
-                .fireSuggest({
-                    suggestValue: {
-                        '{$valueFilterParam}': val
-                    }
-                });
+                .fireSuggest({$this->buildJsFireSuggestParamForSilentKeyLookup('val')});
             }
             oInput.fireChange({
                 value: val
             });
         })()";
+    }
+    
+    /**
+     * There is no value setter method for this class, because the logic of the value setter
+     * (see above) cannot be easily packed into a single method to be called on the control.
+     * 
+     * @see \exface\UI5Facade\Facades\Elements\UI5Input::buildJsValueSetterMethod()
+     */
+    public function buildJsValueSetterMethod($value)
+    {
+        throw new FacadeLogicError('Cannot use UI5InputComboTable::buildJsValueSetterMethod() - use buildJsValueSetter() instead!');
     }
     
     /**
@@ -483,7 +508,21 @@ JS;
         }
     }
     
-    protected function buildJsSetSelectedKeyMethod(string $keyJs, string $valueJs = null) : string
+    /**
+     * Returns a chained method call to set the key and value for the Input control.
+     * 
+     * If $lookupKeyValue is set to TRUE, a silenced suggest event will be fired to
+     * request the value from the server based on the given $keyJs. This value will
+     * will overwrite $valueJs!
+     * 
+     * In contrast to the value setter this method does not trigger a change event!!!
+     * 
+     * @param string $keyJs
+     * @param string $valueJs
+     * @param bool $lookupKeyValue
+     * @return string
+     */
+    protected function buildJsSetSelectedKeyMethod(string $keyJs, string $valueJs = null, bool $lookupKeyValue = false) : string
     {
         if ($this->getWidget()->getMultiSelect() === false) {
             if ($valueJs !== null) {
@@ -491,10 +530,16 @@ JS;
             } else {
                 $setValue = '';
             }
-            return "{$setValue}setSelectedKey($keyJs)";
+            $js = "{$setValue}setSelectedKey($keyJs)";
         } else {
-            return "addToken(new sap.m.Token({key: $keyJs, text: $valueJs}))";
+            $js = "addToken(new sap.m.Token({key: $keyJs, text: $valueJs}))";
         }
+        
+        if ($lookupKeyValue === true) {
+            $js .= ".fireSuggest({$this->buildJsFireSuggestParamForSilentKeyLookup($keyJs)})";
+        }
+        
+        return $js;
     }
     
     /**

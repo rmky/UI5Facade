@@ -29,6 +29,20 @@ class UI5InputTime extends UI5InputDate
         $controller->addExternalModule('libs.exface.exfTools', $this->getFacade()->buildUrlToSource("LIBS.EXFTOOLS.JS"), null, 'exfTools');
         $controller->addExternalModule('libs.exface.ui5Custom.dataTypes.MomentTimeType', $this->getFacade()->buildUrlToSource("LIBS.UI5CUSTOM.TIMETYPE.JS"));
         
+        $onChangeScript = <<<JS
+
+            var oTimePicker = oEvent.getSource();
+            
+			var sValue = oEvent.getParameter('value');
+            console.log('sValue', sValue);
+			var sValParsed = exfTools.time.parse(sValue);
+			if (sValue !== sValParsed) {
+				oTimePicker.setValue(sValParsed);
+			}
+
+JS;
+        
+        $this->addOnChangeScript($onChangeScript);       
         return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl($oControllerJs));
     }
     
@@ -43,7 +57,7 @@ class UI5InputTime extends UI5InputDate
         
         new sap.m.TimePicker("{$this->getId()}", {
             {$this->buildJsProperties()}
-		})
+		}).setMaskMode('Off')
         {$this->buildJsInternalModelInit()}
         {$this->buildJsPseudoEventHandlers()}
 		
@@ -62,16 +76,6 @@ JS;
                 type: 'exface.ui5Custom.dataTypes.MomentTimeType',
                 {$this->buildJsValueBindingFormatOptions()}
 JS;
-    }
-    
-    /**
-     * 
-     * {@inheritDoc}
-     * @see \exface\UI5Facade\Facades\Elements\UI5InputDate::buildJsValueFormat()
-     */
-    protected function buildJsValueFormat() : string
-    {
-        return '"HH:mm:ss"';
     }
             
     /**

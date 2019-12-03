@@ -31,23 +31,5 @@ class UI5InputDateTime extends UI5InputDate
 
 JS;
     }
-         
-    /**
-     * 
-     * @return string
-     */
-    protected function buildJsValueFormat() : string
-    {
-        return '"yyyy-MM-dd HH:mm:ss"';
-    }
-        
-    /**
-     * 
-     * @return string
-     */
-    protected function buildJsDisplayFormat() : string
-    {
-        return '""';
-    }
     
 }

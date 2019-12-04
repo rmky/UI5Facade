@@ -83,6 +83,7 @@
     "LIBS.ECHARTS.THEME_NAME": "ui5theme",
     
     "LIBS.MOMENT.JS": "npm-asset/moment/min/moment.min.js",
+    "LIBS.MOMENT.LOCALES": "npm-asset/moment/locale",
 	
 	"PWA.ENABLED": true,
     "PWA.DEFAULT_STYLE.THEME_COLOR": "#3367D6",

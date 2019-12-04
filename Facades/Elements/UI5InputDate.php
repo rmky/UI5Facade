@@ -30,10 +30,14 @@ class UI5InputDate extends UI5Input
         $controller = $this->getController();
         $this->registerConditionalBehaviors();
         $this->registerOnChangeValidation();
-        
         $controller->addExternalModule('libs.moment.moment', $this->getFacade()->buildUrlToSource("LIBS.MOMENT.JS"), null, 'moment');
         $controller->addExternalModule('libs.exface.exfTools', $this->getFacade()->buildUrlToSource("LIBS.EXFTOOLS.JS"), null, 'exfTools');
         $controller->addExternalModule('libs.exface.ui5Custom.dataTypes.MomentDateType', $this->getFacade()->buildUrlToSource("LIBS.UI5CUSTOM.DATETYPE.JS"));
+        $locale = $this->getMomentLocale();        
+        if ($locale !== '') {
+            $controller->addExternalModule('libs.moment.locale', $this->getFacade()->buildUrlToSource("LIBS.MOMENT.LOCALES") . DIRECTORY_SEPARATOR . $locale . '.js', null);
+        }
+        
         $onAfterRendering = <<<JS
         
         sap.ui.getCore().byId("{$this->getId()}").$().find('.sapMInputBaseInner').on('keypress', function(e){
@@ -119,8 +123,7 @@ JS;
      */
     protected function getDisplayFormat() : string
     {
-        $format = $this->getWidget()->getFormat();
-        return $format;             
+        return $this->getWidget()->getFormat();           
     }
     
    /**
@@ -145,7 +148,6 @@ JS;
     protected function buildJsValueFormat() : string
     {
         return $this->getDateFormatter()->getDataType()->getFormatToParseTo();
-        //return '"yyyy-MM-dd HH:mm:ss"';
     }
     
     /**
@@ -174,5 +176,21 @@ JS;
     protected function getInternalDateModelName() : string
     {
         return 'internalDate';
+    }
+    
+    protected function getMomentLocale() : string
+    {
+        $facade = $this->getFacade();
+        $localesPath = $this->getWorkbench()->filemanager()->getPathToVendorFolder() . DIRECTORY_SEPARATOR . $facade->getConfig()->getOption('LIBS.MOMENT.LOCALES');
+        $fullLocale = $this->getDateFormatter()->getDataType()->getLocale();
+        $locale = str_replace("_", "-", $fullLocale);
+        if (file_exists($localesPath . DIRECTORY_SEPARATOR . $locale . '.js')) {
+            return $locale;
+        }
+        $locale = substr($fullLocale, 0, strpos($fullLocale, '_'));
+        if (file_exists($localesPath . DIRECTORY_SEPARATOR . $locale . '.js')) {
+            return $locale;
+        }        
+        return '';
     }
 }

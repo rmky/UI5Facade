@@ -499,6 +499,7 @@ JS;
                             var sOperator = "EQ";
                     }
                     if ({$condJs}.value !== "") {
+                        var filterPush = true;
                         if ({$oAttrsByDataTypeJs}.time.indexOf({$condJs}.expression) > -1) {
                             var d = {$condJs}.value;
                             var timeParts = d.split(':');
@@ -515,21 +516,27 @@ JS;
                             }
                         } else if ({$oAttrsByDataTypeJs}.date.indexOf({$condJs}.expression) > -1) {
                             var d = exfTools.date.parse({$condJs}.value);
-                            var date = d.toISOString();
-                            var datestring = date.replace(/\.[0-9]{3}/, '');
-                            var value = datestring;
-                            if (sOperator === "Contains") {
-                                sOperator = "EQ";
+                            if (d === null) {
+                                filterPush = false;
+                            } else {
+                                var date = d.toISOString();
+                                var datestring = date.replace(/\.[0-9]{3}/, '');
+                                var value = datestring;
+                                if (sOperator === "Contains") {
+                                    sOperator = "EQ";
+                                }
                             }
                         } else {
                             value = {$condJs}.value;
                         }
-                        var filter = new sap.ui.model.Filter({
-                            path: {$condJs}.expression,
-                            operator: sOperator,
-                            value1: value
-                        });
-                        {$filterArrayJs}.push(filter); 
+                        if (filterPush === true) {
+                            var filter = new sap.ui.model.Filter({
+                                path: {$condJs}.expression,
+                                operator: sOperator,
+                                value1: value
+                            });
+                            {$filterArrayJs}.push(filter);
+                        }
                     }
 
 JS;

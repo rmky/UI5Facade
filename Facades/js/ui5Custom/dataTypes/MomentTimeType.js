@@ -15,16 +15,20 @@ sap.ui.define([
 			}
 		},
 		
-		parseValue: function (date) {
-			return exfTools.time.parse(date);
+		parseValue: function (sTime) {
+			var ICUFormat = undefined;
+			if (this.options.dateFormat) {
+				ICUFormat = this.options.dateFormat;
+			}
+			return exfTools.time.parse(sTime, ICUFormat);
 		},			
 		
-		formatValue: function (sDate) {
-			var phpFormat = undefined;
+		formatValue: function (sTime) {
+			var ICUFormat = undefined;
 			if (this.options.dateFormat) {
-				phpFormat = this.options.dateFormat;
+				ICUFormat = this.options.dateFormat;
 			}
-			return exfTools.time.format(sDate, phpFormat);			
+			return exfTools.time.format(sTime, ICUFormat);			
 		},
 		
 		validateValue: function (sInternalValue) {			

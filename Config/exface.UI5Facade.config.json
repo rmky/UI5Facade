@@ -63,7 +63,7 @@
 	
 	"LIBS.EXFTOOLS.JS": "exface/Core/Facades/AbstractAjaxFacade/js/exfTools.js",
 	"LIBS.UI5CUSTOM.DATETYPE.JS": "exface/UI5Facade/Facades/js/ui5Custom/dataTypes/MomentDateType.js",
-    "LIBS.UI5CUSTOM.CUSTOM.TIMETYPE.JS": "exface/UI5Facade/Facades/js/ui5Custom/dataTypes/MomentTimeType.js",
+    "LIBS.UI5CUSTOM.TIMETYPE.JS": "exface/UI5Facade/Facades/js/ui5Custom/dataTypes/MomentTimeType.js",
     
     "LIBS.JEXCEL.JS": "npm-asset/jexcel/dist/jexcel.js",
    	"LIBS.JEXCEL.JS_JSUITES": "npm-asset/jsuites/dist/jsuites.js",
@@ -83,6 +83,7 @@
     "LIBS.ECHARTS.THEME_NAME": "ui5theme",
     
     "LIBS.MOMENT.JS": "npm-asset/moment/min/moment.min.js",
+    "LIBS.MOMENT.LOCALES": "npm-asset/moment/locale",
 	
 	"PWA.ENABLED": true,
     "PWA.DEFAULT_STYLE.THEME_COLOR": "#3367D6",

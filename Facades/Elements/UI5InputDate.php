@@ -30,11 +30,22 @@ class UI5InputDate extends UI5Input
         $controller = $this->getController();
         $this->registerConditionalBehaviors();
         $this->registerOnChangeValidation();
-        
         $controller->addExternalModule('libs.moment.moment', $this->getFacade()->buildUrlToSource("LIBS.MOMENT.JS"), null, 'moment');
         $controller->addExternalModule('libs.exface.exfTools', $this->getFacade()->buildUrlToSource("LIBS.EXFTOOLS.JS"), null, 'exfTools');
         $controller->addExternalModule('libs.exface.ui5Custom.dataTypes.MomentDateType', $this->getFacade()->buildUrlToSource("LIBS.UI5CUSTOM.DATETYPE.JS"));
+        $locale = $this->getMomentLocale();        
+        if ($locale !== '') {
+            $controller->addExternalModule('libs.moment.locale', $this->getFacade()->buildUrlToSource("LIBS.MOMENT.LOCALES") . DIRECTORY_SEPARATOR . $locale . '.js', null);
+        }
         
+        $onAfterRendering = <<<JS
+        
+        sap.ui.getCore().byId("{$this->getId()}").$().find('.sapMInputBaseInner').on('keypress', function(e){
+			//console.log('keypress');
+			e.stopPropagation();
+		});
+JS;
+        $this->addPseudoEventHandler('onAfterRendering', $onAfterRendering);
         return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl($oControllerJs));
     }
     /**
@@ -55,12 +66,17 @@ class UI5InputDate extends UI5Input
 JS;
     }
     
+    protected function buildJsPropertyValue()
+    {
+        return parent::buildJsPropertyValue();   
+    }
+    
     protected function buildJsInternalModelInit() : string
     {
         if ($this->hasInternalDateModel() === true) {
             $prop = $this->getWidget()->getDataColumnName();
             $defaultValue = $this->getWidget()->getValueWithDefaults();
-            if ($defaultValue !== null && $defaultValue !== '') {
+            if ($defaultValue !== '' && $defaultValue !== null) {
                 $initialModel = "{ $prop : {$this->getDateFormatter()->buildJsFormatParserToJsDate("'$defaultValue'")} }";
             }
             return ".setModel(new sap.ui.model.json.JSONModel($initialModel), '{$this->getInternalDateModelName()}')";
@@ -80,8 +96,9 @@ JS;
     {
         $options = parent::buildJsProperties() . <<<JS
 
-            valueFormat: {$this->buildJsValueFormat()},
-            displayFormat: {$this->buildJsDisplayFormat()},
+            valueFormat: '{$this->buildJsValueFormat()}',
+            displayFormat: '{$this->getDisplayFormat()}',
+            placeholder: " ",
 JS;
         return $options;
     }
@@ -104,14 +121,9 @@ JS;
      *
      * @return string
      */
-    protected function getFormatToParseTo() : string
+    protected function getDisplayFormat() : string
     {
-        $type = $this->getWidget()->getValueDataType();
-        if (! $type instanceof DateDataType && ! $type instanceof TimeDataType && ! $type instanceof TimestampDataType) {
-            $type = DataTypeFactory::createFromPrototype($this->getWorkbench(), DateDataType::class);
-        }
-        $format = $type->getFormatToParseTo();
-        return $format;
+        return $this->getWidget()->getFormat();           
     }
     
    /**
@@ -123,7 +135,7 @@ JS;
         return <<<JS
         
                     formatOptions: {
-                        dateFormat: '{$this->getFormatToParseTo()}'
+                        dateFormat: '{$this->getDisplayFormat()}'
                     },
 JS;
         
@@ -135,17 +147,7 @@ JS;
      */
     protected function buildJsValueFormat() : string
     {
-        return '"yyyy-MM-dd HH:mm:ss"';
-    }
-    
-    
-    /**
-     *
-     * @return string
-     */
-    protected function buildJsDisplayFormat() : string
-    {
-        return '""';
+        return $this->getDateFormatter()->getDataType()->getFormatToParseTo();
     }
     
     /**
@@ -174,5 +176,21 @@ JS;
     protected function getInternalDateModelName() : string
     {
         return 'internalDate';
+    }
+    
+    protected function getMomentLocale() : string
+    {
+        $facade = $this->getFacade();
+        $localesPath = $this->getWorkbench()->filemanager()->getPathToVendorFolder() . DIRECTORY_SEPARATOR . $facade->getConfig()->getOption('LIBS.MOMENT.LOCALES');
+        $fullLocale = $this->getDateFormatter()->getDataType()->getLocale();
+        $locale = str_replace("_", "-", $fullLocale);
+        if (file_exists($localesPath . DIRECTORY_SEPARATOR . $locale . '.js')) {
+            return $locale;
+        }
+        $locale = substr($fullLocale, 0, strpos($fullLocale, '_'));
+        if (file_exists($localesPath . DIRECTORY_SEPARATOR . $locale . '.js')) {
+            return $locale;
+        }        
+        return '';
     }
 }

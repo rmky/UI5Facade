@@ -6,6 +6,7 @@ use exface\UI5Facade\Facades\Interfaces\UI5BindingFormatterInterface;
 use exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface;
 use exface\UI5Facade\Facades\Interfaces\UI5CompoundControlInterface;
 use exface\Core\DataTypes\WidgetVisibilityDataType;
+use exface\Core\Widgets\DataTable;
 
 /**
  *
@@ -70,7 +71,7 @@ JS;
         
         $modelPrefix = $modelName ? $modelName . '>' : '';
         if ($tpl instanceof UI5Display) {
-            if ($widget->getDataWidget()->getNowrap() === false) {
+            if (($widget->getDataWidget() instanceof DataTable) && $widget->getDataWidget()->getNowrap() === false) {
                 $tpl->setWrapping(true);
             }
             $tpl->setValueBindingPrefix($modelPrefix);

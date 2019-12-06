@@ -25,6 +25,8 @@ class UI5Display extends UI5Value
     
     private $onChangeHandlerRegistered = false;
     
+    private $wrap = false;
+    
     /**
      *
      * {@inheritDoc}
@@ -153,7 +155,7 @@ JS;
      */
     protected function buildJsPropertyWrapping()
     {
-        return 'wrapping: false,';
+        return 'wrapping: ' . ($this->getWrapping() === true ? 'true' : 'false'). ',';
     }
     
     /**
@@ -301,6 +303,26 @@ JS;
     protected function buildJsColorCssSetter(string $oControlJs, string $sColorJs) : string
     {
         return "setTimeout(function(){ $oControlJs.$().css('color', $sColorJs); }, 0)";
+    }
+    
+    /**
+     *
+     * @return bool
+     */
+    protected function getWrapping() : bool
+    {
+        return $this->wrap;
+    }
+    
+    /**
+     * 
+     * @param bool $value
+     * @return UI5Display
+     */
+    public function setWrapping(bool $value) : UI5Display
+    {
+        $this->wrap = $value;
+        return $this;
     }
 }
 ?>

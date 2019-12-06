@@ -70,6 +70,9 @@ JS;
         
         $modelPrefix = $modelName ? $modelName . '>' : '';
         if ($tpl instanceof UI5Display) {
+            if ($widget->getDataWidget()->getNowrap() === false) {
+                $tpl->setWrapping(true);
+            }
             $tpl->setValueBindingPrefix($modelPrefix);
             $tpl->setAlignment($this->buildJsAlignment());
         } elseif ($tpl instanceof UI5ValueBindingInterface) {

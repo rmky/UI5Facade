@@ -50,11 +50,27 @@ JS;
     public function buildJsChildrenConstructors() : string
     {
         $js = '';
+        $separatorWidgets = $this->getWidget()->getSeparatorWidgets();
         foreach ($this->getWidget()->getWidgets() as $widget) {
-            $js .= ($js ? ",\n" : '') . $this->getFacade()->getElement($widget)->buildJsConstructor();
+            if (in_array($widget, $separatorWidgets) === true) {
+                $widget->setWidth('100%');
+            }
+            $element = $this->getFacade()->getElement($widget);
+            if (in_array($widget, $separatorWidgets) === true) {
+                $element->setAlignment("sap.ui.core.TextAlign.Center");
+            }
+            $element->setLayoutData($this->buildJsChildLayoutConstructor($element));
+            
+            $js .= ($js ? ",\n" : '') . $element->buildJsConstructor();
         }
         
         return $js;
+    }
+    
+    protected function buildJsChildLayoutConstructor(UI5AbstractElement $child) : string
+    {
+        $props = 'growFactor: 1';
+        return "new sap.m.FlexItemData({ $props })";
     }
     
     /**

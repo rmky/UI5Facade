@@ -33,6 +33,8 @@ abstract class UI5AbstractElement extends AbstractJqueryElement
     
     private $controller = null;
     
+    private $layoutData = null;
+    
     /**
      * 
      * @var array [ event_name => [code, code, ...] ]
@@ -515,6 +517,31 @@ JS;
     public function buildJsOnEventScript(string $eventName, string $scriptJs, string $oEventJs) : string 
     {
         return $scriptJs;
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    public function buildJsPropertyLayoutData() : string
+    {
+        if ($this->layoutData === null) {
+            return '';
+        } else {
+            return "layoutData: [{$this->layoutData}],";
+        }
+    }
+    
+    /**
+     * Sets the layout data for the control: e.g. "new sap.m.FlexItemData({growFactor: 1})".
+     * 
+     * @param string $layoutDataConstructorJs
+     * @return UI5AbstractElement
+     */
+    public function setLayoutData(string $layoutDataConstructorJs) : UI5AbstractElement
+    {
+        $this->layoutData = $layoutDataConstructorJs;
+        return $this;
     }
 }
 ?>

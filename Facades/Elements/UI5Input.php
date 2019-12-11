@@ -62,16 +62,7 @@ JS;
         return $options;
     }
     
-    /**
-     * Returns the property width with name, value and tailing comma - or an empty
-     * string if no width is defined.
-     *
-     * @return string
-     */
-    protected function buildJsPropertyWidth()
-    {
-        return 'width: "100%",';
-    }
+
     
     /**
      * Returns the property height with name, value and tailing comma - or an empty

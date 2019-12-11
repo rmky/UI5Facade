@@ -62,9 +62,7 @@ JS;
             $element->setLayoutData($this->buildJsChildLayoutConstructor($widget));
 
             $widget->setWidth('100%');
-            
-            $element->addElementCssStyle("sapUiSmallMarginEnd");
-                
+
             $js .= ($js ? ",\n" : '') . $element->buildJsConstructor();
         }
         

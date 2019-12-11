@@ -8,6 +8,7 @@ use exface\Core\Widgets\DataColumn;
 use exface\Core\CommonLogic\Constants\Colors;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JsValueScaleTrait;
 use exface\Core\Interfaces\Widgets\iHaveColorScale;
+use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
 
 /**
  * Generates sap.m.Text controls for Display widgets.
@@ -322,6 +323,12 @@ JS;
     public function setWrapping(bool $value) : UI5Display
     {
         $this->wrap = $value;
+        return $this;
+    }
+    
+    public function registerExternalModules(UI5ControllerInterface $controller) : UI5AbstractElement
+    {
+        $this->getValueBindingFormatter()->registerExternalModules($controller);
         return $this;
     }
 }

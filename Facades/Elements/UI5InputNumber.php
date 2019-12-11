@@ -2,6 +2,7 @@
 namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\DataTypes\NumberDataType;
+use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
 
 /**
  * Renders a numeric input widget as a custom version of sap.m.StepInput for regular 
@@ -30,7 +31,7 @@ class UI5InputNumber extends UI5Input
             return parent::buildJsConstructorForMainControl();
         }
         
-        $this->getController()->addExternalModule('libs.exface.ui5Custom.StepInputCustom', 'exface/vendor/exface/UI5Facade/Facades/js/ui5Custom/StepInputCustom');
+        $this->registerExternalModules($this->getController());
         
         return <<<JS
 
@@ -43,6 +44,17 @@ class UI5InputNumber extends UI5Input
             {$this->buildJsPseudoEventHandlers()}
 
 JS;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::registerExternalModules()
+     */
+    public function registerExternalModules(UI5ControllerInterface $controller) : UI5AbstractElement
+    {
+        $controller->addExternalModule('libs.exface.ui5Custom.StepInputCustom', 'exface/vendor/exface/UI5Facade/Facades/js/ui5Custom/StepInputCustom');
+        return $this;
     }
     
     /**

@@ -3,6 +3,7 @@ namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\Html;
 use exface\Core\Widgets\Image;
+use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
 
 /**
  * Generates com.penninkhof.controls.QRCode for a QrCode widget
@@ -21,9 +22,7 @@ class UI5QrCode extends UI5Display
      */
     public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {        
-        $this->getController()->addExternalModule('com.penninkhof.controls.QRCode', $this->getFacade()->buildUrlToSource('LIBS.QRCODE.JS') . 'QRCode');
-        $this->getController()->addExternalModule('com.penninkhof.controls.3rdparty.qrcode', $this->getFacade()->buildUrlToSource('LIBS.QRCODE.JS') . '3rdparty/qrcode');
-        
+        $this->registerExternalModules($this->getController());
         return <<<JS
 
         new com.penninkhof.controls.QRCode("{$this->getid()}", {
@@ -33,6 +32,18 @@ class UI5QrCode extends UI5Display
     	})
 
 JS;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::registerExternalModules()
+     */
+    public function registerExternalModules(UI5ControllerInterface $controller) : UI5AbstractElement
+    {
+        $controller->addExternalModule('com.penninkhof.controls.QRCode', $this->getFacade()->buildUrlToSource('LIBS.QRCODE.JS') . 'QRCode');
+        $controller->addExternalModule('com.penninkhof.controls.3rdparty.qrcode', $this->getFacade()->buildUrlToSource('LIBS.QRCODE.JS') . '3rdparty/qrcode');
+        return $this;
     }
     
     /**

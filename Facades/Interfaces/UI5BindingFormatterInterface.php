@@ -41,4 +41,11 @@ interface UI5BindingFormatterInterface {
      * @return JsDataTypeFormatterInterface
      */
     public function getJsFormatter();
+    
+    /**
+     * 
+     * @param UI5ControllerInterface $controller
+     * @return UI5BindingFormatterInterface
+     */
+    public function registerExternalModules(UI5ControllerInterface $controller) : UI5BindingFormatterInterface;
 }

@@ -666,4 +666,13 @@ class Webapp implements WorkbenchDependantInterface
     {
         return $this->getComponentName() . '.view.';
     }
+    
+    /**
+     * 
+     * @return UI5Facade
+     */
+    public function getFacade() : UI5Facade
+    {
+        return $this->facade;
+    }
 }

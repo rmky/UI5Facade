@@ -2,6 +2,7 @@
 namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\InputJson;
+use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
 
 /**
  * 
@@ -19,9 +20,6 @@ class UI5InputJson extends UI5Input
      */
     public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
-        $this->getController()->addExternalCss($this->getFacade()->buildUrlToSource('LIBS.JSONEDITOR.CSS'));
-        $this->getController()->addExternalModule('exface.openui5.jsoneditor', $this->getFacade()->buildUrlToSource('LIBS.JSONEDITOR.JS'), 'JSONEditor');
-        
         // TODO create own control instead of using the HTML control in order to be able to destroy the JSONeditor
         // properly. The way the whole thing works now, the JS variable {$this->getId()}_JSONeditor lives even
         // after the control or it's view had been destroyed.
@@ -33,6 +31,19 @@ class UI5InputJson extends UI5Input
         })
 
 JS;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::registerExternalModules()
+     */
+    public function registerExternalModules(UI5ControllerInterface $controller) : UI5AbstractElement
+    {
+        $controller->addExternalCss($this->getFacade()->buildUrlToSource('LIBS.JSONEDITOR.CSS'));
+        $controller->addExternalModule('exface.openui5.jsoneditor', $this->getFacade()->buildUrlToSource('LIBS.JSONEDITOR.JS'), 'JSONEditor');
+        
+        return $this;
     }
         
     protected function buildJsJsonEditor($oControllerJs = 'oController')

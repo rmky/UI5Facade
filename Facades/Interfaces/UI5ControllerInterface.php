@@ -166,13 +166,41 @@ interface UI5ControllerInterface {
     public function buildJsMethodName(string $methodName, UI5AbstractElement $ownerElement) : string;
     
     /**
-     *
-     * @param string $name
-     * @param string $path
-     * @param string $var
+     * Registers an external JS dependencies in the controller.
+     * 
+     * The module name ($name) is the first argument of jQuery.sap.registerModulePath(). External UI5
+     * components have their own module names, but for non-UI5 includes the name can be anything.
+     * 
+     * The module name is automatically converted to the include path (in the first argument of define())
+     * by replacing `.` with `/`.
+     * 
+     * If you need a specific variable inside the controller, set the $controllerArgumentName. If
+     * not set, it will be generated automatically.
+     * 
+     * If the dependency requires a JS global (e.g. `moment` for moment.js), provide a $globalVarName.
+     * 
+     * Output example:
+     * 
+     * ```
+     * jQuery.sap.registerModulePath('libs.font_awesome.plugin', 'exface/vendor/bower-asset/font-awesome-openui5/dist/font-awesome-openui5.min');
+     * jQuery.sap.registerModulePath('exface/vendor/exface/Core/Facades/AbstractAjaxFacade/js/echarts/echarts.custom.min', 'exface/vendor/exface/Core/Facades/AbstractAjaxFacade/js/echarts/echarts.custom.min');
+     * /* global echarts /  
+     * sap.ui.define([
+     *	 "powerui/demomes/fertigung/controller/BaseController",
+     *	 "libs/font_awesome/plugin",
+     *   "exface/Core/Facades/AbstractAjaxFacade/js/echarts/echarts.custom.min"
+     * ], function (BaseController, fontAwesomePlugin, echartsCustomMin) {
+     * }
+     * 
+     * ```
+     * 
+     * @param string $name qualified module name in dot-notation
+     * @param string $urlRelativeToAppRoot path to source file
+     * @param string $controllerArgumentName
+     * @param string $globalVarName
      * @return UI5ControllerInterface
      */
-    public function addExternalModule(string $name, string $urlRelativeToAppRoot, string $var = null) : UI5ControllerInterface;
+    public function addExternalModule(string $name, string $urlRelativeToAppRoot, string $controllerArgumentName = null, string $globalVarName = null) : UI5ControllerInterface;
     
     /**
      * Returns an array with module names for keys and respecitve JS include paths for values (relative to site root)

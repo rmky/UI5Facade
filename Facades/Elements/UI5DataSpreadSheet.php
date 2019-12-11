@@ -4,6 +4,7 @@ namespace exface\UI5Facade\Facades\Elements;
 use exface\Core\DataTypes\StringDataType;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JExcelTrait;
 use exface\UI5Facade\Facades\Elements\Traits\UI5DataElementTrait;
+use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
 
 class UI5DataSpreadSheet extends UI5AbstractElement
 {    
@@ -26,10 +27,7 @@ class UI5DataSpreadSheet extends UI5AbstractElement
         
         $controller->addMethod('onFixedFooterSpread', $this, '', $this->buildJsFixedFootersSpreadFunctionBody());
         
-        $controller->addExternalModule('exface.openui5.jexcel', $this->getFacade()->buildUrlToSource("LIBS.JEXCEL.JS"), 'jexcel');
-        $controller->addExternalCss($this->getFacade()->buildUrlToSource('LIBS.JEXCEL.CSS'));
-        $controller->addExternalModule('exface.openui5.jsuites', $this->getFacade()->buildUrlToSource("LIBS.JEXCEL.JS_JSUITES"), 'jsuites');
-        $controller->addExternalCss($this->getFacade()->buildUrlToSource('LIBS.JEXCEL.CSS_JSUITES'));
+        $this->registerExternalModules($controller);
         
         $chart = <<<JS
         
@@ -103,5 +101,20 @@ JS;
         $jsTags = [];
         preg_match_all('#<script[^>]*src="([^"]*)"[^>]*></script>#is', $tags, $jsTags);
         return $jsTags[1];
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::registerExternalModules()
+     */
+    public function registerExternalModules(UI5ControllerInterface $controller) : UI5AbstractElement
+    {
+        $controller->addExternalModule('exface.openui5.jexcel', $this->getFacade()->buildUrlToSource("LIBS.JEXCEL.JS"), 'jexcel');
+        $controller->addExternalCss($this->getFacade()->buildUrlToSource('LIBS.JEXCEL.CSS'));
+        $controller->addExternalModule('exface.openui5.jsuites', $this->getFacade()->buildUrlToSource("LIBS.JEXCEL.JS_JSUITES"), 'jsuites');
+        $controller->addExternalCss($this->getFacade()->buildUrlToSource('LIBS.JEXCEL.CSS_JSUITES'));
+        
+        return $this;
     }
 }

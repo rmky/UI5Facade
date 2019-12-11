@@ -516,5 +516,15 @@ JS;
     {
         return $scriptJs;
     }
+    
+    /**
+     * 
+     * @param UI5ControllerInterface $controller
+     * @return UI5AbstractElement
+     */
+    public function registerExternalModules(UI5ControllerInterface $controller) : UI5AbstractElement
+    {
+        return $this;
+    }
 }
 ?>

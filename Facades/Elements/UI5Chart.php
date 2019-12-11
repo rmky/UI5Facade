@@ -11,6 +11,7 @@ use exface\Core\Widgets\Button;
 use exface\Core\Widgets\ButtonGroup;
 use exface\Core\Widgets\MenuButton;
 use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
+use exface\Core\DataTypes\FilePathDataType;
 
 /**
  * 
@@ -45,9 +46,7 @@ class UI5Chart extends UI5AbstractElement
         $controller->addMethod($this->buildJsClicksFunctionName(), $this, 'oParams', $this->buildJsClicksFunctionBody('oParams'));
         $controller->addMethod($this->buildJsSingleClickFunctionName(), $this, 'oParams', $this->buildJsSingleClickFunctionBody('oParams') . $this->getController()->buildJsEventHandler($this, self::EVENT_NAME_CHANGE, false));
         
-        foreach ($this->getJsIncludes() as $path) {
-            $controller->addExternalModule(StringDataType::substringBefore($path, '.js'), $path, null, $path);
-        }
+        $this->registerExternalModules($controller);
         
         $chart = <<<JS
 
@@ -91,7 +90,23 @@ JS;
     {
         
         return "echarts.getInstanceByDom(document.getElementById('{$this->getId()}_echarts'))";
-        //return "document.getElementById('{$this->getId()}_echarts')._echarts_instance_";
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::registerExternalModules()
+     */
+    public function registerExternalModules(UI5ControllerInterface $controller) : UI5AbstractElement
+    {
+        $f = $this->getFacade();
+        $controller->addExternalModule('libs.exface.charts.ECharts', $f->buildUrlToSource('LIBS.ECHARTS.ECHARTS_JS'), null, 'echarts');
+        $controller->addExternalModule('libs.exface.charts.Theme', $f->buildUrlToSource('LIBS.ECHARTS.THEME_JS'), null);        
+        
+        foreach ($this->getWidget()->getData()->getColumns() as $col) {
+            $f->getElement($col->getCellWidget())->registerExternalModules($controller);
+        }
+        return $this;
     }
         
     /**

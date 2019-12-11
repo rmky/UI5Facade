@@ -2,6 +2,8 @@
 namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\InputTime;
+use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
+use exface\UI5Facade\Facades\Interfaces\UI5BindingFormatterInterface;
 
 /**
  * Renders a sap.m.TimePicker for InputTime widgets.
@@ -21,17 +23,10 @@ class UI5InputTime extends UI5InputDate
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
-        $controller = $this->getController();
         $this->registerConditionalBehaviors();
         $this->registerOnChangeValidation();
         
-        $controller->addExternalModule('libs.moment.moment', $this->getFacade()->buildUrlToSource("LIBS.MOMENT.JS"), null, 'moment');
-        $controller->addExternalModule('libs.exface.exfTools', $this->getFacade()->buildUrlToSource("LIBS.EXFTOOLS.JS"), null, 'exfTools');
-        $controller->addExternalModule('libs.exface.ui5Custom.dataTypes.MomentTimeType', $this->getFacade()->buildUrlToSource("LIBS.UI5CUSTOM.TIMETYPE.JS"));
-        $locale = $this->getMomentLocale();
-        if ($locale !== '') {
-            $controller->addExternalModule('libs.moment.locale', $this->getFacade()->buildUrlToSource("LIBS.MOMENT.LOCALES") . DIRECTORY_SEPARATOR . $locale . '.js', null);
-        }
+        $this->registerExternalModules($this->getController());
         
         $onChangeScript = <<<JS
 
@@ -47,6 +42,26 @@ JS;
         
         $this->addOnChangeScript($onChangeScript);       
         return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl($oControllerJs));
+    }
+    
+    /**
+     *
+     * @return UI5BindingFormatterInterface
+     */
+    protected function getDateBindingFormatter() : UI5BindingFormatterInterface
+    {
+        return $this->getFacade()->getDataTypeFormatterForUI5Bindings($this->getWidget()->getValueDataType());
+    }
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::registerExternalModules()
+     */
+    public function registerExternalModules(UI5ControllerInterface $controller) : UI5AbstractElement
+    {
+        $this->getDateBindingFormatter()->registerExternalModules($controller);
+        return $this;
     }
     
     /**

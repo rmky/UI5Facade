@@ -7,6 +7,8 @@ use exface\Core\DataTypes\TimeDataType;
 use exface\Core\DataTypes\TimestampDataType;
 use exface\Core\Factories\DataTypeFactory;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryInputDateTrait;
+use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
+use exface\UI5Facade\Facades\Interfaces\UI5BindingFormatterInterface;
 
 /**
  * Generates sap.m.DatePicker for InputDate widgets
@@ -27,16 +29,10 @@ class UI5InputDate extends UI5Input
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
-        $controller = $this->getController();
         $this->registerConditionalBehaviors();
         $this->registerOnChangeValidation();
-        $controller->addExternalModule('libs.moment.moment', $this->getFacade()->buildUrlToSource("LIBS.MOMENT.JS"), null, 'moment');
-        $controller->addExternalModule('libs.exface.exfTools', $this->getFacade()->buildUrlToSource("LIBS.EXFTOOLS.JS"), null, 'exfTools');
-        $controller->addExternalModule('libs.exface.ui5Custom.dataTypes.MomentDateType', $this->getFacade()->buildUrlToSource("LIBS.UI5CUSTOM.DATETYPE.JS"));
-        $locale = $this->getMomentLocale();        
-        if ($locale !== '') {
-            $controller->addExternalModule('libs.moment.locale', $this->getFacade()->buildUrlToSource("LIBS.MOMENT.LOCALES") . '/' . $locale . '.js', null);
-        }
+        
+        $this->registerExternalModules($this->getController());
         
         $onAfterRendering = <<<JS
         
@@ -178,19 +174,23 @@ JS;
         return 'internalDate';
     }
     
-    protected function getMomentLocale() : string
+    /**
+     *
+     * @return UI5BindingFormatterInterface
+     */
+    protected function getDateBindingFormatter() : UI5BindingFormatterInterface
     {
-        $facade = $this->getFacade();
-        $localesPath = $this->getWorkbench()->filemanager()->getPathToVendorFolder() . DIRECTORY_SEPARATOR . $facade->getConfig()->getOption('LIBS.MOMENT.LOCALES');
-        $fullLocale = $this->getDateFormatter()->getDataType()->getLocale();
-        $locale = str_replace("_", "-", $fullLocale);
-        if (file_exists($localesPath . DIRECTORY_SEPARATOR . $locale . '.js')) {
-            return $locale;
-        }
-        $locale = substr($fullLocale, 0, strpos($fullLocale, '_'));
-        if (file_exists($localesPath . DIRECTORY_SEPARATOR . $locale . '.js')) {
-            return $locale;
-        }        
-        return '';
+        return $this->getFacade()->getDataTypeFormatterForUI5Bindings($this->getWidget()->getValueDataType());
+    }
+
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::registerExternalModules()
+     */
+    public function registerExternalModules(UI5ControllerInterface $controller) : UI5AbstractElement
+    {
+        $this->getDateBindingFormatter()->registerExternalModules($controller);
+        return $this;
     }
 }

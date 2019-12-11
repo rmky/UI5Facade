@@ -12,6 +12,8 @@ use exface\Core\Facades\AbstractAjaxFacade\Formatters\JsDateFormatter;
  */
 class UI5DateFormatter extends AbstractUI5BindingFormatter
 {    
+    use UI5MomentFormatterTrait;
+    
     /**
      * 
      * {@inheritDoc}

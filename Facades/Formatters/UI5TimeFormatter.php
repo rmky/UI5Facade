@@ -1,8 +1,6 @@
 <?php
 namespace exface\UI5Facade\Facades\Formatters;
 
-use exface\Core\Facades\AbstractAjaxFacade\Formatters\JsDateFormatter;
-
 /**
  * 
  * @method JsTimeFormatter getJsFormatter()
@@ -12,6 +10,7 @@ use exface\Core\Facades\AbstractAjaxFacade\Formatters\JsDateFormatter;
  */
 class UI5TimeFormatter extends UI5DateFormatter
 {    
+    use UI5MomentFormatterTrait;
     
     protected function buildPatternSource()
     {

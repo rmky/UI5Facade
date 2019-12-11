@@ -3,6 +3,7 @@ namespace exface\UI5Facade\Facades\Formatters;
 
 use exface\UI5Facade\Facades\Interfaces\UI5BindingFormatterInterface;
 use exface\Core\Facades\AbstractAjaxFacade\Interfaces\JsDataTypeFormatterInterface;
+use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
 
 abstract class AbstractUI5BindingFormatter implements UI5BindingFormatterInterface
 {
@@ -42,5 +43,15 @@ abstract class AbstractUI5BindingFormatter implements UI5BindingFormatterInterfa
     public function getDataType()
     {
         return $this->getJsFormatter()->getDataType();
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5BindingFormatterInterface::registerExternalModules()
+     */
+    public function registerExternalModules(UI5ControllerInterface $controller) : UI5BindingFormatterInterface
+    {
+        return $this;
     }
 }

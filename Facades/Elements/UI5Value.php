@@ -76,6 +76,7 @@ JS;
     {
         return parent::buildJsProperties() . <<<JS
             {$this->buildJsPropertyTooltip()}
+            {$this->buildJsPropertyLayoutData()}
 JS;
     }
     

@@ -35,6 +35,7 @@ class UI5Display extends UI5Value
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
+        $this->registerExternalModules($this->getController());
         return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl($oControllerJs));
     }
     

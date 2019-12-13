@@ -1,7 +1,12 @@
 <?php
 namespace exface\UI5Facade\Facades\Elements;
 
-class UI5CarouselSlide extends UI5Tab
+/**
+ * 
+ * @author tmc
+ *
+ */
+class UI5WidgetCarouselSlide extends UI5Tab
 {
     
     /**

@@ -29,6 +29,7 @@ use exface\UI5Facade\Exceptions\UI5ExportUnsupportedWidgetException;
 use exface\Core\CommonLogic\UxonObject;
 use exface\Core\Actions\Autosuggest;
 use exface\Core\Interfaces\Widgets\iHaveColumns;
+use exface\Core\DataTypes\DateTimeDataType;
 
 /**
  * 
@@ -232,6 +233,7 @@ JS;
         $opISNOT = EXF_COMPARATOR_IS_NOT;
         $opEQ = EXF_COMPARATOR_EQUALS;
         $opNE = EXF_COMPARATOR_EQUALS_NOT;
+        $dateTimeFormat = DateTimeDataType::DATETIME_ICU_FORMAT_INTERNAL;
         
         return <<<JS
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
@@ -350,7 +352,7 @@ JS;
                                 if (d !== undefined && d !== "" && d !== null) {
                                     //var oDateFormat = sap.ui.core.format.DateFormat.getDateTimeInstance({pattern:'yyyy-MM-dd HH:mm:ss'});
                                     //var newVal = oDateFormat.format(d);
-                                    var newVal = exfTools.date.format(d, 'Y-m-d H:i:s');                                 
+                                    var newVal = exfTools.date.format(d, '{$dateTimeFormat}');                                 
                                     resultRows[i][attr] = newVal;
                                 }
                             }

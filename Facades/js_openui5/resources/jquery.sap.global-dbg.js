@@ -30,6 +30,7 @@ sap.ui.define([
 	"sap/ui/dom/includeStylesheet", "sap/ui/core/support/Hotkeys",
 	"sap/ui/security/FrameOptions", "sap/ui/performance/Measurement", "sap/ui/performance/trace/Interaction",
 	"sap/ui/base/syncXHRFix", "sap/base/util/LoaderExtensions",
+	'sap/ui/events/PasteEventFix',
 
 	// former sap-ui-core.js dependencies
 	"sap/ui/Device", "sap/ui/thirdparty/URI",
@@ -44,6 +45,7 @@ sap.ui.define([
 	includeStylesheet, SupportHotkeys,
 	FrameOptions, Measurement, Interaction,
 	syncXHRFix, LoaderExtensions,
+	PasteEventFix,
 
 	Device, URI,
 
@@ -418,7 +420,7 @@ sap.ui.define([
 	/**
 	 * Root Namespace for the jQuery plug-in provided by SAP SE.
 	 *
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @namespace
 	 * @public
 	 * @static
@@ -1008,10 +1010,6 @@ sap.ui.define([
 		}
 	};
 
-	if (!window["sap-ui-optimized"]) {
-		Log.setLevel(Log.Level.DEBUG);
-	}
-
 	// evaluate configuration
 	oCfgData.loglevel = (function() {
 		var m = /(?:\?|&)sap-ui-log(?:L|-l)evel=([^&]*)/.exec(window.location.search);
@@ -1019,6 +1017,8 @@ sap.ui.define([
 	}()) || oCfgData.loglevel;
 	if ( oCfgData.loglevel ) {
 		Log.setLevel(Log.Level[oCfgData.loglevel.toUpperCase()] || parseInt(oCfgData.loglevel));
+	} else if (!window["sap-ui-optimized"]) {
+		Log.setLevel(Log.Level.DEBUG);
 	}
 
 	Log.info("SAP Logger started.");
@@ -1535,11 +1535,14 @@ sap.ui.define([
 	var getModuleSystemInfo = (function() {
 
 		/**
-		 * Local logger, by default only logging errors. Can be configured to DEBUG via config parameter.
+		 * Local logger for messages related to module loading.
+		 *
+		 * By default, the log level is the same as for the standard log, but not higher than <code>INFO</code>.
+		 * With the experimental config option <code>xx-debugModuleLoading</code>, it can be raised to <code>DEBUG</code>.
 		 * @private
 		 */
 		var oLog = _ui5loader.logger = Log.getLogger("sap.ui.ModuleSystem",
-				(/sap-ui-xx-debug(M|-m)odule(L|-l)oading=(true|x|X)/.test(location.search) || oCfgData["xx-debugModuleLoading"]) ? Log.Level.DEBUG : Log.Level.INFO
+				(/sap-ui-xx-debug(M|-m)odule(L|-l)oading=(true|x|X)/.test(location.search) || oCfgData["xx-debugModuleLoading"]) ? Log.Level.DEBUG : Math.min(Log.getLevel(), Log.Level.INFO)
 			),
 
 			mKnownSubtypes = LoaderExtensions.getKnownSubtypes(),
@@ -1756,8 +1759,8 @@ sap.ui.define([
 		 *              The modules will be loaded first before loading the module itself.
 		 *
 		 * @private
-		 * @sap-restricted sap.ui.core sap.ui.export sap.ui.vk
-	  	 * @deprecated since 1.58 use {@link sap.ui.loader.config} instead
+		 * @ui5-restricted sap.ui.core sap.ui.export sap.ui.vk
+	  	 * @deprecated Since 1.58, use {@link sap.ui.loader.config} instead
 		 */
 		jQuery.sap.registerModuleShims = function(mShims) {
 			jQuery.sap.assert( typeof mShims === 'object', "mShims must be an object");
@@ -1801,7 +1804,7 @@ sap.ui.define([
 		 * @param {string} sResourceName Name of the resource to check, in unified resource name format
 		 * @returns {boolean} Whether the resource has been loaded already
 		 * @private
-		 * @sap-restricted sap.ui.core
+		 * @ui5-restricted sap.ui.core
 		 * @deprecated since 1.58
 		 */
 		jQuery.sap.isResourceLoaded = function isResourceLoaded(sResourceName) {
@@ -1962,7 +1965,7 @@ sap.ui.define([
 		 * @param {object} oData.modules Map of resources keyed by their resource name; each resource must be a string or a function
 		 *
 		 * @private
-		 * @sap-restricted sap.ui.core,preloadfiles
+		 * @ui5-restricted sap.ui.core,preloadfiles
 	  	 * @deprecated since 1.58
 		 */
 		jQuery.sap.registerPreloadedModules = function(oData) {
@@ -2004,7 +2007,7 @@ sap.ui.define([
 		 * @param {string} sModuleName Module name as a dot separated name
 		 * @param {string} [sSuffix='.js'] Suffix to add to the final resource name
 		 * @private
-		 * @sap-restricted sap.ui.core
+		 * @ui5-restricted sap.ui.core
 	  	 * @deprecated since 1.58
 		 */
 		jQuery.sap.getResourceName = function(sModuleName, sSuffix) {
@@ -2088,7 +2091,7 @@ sap.ui.define([
 		 *
 		 * @experimental
 		 * @private
-		 * @sap-restricted sap.ui.core,sap.ushell
+		 * @ui5-restricted sap.ui.core,sap.ushell
 	  	 * @deprecated since 1.58
 		 */
 		jQuery.sap._loadJSResourceAsync = _ui5loader.loadJSResourceAsync;

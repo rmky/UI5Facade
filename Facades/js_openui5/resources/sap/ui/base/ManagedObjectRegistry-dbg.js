@@ -34,7 +34,7 @@ sap.ui.define(["sap/ui/base/ManagedObject", "sap/base/Log", "sap/base/assert"],
 		 * Number of objects in <code>mInstances</code>.
 		 * @private
 		 */
-		var mInstancesCount = 0;
+		var iInstancesCount = 0;
 
 		FNClass.prototype.register = function register() {
 			var sId = this.getId(),
@@ -43,11 +43,11 @@ sap.ui.define(["sap/ui/base/ManagedObject", "sap/base/Log", "sap/base/assert"],
 			if ( old && old !== this ) {
 				fnOnDuplicate(sId, old, this);
 				// executes only if duplicate check succeeds
-				mInstancesCount--;
+				iInstancesCount--;
 			}
 
 			mInstances[sId] = this;
-			mInstancesCount++;
+			iInstancesCount++;
 		};
 
 		FNClass.prototype.deregister = function deregister() {
@@ -56,7 +56,7 @@ sap.ui.define(["sap/ui/base/ManagedObject", "sap/base/Log", "sap/base/assert"],
 					fnOnDeregister(this.sId);
 				}
 				delete mInstances[this.sId];
-				mInstancesCount--;
+				iInstancesCount--;
 			}
 		};
 
@@ -68,7 +68,7 @@ sap.ui.define(["sap/ui/base/ManagedObject", "sap/base/Log", "sap/base/assert"],
 			 * @returns {int} Number of currently existing objects.
 			 */
 			get size() {
-				return mInstancesCount;
+				return iInstancesCount;
 			},
 
 			/*

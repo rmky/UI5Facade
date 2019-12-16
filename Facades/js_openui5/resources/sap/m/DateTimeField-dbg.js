@@ -8,6 +8,7 @@
 sap.ui.define([
 	'sap/ui/model/type/Date',
 	'sap/ui/model/odata/type/ODataType',
+	'sap/ui/model/odata/type/DateTimeBase',
 	'./InputBase',
 	'sap/ui/core/LocaleData',
 	'sap/ui/core/library',
@@ -21,6 +22,7 @@ sap.ui.define([
 ], function(
 	SimpleDateType,
 	ODataType,
+	DateTimeBase,
 	InputBase,
 	LocaleData,
 	coreLibrary,
@@ -50,7 +52,7 @@ sap.ui.define([
 	 * @extends sap.m.InputBase
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -260,16 +262,22 @@ sap.ui.define([
 			try {
 				oDate = oBindingType.parseValue(sValue, "string");
 
+				if (typeof (oDate) === "string" && oBindingType instanceof DateTimeBase) {
+					oDate = DateTimeBase.prototype.parseValue.call(oBindingType, sValue, "string");
+				}
+
 				oFormatOptions = oBindingType.oFormatOptions;
 				if (oFormatOptions && oFormatOptions.source && oFormatOptions.source.pattern == "timestamp") {
 					// convert timestamp back to Date
 					oDate = new Date(oDate);
+				} else if (oFormatOptions && oFormatOptions.source && typeof oFormatOptions.source.pattern === "string") {
+					oDate = oBindingType.oInputFormat.parse(sValue);
 				}
 			} catch (e) {
 				// ignore, ParseException to be handled in ManagedObject.updateModelProperty()
 			}
 
-			if (oDate && ((oBindingType.oFormatOptions && oBindingType.oFormatOptions.UTC) || (oBindingType.oConstraints && oBindingType.oConstraints.isDateOnly))) {
+			if (oDate && ((oBindingType.oFormatOptions && this._isFormatOptionsUTC(oBindingType.oFormatOptions)) || (oBindingType.oConstraints && oBindingType.oConstraints.isDateOnly))) {
 				// convert to local date because it was parsed as UTC date
 				oDateLocal = new Date(oDate.getUTCFullYear(), oDate.getUTCMonth(), oDate.getUTCDate(),
 					oDate.getUTCHours(), oDate.getUTCMinutes(), oDate.getUTCSeconds(), oDate.getUTCMilliseconds());
@@ -307,6 +315,8 @@ sap.ui.define([
 			if (oFormatOptions && oFormatOptions.source && oFormatOptions.source.pattern == "timestamp") {
 				// convert Date to timestamp
 				oDate = oDate.getTime();
+			} else if (oBindingType.oOutputFormat) {
+				return oBindingType.oOutputFormat.format(oDate);
 			}
 
 			return oBindingType.formatValue(oDate, "string");
@@ -321,6 +331,11 @@ sap.ui.define([
 			"sap.ui.model.odata.type.DateTime",
 			"sap.ui.model.odata.type.DateTimeOffset"
 		]);
+	};
+
+	DateTimeField.prototype._isFormatOptionsUTC = function (oBindingTypeFormatOptions) {
+		// UTC can be set directly in oFormatOptions or inside the source along with the pattern
+		return (oBindingTypeFormatOptions.UTC || (oBindingTypeFormatOptions.source && oBindingTypeFormatOptions.source.UTC));
 	};
 
 	DateTimeField.prototype._getDefaultDisplayStyle = function () {

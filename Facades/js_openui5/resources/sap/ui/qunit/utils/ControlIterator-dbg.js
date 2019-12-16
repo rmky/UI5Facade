@@ -53,7 +53,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log", "
 	 * @namespace
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @public
 	 * @since 1.48.0
@@ -95,10 +95,11 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log", "
 		"sap.ui.core.tmpl.Template",
 		"sap.ui.core.UIComponent",
 		"sap.ui.core.util.Export",
-		"sap.ui.demokit.IndexLayout._Tile",
 		"sap.ui.documentation.sdk.controls.BorrowedList",
 		"sap.ui.documentation.sdk.controls.LightTable",
 		"sap.ui.layout.BlockLayoutRow",
+		"sap.ui.layout.form.ResponsiveGridLayoutPanel", // control not for stand alone usage. Only inside ResponsiveGridLayout
+		"sap.ui.layout.form.ResponsiveLayoutPanel", // control not for stand alone usage. Only inside ResponsiveLayout
 		"sap.ui.richtexteditor.RichTextEditor",
 		"sap.ui.richtexteditor.ToolbarWrapper",
 		"sap.ui.rta.AddElementsDialog",
@@ -153,10 +154,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log", "
 		"sap.ui.core.mvc.View",
 		"sap.ui.core.mvc.XMLView",
 		"sap.ui.core.XMLComposite",
-		"sap.ui.demokit.IndexLayout._Tile",
 		"sap.ui.mdc.BaseControl", // should be abstract?
-		"sap.ui.mdc.FilterBar", //The control only runs in views with XML pre-processor. The test can't provide this environment
-		"sap.ui.mdc.FilterField", //The control only runs in views with XML pre-processor. The test can't provide this environment
 		"sap.ui.mdc.odata.v4.microchart.MicroChart", //The control only runs in views with XML pre-processor. The test can't provide this environment
 		"sap.ui.mdc.ValueHelpDialog", //The control only runs in views with XML pre-processor. The test can't provide this environment
 		"sap.ui.mdc.XMLComposite", //The control only runs in views with XML pre-processor. The test can't provide this environment
@@ -185,7 +183,7 @@ sap.ui.define(['sap/ui/core/Core', "sap/base/util/ObjectPath", "sap/base/Log", "
 
 	ControlIterator.aKnownOpenUI5Libraries = [
 		"sap.f", "sap.m", "sap.tnt", "sap.ui.codeeditor", "sap.ui.commons", "sap.ui.core",
-		"sap.ui.demokit", "sap.ui.documentation", "sap.ui.dt", "sap.ui.fl", "sap.ui.integration",
+		"sap.ui.documentation", "sap.ui.dt", "sap.ui.fl", "sap.ui.integration",
 		"sap.ui.layout", "sap.ui.rta", "sap.ui.suite", "sap.ui.support", "sap.ui.table",
 		"sap.ui.unified", "sap.ui.ux3",	"sap.uxap"
 	];

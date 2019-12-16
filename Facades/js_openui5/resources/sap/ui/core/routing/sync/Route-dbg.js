@@ -33,6 +33,7 @@ sap.ui.define(["sap/base/Log", "sap/ui/thirdparty/jquery"], function(Log, jQuery
 				aTargets;
 
 			oRouter._matchedRoute = this;
+			oRouter._bMatchingProcessStarted = true;
 
 			// Recursively fire matched event and display views of this routes parents
 			if (this._oParent) {
@@ -115,6 +116,8 @@ sap.ui.define(["sap/base/Log", "sap/ui/thirdparty/jquery"], function(Log, jQuery
 				oEventData.views = aViews;
 				oEventData.targetControls = aTargetControls;
 			}
+
+			oRouter._bMatchingProcessStarted = false;
 
 			if (oConfig.callback) {
 				//Targets don't pass TargetControl and view since there might be multiple

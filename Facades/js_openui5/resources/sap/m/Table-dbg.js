@@ -17,10 +17,11 @@ sap.ui.define([
 	"sap/ui/core/util/PasteHelper",
 	"sap/ui/events/KeyCodes",
 	"sap/ui/thirdparty/jquery",
+	"sap/m/ListBaseRenderer",
 	// jQuery custom selectors ":sapTabbable"
 	"sap/ui/dom/jquery/Selectors"
 ],
-	function(Device, library, ListBase, ListItemBase, CheckBox, TableRenderer, Log, ResizeHandler, PasteHelper, KeyCodes, jQuery) {
+	function(Device, library, ListBase, ListItemBase, CheckBox, TableRenderer, Log, ResizeHandler, PasteHelper, KeyCodes, jQuery, ListBaseRenderer) {
 	"use strict";
 
 
@@ -47,7 +48,7 @@ sap.ui.define([
 	 *
 	 * @class
 	 * <code>sap.m.Table</code> control provides a set of sophisticated and convenience functions for responsive table design.
-	 * To render the <code>sap.m.Table</code> properly, the order of the <code>columns</code> aggregation should match with the order of the items <code>cells</code> aggregation (<code>sap.m.ColumnListItem</code>). Also <code>sap.m.Table</code> requires at least one visible <code>sap.m.Column</code> in <code>columns</code> aggregation.
+	 * To render the <code>sap.m.Table</code> properly, the order of the <code>columns</code> aggregation should match with the order of the items <code>cells</code> aggregation (<code>sap.m.ColumnListItem</code>). Also, <code>sap.m.Table</code> requires at least one visible <code>sap.m.Column</code> in <code>columns</code> aggregation, therefore applications must avoid configuring all columns to be shown in the pop-in. If such a conflict is detected, then the table prevents one column from moving to the pop-in.
 	 * For mobile devices, the recommended limit of table rows is 100 (based on 4 columns) to assure proper performance. To improve initial rendering on large tables, use the <code>growing</code> feature.
 	 *
 	 * See section "{@link topic:5eb6f63e0cc547d0bdc934d3652fdc9b Creating Tables}" and "{@link topic:38855e06486f4910bfa6f4485f7c2bac Configuring Responsive Behavior of a Table}"
@@ -57,7 +58,7 @@ sap.ui.define([
 	 * @extends sap.m.ListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -204,7 +205,7 @@ sap.ui.define([
 
 		if (bWidthValidated) {
 			// set property, suppressInvalidate
-			this.setProperty("contextualWidth", sWidth);
+			this.setProperty("contextualWidth", sWidth, true);
 		} else {
 			return this;
 		}
@@ -215,10 +216,11 @@ sap.ui.define([
 		}
 
 		if (this._sContextualWidth.toLowerCase() === "auto") {
-			//if auto, register resizeHandler
+			// if auto, register resizeHandler and apply the contextual width
 			this._registerResizeHandler();
+			this._applyContextualWidth(this.$().width());
 		} else {
-			//if px value, apply contextualWidth
+			// if px value, apply contextualWidth
 			this._applyContextualWidth(this._sContextualWidth);
 		}
 
@@ -545,8 +547,8 @@ sap.ui.define([
 		}
 
 		// update the visible column count and colspan
-		// highlight and navigation columns are getting rendered always
-		this._colCount = aVisibleColumns.length + 2 + !!sap.m.ListBaseRenderer.ModeOrder[this.getMode()];
+		// highlight, navigation and navigated indicator columns are getting rendered always
+		this._colCount = aVisibleColumns.length + 3 + !!ListBaseRenderer.ModeOrder[this.getMode()];
 		this.$("tblBody").find(".sapMGHLICell").attr("colspan", this.getColSpan());
 		this.$("nodata-text").attr("colspan", this.getColCount());
 
@@ -557,7 +559,7 @@ sap.ui.define([
 
 		// remove or show column header row(thead) according to column visibility value
 		if (!bColVisible && bHeaderVisible) {
-			$headRow[0].className = "sapMListTblRow sapMListTblHeader";
+			$headRow[0].className = "sapMListTblRow sapMLIBFocusable sapMListTblHeader";
 			this._headerHidden = false;
 		} else if (bColVisible && !bHeaderVisible && !aVisibleColumns.length) {
 			$headRow[0].className = "sapMListTblHeaderNone";
@@ -594,6 +596,10 @@ sap.ui.define([
 	 * @return {sap.m.CheckBox} reference to the internal select all checkbox
 	 */
 	Table.prototype._getSelectAllCheckbox = function() {
+		if (this.bPreventMassSelection) {
+			return;
+		}
+
 		return this._selectAllCheckBox || (this._selectAllCheckBox = new CheckBox({
 			id: this.getId("sa"),
 			activeHandling: false
@@ -644,12 +650,12 @@ sap.ui.define([
 	};
 
 	/*
-	 * Returns colspan for all columns except navigation
-	 * Because we render navigation always even it is empty
+	 * Returns colspan for all columns except navigation and navigation indicator
+	 * Because we render these columns always even it is empty
 	 * @protected
 	 */
 	Table.prototype.getColSpan = function() {
-		return (this._colCount || 1 ) - 1;
+		return (this._colCount || 1 ) - 2;
 	};
 
 	/*
@@ -689,11 +695,6 @@ sap.ui.define([
 	// returns accessibility role
 	Table.prototype.getAccessibilityType = function() {
 		return sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("ACC_CTR_TYPE_TABLE");
-	};
-
-	// custom footer text announcement is only for tables
-	Table.prototype.getAccessibilityDescription = function() {
-		return ListBase.prototype.getAccessibilityDescription.call(this) + " " + this.getFooterText();
 	};
 
 	Table.prototype._setHeaderAnnouncement = function() {

@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.68.1"
+      "version": "1.73.1"
     },
     "title": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
     "description": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
@@ -22,17 +22,17 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.68",
+      "minUI5Version": "1.73",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.68.1"
+          "minVersion": "1.73.1"
         },
         "sap.ui.layout": {
-          "minVersion": "1.68.1",
+          "minVersion": "1.73.1",
           "lazy": true
         },
         "sap.ui.unified": {
-          "minVersion": "1.68.1",
+          "minVersion": "1.73.1",
           "lazy": true
         }
       }
@@ -45,6 +45,7 @@
           "sap.m.ActionSelect",
           "sap.m.ActionSheet",
           "sap.m.App",
+          "sap.m.Avatar",
           "sap.m.Bar",
           "sap.m.BusyDialog",
           "sap.m.BusyIndicator",
@@ -62,7 +63,6 @@
           "sap.m.CustomListItem",
           "sap.m.CustomTile",
           "sap.m.CustomTreeItem",
-          "sap.m.ColumnHeader",
           "sap.m.DatePicker",
           "sap.m.DateRangeSelection",
           "sap.m.DateTimeField",
@@ -164,6 +164,7 @@
           "sap.m.SimpleFixFlex",
           "sap.m.SinglePlanningCalendar",
           "sap.m.SinglePlanningCalendarGrid",
+          "sap.m.SinglePlanningCalendarMonthGrid",
           "sap.m.Slider",
           "sap.m.SliderTooltip",
           "sap.m.SliderTooltipBase",
@@ -201,7 +202,8 @@
           "sap.m.upload.UploadSet",
           "sap.m.VBox",
           "sap.m.ViewSettingsDialog",
-          "sap.m.ViewSettingsPopover",
+          "sap.m.WheelSlider",
+          "sap.m.WheelSliderContainer",
           "sap.m.Wizard",
           "sap.m.WizardStep",
           "sap.m.semantic.DetailPage",
@@ -257,6 +259,8 @@
           "sap.m.ViewSettingsCustomTab",
           "sap.m.ViewSettingsFilterItem",
           "sap.m.ViewSettingsItem",
+          "sap.m.plugins.DataStateIndicator",
+          "sap.m.plugins.PluginBase",
           "sap.m.semantic.AddAction",
           "sap.m.semantic.CancelAction",
           "sap.m.semantic.DeleteAction",
@@ -288,8 +292,14 @@
           "sap.m.semantic.SortSelect"
         ],
         "types": [
+          "sap.m.AvatarImageFitType",
+          "sap.m.AvatarShape",
+          "sap.m.AvatarSize",
+          "sap.m.AvatarType",
+          "sap.m.AvatarColor",
           "sap.m.BackgroundDesign",
           "sap.m.BarDesign",
+          "sap.m.BreadcrumbsSeparatorStyle",
           "sap.m.ButtonType",
           "sap.m.CarouselArrowsPlacement",
           "sap.m.DateTimeInputType",
@@ -360,6 +370,7 @@
           "sap.m.SwitchType",
           "sap.m.TileSizeBehavior",
           "sap.m.TimePickerMaskMode",
+          "sap.m.TitleAlignment",
           "sap.m.ToolbarDesign",
           "sap.m.ToolbarStyle",
           "sap.m.UploadState",

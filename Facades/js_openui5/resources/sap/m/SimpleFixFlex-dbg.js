@@ -7,9 +7,10 @@
 sap.ui.define([
 	'sap/ui/core/Control',
 	'sap/ui/core/ResizeHandler',
+	'sap/base/Log',
 	'./SimpleFixFlexRenderer'
 ],
-function (Control, ResizeHandler /**, SimpleFixFlexRenderer */) {
+function (Control, ResizeHandler, Log /**, SimpleFixFlexRenderer */) {
 	"use strict";
 	/**
 	 * Constructor for a new <code>sap.m.SimpleFixFlex</code>.
@@ -30,7 +31,7 @@ function (Control, ResizeHandler /**, SimpleFixFlexRenderer */) {
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @private
@@ -55,13 +56,13 @@ function (Control, ResizeHandler /**, SimpleFixFlexRenderer */) {
 				*/
 				flexContent: {
 					type: "sap.ui.core.Control",
-					multiple: false
+					multiple: true
 				}
 			},
 			properties: {
 				/**
-				* Determines if the content of the <code>sap.m.SimpleFixFlex</code> should strech
-				* the parent container or wrap in order to fit.
+				* Determines whether the content of <code>sap.m.SimpleFixFlex</code> stretches
+				* the parent container or wraps in order to fit.
 				*/
 				fitParent: {
 					type: "boolean",
@@ -72,8 +73,20 @@ function (Control, ResizeHandler /**, SimpleFixFlexRenderer */) {
 		}
 	});
 
+	/*************************************** Static members ******************************************/
+
+	SimpleFixFlex.FIX_AREA_CHARACTER_COUNT_RECOMMENDATION = 200;
+	SimpleFixFlex.FIX_AREA_CHARACTERS_ABOVE_RECOMMENDED_WARNING = "It is recommended to use less than " +
+	SimpleFixFlex.FIX_AREA_CHARACTER_COUNT_RECOMMENDATION + " characters as a value state text.";
+
 	SimpleFixFlex.prototype.onBeforeRendering = function () {
 		this._deregisterFixContentResizeHandler();
+		var oFixContent = this.getFixContent();
+
+		if (oFixContent && oFixContent.isA("sap.m.Text") &&
+			oFixContent.getText().length > SimpleFixFlex.FIX_AREA_CHARACTER_COUNT_RECOMMENDATION) {
+			Log.warning(SimpleFixFlex.FIX_AREA_CHARACTERS_ABOVE_RECOMMENDED_WARNING, "", this.getId());
+		}
 	};
 
 	SimpleFixFlex.prototype.onAfterRendering = function () {
@@ -84,7 +97,7 @@ function (Control, ResizeHandler /**, SimpleFixFlexRenderer */) {
 
 	SimpleFixFlex.prototype._registerFixContentResizeHandler = function() {
 		var oFixContent = this.getFixContent();
-		if (!this._sResizeListenerId && oFixContent) {
+		if (!this._sResizeListenerId && oFixContent && oFixContent.getDomRef()) {
 			this._sResizeListenerId = ResizeHandler.register(oFixContent.getDomRef(), this._onFixContentResize.bind(this));
 			this._onFixContentResize();
 		}
@@ -99,11 +112,17 @@ function (Control, ResizeHandler /**, SimpleFixFlexRenderer */) {
 
 	SimpleFixFlex.prototype._onFixContentResize = function () {
 		var	$simpleFixFlex = this.$(),
-			$fixContent = this.getFixContent().$();
+			$fixContent = this.getFixContent().$(),
+			oFixedDom = $fixContent.get(0);
+
+		// In case the fixed content is already hidden / destroyed when the handler is executed
+		if (!oFixedDom || !oFixedDom.clientHeight) {
+			return null;
+		}
 
 			//using clientHeight as jQuery's innerHeight() method returns the height
 			//even if the fix content has style of "display: none;"
-			$simpleFixFlex.css("padding-top", $fixContent.get(0).clientHeight);
+			$simpleFixFlex.css("padding-top", oFixedDom.clientHeight);
 			$fixContent.addClass("sapUiSimpleFixFlexFixedWrap");
 	};
 

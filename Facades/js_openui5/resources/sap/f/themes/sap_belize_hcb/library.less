@@ -11,24 +11,6 @@
 
 @import "../../../../sap/ui/core/themes/sap_belize_hcb/global.less";
 
-/* START "Avatar.less" */
-/* ============================= */
-/* CSS for control sap.f/Avatar  */
-/* High Contrast Black theme     */
-/* ============================= */
-
-.sapFAvatarImageContain,
-.sapFAvatarIcon,
-.sapFAvatarInitials {
-	border: 0.125rem solid @sapUiFieldBorderColor;
-	box-sizing: border-box;
-}
-
-.sapFAvatarFocusable:focus {
-	outline-width: 0.125rem;
-}
-/* END "Avatar.less" */
-
 /* START "DynamicPage.less" */
 /* ================================== */
 /* CSS for control sap.f/DynamicPage  */
@@ -224,25 +206,28 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 
 .sapFFCL {
 	.sapFFCLNavigationButton {
-		.sapMBtnInner .sapMBtnIcon {
-			width: auto;
-		}
+		.sapMBtnInner {
+			border: 1px solid @sapUiButtonBorderColor;
 
-		&.sapFFCLNavigationButtonLeft {
-			.sapMBtnInner {
-				border: 1px solid @sapUiButtonBorderColor;
-				border-radius: 0 0.375rem 0.375rem 0;
+			&:before,
+			&:after {
+				background-size: 0.125rem 100%;
+				background-position-x: calc(50% - 0.0625rem);
 			}
-		}
+			&:before {
+				background-image: linear-gradient(to top, @sapUiGroupContentBorderColor, @sapUiGroupContentBorderColor);
+			}
 
-		&.sapFFCLNavigationButtonRight {
-			.sapMBtnInner {
-				border: 1px solid @sapUiButtonBorderColor;
-				border-radius: 0.375rem 0 0 0.375rem;
+			&:after {
+				background-image: linear-gradient(to bottom, @sapUiGroupContentBorderColor, @sapUiGroupContentBorderColor);
+			}
+			.sapMBtnIcon {
+				width: auto;
 			}
 		}
 	}
 }
+
 /* END "FlexibleColumnLayout.less" */
 
 /* START "Card.less" */
@@ -251,18 +236,26 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 /* High Contrast Black theme     */
 /* ============================= */
 
-@_sap_f_Card_Header_Hover_Color: @sapUiHighlight;
-@_sap_f_Card_Header_Active_Color: @sapUiHighlight;
+@_sap_f_Card_HeaderHoverColor: @sapUiTileHoverBackground;;
+@_sap_f_Card_HeaderActiveColor: @sapUiTileActiveBackground;
 
 .sapFCard .sapFCardHeader {
   border-bottom: 1px solid @sapUiTileBorderColor;
 
+  .sapFCardHeaderMainIndicator  {
+	.sapMNCValue,
+	.sapMNCIndicator,
+	.sapMNCScale {
+	  color: @sapUiContentContrastTextColor;
+	}
+  }
   .sapFCardIcon.sapFAvatar{
-    .sapUiIcon {
-      color: @sapUiContentIconColor;
-    }
+	.sapUiIcon {
+	  color: @sapUiContentIconColor;
+	}
   }
 }
+
 /* END "Card.less" */
 
 /* START "ShellBar.less" */

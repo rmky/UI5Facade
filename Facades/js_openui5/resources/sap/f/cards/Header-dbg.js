@@ -4,31 +4,37 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
+	"sap/m/library",
 	"sap/f/library",
 	"sap/ui/core/Control",
 	"sap/m/Text",
 	"sap/f/Avatar",
 	"sap/ui/Device",
-	'sap/f/cards/DataProviderFactory',
 	'sap/ui/model/json/JSONModel',
 	"sap/f/cards/HeaderRenderer",
-	"sap/f/cards/ActionEnablement",
-	"sap/base/strings/formatMessage"
+	"sap/f/cards/IconFormatter",
+	"sap/f/cards/CardActions",
+	"sap/base/strings/formatMessage",
+	"sap/f/cards/BindingHelper"
 ], function (
+	mLibrary,
 	library,
 	Control,
 	Text,
 	Avatar,
 	Device,
-	DataProviderFactory,
 	JSONModel,
 	HeaderRenderer,
-	ActionEnablement,
-	formatMessage
+	IconFormatter,
+	CardActions,
+	formatMessage,
+	BindingHelper
 ) {
 	"use strict";
 
-	var AvatarShape = library.AvatarShape;
+	var AvatarShape = mLibrary.AvatarShape;
+
+	var AreaType = library.cards.AreaType;
 
 	/**
 	 * Constructor for a new <code>Header</code>.
@@ -51,7 +57,7 @@ sap.ui.define([
 	 * @implements sap.f.cards.IHeader
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -61,6 +67,7 @@ sap.ui.define([
 	 */
 	var Header = Control.extend("sap.f.cards.Header", {
 		metadata: {
+			library: "sap.f",
 			interfaces: ["sap.f.cards.IHeader"],
 			properties: {
 
@@ -82,7 +89,7 @@ sap.ui.define([
 				/**
 				 * Defines the shape of the icon.
 				 */
-				iconDisplayShape: { type: "sap.f.AvatarShape", defaultValue: AvatarShape.Circle },
+				iconDisplayShape: { type: "sap.m.AvatarShape", defaultValue: AvatarShape.Circle },
 
 				/**
 				 * Defines the icon source.
@@ -148,6 +155,11 @@ sap.ui.define([
 		if (this._oDataProvider) {
 			this._oDataProvider.destroy();
 			this._oDataProvider = null;
+		}
+
+		if (this._oActions) {
+			this._oActions.destroy();
+			this._oActions = null;
 		}
 	};
 
@@ -272,19 +284,24 @@ sap.ui.define([
 	 *
 	 * @private
 	 * @static
-	 * @param {Object} mConfiguration A map containing the header configuration options.
+	 * @param {Object} mConfiguration A map containing the header configuration options, which are already parsed.
 	 * @param {Object} oServiceManager A service manager instance to handle services.
 	 * @param {Object} oDataProviderFactory A DataProviderFactory instance.
+	 * @param {string} sAppId The sap.app/id from the manifest.
 	 * @return {sap.f.cards.Header} The created Header.
 	 */
-	Header.create = function(mConfiguration, oServiceManager, oDataProviderFactory) {
+	Header.create = function(mConfiguration, oServiceManager, oDataProviderFactory, sAppId) {
 		var mSettings = {
 			title: mConfiguration.title,
 			subtitle: mConfiguration.subTitle
 		};
 
 		if (mConfiguration.icon) {
-			mSettings.iconSrc = mConfiguration.icon.src;
+			if (mConfiguration.icon.src) {
+				mSettings.iconSrc = BindingHelper.formattedProperty(mConfiguration.icon.src, function (sValue) {
+					return IconFormatter.formatSrc(sValue, sAppId);
+				});
+			}
 			mSettings.iconDisplayShape = mConfiguration.icon.shape;
 			mSettings.iconInitials = mConfiguration.icon.text;
 		}
@@ -293,7 +310,11 @@ sap.ui.define([
 			mSettings.statusText = mConfiguration.status.text;
 		}
 
+		mSettings = BindingHelper.createBindingInfos(mSettings);
+
 		var oHeader = new Header(mSettings);
+
+		oHeader._sAppId = sAppId;
 		if (mConfiguration.status && mConfiguration.status.text && mConfiguration.status.text.format) {
 			Header._bindStatusText(mConfiguration.status.text.format, oHeader);
 		}
@@ -301,7 +322,13 @@ sap.ui.define([
 		oHeader.setDataProviderFactory(oDataProviderFactory);
 		oHeader._setData(mConfiguration.data);
 
-		oHeader._attachActions(mConfiguration, oHeader);
+		var oActions = new CardActions({
+			areaType: AreaType.Header
+		});
+
+		oActions.attach(mConfiguration, oHeader);
+		oHeader._oActions = oActions;
+
 		return oHeader;
 	};
 
@@ -405,8 +432,6 @@ sap.ui.define([
 	Header.prototype._handleError = function (sLogMessage) {
 		this.fireEvent("_error", { logMessage: sLogMessage });
 	};
-
-	ActionEnablement.enrich(Header);
 
 	return Header;
 });

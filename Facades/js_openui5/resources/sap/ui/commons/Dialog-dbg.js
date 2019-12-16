@@ -16,6 +16,7 @@ sap.ui.define([
     './DialogRenderer',
     'sap/ui/core/library',
     'sap/ui/core/ResizeHandler',
+    "sap/ui/dom/jquery/rect", // jQuery Plugin "rect"
     'sap/ui/dom/jquery/control', // jQuery.fn.control
     'sap/ui/dom/jquery/Selectors' // sapTabbable
 ],
@@ -46,7 +47,7 @@ sap.ui.define([
 		 *
 		 * @namespace
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.73.1
 		 *
 		 * @constructor
 		 * @public
@@ -484,6 +485,7 @@ sap.ui.define([
 				return;
 			}
 
+			// jQuery Plugin "rect"
 			var oRect = this.$().rect();
 
 			this._bOpen = false;
@@ -861,6 +863,7 @@ sap.ui.define([
 			this.startDragX = oEvent.screenX;
 			this.startDragY = oEvent.screenY;
 
+			// jQuery Plugin "rect"
 			this.originalRectangle = this.$().rect();
 
 			jQuery(window.document).on("selectstart", jQuery.proxy(this.ondragstart, this));

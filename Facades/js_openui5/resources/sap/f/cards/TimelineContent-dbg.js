@@ -3,18 +3,23 @@
  * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(["sap/f/cards/BaseContent",
+sap.ui.define([
+		"sap/f/cards/BaseContent",
 		"sap/suite/ui/commons/Timeline",
 		"sap/suite/ui/commons/library",
 		"sap/suite/ui/commons/TimelineItem",
 		'sap/ui/base/ManagedObject',
-		"sap/f/cards/ActionEnablement"],
-	function (BaseContent,
-			  Timeline,
-			  suiteLibrary,
-			  TimelineItem,
-			  ManagedObject,
-			  ActionEnablement) {
+		"sap/f/cards/BindingHelper",
+		"sap/f/cards/IconFormatter"
+	], function (
+		BaseContent,
+		Timeline,
+		suiteLibrary,
+		TimelineItem,
+		ManagedObject,
+		BindingHelper,
+		IconFormatter
+	) {
 		"use strict";
 
 		/**
@@ -29,7 +34,7 @@ sap.ui.define(["sap/f/cards/BaseContent",
 		 * @extends sap.f.cards.BaseContent
 		 *
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.73.1
 		 *
 		 * @constructor
 		 * @experimental
@@ -107,57 +112,38 @@ sap.ui.define(["sap/f/cards/BaseContent",
 		};
 
 		/**
-		 * Binds/Sets properties to the inner item template based on the configuration object item template.
+		 * Binds/Sets properties to the inner item template based on the configuration object item template which is already parsed.
 		 *
 		 * @private
 		 * @param {Object} mItem The item template of the configuration object
-		 * @returns <code>this</code> for chaining
+		 * @returns {sap.f.cards.TimelineContent} <code>this</code> for chaining
 		 */
 		TimelineContent.prototype._setItem = function (mItem) {
-			this._oTimeLineItemTemplate =  new TimelineItem({
-				userNameClickable : false
-			});
+			var mSettings = {
+				userNameClickable : false,
+				title: mItem.title && mItem.title.value,
+				text: mItem.description && mItem.description.value,
+				dateTime: mItem.dateTime && mItem.dateTime.value,
+				userName: mItem.owner && mItem.owner.value,
+				icon: mItem.icon && mItem.icon.src
+			};
 
-			/* eslint-disable no-unused-expressions */
-			mItem.title && this._bindItemProperty("title", mItem.title.value);
-			mItem.description && this._bindItemProperty("text", mItem.description.value);
-			mItem.ownerImage && this._bindItemProperty("userPicture", mItem.ownerImage.value);
-			mItem.dateTime && this._bindItemProperty("dateTime", mItem.dateTime.value);
-			mItem.owner && this._bindItemProperty("userName", mItem.owner.value);
-			mItem.icon && this._bindItemProperty("icon", mItem.icon.src);
-			/* eslint-enable no-unused-expressions */
+			// settings that need a formatter
+			if (mItem.ownerImage && mItem.ownerImage.value) {
+				mSettings.userPicture = BindingHelper.formattedProperty(mItem.ownerImage.value, function (sValue) {
+					return IconFormatter.formatSrc(sValue, this._sAppId);
+				}.bind(this));
+			}
 
+			this._oTimeLineItemTemplate =  new TimelineItem(mSettings);
+			this._oActions.attach(mItem, this);
 
-			this._attachActions(mItem, this._oTimeLineItemTemplate);
 			var oBindingInfo = {
 				template: this._oTimeLineItemTemplate
 			};
 			this._bindAggregation("content", this._getTimeline(), oBindingInfo);
 
 			return this;
-		};
-
-		/**
-		 * Tries to create a binding info object based on sPropertyValue.
-		 * If succeeds the binding info will be used for property binding.
-		 * Else sPropertyValue will be set directly on the item template.
-		 *
-		 * @private
-		 * @param {string} sPropertyName The name of the property
-		 * @param {string} sPropertyValue The value of the property
-		 */
-		TimelineContent.prototype._bindItemProperty = function (sPropertyName, sPropertyValue) {
-			var oBindingInfo = ManagedObject.bindingParser(sPropertyValue);
-
-			if (!sPropertyValue) {
-				return;
-			}
-
-			if (oBindingInfo) {
-				this._oTimeLineItemTemplate.bindProperty(sPropertyName, oBindingInfo);
-			} else {
-				this._oTimeLineItemTemplate.setProperty(sPropertyName, sPropertyValue);
-			}
 		};
 
 		/**
@@ -182,11 +168,7 @@ sap.ui.define(["sap/f/cards/BaseContent",
 
 				oTimeline.addContent(oTimelineItem);
 			});
-
-			//workaround until actions refactor
-			this.fireEvent("_actionContentReady");
 		};
-		ActionEnablement.enrich(TimelineContent);
 
 		/**
 		 * @overwrite

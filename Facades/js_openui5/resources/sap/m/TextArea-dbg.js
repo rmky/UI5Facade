@@ -82,7 +82,7 @@ function(
 	 * @extends sap.m.InputBase
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -244,7 +244,7 @@ function(
 				this._setGrowingMaxHeight();
 			}
 
-			this._adjustHeight();
+			this._adjustContainerDimensions();
 		}
 
 		this._updateMaxLengthAttribute();
@@ -340,7 +340,7 @@ function(
 	 * @private
 	 */
 	TextArea.prototype._resizeHandler = function (oEvent) {
-		this._adjustHeight();
+		this._adjustContainerDimensions();
 	};
 
 	/**
@@ -387,7 +387,7 @@ function(
 		InputBase.prototype.setValue.call(this, sValue);
 		this._handleShowExceededText();
 		if (this.getGrowing()) {
-			this._adjustHeight();
+			this._adjustContainerDimensions();
 		}
 		return this;
 	};
@@ -418,14 +418,12 @@ function(
 
 		var oTextAreaRef = this.getFocusDomRef(),
 			sValue = oTextAreaRef.value,
+			bShowExceededText = this.getShowExceededText(),
 			iMaxLength = this.getMaxLength();
 
-		if (this.getShowExceededText() === false && this._getInputValue().length < this.getMaxLength()) {
-			// some browsers do not respect to maxlength property of textarea
-			if (iMaxLength > 0 && sValue.length > iMaxLength) {
-				sValue = sValue.substring(0, iMaxLength);
-				oTextAreaRef.value = sValue;
-			}
+		if (!bShowExceededText && iMaxLength && sValue.length > iMaxLength) {
+			sValue = sValue.substring(0, iMaxLength);
+			oTextAreaRef.value = sValue;
 		}
 
 		// update value property if needed
@@ -440,7 +438,7 @@ function(
 
 		// handle growing
 		if (this.getGrowing()) {
-			this._adjustHeight();
+			this._adjustContainerDimensions();
 		}
 
 		this.fireLiveChange({
@@ -475,13 +473,21 @@ function(
 		return this;
 	};
 
-	TextArea.prototype._adjustHeight = function() {
+	TextArea.prototype._adjustContainerDimensions = function() {
 		var oTextAreaRef = this.getFocusDomRef(),
 			oHiddenDiv = this.getDomRef("hidden"),
 			sHiddenDivMinHeight, sNeededMinHeight;
 
 		if (!oTextAreaRef || !oHiddenDiv) {
 			return;
+		}
+
+		oHiddenDiv.style.width = "";
+
+		if (this.getGrowing() &&
+			!this.getWidth() && /* width property overwrites cols */
+			this.getCols() !== 20 /* the default value */) {
+			oHiddenDiv.style.width = (this.getCols() * 0.5) + "rem";
 		}
 
 		sHiddenDivMinHeight = oHiddenDiv.style["min-height"];

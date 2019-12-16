@@ -32,7 +32,9 @@ function(Device, UIArea, jQuery) {
 		$DropIndicator,				// drop position indicator
 		$GhostContainer,			// container to place custom ghosts
 		sCalculatedDropPosition,	// calculated position of the drop action relative to the valid dropped control.
-		iTargetEnteringTime;		// timestamp of drag enter
+		iTargetEnteringTime,		// timestamp of drag enter
+		mLastIndicatorStyle = {},	// holds the last style settings of the indicator
+		oDraggableAncestorNode;		// reference to ancestor node that has draggable=true attribute
 
 
 	function addStyleClass(oElement, sStyleClass) {
@@ -68,6 +70,10 @@ function(Device, UIArea, jQuery) {
 		var oNewEvent = jQuery.Event(null, oEvent);
 		oNewEvent.type = sEventName;
 		oControl.getUIArea()._handleEvent(oNewEvent);
+	}
+
+	function isSelectableElement(oElement) {
+		return !oElement.disabled && /^(input|textarea)$/.test(oElement.localName);
 	}
 
 	function setDragGhost(oDragControl, oEvent) {
@@ -273,8 +279,6 @@ function(Device, UIArea, jQuery) {
 	}
 
 	function closeDragSession(oEvent) {
-		hideDropIndicator();
-		removeStyleClass(oDragControl, "sapUiDnDDragging");
 		oDragControl = oDropControl = oValidDropControl = oDragSession = null;
 		sCalculatedDropPosition = "";
 		aValidDragInfos = [];
@@ -294,6 +298,7 @@ function(Device, UIArea, jQuery) {
 	function hideDropIndicator() {
 		if ($DropIndicator) {
 			$DropIndicator.removeAttr("style").hide();
+			mLastIndicatorStyle = {};
 		}
 	}
 
@@ -394,9 +399,15 @@ function(Device, UIArea, jQuery) {
 			sDropPosition = "Between";
 		}
 
-		$Indicator.attr("data-drop-layout", sDropLayout);
-		$Indicator.attr("data-drop-position", sDropPosition);
-		$Indicator.css(jQuery.extend(mStyle, mIndicatorConfig)).show();
+		if (mLastIndicatorStyle.top != mStyle.top ||
+			mLastIndicatorStyle.left != mStyle.left ||
+			mLastIndicatorStyle.width != mStyle.width ||
+			mLastIndicatorStyle.height != mStyle.height) {
+			$Indicator.attr("data-drop-layout", sDropLayout);
+			$Indicator.attr("data-drop-position", sDropPosition);
+			$Indicator.css(jQuery.extend(mStyle, mIndicatorConfig)).show();
+			mLastIndicatorStyle = mStyle;
+		}
 
 		return sRelativePosition;
 	}
@@ -491,6 +502,21 @@ function(Device, UIArea, jQuery) {
 		}
 	};
 
+	DnD.onbeforemousedown = function(oEvent) {
+		// text selection workaround for IE since preventDefault on dragstart does not help
+		// https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/10375756/
+		if (Device.browser.msie && isSelectableElement(oEvent.target)) {
+			oDraggableAncestorNode = jQuery(oEvent.target).closest("[data-sap-ui-draggable=true]").prop("draggable", false)[0];
+		}
+	};
+
+	DnD.onbeforemouseup = function(oEvent) {
+		if (oDraggableAncestorNode) {
+			oDraggableAncestorNode.draggable = true;
+			oDraggableAncestorNode = null;
+		}
+	};
+
 	DnD.onbeforedragstart = function(oEvent) {
 		// draggable implicitly
 		if (!oEvent.target.draggable) {
@@ -498,7 +524,7 @@ function(Device, UIArea, jQuery) {
 		}
 
 		// the text inside input fields should still be selectable
-		if (/^(input|textarea)$/i.test(document.activeElement.tagName)) {
+		if (isSelectableElement(document.activeElement)) {
 			oEvent.target.getAttribute("data-sap-ui-draggable") && oEvent.preventDefault();
 			return;
 		}
@@ -548,6 +574,9 @@ function(Device, UIArea, jQuery) {
 
 		// set dragging class of the drag source
 		addStyleClass(oDragControl, "sapUiDnDDragging");
+
+		// prevent HTML element from scrolling during drag-and-drop
+		jQuery("html").addClass("sapUiDnDNoScrolling");
 	};
 
 	DnD.onbeforedragenter = function(oEvent) {
@@ -669,6 +698,15 @@ function(Device, UIArea, jQuery) {
 		aValidDragInfos.forEach(function(oDragInfo) {
 			oDragInfo.fireDragEnd(oEvent);
 		});
+
+		// remove the dragging class of the dragged control
+		removeStyleClass(oDragControl, "sapUiDnDDragging");
+
+		// retain the scrolling behavior of the html element after dragend
+		jQuery("html").removeClass("sapUiDnDNoScrolling");
+
+		// hide the indicator
+		hideDropIndicator();
 
 		// finalize drag session
 		closeDragSession();

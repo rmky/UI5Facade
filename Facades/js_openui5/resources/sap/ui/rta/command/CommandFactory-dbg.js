@@ -6,7 +6,6 @@
 sap.ui.define([
 	"sap/ui/base/ManagedObject",
 	"sap/ui/dt/ElementUtil",
-	"sap/ui/dt/OverlayUtil",
 	"sap/ui/dt/OverlayRegistry",
 	"sap/ui/fl/Utils",
 	"sap/ui/dt/Util",
@@ -15,7 +14,6 @@ sap.ui.define([
 function(
 	ManagedObject,
 	ElementUtil,
-	OverlayUtil,
 	OverlayRegistry,
 	FlexUtils,
 	DtUtil,
@@ -24,13 +22,13 @@ function(
 	"use strict";
 
 	function evaluateTemplateBinding(oElementOverlay) {
-		var mBoundControl = OverlayUtil.getAggregationInformation(oElementOverlay);
+		var mBoundControl = ElementUtil.getAggregationInformation(oElementOverlay.getElement());
 		if (mBoundControl.elementId) {
 			//check for additional binding
 			var oBoundControlOverlay = OverlayRegistry.getOverlay(mBoundControl.elementId);
 			var oParentElementOverlay = oBoundControlOverlay.getParentElementOverlay();
 			var bAdditionalBinding = oParentElementOverlay ?
-				!!OverlayUtil.getAggregationInformation(oParentElementOverlay).templateId : false;
+				!!ElementUtil.getAggregationInformation(oParentElementOverlay.getElement()).templateId : false;
 
 			if (bAdditionalBinding) {
 				throw DtUtil.createError("CommandFactory#evaluateTemplateBinding", "Multiple template bindings are not supported", "sap.ui.rta");
@@ -56,7 +54,7 @@ function(
 		var oElement = (typeof vElementOrId === "string") ? sap.ui.getCore().byId(vElementOrId) : vElementOrId;
 		var oElementOverlay = OverlayRegistry.getOverlay(oElement);
 		if (oElementOverlay) {
-			var mBoundControl = OverlayUtil.getAggregationInformation(oElementOverlay);
+			var mBoundControl = ElementUtil.getAggregationInformation(oElement);
 			if (typeof iIndex === "number") {
 				mBoundControl.stack[0].index = iIndex;
 			}
@@ -100,7 +98,7 @@ function(
 		return oAction;
 	}
 
-	function adjustAddXmlCommand(mSettings) {
+	function adjustSelectorForCommand(mSettings) {
 		mSettings.element = sap.ui.getCore().byId(getTemplateElementId(mSettings.element));
 		evaluateResult(mSettings.element);
 	}
@@ -262,7 +260,8 @@ function(
 			noSelector: true
 		},
 		property : {
-			clazz : 'sap.ui.rta.command.Property'
+			clazz : 'sap.ui.rta.command.Property',
+			adjustForBinding : adjustSelectorForCommand
 		},
 		bindProperty : {
 			clazz : 'sap.ui.rta.command.BindProperty'
@@ -270,7 +269,7 @@ function(
 		addXML : {
 			clazz : 'sap.ui.rta.command.AddXML',
 			configure : configureAddXmlCommand,
-			adjustForBinding : adjustAddXmlCommand
+			adjustForBinding : adjustSelectorForCommand
 		},
 		createContainer : {
 			clazz : 'sap.ui.rta.command.CreateContainer',
@@ -358,7 +357,6 @@ function(
 		})
 
 		.then(function(Command) {
-			var oAction, oElementOverlay, bPrepareStatus, oCommand, mTemplateSettings;
 			var bIsUiElement = vElement instanceof ManagedObject;
 
 			// only sap.ui.rta.command.FlexCommand requires a selector property
@@ -371,10 +369,12 @@ function(
 				name : sCommand
 			});
 
+			var oAction;
 			if (mCommand.configure) {
 				oAction = mCommand.configure(vElement, mSettings, oDesignTimeMetadata);
 			}
 
+			var oElementOverlay;
 			if (bIsUiElement) {
 				oElementOverlay = OverlayRegistry.getOverlay(vElement);
 			}
@@ -387,6 +387,7 @@ function(
 				oElementOverlay = OverlayRegistry.getOverlay(vElement);
 			}
 
+			var mTemplateSettings;
 			if (oElementOverlay && vElement.sParentAggregationName) {
 				mTemplateSettings = evaluateTemplateBinding(oElementOverlay);
 			}
@@ -398,18 +399,24 @@ function(
 				mAllFlexSettings = merge(mTemplateSettings, mAllFlexSettings);
 			}
 
-			oCommand = new Command(mSettings);
+			var oCommand = new Command(mSettings);
 
 			var bSuccessfullConfigured = true; //configuration is optional
 			if (mCommand.configure) {
 				bSuccessfullConfigured = configureActionCommand(vElement, oCommand, oAction);
 			}
 
-			bPrepareStatus = bSuccessfullConfigured && oCommand.prepare(mAllFlexSettings, sVariantManagementReference);
-			if (bPrepareStatus) {
-				return oCommand;
+			if (bSuccessfullConfigured) {
+				return Promise.resolve()
+					.then(function() {
+						return oCommand.prepare(mAllFlexSettings, sVariantManagementReference);
+					})
+					.then(function(bPrepareStatus) {
+						if (bPrepareStatus) {
+							return oCommand;
+						}
+					});
 			}
-
 			oCommand.destroy();
 			return undefined;
 		});
@@ -422,7 +429,7 @@ function(
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @private

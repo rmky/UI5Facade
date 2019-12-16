@@ -3,9 +3,25 @@
  * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(["sap/f/cards/BaseContent", "sap/m/HBox", "sap/m/VBox", "sap/m/Text", "sap/m/Title", "sap/f/Avatar", "sap/m/Link","sap/m/Label", "sap/ui/core/ResizeHandler", "sap/ui/layout/AlignedFlowLayout", "sap/ui/dom/units/Rem", "sap/f/cards/ActionEnablement"],
-	function (BaseContent, HBox, VBox, Text, Title, Avatar, Link , Label, ResizeHandler, AlignedFlowLayout, Rem, ActionEnablement) {
+sap.ui.define([
+		"sap/f/library",
+		"sap/f/cards/BaseContent",
+		"sap/m/HBox",
+		"sap/m/VBox",
+		"sap/m/Text",
+		"sap/m/Title",
+		"sap/f/Avatar",
+		"sap/m/Link",
+		"sap/m/Label",
+		"sap/ui/core/ResizeHandler",
+		"sap/ui/layout/AlignedFlowLayout",
+		"sap/ui/dom/units/Rem",
+		"sap/f/cards/BindingHelper",
+		"sap/f/cards/IconFormatter"
+	], function (library, BaseContent, HBox, VBox, Text, Title, Avatar, Link , Label, ResizeHandler, AlignedFlowLayout, Rem, BindingHelper, IconFormatter) {
 		"use strict";
+
+		var AreaType = library.cards.AreaType;
 
 		/**
 		 * Constructor for a new <code>ObjectContent</code>.
@@ -18,7 +34,7 @@ sap.ui.define(["sap/f/cards/BaseContent", "sap/m/HBox", "sap/m/VBox", "sap/m/Tex
 		 *
 		 * @extends sap.f.cards.BaseContent
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.73.1
 		 *
 		 * @constructor
 		 * @experimental
@@ -137,38 +153,55 @@ sap.ui.define(["sap/f/cards/BaseContent", "sap/m/HBox", "sap/m/VBox", "sap/m/Tex
 
 				oGroup.items.forEach(function (oItem) {
 					var oItemValue,
-						sLabel = oItem.label,
-						sValue = oItem.value,
+						vLabel = oItem.label,
+						vValue = oItem.value,
 						oItemLabel,
-						sHref;
+						vHref,
+						aBindingParts = [];
 
-					if (sLabel) {
+					if (vLabel) {
 						// Checks if the label ends with ":" and if not we just add the ":"
-						sLabel = sLabel[sLabel.length - 1] === ":" ? sLabel : sLabel += ":";
-						oItemLabel = new Label({text: sLabel}).addStyleClass("sapFCardObjectItemLabel");
+						vLabel = BindingHelper.formattedProperty(vLabel, function (sValue) {
+							return sValue && sValue[sValue.length - 1] === ":" ? sValue : sValue += ":";
+						});
+						oItemLabel = new Label({text: vLabel}).addStyleClass("sapFCardObjectItemLabel");
 					}
 
-					if (sValue) {
+					if (vValue) {
 						switch (oItem.type) {
 							case 'link':
 								oItemValue = new Link({
-									href: oItem.url || sValue,
-									text: sValue,
+									href: oItem.url || vValue,
+									text: vValue,
 									target: oItem.target || '_blank'
 								});
 								break;
 							case 'email':
-								sHref = "mailto:" + sValue;
-								if (oItem.emailSubject) {
-									sHref += '?subject=' + oItem.emailSubject;
+								if (oItem.value) {
+									aBindingParts.push(jQuery.extend({}, oItem.value));
 								}
-								oItemValue = new Link({href: sHref, text: sValue});
+								if (oItem.emailSubject) {
+									aBindingParts.push(jQuery.extend({}, oItem.emailSubject));
+								}
+
+								vHref = BindingHelper.formattedProperty(aBindingParts, function (sValue, sEmailSubject) {
+										if (sEmailSubject) {
+											return "mailto:" + sValue + "?subject=" + sEmailSubject;
+										} else {
+											return "mailto:" + sValue;
+										}
+									});
+
+								oItemValue = new Link({href: vHref, text: vValue});
 								break;
 							case 'phone':
-								oItemValue = new Link({href: "tel:" + sValue, text: sValue});
+								vHref = BindingHelper.formattedProperty(vValue, function (sValue) {
+									return "tel:" + sValue;
+								});
+								oItemValue = new Link({href: vHref, text: vValue});
 								break;
 							default:
-								oItemValue = new Text({text: sValue});
+								oItemValue = new Text({text:  vValue});
 								break;
 						}
 					}
@@ -178,33 +211,41 @@ sap.ui.define(["sap/f/cards/BaseContent", "sap/m/HBox", "sap/m/VBox", "sap/m/Tex
 					}
 
 					if (oItem.icon) {
-						var oHBox = new HBox({
+						var vSrc = BindingHelper.formattedProperty(oItem.icon.src, function (sValue) {
+							return IconFormatter.formatSrc(sValue, this._sAppId);
+						}.bind(this));
+
+						var oAvatar = new Avatar({
+							customDisplaySize: "2.5rem",
+							displaySize: "Custom",
+							src: vSrc
+						}).addStyleClass("sapFCardObjectItemAvatar sapFCardObjectItemLabel");
+
+						var oVbox = new VBox({
 							items: [
-								new Avatar({
-									customDisplaySize: "2.5rem",
-									displaySize: "Custom",
-									src: oItem.icon.src
-								}).addStyleClass("sapFCardObjectItemAvatar sapFCardObjectItemLabel"),
-								new VBox({
-									items: [
-										oItemLabel,
-										oItemValue
-									]
-								})
+								oItemLabel,
+								oItemValue
 							]
 						});
+						var oHBox = new HBox({
+							items: [
+								oAvatar,
+								oVbox
+							]
+						});
+
 						oGroupContainer.addItem(oHBox);
 					} else {
 						oGroupContainer.addItem(oItemLabel);
 						oGroupContainer.addItem(oItemValue);
 					}
-				});
+				}, this);
 				oContainer.addContent(oGroupContainer);
-			});
+			}, this);
 
-			this._attachActions(oConfiguration, this);
+			this._oActions.setAreaType(AreaType.Content);
+			this._oActions.attach(oConfiguration, this);
 		};
-		ActionEnablement.enrich(ObjectContent);
 
 		return ObjectContent;
 	});

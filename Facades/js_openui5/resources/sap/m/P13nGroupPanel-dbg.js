@@ -27,7 +27,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] initial settings for the new control
 	 * @class The P13nGroupPanel control is used to define group-specific settings for table personalization.
 	 * @extends sap.m.P13nPanel
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @constructor
 	 * @public
 	 * @since 1.26.0
@@ -300,9 +300,6 @@ sap.ui.define([
 			var aConditions = [];
 			sModelName = (this.getBindingInfo("groupItems") || {}).model;
 			this.getGroupItems().forEach(function(oGroupItem_) {
-				// Note: current implementation assumes that the length of groupItems aggregation is equal
-				// to the number of corresponding model items.
-				// Currently the model data is up-to-date so we need to resort to the Binding Context;
 				// the "groupItems" aggregation data - obtained via getGroupItems() - has the old state !
 				var oContext = oGroupItem_.getBindingContext(sModelName);
 				// Update key of model (in case of 'restore' the key in model gets lost because it is overwritten by Restore Snapshot)

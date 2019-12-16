@@ -44,7 +44,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -846,7 +846,7 @@ function(
 			}, oTile);
 
 			var fnOnFocusIn = function(oEvent) {
-				var iIndex = that.indexOfAggregation("tiles", this),
+				var iIndex = that._getVisibleTiles().indexOf(this),
 					iExpectedPage = Math.floor(iIndex / that._iMaxTiles),
 					iPageDelta = iExpectedPage - that._oPagesInfo.getCurrentPage();
 

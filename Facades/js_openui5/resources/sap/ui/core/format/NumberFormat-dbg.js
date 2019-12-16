@@ -671,8 +671,8 @@ sap.ui.define([
 	 *
 	 * @param {string} sShortName the short name of the unit used in the created pattern
 	 * @returns {string} a pattern, which can be used for formatting and parsing a custom unit of measure
-	 * @sap-restricted sap.ui.model.odata.type
 	 * @private
+	 * @ui5-restricted sap.ui.model.odata.type
 	 */
 	NumberFormat.getDefaultUnitPattern = function(sShortName) {
 		return "{0} " + sShortName;
@@ -1305,7 +1305,9 @@ sap.ui.define([
 	 */
 	NumberFormat.prototype.parse = function(sValue) {
 		var oOptions = this.oFormatOptions,
-			sPlusMinusSigns = quote(oOptions.plusSign + oOptions.minusSign),
+			sPlusSigns = oOptions.plusSign + this.oLocaleData.getLenientNumberSymbols("plusSign") ,
+			sMinusSigns = oOptions.minusSign + this.oLocaleData.getLenientNumberSymbols("minusSign") ,
+			sPlusMinusSigns = quote(sPlusSigns + sMinusSigns),
 			sGroupingSeparator = quote(oOptions.groupingSeparator),
 			sDecimalSeparator = quote(oOptions.decimalSeparator),
 			sRegExpFloat = "^\\s*([" + sPlusMinusSigns + "]?(?:[0-9" + sGroupingSeparator + "]+|[0-9" + sGroupingSeparator + "]*" + sDecimalSeparator + "[0-9]*)(?:[eE][+-][0-9]+)?)\\s*$",
@@ -1362,6 +1364,7 @@ sap.ui.define([
 			}
 
 			var oPatternAndResult = parseNumberAndUnit(mUnitPatterns, sValue);
+			var bUnitIsAmbiguous = false;
 
 			aUnitCode = oPatternAndResult.cldrCode;
 			if (aUnitCode.length === 1) {
@@ -1381,6 +1384,20 @@ sap.ui.define([
 				//ambiguous unit
 				assert(aUnitCode.length === 1, "Ambiguous unit [" + aUnitCode.join(", ") + "] for input: '" + (sValue) + "'");
 				sMeasure = undefined;
+				bUnitIsAmbiguous = true;
+			}
+
+			// TODO: better error handling in strict mode
+			// Next steps will be to implement a more helpful error message for these cases.
+			// Right now we simply return null. For now this will force the types to throw
+			// a default ParseException with a non-descriptive error.
+			if (oOptions.strictParsing) {
+				// two cases:
+				// 1. showMeasure is set to false, but still a unit was parsed
+				// 2. no unit (either none could be found OR the unit is ambiguous, should be separate error logs later on)
+				if ((sMeasure && !oOptions.showMeasure) || bUnitIsAmbiguous) {
+					return null;
+				}
 			}
 
 			sValue = oPatternAndResult.numberValue || sValue;
@@ -1398,6 +1415,19 @@ sap.ui.define([
 
 			if (!oResult) {
 				return null;
+			}
+
+			// TODO: better error handling in strict mode
+			// Next steps will be to implement a more helpful error message for these cases.
+			// Right now we simply return null. For now this will force the types to throw
+			// a default ParseException with a non-descriptive error.
+			if (oOptions.strictParsing) {
+				if ((oOptions.showMeasure && !oResult.currencyCode) || oResult.duplicatedSymbolFound) {
+					// here we need an error log for:
+					// 1. missing currency code/symbol (CLDR & custom)
+					// 2. duplicated symbol was found (only custom, CLDR has no duplicates)
+					return null;
+				}
 			}
 
 			sValue = oResult.numberValue;
@@ -1435,8 +1465,23 @@ sap.ui.define([
 		// Remove grouping separator and replace locale dependant decimal separator,
 		// before calling parseInt/parseFloat
 		sValue = sValue.replace(oGroupingRegExp, "");
-		sValue = sValue.replace(oOptions.plusSign, "+");
-		sValue = sValue.replace(oOptions.minusSign, "-");
+
+		// Replace "minus/plus" sign with a parsable symbol
+		// e.g. "➖47" (cannot be parsed using parseInt) --> "-47" (can be parsed using parseInt)
+		var iValueLength = sValue.length;
+		for (var iValuePos = 0; iValuePos < iValueLength; iValuePos++) {
+			var sCurrentValueChar = sValue[iValuePos];
+
+			// it can either be a minus or a plus
+			// if one was found break because there can only be one in a value
+			if (sPlusSigns.includes(sCurrentValueChar)) {
+				sValue = sValue.replace(sCurrentValueChar, "+");
+				break;
+			} else if (sMinusSigns.includes(sCurrentValueChar)) {
+				sValue = sValue.replace(sCurrentValueChar, "-");
+				break;
+			}
+		}
 
 		// Remove the leading "+" sign because when "parseAsString" is set to true the "parseInt" or "parseFloat" isn't called and the leading "+" has to be moved manually
 		sValue = sValue.replace(/^\+/, "");
@@ -2053,15 +2098,18 @@ sap.ui.define([
 
 		// Set currency code to undefined, as the defined custom currencies
 		// contain multiple currencies having the same symbol.
+		var bDuplicatedSymbolFound = false;
 		if (oConfig.duplicatedSymbols && oConfig.duplicatedSymbols[oMatch.symbol]) {
 			oMatch.code = undefined;
+			bDuplicatedSymbolFound = true;
 			Log.error("The parsed currency symbol '" + oMatch.symbol + "' is defined multiple " +
 					"times in custom currencies.Therefore the result is not distinct.");
 		}
 
 		return {
 			numberValue: sValue,
-			currencyCode: oMatch.code || undefined
+			currencyCode: oMatch.code || undefined,
+			duplicatedSymbolFound: bDuplicatedSymbolFound
 		};
 	}
 

@@ -78,7 +78,7 @@ var mSeverityMap = {
  * @extends sap.ui.core.message.MessageParser
  *
  * @author SAP SE
- * @version 1.68.1
+ * @version 1.73.1
  * @public
  * @abstract
  * @alias sap.ui.model.odata.ODataMessageParser
@@ -473,26 +473,6 @@ ODataMessageParser.prototype._getFunctionTarget = function(mFunctionInfo, mReque
 ODataMessageParser.prototype._createTarget = function(oMessageObject, mRequestInfo) {
 	var sTarget = oMessageObject.target;
 	var sDeepPath = "";
-	var that = this;
-	var bCollection = false;
-
-	var isCollection = function(sPath){
-		var iIndex = sPath.lastIndexOf("/");
-		if (iIndex > 0){ //e.g. 0:'/SalesOrderSet', -1:'empty string'
-			var sEntityPath = sPath.substring(0, iIndex);
-			var oEntityType = that._metadata._getEntityTypeByPath(sEntityPath);
-
-			if (oEntityType) {
-				var oAssociation = that._metadata._getEntityAssociationEnd(oEntityType, sPath.substring(iIndex + 1));
-				if (oAssociation && oAssociation.multiplicity === "*") {
-					bCollection = true;
-				}
-			}
-		} else {
-			bCollection = true;
-		}
-		return bCollection;
-	};
 
 	if (sTarget.substr(0, 1) !== "/") {
 		var sRequestTarget = "";
@@ -551,7 +531,7 @@ ODataMessageParser.prototype._createTarget = function(oMessageObject, mRequestIn
 			// It is an entity
 			sTarget = sTarget ? sRequestTarget + "/" + sTarget : sRequestTarget;
 			sDeepPath = oMessageObject.target ? sDeepPath + "/" + oMessageObject.target : sDeepPath;
-		} else if (isCollection(sRequestTarget)){ // (0:n) cardinality
+		} else if (this._metadata._isCollection(sRequestTarget)){ // (0:n) cardinality
 				sTarget = sRequestTarget + sTarget;
 				sDeepPath = sDeepPath + oMessageObject.target;
 		} else { // 0:1 cardinality
@@ -563,8 +543,19 @@ ODataMessageParser.prototype._createTarget = function(oMessageObject, mRequestIn
 
 	oMessageObject.canonicalTarget = sTarget;
 	if (this._processor){
-		oMessageObject.canonicalTarget = this._processor.resolve(sTarget, undefined, true) || sTarget;
+
+		var sCanonicalTarget = this._processor.resolve(sTarget, undefined, true);
+
+		// Multiple resolve steps are necessary for paths containing multiple navigation properties
+		// with to 0 or 1 to n relation, e.g. /SalesOrder(1)/toItem(2)/toSubItem(3)
+		var iNumberOfParts = sTarget.split(")").length - 1; // number of parts is decreased by one thus last part is the property or empty string
+		for (var i = 2; i < iNumberOfParts; i++){ // e.g. path: "/SalesOrder(1)/toItem(2)/toSubItem(3)" => 3 parts = 2 nav properties
+			sCanonicalTarget = this._processor.resolve(sCanonicalTarget, undefined, true);
+		}
+
+		oMessageObject.canonicalTarget = sCanonicalTarget || sTarget;
 		oMessageObject.deepPath = sDeepPath || oMessageObject.canonicalTarget;
+
 	}
 };
 
@@ -608,7 +599,7 @@ ODataMessageParser.prototype._parseHeader = function(/* ref: */ aMessages, oResp
 			}
 		}
 	} catch (ex) {
-		Log.error("The message string returned by the back-end could not be parsed");
+		Log.error("The message string returned by the back-end could not be parsed: '" + ex.message + "'");
 		return;
 	}
 };

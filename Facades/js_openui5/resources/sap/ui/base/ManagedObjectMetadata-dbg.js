@@ -75,7 +75,7 @@ function(
 	 *
 	 *
 	 * @author Frank Weigel
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @since 0.8.6
 	 * @alias sap.ui.base.ManagedObjectMetadata
 	 * @extends sap.ui.base.Metadata
@@ -1857,8 +1857,12 @@ function(
 			sInstanceSpecificModule = mPredefinedDesignTimeModules[sInstanceSpecificModule] || sInstanceSpecificModule;
 
 			return new Promise(function(fnResolve) {
-				sap.ui.require([sInstanceSpecificModule], function(oDesignTime) {
-					fnResolve(oDesignTime);
+				sap.ui.require([sInstanceSpecificModule], function(vDesignTime) {
+					if (typeof vDesignTime === "function") {
+						fnResolve(vDesignTime(oInstance));
+					} else {
+						fnResolve(vDesignTime);
+					}
 				});
 			});
 		} else {
@@ -1918,7 +1922,7 @@ function(
 	 * @param {string} [sScopeKey] scope name for which metadata will be resolved, see sap.ui.base.ManagedObjectMetadataScope
 	 * @return {Promise} A promise which will return the loaded design time metadata
 	 * @private
-	 * @sap-restricted sap.ui.dt com.sap.webide
+	 * @ui5-restricted sap.ui.dt com.sap.webide
 	 * @since 1.48.0
 	 */
 	ManagedObjectMetadata.prototype.loadDesignTime = function(oManagedObject, sScopeKey) {

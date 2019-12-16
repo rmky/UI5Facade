@@ -6,12 +6,22 @@
 
 sap.ui.define([
 	"sap/ui/fl/Utils",
+	"sap/ui/fl/LayerUtils",
 	"sap/ui/fl/Change",
-	"sap/ui/fl/Variant"
+	"sap/ui/fl/Variant",
+	"sap/base/util/ObjectPath",
+	"sap/base/util/includes",
+	"sap/base/Log",
+	"sap/ui/fl/apply/_internal/controlVariants/URLHandler"
 ], function (
 	Utils,
+	LayerUtils,
 	Change,
-	Variant
+	Variant,
+	ObjectPath,
+	includes,
+	Log,
+	URLHandler
 ) {
 	"use strict";
 
@@ -28,15 +38,15 @@ sap.ui.define([
 	 * @alias sap.ui.fl.variants.VariantController
 	 * @experimental Since 1.50.0
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 */
 	var VariantController = function (sComponentName, sAppVersion, oChangeFileContent) {
 		this._sComponentName = sComponentName || "";
 		this._sAppVersion = sAppVersion || Utils.DEFAULT_APP_VERSION;
 		this._mVariantManagement = {};
 		this.setChangeFileContent(oChangeFileContent, {});
-		this.sVariantTechnicalParameterName = "sap-ui-fl-control-variant-id";
 		this._oResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.ui.fl");
+		this.DEFAULT_AUTHOR = "SAP";
 	};
 
 	/**
@@ -78,6 +88,16 @@ sap.ui.define([
 				aVariants.forEach(function (oVariant, index) {
 					if (oVariant.content.fileName === sVariantManagementReference) {
 						iIndex = index;
+						// Standard Variant should always contain the value: "SAP" in "author" / "Created by" field
+						// case when standard variant exists in the backend response
+						if (!ObjectPath.get("content.support.user", oVariant)) {
+							var oSupport = {
+								support: {
+									user: this.DEFAULT_AUTHOR
+								}
+							};
+							Object.assign(oVariant.content, oSupport);
+						}
 					}
 					if (!oVariant.content.content.favorite) {
 						oVariant.content.content.favorite = true;
@@ -92,14 +112,10 @@ sap.ui.define([
 
 					this._applyChangesOnVariant(oVariant);
 
-					if (mTechnicalParameters && Array.isArray(mTechnicalParameters[this.sVariantTechnicalParameterName])) {
+					if (!sVariantFromUrl) {
 						// Only the first valid reference for that variant management id passed in the parameters is used to load the changes
-						mTechnicalParameters[this.sVariantTechnicalParameterName].some(function (sURLVariant) {
-							if (oVariant.content.fileName === sURLVariant) {
-								sVariantFromUrl = oVariant.content.fileName;
-								return true;
-							}
-						});
+						sVariantFromUrl = includes(mTechnicalParameters && mTechnicalParameters[URLHandler.variantTechnicalParameterName], oVariant.content.fileName)
+							&& oVariant.content.fileName;
 					}
 				}.bind(this));
 				if (iIndex > -1) {
@@ -195,7 +211,7 @@ sap.ui.define([
 		if (oCurrentVariant.content.variantReference) {
 			aReferencedVariantChanges = this.getVariantChanges(sVariantManagementReference, oCurrentVariant.content.variantReference, true);
 			return aReferencedVariantChanges.filter(function(oReferencedChange) {
-				return Utils.compareAgainstCurrentLayer(oReferencedChange.getDefinition().layer, oCurrentVariant.content.layer) === -1; /* Referenced change layer below current layer*/
+				return LayerUtils.compareAgainstCurrentLayer(oReferencedChange.getDefinition().layer, oCurrentVariant.content.layer) === -1; /* Referenced change layer below current layer*/
 			});
 		}
 		return aReferencedVariantChanges;
@@ -203,7 +219,7 @@ sap.ui.define([
 
 	VariantController.prototype.setVariantChanges = function(sVariantManagementReference, sVariantReference, aChanges) {
 		if (!sVariantManagementReference || !sVariantReference || !Array.isArray(aChanges)) {
-			Utils.log.error("Cannot set variant changes without Variant reference");
+			Log.error("Cannot set variant changes without Variant reference");
 			return undefined;
 		}
 
@@ -331,7 +347,8 @@ sap.ui.define([
 	 */
 	VariantController.prototype.getChangesForVariantSwitch = function(mPropertyBag) {
 		var aCurrentVariantChanges = this.getVariantChanges(mPropertyBag.variantManagementReference, mPropertyBag.currentVariantReference, true);
-		var aMapChanges = [], aChangeKeysFromMap = [];
+		var aMapChanges = [];
+		var aChangeKeysFromMap = [];
 		Object.keys(mPropertyBag.changesMap).forEach(function(sControlId) {
 			mPropertyBag.changesMap[sControlId].forEach(function(oMapChange) {
 				aMapChanges = aMapChanges.concat(oMapChange);
@@ -373,8 +390,8 @@ sap.ui.define([
 	};
 
 	VariantController.prototype._applyChangesOnVariant = function(oVariant) {
-		var mVariantChanges = oVariant.variantChanges,
-			oActiveChange;
+		var mVariantChanges = oVariant.variantChanges;
+		var oActiveChange;
 		Object.keys(mVariantChanges).forEach(function(sChangeType) {
 			switch (sChangeType) {
 				case "setTitle":
@@ -396,14 +413,14 @@ sap.ui.define([
 					}
 					break;
 				default:
-					Utils.log.error("No valid changes on variant " + oVariant.content.content.title + " available");
+					Log.error("No valid changes on variant " + oVariant.content.content.title + " available");
 			}
 		}.bind(this));
 	};
 
 	VariantController.prototype._applyChangesOnVariantManagement = function(oVariantManagement) {
-		var mVariantManagementChanges = oVariantManagement.variantManagementChanges,
-			oActiveChange;
+		var mVariantManagementChanges = oVariantManagement.variantManagementChanges;
+		var oActiveChange;
 		if (Object.keys(mVariantManagementChanges).length > 0) {
 			oActiveChange = this._getActiveChange("setDefault", mVariantManagementChanges);
 			if (oActiveChange) {
@@ -448,7 +465,8 @@ sap.ui.define([
 							title : oVariant.content.content.title,
 							layer : oVariant.content.layer,
 							favorite : oVariant.content.content.favorite,
-							visible : oVariant.content.content.visible
+							visible : oVariant.content.content.visible,
+							author : ObjectPath.get("content.support.user", oVariant)
 						})
 					);
 			});
@@ -545,7 +563,7 @@ sap.ui.define([
 	 */
 	VariantController.prototype.resetMap = function (bResetAtRuntime) {
 		if (bResetAtRuntime) {
-			return Promise.resolve(_fnResetMapListener.call(null));
+			return Promise.resolve(_fnResetMapListener());
 		}
 		this._mVariantManagement = {};
 		return Promise.resolve();

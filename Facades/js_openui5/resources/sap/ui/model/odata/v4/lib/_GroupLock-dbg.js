@@ -11,33 +11,40 @@ sap.ui.define([
 	"use strict";
 
 	/**
-	 * Constructs a potential lock for the given group ID. The group ID may be left empty initially,
-	 * you can set it later exactly once. A group lock may be created locked or unlocked. If locked,
-	 * its {@link #waitFor} returns a promise that is resolved when the lock is unlocked. If a
-	 * locked group lock does not have a group ID yet, it blocks all groups until the group is
-	 * specified via {@link #setGroupId}.
+	 * Constructs a potential lock for the given group ID. A group lock may be created locked or
+	 * unlocked. If locked, its {@link #waitFor} returns a promise that is resolved when the lock is
+	 * unlocked.
 	 *
-	 * @param {string} [sGroupId]
+	 * @param {string} sGroupId
 	 *   The group ID
+	 * @param {object} oOwner
+	 *   The lock's owner for debugging
 	 * @param {boolean} [bLocked=false]
 	 *   Whether the lock is locked
-	 * @param {object} [oOwner]
-	 *   The lock's owner for debugging
+	 * @param {boolean} [bModifying]
+	 *   Whether the reason for the group lock is a modifying request
 	 * @param {number} [iSerialNumber=Infinity]
 	 *   A serial number which may be used on unlock
+	 * @throws {Error}
+	 *   If <code>oOwner</code> is missing, or if <code>bModifying</code> is set but
+	 *   <code>bLocked</code> is unset
 	 *
 	 * @alias sap.ui.model.odata.v4.lib._GroupLock
 	 * @constructor
 	 * @private
 	 */
-	function _GroupLock(sGroupId, bLocked, oOwner, iSerialNumber) {
+	function _GroupLock(sGroupId, oOwner, bLocked, bModifying, iSerialNumber) {
+		if (!oOwner) {
+			throw new Error("Missing owner");
+		}
+		if (bModifying && !bLocked) {
+			throw new Error("A modifying group lock has to be locked");
+		}
 		this.sGroupId = sGroupId;
-		this.bLocked = bLocked;
+		this.bLocked = !!bLocked; // whether it is locked; explicitly unlocked if undefined
+		this.bModifying = !!bModifying; // whether this lock belongs to a modifying request
 		this.oOwner = oOwner;
-		// maps a group ID to a promise waiting for it, see waitFor
-		this.mPromiseForGroup = {};
-		// maps a group ID to the resolve function of the promise above
-		this.mResolveFunctionForGroup = {};
+		this.oPromise = null; // the promise resolving when the lock is unlocked
 		this.iSerialNumber = iSerialNumber === undefined ? Infinity : iSerialNumber;
 	}
 
@@ -66,7 +73,9 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns an unlocked group lock for the same group ID.
+	 * Returns an unlocked group lock for the same group ID. This is required when reusing a group
+	 * lock on which {@link #unlock} has already been called (e.g. when one group is used to create
+	 * multiple requests).
 	 *
 	 * @returns {sap.ui.model.odata.v4.lib._GroupLock}
 	 *   The group lock
@@ -74,7 +83,7 @@ sap.ui.define([
 	 * @public
 	 */
 	_GroupLock.prototype.getUnlockedCopy = function () {
-		return new _GroupLock(this.sGroupId, undefined, this.oOwner, this.iSerialNumber);
+		return new _GroupLock(this.sGroupId, this.oOwner, false, false, this.iSerialNumber);
 	};
 
 	/**
@@ -89,49 +98,31 @@ sap.ui.define([
 	};
 
 	/**
-	 * If the group ID is still undefined, the function sets the given group ID and resolves all
-	 * promises waiting for other groups.
+	 * Whether this lock was issued for a modifying request.
 	 *
-	 * @param {string} sGroupId
-	 *   The group ID
+	 * @returns {boolean}
+	 *   Whether this lock was issued for a modifying request
 	 *
 	 * @public
-	 * @see #waitFor
 	 */
-	_GroupLock.prototype.setGroupId = function (sGroupId) {
-		if (!this.sGroupId) {
-			this.sGroupId = sGroupId;
-			for (sGroupId in this.mResolveFunctionForGroup) {
-				if (this.sGroupId !== sGroupId) {
-					this.mResolveFunctionForGroup[sGroupId]();
-					delete this.mPromiseForGroup[sGroupId];
-					delete this.mResolveFunctionForGroup[sGroupId];
-				}
-			}
-		}
+	_GroupLock.prototype.isModifying = function () {
+		return this.bModifying;
 	};
 
 	/**
-	 * Returns a string representation of this object including the lock status and the owner.
+	 * Returns a string representation of this object.
 	 *
-	 * @returns {string} A string description of this lock
+	 * @returns {string} A string description of this group lock
 	 *
 	 * @public
 	 */
 	_GroupLock.prototype.toString = function () {
-		var sDescription = "sap.ui.model.odata.v4.lib._GroupLock("
-				+ (this.isLocked() ? "locked" : "unlocked");
-
-		if (this.sGroupId) {
-			sDescription += ",group=" + this.sGroupId;
-		}
-		if (this.oOwner) {
-			sDescription += ",owner=" + this.oOwner;
-		}
-		if (this.iSerialNumber !== Infinity) {
-			sDescription += ",serialNumber=" + this.iSerialNumber;
-		}
-		return sDescription + ")";
+		return "sap.ui.model.odata.v4.lib._GroupLock(group=" + this.sGroupId
+			+ ", owner=" + this.oOwner
+			+ (this.isLocked() ? ", locked" : "")
+			+ (this.isModifying() ? ", modifying" : "")
+			+ (this.iSerialNumber !== Infinity ? ", serialNumber=" + this.iSerialNumber : "")
+			+ ")";
 	};
 
 	/**
@@ -145,18 +136,14 @@ sap.ui.define([
 	 * @public
 	 */
 	_GroupLock.prototype.unlock = function (bForce) {
-		var sGroupId;
-
-		if (!this.mPromiseForGroup && !bForce) {
+		if (this.bLocked === undefined && !bForce) {
 			throw new Error("GroupLock unlocked twice");
 		}
-		this.mPromiseForGroup = null;
 
-		this.bLocked = false;
-		for (sGroupId in this.mResolveFunctionForGroup) {
-			this.mResolveFunctionForGroup[sGroupId]();
+		this.bLocked = undefined;
+		if (this.oPromise) {
+			this.oPromise.$resolve();
 		}
-		this.mResolveFunctionForGroup = null;
 	};
 
 	/**
@@ -169,15 +156,16 @@ sap.ui.define([
 	 * @public
 	 */
 	_GroupLock.prototype.waitFor = function (sGroupId) {
-		var that = this;
+		var fnResolve;
 
-		if (this.bLocked && (!this.sGroupId || this.sGroupId === sGroupId)) {
-			if (!that.mPromiseForGroup[sGroupId]) {
-				that.mPromiseForGroup[sGroupId] = new SyncPromise(function (resolve) {
-					that.mResolveFunctionForGroup[sGroupId] = resolve;
+		if (this.bLocked && this.sGroupId === sGroupId) {
+			if (!this.oPromise) {
+				this.oPromise = new SyncPromise(function (resolve) {
+					fnResolve = resolve;
 				});
+				this.oPromise.$resolve = fnResolve;
 			}
-			return that.mPromiseForGroup[sGroupId];
+			return this.oPromise;
 		}
 	};
 
@@ -186,7 +174,7 @@ sap.ui.define([
 	 *
 	 * @type {sap.ui.model.odata.v4.lib._GroupLock}
 	 */
-	_GroupLock.$cached = new _GroupLock("$cached");
+	_GroupLock.$cached = new _GroupLock("$cached", "sap.ui.model.odata.v4.lib._GroupLock");
 
 	// avoid "unlocked twice" for this instance
 	_GroupLock.$cached.unlock = function () {};

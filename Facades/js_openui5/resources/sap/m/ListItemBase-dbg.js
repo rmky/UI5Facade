@@ -74,7 +74,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -134,7 +134,16 @@ function(
 			 *
 			 * @since 1.62
 			 */
-			highlightText : {type : "string", group : "Misc", defaultValue : ""}
+			highlightText : {type : "string", group : "Misc", defaultValue : ""},
+
+			/**
+			 * The navigated state of the list item.
+			 *
+			 * If set to <code>true</code>, a navigation indicator is displayed at the end of the list item.
+			 *
+			 * @since 1.72
+			 */
+			navigated : {type : "boolean", group : "Appearance", defaultValue : false}
 		},
 		associations: {
 
@@ -272,11 +281,13 @@ function(
 		this._active = false;
 		this._bGroupHeader = false;
 		this._bNeedsHighlight = false;
+		this._bNeedsNavigated = false;
 	};
 
 	ListItemBase.prototype.onAfterRendering = function() {
 		this.informList("DOMUpdate", true);
 		this._checkHighlight();
+		this._checkNavigated();
 	};
 
 	ListItemBase.prototype.invalidate = function() {
@@ -430,6 +441,10 @@ function(
 
 		if (sTooltip) {
 			aOutput.push(sTooltip);
+		}
+
+		if (this.getNavigated()) {
+			aOutput.push(oBundle.getText("LIST_ITEM_NAVIGATED"));
 		}
 
 		return aOutput.join(" ");
@@ -611,7 +626,14 @@ function(
 			id: this.getId() + "-selectMulti",
 			activeHandling: false,
 			selected: this.getSelected()
-		}).addStyleClass("sapMLIBSelectM").setParent(this, null, true).setTabIndex(-1).attachSelect(function(oEvent) {
+		}).addStyleClass("sapMLIBSelectM").setParent(this, null, true).setTabIndex(-1).addEventDelegate({
+			onkeydown: function (oEvent) {
+				this.informList("KeyDown", oEvent);
+			},
+			onkeyup: function (oEvent) {
+				this.informList("KeyUp", oEvent);
+			}
+		}, this).attachSelect(function(oEvent) {
 			var bSelected = oEvent.getParameter("selected");
 			this.setSelected(bSelected);
 			this.informList("Select", bSelected);
@@ -692,6 +714,7 @@ function(
 	ListItemBase.prototype.exit = function() {
 		this._oLastFocused = null;
 		this._checkHighlight(false);
+		this._checkNavigated(false);
 		this.setActive(false);
 		this.destroyControls([
 			"Delete",
@@ -835,6 +858,17 @@ function(
 		}
 	};
 
+	ListItemBase.prototype._checkNavigated = function(bNeedsNavigated) {
+		if (bNeedsNavigated == undefined) {
+			bNeedsNavigated = (this.getVisible() && this.getNavigated());
+		}
+
+		if (this._bNeedsNavigated != bNeedsNavigated) {
+			this._bNeedsNavigated = bNeedsNavigated;
+			this.informList("NavigatedChange", bNeedsNavigated);
+		}
+	};
+
 	/**
 	 * Determines whether item needs icon to render type or not
 	 *
@@ -975,9 +1009,7 @@ function(
 	};
 
 	ListItemBase.prototype.ontouchend = function(oEvent) {
-
-		// several fingers could be used
-		if (oEvent.targetTouches.length == 0 && this.hasActiveType()) {
+		if (this.hasActiveType()) {
 			this._timeoutIdEnd = setTimeout(function() {
 				this.setActive(false);
 			}.bind(this), 100);
@@ -986,6 +1018,9 @@ function(
 
 	// During native scrolling: Chrome sends touchcancel and no touchend thereafter
 	ListItemBase.prototype.ontouchcancel = ListItemBase.prototype.ontouchend;
+
+	// active handling should be removed when dragging an item is over
+	ListItemBase.prototype.ondragend = ListItemBase.prototype.ontouchend;
 
 	// toggle active styles for navigation items
 	ListItemBase.prototype._activeHandlingNav = function() {};
@@ -1142,6 +1177,36 @@ function(
 				}
 			}
 		}
+
+		if (oEvent.srcControl !== this) {
+			return;
+		}
+
+		this.informList("KeyDown", oEvent);
+	};
+
+	ListItemBase.prototype.onkeyup = function(oEvent) {
+		if (oEvent.isMarked() || oEvent.srcControl !== this) {
+			return;
+		}
+
+		this.informList("KeyUp", oEvent);
+	};
+
+	ListItemBase.prototype.onsapupmodifiers = function(oEvent) {
+		if (oEvent.isMarked() || oEvent.srcControl !== this) {
+			return;
+		}
+
+		this.informList("UpDownModifiers", oEvent, -1);
+	};
+
+	ListItemBase.prototype.onsapdownmodifiers = function(oEvent) {
+		if (oEvent.isMarked() || oEvent.srcControl !== this) {
+			return;
+		}
+
+		this.informList("UpDownModifiers", oEvent, 1);
 	};
 
 	/**

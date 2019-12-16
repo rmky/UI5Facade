@@ -3,8 +3,8 @@
  * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(["sap/m/library", "sap/ui/Device", "./ListItemBaseRenderer"],
-	function(library, Device, ListItemBaseRenderer) {
+sap.ui.define(["sap/m/library", "sap/ui/Device", "sap/ui/core/InvisibleText", "./ListItemBaseRenderer"],
+	function(library, Device, InvisibleText, ListItemBaseRenderer) {
 	"use strict";
 
 
@@ -22,7 +22,9 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "./ListItemBaseRenderer"],
 	 * ListBase renderer.
 	 * @namespace
 	 */
-	var ListBaseRenderer = {};
+	var ListBaseRenderer = {
+		apiVersion: 2
+	};
 
 	/**
 	 * Determines the order of the mode for the renderer
@@ -53,34 +55,43 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "./ListItemBaseRenderer"],
 	 */
 	ListBaseRenderer.render = function(rm, oControl) {
 		// container
-		rm.write("<div");
-		rm.addClass("sapMList");
-		rm.writeControlData(oControl);
+		rm.openStart("div", oControl);
+		rm.class("sapMList");
 
+		// inset
 		if (oControl.getInset()) {
-			rm.addClass("sapMListInsetBG");
+			rm.class("sapMListInsetBG");
 		}
-		if (oControl.getWidth()) {
-			rm.addStyle("width", oControl.getWidth());
-		}
+
+		// width
+		rm.style("width", oControl.getWidth());
 
 		// background
 		if (oControl.getBackgroundDesign) {
-			rm.addClass("sapMListBG" + oControl.getBackgroundDesign());
+			rm.class("sapMListBG" + oControl.getBackgroundDesign());
 		}
 
 		// tooltip
 		var sTooltip = oControl.getTooltip_AsString();
 		if (sTooltip) {
-			rm.writeAttributeEscaped("title", sTooltip);
+			rm.attr("title", sTooltip);
+		}
+
+		// add sticky style classes
+		var iStickyValue = oControl.getStickyStyleValue();
+		if (iStickyValue) {
+			rm.class("sapMSticky");
+			rm.class("sapMSticky" + iStickyValue);
 		}
 
 		// run hook method
 		this.renderContainerAttributes(rm, oControl);
 
-		rm.writeStyles();
-		rm.writeClasses();
-		rm.write(">");
+		// container
+		rm.openEnd();
+
+		// render message strip
+		rm.renderControl(oControl.getAggregation("_messageStrip"));
 
 		// render header
 		var sHeaderText = oControl.getHeaderText();
@@ -92,11 +103,10 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "./ListItemBaseRenderer"],
 			oHeaderTBar.addStyleClass("sapMTBHeader-CTX");
 			rm.renderControl(oHeaderTBar);
 		} else if (sHeaderText) {
-			rm.write("<header class='sapMListHdr sapMListHdrText'");
-			rm.writeAttribute("id", oControl.getId("header"));
-			rm.write(">");
-			rm.writeEscaped(sHeaderText);
-			rm.write("</header>");
+			rm.openStart("header", oControl.getId("header"));
+			rm.class("sapMListHdr").class("sapMListHdrText").openEnd();
+			rm.text(sHeaderText);
+			rm.close("header");
 		}
 
 		// render info bar
@@ -104,11 +114,9 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "./ListItemBaseRenderer"],
 		if (oInfoTBar) {
 			oInfoTBar.setDesign(ToolbarDesign.Info, true);
 			oInfoTBar.addStyleClass("sapMListInfoTBar");
-			// render div for infoToolbar, as there is margin in HCB and HCW
-			// when sticky is enabled, the content behind the infoToolbar is visible due to the margins
-			rm.write("<div class='sapMListInfoTBarContainer'>");
+			rm.openStart("div").class("sapMListInfoTBarContainer").openEnd();
 			rm.renderControl(oInfoTBar);
-			rm.write("</div>");
+			rm.close("div");
 		}
 
 		// determine items rendering
@@ -131,30 +139,29 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "./ListItemBaseRenderer"],
 		// run hook method to start building list
 		this.renderListStartAttributes(rm, oControl);
 
-		// write accessibility state
-		rm.writeAccessibilityState(oControl, this.getAccessibilityState(oControl));
-
 		// list attributes
-		rm.addClass("sapMListUl");
+		rm.class("sapMListUl");
 		if (oControl._iItemNeedsHighlight) {
-			rm.addClass("sapMListHighlight");
+			rm.class("sapMListHighlight");
 		}
 
-		rm.writeAttribute("id", oControl.getId("listUl"));
 		if (bRenderItems || bShowNoData) {
-			rm.writeAttribute("tabindex", iTabIndex);
+			rm.attr("tabindex", iTabIndex);
 		}
 
 		// separators
-		rm.addClass("sapMListShowSeparators" + oControl.getShowSeparators());
+		rm.class("sapMListShowSeparators" + oControl.getShowSeparators());
 
 		// modes
-		rm.addClass("sapMListMode" + oControl.getMode());
+		rm.class("sapMListMode" + oControl.getMode());
 
-		// write inserted styles and classes
-		rm.writeClasses();
-		rm.writeStyles();
-		rm.write(">");
+		// navigated indicator
+		if (oControl._iItemNeedsNavigated) {
+			rm.class("sapMListNavigated");
+		}
+
+		// list
+		rm.openEnd();
 
 		// run hook method to render list head attributes
 		this.renderListHeadAttributes(rm, oControl);
@@ -190,15 +197,13 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "./ListItemBaseRenderer"],
 
 		// footer
 		if (oControl.getFooterText()) {
-			rm.write("<footer class='sapMListFtr'");
-			rm.writeAttribute("id", oControl.getId("footer"));
-			rm.write(">");
-			rm.writeEscaped(oControl.getFooterText());
-			rm.write("</footer>");
+			rm.openStart("footer", oControl.getId("footer")).class("sapMListFtr").openEnd();
+			rm.text(oControl.getFooterText());
+			rm.close("footer");
 		}
 
-		// done
-		rm.write("</div>");
+		// container
+		rm.close("div");
 	};
 
 	/**
@@ -208,12 +213,6 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "./ListItemBaseRenderer"],
 	 * @param {sap.ui.core.Control} oControl an object representation of the control that should be rendered
 	 */
 	ListBaseRenderer.renderContainerAttributes = function(rm, oControl) {
-		// add sticky style classes
-		var iStickyValue = oControl.getStickyStyleValue();
-		if (iStickyValue) {
-			rm.addClass("sapMSticky");
-			rm.addClass("sapMSticky" + iStickyValue);
-		}
 	};
 
 	/**
@@ -232,9 +231,12 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "./ListItemBaseRenderer"],
 	 * @param {sap.ui.core.Control} oControl an object representation of the control that should be rendered
 	 */
 	ListBaseRenderer.renderListStartAttributes = function(rm, oControl) {
-		rm.write("<ul");
-		rm.addClass("sapMListItems");
+		rm.openStart("ul", oControl.getId("listUl"));
+		rm.class("sapMListItems");
 		oControl.addNavSection(oControl.getId("listUl"));
+
+		// write accessibility state
+		rm.accessibilityState(oControl, this.getAccessibilityState(oControl));
 	};
 
 	/**
@@ -254,6 +256,15 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "./ListItemBaseRenderer"],
 	 * @returns {String|undefined}
 	 */
 	ListBaseRenderer.getAriaLabelledBy = function(oControl) {
+		var oHeaderTBar = oControl.getHeaderToolbar();
+		if (oHeaderTBar) {
+			var oTitle = oHeaderTBar.getTitleControl();
+			if (oTitle) {
+				return oTitle.getId();
+			}
+		} else if (oControl.getHeaderText()) {
+			return oControl.getId("header");
+		}
 	};
 
 	/**
@@ -296,7 +307,7 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "./ListItemBaseRenderer"],
 	 * @param {sap.ui.core.Control} oControl an object representation of the control that should be rendered
 	 */
 	ListBaseRenderer.renderListEndAttributes = function(rm, oControl) {
-		rm.write("</ul>");
+		rm.close("ul");
 	};
 
 	/**
@@ -306,45 +317,34 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "./ListItemBaseRenderer"],
 	 * @param {sap.ui.core.Control} oControl an object representation of the control that should be rendered
 	 */
 	ListBaseRenderer.renderNoData = function(rm, oControl) {
-		rm.write("<li");
-		rm.writeAttribute("tabindex", oControl.getKeyboardMode() == ListKeyboardMode.Navigation ? -1 : 0);
-		rm.writeAttribute("id", oControl.getId("nodata"));
-		rm.addClass("sapMLIB sapMListNoData sapMLIBTypeInactive");
+		rm.openStart("li", oControl.getId("nodata"));
+		rm.attr("tabindex", oControl.getKeyboardMode() == ListKeyboardMode.Navigation ? -1 : 0);
+		rm.class("sapMLIB").class("sapMListNoData").class("sapMLIBTypeInactive");
 		ListItemBaseRenderer.addFocusableClasses.call(ListItemBaseRenderer, rm);
-		rm.writeClasses();
-		rm.write(">");
+		rm.openEnd();
 
-		rm.write("<div");
-		rm.addClass("sapMListNoDataText");
-		rm.writeAttribute("id", oControl.getId("nodata-text"));
-		rm.writeClasses();
-		rm.write(">");
-		rm.writeEscaped(oControl.getNoDataText(true));
-		rm.write("</div>");
+		rm.openStart("div", oControl.getId("nodata-text")).class("sapMListNoDataText").openEnd();
+		rm.text(oControl.getNoDataText(true));
+		rm.close("div");
 
-		rm.write("</li>");
+		rm.close("li");
 	};
 
-
 	ListBaseRenderer.renderDummyArea = function(rm, oControl, sAreaId, iTabIndex) {
-		rm.write("<div");
-		rm.writeAttribute("id", oControl.getId(sAreaId));
-		rm.writeAttribute("tabindex", iTabIndex);
+		rm.openStart("div", oControl.getId(sAreaId)).attr("tabindex", iTabIndex);
 
 		if (Device.system.desktop) {
-			rm.addClass("sapMListDummyArea").writeClasses();
+			rm.class("sapMListDummyArea");
 		}
 
-		rm.write("></div>");
+		rm.openEnd().close("div");
 	};
 
 	ListBaseRenderer.renderGrowing = function(rm, oControl) {
 		var oGrowingDelegate = oControl._oGrowingDelegate;
-		if (!oGrowingDelegate) {
-			return;
+		if (oGrowingDelegate) {
+			oGrowingDelegate.render(rm);
 		}
-
-		oGrowingDelegate.render(rm);
 	};
 
 	/**
@@ -358,7 +358,7 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "./ListItemBaseRenderer"],
 	 * @protected
 	 */
 	ListBaseRenderer.getAriaAnnouncement = function(sBundleText) {
-		return ListItemBaseRenderer.getAriaAnnouncement(null, sBundleText);
+		return InvisibleText.getStaticId("sap.m", sBundleText);
 	};
 
 	return ListBaseRenderer;

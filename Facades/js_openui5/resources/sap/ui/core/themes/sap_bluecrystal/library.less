@@ -498,13 +498,8 @@ html.sap-desktop ::-webkit-scrollbar-corner {
 /* BlueCrystal theme                 */
 /* ================================= */
 
-html:not([data-sap-ui-browser^="ie"]):not([data-sap-ui-browser^="ed"]) .sapUiIcon:focus {
+.sapUiIcon:focus {
 	outline-color: @sapUiKeyboardFocus;
-}
-
-html[data-sap-ui-browser^="ie"] .sapUiIcon:focus::after,
-html[data-sap-ui-browser^="ed"] .sapUiIcon:focus::after {
-	border-color: @sapUiKeyboardFocus;
 }
 
 .sapMTB-Info-CTX > .sapUiIcon {
@@ -548,6 +543,7 @@ html[data-sap-ui-browser^="ed"] .sapUiIcon:focus::after {
 .sapUiIconBGColorContrast {
 	background-color: @sapUiHighlight;
 }
+
 /* END "Icon.less" */
 
 /* START "parameterClasses.less" */

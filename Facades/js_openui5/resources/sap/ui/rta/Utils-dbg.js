@@ -7,10 +7,10 @@
 sap.ui.define([
 	"sap/ui/thirdparty/jquery",
 	"sap/ui/fl/Utils",
+	"sap/ui/fl/LayerUtils",
 	"sap/ui/fl/registry/Settings",
 	"sap/ui/dt/OverlayUtil",
 	"sap/ui/dt/DOMUtil",
-	"sap/ui/dt/Util",
 	"sap/m/MessageBox",
 	"sap/ui/rta/util/BindingsExtractor",
 	"sap/base/Log"
@@ -18,10 +18,10 @@ sap.ui.define([
 function(
 	jQuery,
 	FlexUtils,
+	FlexLayerUtils,
 	Settings,
 	OverlayUtil,
 	DOMUtil,
-	DtUtil,
 	MessageBox,
 	BindingsExtractor,
 	Log
@@ -34,7 +34,7 @@ function(
 	 * @class Utility functionality to work with controls, e.g. iterate through aggregations, find parents, etc.
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @private
 	 * @static
@@ -69,8 +69,8 @@ function(
 	Utils.setRtaStyleClassName = function(sLayer) {
 		if (sLayer === "USER") {
 			Utils._sRtaStyleClassName = "";
-		} else if (FlexUtils.getLayerIndex(sLayer) > -1) {
-			Utils._sRtaStyleClassName = "sapContrast sapContrastPlus";
+		} else if (FlexLayerUtils.getLayerIndex(sLayer) > -1) {
+			Utils._sRtaStyleClassName = "sapUiRTABorder";
 		}
 	};
 
@@ -409,7 +409,7 @@ function(
 		var iIndex;
 		if (fnGetIndex && typeof fnGetIndex === "function") {
 			// fnGetIndex usually comes from designtime metadata, so aggregation name is clear and available in it
-			iIndex = fnGetIndex.call(null, oParentElement, oChildElement);
+			iIndex = fnGetIndex(oParentElement, oChildElement);
 		} else {
 			var oMetadata = oParentElement.getMetadata();
 			var oAggregation = oMetadata.getAggregation(sAggregationName);
@@ -509,43 +509,6 @@ function(
 	};
 
 	/**
-	 * Merging helper (pool analog of lodash.mergeWith) which allows custom function
-	 * for resolving merging conflicts.
-	 *
-	 * TODO: replace with lodash.mergeWith when it's available
-	 *
-	 * @param {Object} mDestination Destination object
-	 * @param {Object} mSource Source object
-	 * @param {function} fnCustomizer The customizer is invoked with the following five arguments:
-	 *                                  vDestinationValue: Value of the property in the destination object
-	 *                                  vSourceValue: Value of the property in the source object
-	 *                                  sProperty: Property being processed
-	 *                                  mDestination: Destination object
-	 *                                  mSourve: Source object
-	 * @return {Object} - Returns <code>mDestination</code> object
-	 */
-	Utils.mergeWith = function (mDestination, mSource, fnCustomizer) {
-		if (!(typeof fnCustomizer === "function")) {
-			throw new Error('In order to use mergeWith() utility function fnCustomizer should be provided!');
-		}
-
-		for (var sSourceProperty in mSource) {
-			if (mSource.hasOwnProperty(sSourceProperty)) {
-				mDestination[sSourceProperty] = mDestination.hasOwnProperty(sSourceProperty)
-					? fnCustomizer(
-						mDestination[sSourceProperty],
-						mSource[sSourceProperty],
-						sSourceProperty,
-						mDestination,
-						mSource
-					) : mSource[sSourceProperty];
-			}
-		}
-
-		return mDestination;
-	};
-
-	/**
 	 * Extending helper which allows custom function
 	 * for extending.
 	 *
@@ -623,26 +586,6 @@ function(
 	};
 
 	/**
-	 * Returns a new object composed of the own and inherited property paths
-	 * of given object which are not in the given array
-	 *
-	 * Example: for obj = { 'a': 1, 'b': '2', 'c': 3 };
-	 * omit(obj, ['a', 'c']); -> Returns { 'b': '2' }
-	 *
-	 * @param  {Object} oObject - Source object
-	 * @param  {string|string[]} vPropertyName - Property paths to omit
-	 * @return {Object} returns new object
-	 */
-	Utils.omit = function (oObject, vPropertyName) {
-		var oNewObject = Object.assign({}, oObject);
-		var aPropertyPaths = DtUtil.castArray(vPropertyName);
-		aPropertyPaths.forEach(function (sProperty) {
-			delete oNewObject[sProperty];
-		});
-		return oNewObject;
-	};
-
-	/**
 	 * Checks the binding compatibility of source and target control. Absolute binding will not be considered
 	 *
 	 * @param {sap.ui.core.Element|sap.ui.core.Component} oSource - Source control to be checked for binding compatibility with target control
@@ -652,9 +595,9 @@ function(
 	 */
 	Utils.checkSourceTargetBindingCompatibility = function(oSource, oTarget, oModel) {
 		oModel = oModel || oSource.getModel();
-		var mSourceBindings = BindingsExtractor.collectBindingPaths(oSource, oModel),
-			sSourceContextBindingPath,
-			sTargetContextBindingPath;
+		var mSourceBindings = BindingsExtractor.collectBindingPaths(oSource, oModel);
+		var sSourceContextBindingPath;
+		var sTargetContextBindingPath;
 		// check source control for property binding
 		if (mSourceBindings.bindingPaths.length === 0) {
 			return true;

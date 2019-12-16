@@ -66,6 +66,7 @@ sap.ui.define([
 			earlyRequests : true,
 			groupId : true,
 			groupProperties : true,
+			httpHeaders : true,
 			odataVersion : true,
 			operationMode : true,
 			serviceUrl : true,
@@ -112,6 +113,8 @@ sap.ui.define([
 	 *   group IDs having an object with exactly one property <code>submit</code>. Valid values are
 	 *   'API', 'Auto', 'Direct' see {@link sap.ui.model.odata.v4.SubmitMode}.
 	 *   Supported since 1.51.0
+	 * @param {object} [mParameters.httpHeaders]
+	 *   Map of HTTP header names to their values, see {@link #changeHttpHeaders}
 	 * @param {string} [mParameters.odataVersion="4.0"]
 	 *   The version of the OData service. Supported values are "2.0" and "4.0".
 	 * @param {sap.ui.model.odata.OperationMode} [mParameters.operationMode]
@@ -184,7 +187,7 @@ sap.ui.define([
 	 * @extends sap.ui.model.Model
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 */
 	var ODataModel = Model.extend("sap.ui.model.odata.v4.ODataModel",
 			/** @lends sap.ui.model.odata.v4.ODataModel.prototype */
@@ -200,7 +203,7 @@ sap.ui.define([
 						that = this;
 
 					// do not pass any parameters to Model
-					Model.apply(this);
+					Model.call(this);
 
 					if (!mParameters || mParameters.synchronizationMode !== "None") {
 						throw new Error("Synchronization mode must be 'None'");
@@ -243,7 +246,6 @@ sap.ui.define([
 					this.checkGroupId(mParameters.updateGroupId, false,
 						"Invalid update group ID: ");
 					this.sUpdateGroupId = mParameters.updateGroupId || this.getGroupId();
-					this.aLockedGroupLocks = [];
 					this.mGroupProperties = {};
 					for (sGroupId in mParameters.groupProperties) {
 						that.checkGroupId(sGroupId, true);
@@ -265,9 +267,12 @@ sap.ui.define([
 					}
 					this.bAutoExpandSelect = mParameters.autoExpandSelect === true;
 
+					this.mHeaders = {"Accept-Language" : sLanguageTag};
+					this.mMetadataHeaders = {"Accept-Language" : sLanguageTag};
+
 					// BEWARE: do not share mHeaders between _MetadataRequestor and _Requestor!
 					this.oMetaModel = new ODataMetaModel(
-						_MetadataRequestor.create({"Accept-Language" : sLanguageTag}, sODataVersion,
+						_MetadataRequestor.create(this.mMetadataHeaders, sODataVersion,
 							this.mUriParameters),
 						this.sServiceUrl + "$metadata", mParameters.annotationURI, this,
 						mParameters.supportReferences);
@@ -279,7 +284,6 @@ sap.ui.define([
 								that.fireEvent("sessionTimeout");
 							},
 							getGroupProperty : this.getGroupProperty.bind(this),
-							lockGroup : this.lockGroup.bind(this),
 							onCreateGroup : function (sGroupId) {
 								if (that.isAutoGroup(sGroupId)) {
 									sap.ui.getCore().addPrerenderingTask(
@@ -288,7 +292,8 @@ sap.ui.define([
 							},
 							reportBoundMessages : this.reportBoundMessages.bind(this),
 							reportUnboundMessages : this.reportUnboundMessages.bind(this)
-						}, {"Accept-Language" : sLanguageTag}, this.mUriParameters, sODataVersion);
+						}, this.mHeaders, this.mUriParameters, sODataVersion);
+					this.changeHttpHeaders(mParameters.httpHeaders);
 					if (mParameters.earlyRequests) {
 						this.oMetaModel.fetchEntityContainer(true);
 						this.initializeSecurityToken();
@@ -305,14 +310,13 @@ sap.ui.define([
 			});
 
 	/**
-	 * Waits until all group locks for the given group ID have been unlocked and submits the
-	 * requests associated with this group ID in one batch request.
+	 * Submits the requests associated with this group ID in one batch request.
 	 *
 	 * @param {string} sGroupId
 	 *   The group ID
 	 * @param {boolean} [bCatch=false]
 	 *   Whether the returned promise always resolves and never rejects
-	 * @returns {Promise}
+	 * @returns {sap.ui.base.SyncPromise}
 	 *   A promise on the outcome of the HTTP request resolving with <code>undefined</code>; it is
 	 *   rejected with an error if the batch request itself fails. Use <code>bCatch</code> to catch
 	 *   that error and make the promise resolve with <code>undefined</code> instead.
@@ -320,33 +324,14 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataModel.prototype._submitBatch = function (sGroupId, bCatch) {
-		var bBlocked,
-			oPromise,
-			that = this;
+		var that = this;
 
-		// Use SyncPromise.all to call the requestor synchronously when there is no lock -> The
-		// batch is sent before the rendering. Rendering and server processing run in parallel.
-		oPromise = SyncPromise.all(this.aLockedGroupLocks.map(function (oGroupLock) {
-			return oGroupLock.waitFor(sGroupId);
-		}));
-		bBlocked = oPromise.isPending();
-		if (bBlocked) {
-			Log.info("submitBatch('" + sGroupId + "') is waiting for locks", null, sClassName);
-		}
-		return Promise.resolve(oPromise.then(function () {
-			if (bBlocked) {
-				Log.info("submitBatch('" + sGroupId + "') continues", null, sClassName);
+		return this.oRequestor.submitBatch(sGroupId).catch(function (oError) {
+			that.reportError("$batch failed", sClassName, oError);
+			if (!bCatch) {
+				throw oError;
 			}
-			that.aLockedGroupLocks = that.aLockedGroupLocks.filter(function (oGroupLock) {
-				return oGroupLock.isLocked();
-			});
-			return that.oRequestor.submitBatch(sGroupId).catch(function (oError) {
-				that.reportError("$batch failed", sClassName, oError);
-				if (!bCatch) {
-					throw oError;
-				}
-			});
-		}));
+		});
 	};
 
 	/**
@@ -786,6 +771,81 @@ sap.ui.define([
 	};
 
 	/**
+	 * Changes the HTTP headers used for data and metadata requests sent by this model.
+	 *
+	 * If batch requests are used, the headers will be set for the batch itself, as well as for the
+	 * individual requests within the batch. The headers are changed according to the given map of
+	 * headers: Headers with an <code>undefined</code> value are removed, the other headers are set,
+	 * and missing headers remain unchanged. The following headers must not be used:
+	 * <ul>
+	 * <li> OData V4 requests headers as specified in "8.1 Common Headers" and
+	 *   "8.2 Request Headers" of the specification "OData Version 4.0 Part 1: Protocol"
+	 * <li> OData V2 request headers as specified in "2.2.5 HTTP Header Fields" of the specification
+	 *   "OData Version 2 v10.1"
+	 * <li> The headers "Content-Id" and "Content-Transfer-Encoding"
+	 * <li> The header "SAP-ContextId"
+	 * </ul>
+	 * Note: The "X-CSRF-Token" header will not be used for metadata requests.
+	 *
+	 * @param {object} [mHeaders]
+	 *   Map of HTTP header names to their values
+	 * @throws {Error}
+	 *   If <code>mHeaders</code> contains unsupported headers, the same header occurs more than
+	 *   once, the header values are not strings or undefined, or there are open requests.
+	 *
+	 * @public
+	 * @since 1.71.0
+	 */
+	ODataModel.prototype.changeHttpHeaders = function (mHeaders) {
+		var oHeaderCopy,
+			sHeaderName,
+			mHeadersCopy = {},
+			sHeaderValue,
+			sKey;
+
+		this.oRequestor.checkHeaderNames(mHeaders);
+		for (sKey in mHeaders) {
+			sHeaderName = sKey.toLowerCase();
+			sHeaderValue = mHeaders[sKey];
+			if (mHeadersCopy[sHeaderName]) {
+				throw new Error("Duplicate header " + sKey);
+			} else if (!(typeof sHeaderValue === "string" || sHeaderValue === undefined)) {
+				throw new Error("Unsupported value for header '" + sKey + "': " + sHeaderValue);
+			} else {
+				if (sHeaderName === "x-csrf-token") {
+					sKey = "X-CSRF-Token";
+				}
+				mHeadersCopy[sHeaderName] = {key : sKey, value: sHeaderValue};
+			}
+		}
+		this.oRequestor.checkForOpenRequests();
+
+		for (sKey in this.mHeaders) {
+			sHeaderName = sKey.toLowerCase();
+			oHeaderCopy = mHeadersCopy[sHeaderName];
+			if (oHeaderCopy) {
+				delete this.mHeaders[sKey];
+				delete this.mMetadataHeaders[sKey];
+				if (oHeaderCopy.value !== undefined) {
+					this.mHeaders[oHeaderCopy.key] = oHeaderCopy.value;
+					this.mMetadataHeaders[oHeaderCopy.key] = oHeaderCopy.value;
+				}
+				delete mHeadersCopy[sHeaderName];
+			}
+		}
+
+		for (sKey in mHeadersCopy) {
+			oHeaderCopy = mHeadersCopy[sKey];
+			if (oHeaderCopy.value !== undefined) {
+				this.mHeaders[oHeaderCopy.key] = oHeaderCopy.value;
+				if (sKey !== "x-csrf-token") {
+					this.mMetadataHeaders[oHeaderCopy.key] = oHeaderCopy.value;
+				}
+			}
+		}
+	};
+
+	/**
 	 * Checks whether the given group ID is valid (see {@link #checkGroupId}) and does not have
 	 * {@link sap.ui.model.odata.v4.SubmitMode.Direct}.
 	 *
@@ -938,8 +998,10 @@ sap.ui.define([
 	 */
 	// @override
 	ODataModel.prototype.destroy = function () {
-		this.oRequestor.destroy();
 		this.oMetaModel.destroy();
+		this.oRequestor.destroy();
+		this.mHeaders = undefined;
+		this.mMetadataHeaders = undefined;
 		return Model.prototype.destroy.apply(this, arguments);
 	};
 
@@ -974,12 +1036,13 @@ sap.ui.define([
 	 * Returns the model's bindings.
 	 *
 	 * @returns {sap.ui.model.Binding[]}
-	 *   An array with all bindings, or an empty array if there are no bindings
+	 *   A copy of an array with all bindings, or an empty array if there are no bindings
 	 *
-	 * @private
+	 * @public
+	 * @since 1.73.0
 	 */
 	ODataModel.prototype.getAllBindings = function () {
-		return this.aAllBindings;
+		return this.aAllBindings.slice();
 	};
 
 	/**
@@ -1057,6 +1120,26 @@ sap.ui.define([
 			default:
 				throw new Error("Unsupported group property: '" + sPropertyName + "'");
 		}
+	};
+
+	/**
+	 * Returns a map of HTTP headers used for data and metadata requests.
+	 *
+	 * @returns {object}
+	 *   The map of HTTP headers
+	 *
+	 * @public
+	 * @since 1.71
+	 */
+	ODataModel.prototype.getHttpHeaders = function () {
+		var mHeadersCopy = Object.assign({}, this.mHeaders);
+
+		delete mHeadersCopy["SAP-ContextId"];
+		if (mHeadersCopy["X-CSRF-Token"] === null) { // no security token available
+			delete mHeadersCopy["X-CSRF-Token"];
+		}
+
+		return mHeadersCopy;
 	};
 
 	/**
@@ -1148,14 +1231,28 @@ sap.ui.define([
 	 * (see {@link sap.ui.model.odata.v4.ODataListBinding#create}) that have not yet been
 	 * successfully sent to the server.
 	 *
+	 * @param {string} [sGroupId]
+	 *   A group ID as specified in {@link sap.ui.model.odata.v4.ODataModel}, except group IDs
+	 *   having {@link sap.ui.model.odata.v4.SubmitMode.Direct}; if specified, only pending changes
+	 *   related to that group ID are considered (since 1.70.0)
 	 * @returns {boolean}
 	 *   <code>true</code> if there are pending changes
+	 * @throws {Error}
+	 *   If the given group ID is invalid, or has {@link sap.ui.model.odata.v4.SubmitMode.Direct}
 	 *
 	 * @public
 	 * @since 1.39.0
 	 */
-	ODataModel.prototype.hasPendingChanges = function () {
-		return this.oRequestor.hasPendingChanges();
+	ODataModel.prototype.hasPendingChanges = function (sGroupId) {
+		if (sGroupId !== undefined) {
+			this.checkBatchGroupId(sGroupId);
+			if (this.isAutoGroup(sGroupId)
+					&& this.oRequestor.hasPendingChanges("$parked." + sGroupId)) {
+				return true;
+			}
+		}
+
+		return this.oRequestor.hasPendingChanges(sGroupId);
 	};
 
 	/**
@@ -1208,45 +1305,35 @@ sap.ui.define([
 	};
 
 	/**
-	 * Creates or modifies a lock for a group. {@link #_submitBatch} has to wait until all locks for
-	 * <code>sGroupId</code> are unlocked. The goal of such a lock is to allow the user of the
-	 * ODataModel to call an API that creates a request in a batch group and immediately call
-	 * {@link #submitBatch} for this group. In such cases the request has to be sent with this
-	 * submitBatch, even if the request is created later asynchronously. To achieve this, the API
-	 * function creates a lock that blocks _submitBatch until the request is created.
+	 * Creates a lock for a group. {@link sap.ui.model.odata.v4._Requestor#submitBatch} has to wait
+	 * until all locks for <code>sGroupId</code> are unlocked. Delegates to
+	 * {@link sap.ui.model.odata.v4.lib._Requestor#lockGroup}.
 	 *
-	 * It is possible to create a lock without giving a group ID initially. In this case all queues
-	 * for all group IDs are locked until a group ID is given. Once a group ID has been set, it
-	 * cannot be changed anymore.
+	 * The goal of such a lock is to allow using an API that creates a request in a batch group and
+	 * immediately calling {@link #submitBatch} for this group. In such cases that request has to be
+	 * sent with the batch request triggered by {@link #submitBatch}, even if that request is
+	 * created later asynchronously. To achieve this, the API function creates a lock that blocks
+	 * the batch request until that request is created.
 	 *
 	 * For performance reasons it is possible to create a group lock that actually doesn't lock. All
 	 * non-API functions use this group lock instead of the group ID so that a lock is possible. But
 	 * not in every case a lock is necessary and suitable.
 	 *
-	 * @param {string} [sGroupId]
-	 *   The group ID. If not given here, it can be set later on the created lock.
-	 * @param {boolean|sap.ui.model.odata.v4.lib._GroupLock} [vLock]
-	 *   If vLock is a group lock, it is modified and returned. Otherwise a lock is created which
-	 *   locks if vLock is truthy.
-	 * @param {object} [oOwner]
+	 * @param {string} sGroupId
+	 *   The group ID
+	 * @param {object} oOwner
 	 *   The lock's owner for debugging
+	 * @param {boolean} [bLocked]
+	 *   Whether the created lock is locked
+	 * @param {boolean} [bModifying]
+	 *   Whether the reason for the group lock is a modifying request
 	 * @returns {sap.ui.model.odata.v4.lib._GroupLock}
 	 *   The group lock
 	 *
 	 * @private
 	 */
-	ODataModel.prototype.lockGroup = function (sGroupId, vLock, oOwner) {
-		var oGroupLock;
-
-		if (vLock instanceof _GroupLock) {
-			vLock.setGroupId(sGroupId);
-			return vLock;
-		}
-		oGroupLock = new _GroupLock(sGroupId, vLock, oOwner, this.oRequestor.getSerialNumber());
-		if (oGroupLock.isLocked()) {
-			this.aLockedGroupLocks.push(oGroupLock);
-		}
-		return oGroupLock;
+	ODataModel.prototype.lockGroup = function (sGroupId, oOwner, bLocked, bModifying) {
+		return this.oRequestor.lockGroup(sGroupId, oOwner, bLocked, bModifying);
 	};
 
 	/**
@@ -1299,20 +1386,29 @@ sap.ui.define([
 	 *   The resource path of the cache that saw the messages
 	 * @param {object} mPathToODataMessages
 	 *   Maps a cache-relative path with key predicates or indices to an array of messages with the
-	 *   following properties:
-	 *   {string} code - The error code
-	 *   {string} [longtextUrl] - The absolute URL for the message's long text
-	 *   {string} message - The message text
+	 *   following properties. Each message is passed to the "technicalDetails" (see
+	 *   _Helper.createTechnicalDetails). Currently the "technicalDetails" only contain an attribute
+	 *   named "originalMessage" that contains the message that is received from back-end.
+	 *   {string} code
+	 *     The error code
+	 *   {string} [longtextUrl]
+	 *     The absolute URL for the message's long text
+	 *   {string} message
+	 *     The message text
 	 *   {number} numericSeverity
-	 *      The numeric message severity (1 for "success", 2 for "info", 3 for "warning" and 4 for
-	 *      "error")
-	 *   {boolean} [technical]
-	 *      Whether the message is reported as <code>technical</code> (used by reportError)
+	 *     The numeric message severity (1 for "success", 2 for "info", 3 for "warning" and 4 for
+	 *     "error")
 	 *   {string} target
-	 *      The relative target for the message; the reported target path is a concatenation of the
-	 *      resource path, the cache-relative path and this property
-	 *   {boolean} [transition] - Whether the message is reported as <code>persistent=true</code>
-	 *      and therefore needs to be managed by the application
+	 *     The relative target for the message; the reported target path is a concatenation of the
+	 *     resource path, the cache-relative path and this property
+	 *   {boolean} [technical]
+	 *     Whether the message is reported as <code>technical</code> (supplied by #reportError)
+	 *   {boolean} [transition]
+	 *     Whether the message is reported as <code>persistent=true</code> and therefore needs to be
+	 *     managed by the application
+	 *   {object} [@$ui5.originalMessage]
+	 *     The original message object supplied by #reportError. In case this is supplied it is used
+	 *     in _Helper.createTechnicalDetails to create the "originalMessage" property
 	 * @param {string[]} [aCachePaths]
 	 *    An array of cache-relative paths of the entities for which non-persistent messages have to
 	 *    be removed; if the array is not given, all entities are affected
@@ -1338,7 +1434,7 @@ sap.ui.define([
 					processor : that,
 					target : sTarget,
 					technical : oRawMessage.technical,
-					technicalDetails : oRawMessage.technicalDetails,
+					technicalDetails : _Helper.createTechnicalDetails(oRawMessage),
 					type : aMessageTypes[oRawMessage.numericSeverity] || MessageType.None
 				}));
 			});
@@ -1403,25 +1499,19 @@ sap.ui.define([
 		 * numeric severity and longtext to the corresponding properties and adds it to one of the
 		 * arrays to be reported later.
 		 * @param {object} oMessage The message
+		 * @param {number} [iNumericSeverity] The numeric severity
+		 * @param {boolean} [bTechnical] Whether the message is reported as technical
 		 */
-		function addMessage(oMessage) {
-			var oClonedMessage,
-				oReportMessage = {
+		function addMessage(oMessage, iNumericSeverity, bTechnical) {
+			var oReportMessage = {
 					code : oMessage.code,
 					message : oMessage.message,
-					technical : oMessage.technical,
-					technicalDetails: {}
+					numericSeverity : iNumericSeverity,
+					technical : bTechnical || oMessage.technical,
+					// use "@$ui5." prefix to overcome name collisions with instance annotations
+					// returned from back-end.
+					"@$ui5.originalMessage" : oMessage
 				};
-
-			Object.defineProperty(oReportMessage.technicalDetails, "originalMessage", {
-				enumerable : true,
-				get : function () {
-					if (!oClonedMessage) {
-						oClonedMessage = _Helper.clone(oMessage);
-					}
-					return oClonedMessage;
-				}
-			});
 
 			Object.keys(oMessage).forEach(function (sProperty) {
 				if (sProperty[0] === '@') {
@@ -1470,19 +1560,17 @@ sap.ui.define([
 
 		if (oError.error) {
 			sResourcePath = oError.resourcePath && oError.resourcePath.split("?")[0];
-			oError.error["@.numericSeverity"] = 4; //"Error"
-			oError.error.technical = true;
-			addMessage(oError.error);
+			addMessage(oError.error, 4 /* Error */, true);
 			if (oError.error.details) {
-				oError.error.details.forEach(addMessage);
+				oError.error.details.forEach(function (oMessage) {
+					addMessage(oMessage);
+				});
 			}
 			if (aBoundMessages.length) {
 				this.reportBoundMessages(sResourcePath, {"" : aBoundMessages}, []);
 			}
 		} else {
-			oError["@.numericSeverity"] = 4; //"Error"
-			oError.technical = true;
-			addMessage(oError);
+			addMessage(oError, 4 /* Error */, true);
 		}
 
 		this.reportUnboundMessages(sResourcePath, aUnboundMessages);
@@ -1497,15 +1585,23 @@ sap.ui.define([
 	 *   <code>undefined</code> the message's long text URL cannot be determined.
 	 * @param {object[]} [aMessages]
 	 *   The array of messages as contained in the <code>sap-messages</code> response header with
-	 *   the following properties:
-	 *   {string} code - The error code
-	 *   {string} [longtextUrl] - The absolute URL for the message's long text
-	 *   {string} message - The message text
+	 *   the following properties. Each message is passed to the "technicalDetails" (see
+	 *   _Helper.createTechnicalDetails). Currently the "technicalDetails" only contain an attribute
+	 *   named "originalMessage" that contains the message that is received from back-end.
+	 *   {string} code
+	 *     The error code
+	 *   {string} [longtextUrl]
+	 *     The absolute URL for the message's long text
+	 *   {string} message
+	 *     The message text
 	 *   {number} numericSeverity
-	 *      The numeric message severity (1 for "success", 2 for "info", 3 for "warning" and 4 for
-	 *      "error")
+	 *     The numeric message severity (1 for "success", 2 for "info", 3 for "warning" and 4 for
+	 *     "error")
 	 *   {boolean} [technical]
-	 *      Whether the message is reported as <code>technical</code> (used by reportError)
+	 *     Whether the message is reported as <code>technical</code> (supplied by #reportError)
+	 *   {object} [@$ui5.originalMessage]
+	 *     The original message object supplied by #reportError. In case this is supplied it is used
+	 *     in _Helper.createTechnicalDetails to create the "originalMessage" property
 	 *
 	 * @private
 	 */
@@ -1528,7 +1624,7 @@ sap.ui.define([
 						processor : that,
 						target : "",
 						technical : oMessage.technical,
-						technicalDetails: oMessage.technicalDetails,
+						technicalDetails : _Helper.createTechnicalDetails(oMessage),
 						type : aMessageTypes[oMessage.numericSeverity] || MessageType.None
 					});
 				})
@@ -1586,8 +1682,10 @@ sap.ui.define([
 		sGroupId = sGroupId || this.sUpdateGroupId;
 		this.checkBatchGroupId(sGroupId);
 
-		this.oRequestor.cancelChanges(
-			this.isAutoGroup(sGroupId) ? "$parked." + sGroupId : sGroupId);
+		if (this.isAutoGroup(sGroupId)) {
+			this.oRequestor.cancelChanges("$parked." + sGroupId);
+		}
+		this.oRequestor.cancelChanges(sGroupId);
 
 		this.aAllBindings.forEach(function (oBinding) {
 			if (sGroupId === oBinding.getUpdateGroupId()) {
@@ -1660,7 +1758,8 @@ sap.ui.define([
 	 * subsequent calls to this method for the same group ID may be combined in one batch request
 	 * using separate change sets. For group IDs with {@link sap.ui.model.odata.v4.SubmitMode.Auto},
 	 * only a single change set is used; this method is useful to repeat failed updates or creates
-	 * (see {@link sap.ui.model.odata.v4.ODataListBinding#create}).
+	 * (see {@link sap.ui.model.odata.v4.ODataListBinding#create}) together with all other requests
+	 * for the given group ID in one batch request.
 	 *
 	 * @param {string} sGroupId
 	 *   A valid group ID as specified in {@link sap.ui.model.odata.v4.ODataModel}.
@@ -1680,7 +1779,7 @@ sap.ui.define([
 
 		this.checkBatchGroupId(sGroupId);
 		if (this.isAutoGroup(sGroupId)) {
-			sGroupId = "$parked." + sGroupId;
+			this.oRequestor.relocateAll("$parked." + sGroupId, sGroupId);
 		} else {
 			this.oRequestor.addChangeSet(sGroupId);
 		}
@@ -1719,7 +1818,7 @@ sap.ui.define([
 	 * @private
 	 */
 	ODataModel.prototype.withUnresolvedBindings = function (sCallbackName, vParameter) {
-		return this.getAllBindings().filter(function (oBinding) {
+		return this.aAllBindings.filter(function (oBinding) {
 			return oBinding.isRelative() && !oBinding.getContext();
 		}).some(function (oBinding) {
 			return oBinding[sCallbackName](vParameter);

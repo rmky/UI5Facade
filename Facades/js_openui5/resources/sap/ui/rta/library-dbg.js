@@ -23,7 +23,7 @@ function() {
 	 * @namespace
 	 * @name sap.ui.rta
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @private
 	 * @experimental This class is experimental and provides only limited functionality. Also the API might be changed in future.
 	 */
@@ -32,7 +32,7 @@ function() {
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.rta",
-		version: "1.68.1",
+		version: "1.73.1",
 		dependencies : ["sap.ui.core", "sap.m", "sap.ui.fl", "sap.ui.dt"],
 		types: [
 		],

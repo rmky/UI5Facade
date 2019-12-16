@@ -62,7 +62,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -318,7 +318,7 @@ sap.ui.define([
 				$icon.attr("aria-expanded", "true");
 			} else {
 				// hide those parts which are collapsible (w/o animation, otherwise initial loading doesn't look good ...)
-				$this.children(".sapMPanelExpandablePart").hide();
+				$this.children(".sapMPanelExpandablePart").css("display", "none");
 				//ARIA
 				$icon.attr("aria-expanded", "false");
 			}

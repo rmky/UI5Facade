@@ -30,9 +30,9 @@ sap.ui.define([
 	"use strict";
 
 	function _getParents(bSibling, oOverlay) {
-		var oParentOverlay,
-			oRelevantContainer = oOverlay.getRelevantContainer(!bSibling),
-			oRelevantContainerOverlay = OverlayRegistry.getOverlay(oRelevantContainer);
+		var oParentOverlay;
+		var oRelevantContainer = oOverlay.getRelevantContainer(!bSibling);
+		var oRelevantContainerOverlay = OverlayRegistry.getOverlay(oRelevantContainer);
 		if (bSibling) {
 			oParentOverlay = oOverlay.getParentElementOverlay();
 		} else {
@@ -92,7 +92,8 @@ sap.ui.define([
 		return aInvisibleElements.concat(aStashedControls);
 	}
 
-	var SINGULAR = true, PLURAL = false;
+	var SINGULAR = true;
+	var PLURAL = false;
 	function _getText (sRtaTextKey, mActions, oParentElement, bSingular, sControlName) {
 		var aNames = [];
 		var mControlType;
@@ -185,7 +186,7 @@ sap.ui.define([
 	 * @class The plugin allows to add additional elements that exist either hidden in the UI or in the OData service
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -243,6 +244,9 @@ sap.ui.define([
 				}
 			}
 
+			var oCachedElements = this.getCachedElements(bOverlayIsSibling);
+			var bElementsAvailable = oCachedElements && oCachedElements.length > 0;
+			bIsEnabled = bIsEnabled && (bElementsAvailable || this.getDialog().getCustomFieldEnabled());
 			return bIsEnabled;
 		},
 
@@ -282,7 +286,8 @@ sap.ui.define([
 			}
 			var aAggregationNames;
 			if (bSibling) {
-				aAggregationNames = [oOverlay.getParentAggregationOverlay().getAggregationName()];
+				var oParentAggregationOverlay = oOverlay.getParentAggregationOverlay();
+				aAggregationNames = oParentAggregationOverlay ? [oOverlay.getParentAggregationOverlay().getAggregationName()] : [];
 			} else {
 				aAggregationNames = mParents.parentOverlay.getAggregationOverlays().filter(function(oAggregationOverlay) {
 					return !oAggregationOverlay.getDesignTimeMetadata().isIgnored(mParents.parent);
@@ -349,7 +354,7 @@ sap.ui.define([
 								oRevealSelector = oOverlay.getRelevantContainer();
 							}
 
-							oHasChangeHandlerPromise = this.hasChangeHandler(mRevealAction.changeType, oRevealSelector, true).then(function(bHasChangeHandler) {
+							oHasChangeHandlerPromise = this.hasChangeHandler(mRevealAction.changeType, oRevealSelector).then(function(bHasChangeHandler) {
 								if (bHasChangeHandler) {
 									if (mRevealAction.changeOnRelevantContainer) {
 										//we have the child overlay, so we need the parents
@@ -396,18 +401,18 @@ sap.ui.define([
 						var oCheckElement = mAction.changeOnRelevantContainer ? mParents.relevantContainer : mParents.parent;
 						var oCheckElementOverlay = OverlayRegistry.getOverlay(oCheckElement);
 						if (mAction.changeType && this.hasStableId(oCheckElementOverlay)) {
-							return this.hasChangeHandler(mAction.changeType, oCheckElement, true)
-							.then(function(bHasChangeHandler) {
-								if (bHasChangeHandler) {
-									return {
-										aggregationName: mAction.aggregation,
-										addODataProperty: {
-											designTimeMetadata: oDesignTimeMetadata,
-											action: mAction
-										}
-									};
-								}
-							});
+							return this.hasChangeHandler(mAction.changeType, oCheckElement)
+								.then(function(bHasChangeHandler) {
+									if (bHasChangeHandler) {
+										return {
+											aggregationName: mAction.aggregation,
+											addODataProperty: {
+												designTimeMetadata: oDesignTimeMetadata,
+												action: mAction
+											}
+										};
+									}
+								});
 						}
 					}
 				}.bind(this));
@@ -447,23 +452,23 @@ sap.ui.define([
 										oCheckElement = mParents.relevantContainer;
 									}
 									if (oItem.changeSpecificData.changeType) {
-										aChangeHandlerPromises.push(this.hasChangeHandler.call(this, oItem.changeSpecificData.changeType, oCheckElement, true));
+										aChangeHandlerPromises.push(this.hasChangeHandler(oItem.changeSpecificData.changeType, oCheckElement));
 									}
 								}.bind(this));
 
 								return Promise.all(aChangeHandlerPromises)
-								.then(function(aHasChangeHandler) {
-									if (aItems.length === aHasChangeHandler.length && aHasChangeHandler.indexOf(false) === -1) {
-										return {
-											aggregationName: mAction.aggregation,
-											custom : {
-												designTimeMetadata : oDesignTimeMetadata,
-												action : mAction,
-												items: aItems
-											}
-										};
-									}
-								});
+									.then(function(aHasChangeHandler) {
+										if (aItems.length === aHasChangeHandler.length && aHasChangeHandler.indexOf(false) === -1) {
+											return {
+												aggregationName: mAction.aggregation,
+												custom : {
+													designTimeMetadata : oDesignTimeMetadata,
+													action : mAction,
+													items: aItems
+												}
+											};
+										}
+									});
 							}
 						}
 					}
@@ -517,7 +522,7 @@ sap.ui.define([
 		 * @private
 		 */
 		_getActions: function(bSibling, oOverlay, bInvalidate) {
-			return new Promise(function(resolve) {
+			return new Promise(function(resolve, reject) {
 				var sSiblingOrChild = bSibling ? "asSibling" : "asChild";
 				if (!bInvalidate && oOverlay._mAddActions) {
 					return resolve(oOverlay._mAddActions[sSiblingOrChild]);
@@ -528,26 +533,29 @@ sap.ui.define([
 				var oCustomAddActionsPromise = this._getCustomAddActions(bSibling, oOverlay);
 
 				return Promise.all([oRevealActionsPromise, oAddODataPropertyActionsPromise, oCustomAddActionsPromise])
-				.then(function(aAllActions) {
-					//join and condense both action data
-					var mOverall = jQuery.extend(true, aAllActions[0], aAllActions[1], aAllActions[2]);
-					var aAggregationNames = Object.keys(mOverall);
+					.then(function(aAllActions) {
+						//join and condense both action data
+						var mOverall = jQuery.extend(true, aAllActions[0], aAllActions[1], aAllActions[2]);
+						var aAggregationNames = Object.keys(mOverall);
 
-					if (aAggregationNames.length === 0) {
-						mOverall = {};
-					} else if (aAggregationNames.length > 1) {
-						Log.error("reveal or addODataProperty action defined for more than 1 aggregation, that is not yet possible");
-					}
-					if (aAggregationNames.length > 0) {
-						var sAggregationName = aAggregationNames[0];
-						mOverall[sAggregationName].aggregation = sAggregationName;
-						mOverall = mOverall[sAggregationName];
-					}
+						if (aAggregationNames.length === 0) {
+							mOverall = {};
+						} else if (aAggregationNames.length > 1) {
+							Log.error("reveal or addODataProperty action defined for more than 1 aggregation, that is not yet possible");
+						}
+						if (aAggregationNames.length > 0) {
+							var sAggregationName = aAggregationNames[0];
+							mOverall[sAggregationName].aggregation = sAggregationName;
+							mOverall = mOverall[sAggregationName];
+						}
 
-					oOverlay._mAddActions = oOverlay._mAddActions || {asSibling: {}, asChild: {}};
-					oOverlay._mAddActions[sSiblingOrChild] = mOverall;
-					resolve(mOverall);
-				});
+						oOverlay._mAddActions = oOverlay._mAddActions || {asSibling: {}, asChild: {}};
+						oOverlay._mAddActions[sSiblingOrChild] = mOverall;
+						resolve(mOverall);
+					})
+					.catch(function (vError) {
+						reject(vError);
+					});
 			}.bind(this));
 		},
 
@@ -566,89 +574,44 @@ sap.ui.define([
 		},
 
 		showAvailableElements: function(bOverlayIsSibling, aElementOverlays, iIndex, sControlName) {
-			var oElementOverlay = aElementOverlays[0],
-				mParents = _getParents(bOverlayIsSibling, oElementOverlay),
-				oSiblingElement = bOverlayIsSibling && oElementOverlay.getElement(),
-				mActions,
-				aPromises = [];
+			var oElementOverlay = aElementOverlays[0];
+			var mParents = _getParents(bOverlayIsSibling, oElementOverlay);
+			var oSiblingElement = bOverlayIsSibling && oElementOverlay.getElement();
+			var mActions;
 
 			return this._getActions(bOverlayIsSibling, oElementOverlay)
-			.then(function(mAllActions) {
-				mActions = mAllActions;
-
-				var oAddODataPropertyPromise = Promise.resolve([]);
-				if (mActions.addODataProperty) {
-					mActions.addODataProperty.relevantContainer = oElementOverlay.getRelevantContainer(!bOverlayIsSibling);
-
-					oAddODataPropertyPromise = this._waitForChangeHandlerSettings(mActions.addODataProperty.action)
-					.then(function(mChangeHandlerSettings) {
-						// No dialog elements for metadata with changeHandlerSettings and without createFunction
-						return this._checkIfCreateFunctionIsAvailable(mChangeHandlerSettings) ?
-							this.getAnalyzer().getUnboundODataProperties(mParents.parent, mActions.addODataProperty) : [];
-					}.bind(this));
-				}
-
-				aPromises.push(
-					mActions.reveal ? this.getAnalyzer().enhanceInvisibleElements(mParents.parent, mActions) : Promise.resolve([]),
-					oAddODataPropertyPromise,
-					mActions.custom ? this.getAnalyzer().getCustomAddItems(mParents.parent, mActions.custom, mActions.aggregation) : Promise.resolve([])
-				);
-
-				if (mActions.aggregation || sControlName) {
-					this._setDialogTitle(mActions, mParents.parent, sControlName);
-				}
-			}.bind(this))
-
-			.then(function() {
-				if (mActions.addODataProperty) {
-					return Utils.isServiceUpToDate(mParents.parent);
-				}
-			})
-
-			.then(function() {
-				if (mActions.addODataProperty) {
-					this.getDialog()._oCustomFieldButton.setVisible(true);
-					return Utils.isCustomFieldAvailable(mParents.parent);
-				}
-				this.getDialog()._oCustomFieldButton.setVisible(false);
-			}.bind(this))
-
-			.then(function(oCurrentFieldExtInfo) {
-				if (oCurrentFieldExtInfo) {
-					this._oCurrentFieldExtInfo = oCurrentFieldExtInfo;
-					this.getDialog().setCustomFieldEnabled(true);
-					this.getDialog().addBusinessContext(this._oCurrentFieldExtInfo.BusinessContexts);
-					this.getDialog().detachEvent('openCustomField', this._onOpenCustomField, this);
-					this.getDialog().attachEvent('openCustomField', null, this._onOpenCustomField, this);
-				}
-			}.bind(this))
-
-			.then(_getAllElements.bind(this, aPromises))
-
-			.then(function(aAllElements) {
-				this.getDialog().setElements(aAllElements);
-
-				return this.getDialog().open()
+				.then(function(mAllActions) {
+					mActions = mAllActions;
+				})
 
 				.then(function() {
-					return this._createCommands(mParents, oSiblingElement, mActions, iIndex);
+					return this.getAllElements(bOverlayIsSibling, aElementOverlays, iIndex, sControlName);
+				}.bind(this))
+
+				.then(function(aAllElements) {
+					this.getDialog().setElements(aAllElements);
+
+					return this.getDialog().open()
+
+						.then(function() {
+							return this._createCommands(mParents, oSiblingElement, mActions, iIndex);
+						}.bind(this))
+
+						.catch(function(oError) {
+							//no error means canceled dialog
+							if (oError instanceof Error) {
+								throw oError;
+							}
+						});
 				}.bind(this))
 
 				.catch(function(oError) {
-					//no error means canceled dialog
 					if (oError instanceof Error) {
 						throw oError;
+					} else {
+						Log.info("Service not up to date, skipping add dialog", "sap.ui.rta");
 					}
 				});
-			}.bind(this))
-
-			.catch(function(oError) {
-				if (oError instanceof Error) {
-					throw oError;
-				} else {
-					Log.info("Service not up to date, skipping add dialog", "sap.ui.rta");
-				}
-			});
 		},
 
 		_setDialogTitle : function(mActions, oParentElement, sControlName) {
@@ -662,8 +625,6 @@ sap.ui.define([
 		/**
 		 * Function called when custom field button was pressed
 		 *
-		 * @param {sap.ui.base.Event}
-		 *		  oEvent event object
 		 */
 		_onOpenCustomField : function () {
 			// open field ext ui
@@ -704,43 +665,43 @@ sap.ui.define([
 				//at least one element selected
 				return this.getCommandFactory().getCommandFor(mParents.parent, "composite")
 
-				.then(function(oCompositeCommand) {
-					var oPromise = Promise.resolve();
-					aSelectedElements.forEach(function(oSelectedElement) {
-						switch (oSelectedElement.type) {
-							case "invisible":
-								oPromise = oPromise.then(
-									this._createCommandsForInvisibleElement.bind(this, oCompositeCommand, oSelectedElement, mParents, oSiblingElement, mActions, iIndex));
-								break;
-							case "odata":
-								oPromise = oPromise.then(
-									this._createCommandsForODataElement.bind(this, oCompositeCommand, oSelectedElement, mParents, oSiblingElement, mActions, iIndex));
-								break;
-							case "custom":
-								oPromise = oPromise.then(
-									this._createCommandsForCustomElement.bind(this, oCompositeCommand, oSelectedElement, mParents, oSiblingElement, mActions, iIndex));
-								break;
-							default:
-								Log.error("Can't create command for untreated element.type " + oSelectedElement.type);
-						}
-					}, this);
-					return oPromise.then(function() { return oCompositeCommand; });
-				}.bind(this))
+					.then(function(oCompositeCommand) {
+						var oPromise = Promise.resolve();
+						aSelectedElements.forEach(function(oSelectedElement) {
+							switch (oSelectedElement.type) {
+								case "invisible":
+									oPromise = oPromise.then(
+										this._createCommandsForInvisibleElement.bind(this, oCompositeCommand, oSelectedElement, mParents, oSiblingElement, mActions, iIndex));
+									break;
+								case "odata":
+									oPromise = oPromise.then(
+										this._createCommandsForODataElement.bind(this, oCompositeCommand, oSelectedElement, mParents, oSiblingElement, mActions, iIndex));
+									break;
+								case "custom":
+									oPromise = oPromise.then(
+										this._createCommandsForCustomElement.bind(this, oCompositeCommand, oSelectedElement, mParents, oSiblingElement, mActions, iIndex));
+									break;
+								default:
+									Log.error("Can't create command for untreated element.type " + oSelectedElement.type);
+							}
+						}, this);
+						return oPromise.then(function() { return oCompositeCommand; });
+					}.bind(this))
 
-				.then(function(oCompositeCommand) {
-					this.fireElementModified({
-						command : oCompositeCommand
+					.then(function(oCompositeCommand) {
+						this.fireElementModified({
+							command : oCompositeCommand
+						});
+					}.bind(this))
+
+					.catch(function(vMessage) {
+						throw DtUtils.propagateError(
+							vMessage,
+							"AdditionalElementsPlugin#_createCommands",
+							"Error occured during _createCommands execution",
+							"sap.ui.rta.plugin"
+						);
 					});
-				}.bind(this))
-
-				.catch(function(vMessage) {
-					throw DtUtils.propagateError(
-						vMessage,
-						"AdditionalElementsPlugin#_createCommands",
-						"Error occured during _createCommands execution",
-						"sap.ui.rta.plugin"
-					);
-				});
 			}
 			return Promise.resolve();
 		},
@@ -748,28 +709,28 @@ sap.ui.define([
 		_createCommandsForInvisibleElement : function(oCompositeCommand, oSelectedElement, mParents, oSiblingElement, mActions, iIndex) {
 			return this._createRevealCommandForInvisible(oSelectedElement, mActions, mParents)
 
-			.then(function(oRevealCommandForInvisible) {
-				oCompositeCommand.addCommand(oRevealCommandForInvisible);
-				return this._createMoveCommandForInvisible(oSelectedElement, mActions, mParents, oSiblingElement, iIndex);
-			}.bind(this))
+				.then(function(oRevealCommandForInvisible) {
+					oCompositeCommand.addCommand(oRevealCommandForInvisible);
+					return this._createMoveCommandForInvisible(oSelectedElement, mActions, mParents, oSiblingElement, iIndex);
+				}.bind(this))
 
-			.then(function(oMoveCommandForInvisible) {
-				if (oMoveCommandForInvisible) {
-					oCompositeCommand.addCommand(oMoveCommandForInvisible);
-				} else {
-					Log.warning("No move action configured for " + mParents.parent.getMetadata().getName() + ", aggregation: " + mActions.aggregation, "sap.ui.rta");
-				}
-				return oCompositeCommand;
-			});
+				.then(function(oMoveCommandForInvisible) {
+					if (oMoveCommandForInvisible) {
+						oCompositeCommand.addCommand(oMoveCommandForInvisible);
+					} else {
+						Log.warning("No move action configured for " + mParents.parent.getMetadata().getName() + ", aggregation: " + mActions.aggregation, "sap.ui.rta");
+					}
+					return oCompositeCommand;
+				});
 		},
 
 		_waitForChangeHandlerSettings : function(mODataPropertyAction) {
 			if (mODataPropertyAction.changeHandlerSettings instanceof Promise) {
 				return mODataPropertyAction.changeHandlerSettings
-				.then(function(mSettings) {
-					mODataPropertyAction.changeHandlerSettings = mSettings;
-					return mODataPropertyAction.changeHandlerSettings;
-				});
+					.then(function(mSettings) {
+						mODataPropertyAction.changeHandlerSettings = mSettings;
+						return mODataPropertyAction.changeHandlerSettings;
+					});
 			}
 			return Promise.resolve(mODataPropertyAction.changeHandlerSettings);
 		},
@@ -779,24 +740,24 @@ sap.ui.define([
 			var oParentAggregationDTMetadata = oParentAggregationOverlay.getDesignTimeMetadata();
 			return this._waitForChangeHandlerSettings(mActions.addODataProperty.action)
 
-			.then(function(mChangeHandlerSettings) {
-				var mRequiredLibraries = mChangeHandlerSettings
-					&& mChangeHandlerSettings.content
-					&& mChangeHandlerSettings.content.requiredLibraries;
-				if (mRequiredLibraries) {
-					return this._createCommandForAddLibrary(mParents, mActions, mRequiredLibraries, oParentAggregationDTMetadata)
-					.then(function(oCommandForAddLibrary) {
-						oCompositeCommand.addCommand(oCommandForAddLibrary);
-					});
-				}
-			}.bind(this))
+				.then(function(mChangeHandlerSettings) {
+					var mRequiredLibraries = mChangeHandlerSettings
+						&& mChangeHandlerSettings.content
+						&& mChangeHandlerSettings.content.requiredLibraries;
+					if (mRequiredLibraries) {
+						return this._createCommandForAddLibrary(mParents, mActions, mRequiredLibraries, oParentAggregationDTMetadata)
+							.then(function(oCommandForAddLibrary) {
+								oCompositeCommand.addCommand(oCommandForAddLibrary);
+							});
+					}
+				}.bind(this))
 
-			.then(this._createCommandForOData.bind(this, oSelectedElement, mActions, mParents, oSiblingElement, iIndex))
+				.then(this._createCommandForOData.bind(this, oSelectedElement, mActions, mParents, oSiblingElement, iIndex))
 
-			.then(function(oCommandsForOData) {
-				oCompositeCommand.addCommand(oCommandsForOData);
-				return oCompositeCommand;
-			});
+				.then(function(oCommandsForOData) {
+					oCompositeCommand.addCommand(oCommandsForOData);
+					return oCompositeCommand;
+				});
 		},
 
 		_createCommandForOData: function(oSelectedElement, mActions, mParents, oSiblingElement, iIndex) {
@@ -805,33 +766,35 @@ sap.ui.define([
 			var mODataPropertyAction = mActions.addODataProperty.action;
 			return this._waitForChangeHandlerSettings(mODataPropertyAction)
 
-			.then(function(mChangeHandlerSettings) {
-				var sVariantManagementReference,
-					sODataServiceVersion = mChangeHandlerSettings
-					&& mChangeHandlerSettings.key
-					&& mChangeHandlerSettings.key.oDataServiceVersion;
-				var oRefControlForId = mParents.parent; //e.g. SmartForm
-				if (mODataPropertyAction.changeOnRelevantContainer) {
-					oRefControlForId = mParents.relevantContainer; //e.g. SimpleForm
-				}
-				var iAddTargetIndex = Utils.getIndex(mParents.parent, oSiblingElement, mActions.aggregation, oParentAggregationDTMetadata.getData().getIndex);
-				var oChangeHandler = this._getChangeHandler(mODataPropertyAction.changeType, oRefControlForId);
-				if (mParents.parentOverlay.getVariantManagement && oChangeHandler && oChangeHandler.revertChange) {
-					sVariantManagementReference = mParents.parentOverlay.getVariantManagement();
-				}
-				var oManifest = FlUtils.getAppComponentForControl(mParents.parent).getManifest();
-				var sServiceUri = FlUtils.getODataServiceUriFromManifest(oManifest);
-				return this.getCommandFactory().getCommandFor(mParents.parent, "addODataProperty", {
-					newControlId: Utils.createFieldLabelId(oRefControlForId, oSelectedElement.entityType, oSelectedElement.bindingPath),
-					index: iIndex !== undefined ? iIndex : iAddTargetIndex,
-					bindingString: oSelectedElement.bindingPath,
-					entityType: oSelectedElement.entityType,
-					parentId: mParents.parent.getId(),
-					oDataServiceVersion: sODataServiceVersion,
-					oDataServiceUri: sServiceUri,
-					propertyName: oSelectedElement.name
-				}, oParentAggregationDTMetadata, sVariantManagementReference);
-			}.bind(this));
+				.then(function(mChangeHandlerSettings) {
+					var sVariantManagementReference;
+					var sODataServiceVersion = mChangeHandlerSettings
+						&& mChangeHandlerSettings.key
+						&& mChangeHandlerSettings.key.oDataServiceVersion;
+					var oRefControlForId = mParents.parent; //e.g. SmartForm
+					if (mODataPropertyAction.changeOnRelevantContainer) {
+						oRefControlForId = mParents.relevantContainer; //e.g. SimpleForm
+					}
+					var iAddTargetIndex = Utils.getIndex(mParents.parent, oSiblingElement, mActions.aggregation, oParentAggregationDTMetadata.getData().getIndex);
+					return this.hasChangeHandler(mODataPropertyAction.changeType, oRefControlForId)
+						.then(function(bHasChangeHandler) {
+							if (mParents.parentOverlay.getVariantManagement && bHasChangeHandler) {
+								sVariantManagementReference = mParents.parentOverlay.getVariantManagement();
+							}
+							var oManifest = FlUtils.getAppComponentForControl(mParents.parent).getManifest();
+							var sServiceUri = FlUtils.getODataServiceUriFromManifest(oManifest);
+							return this.getCommandFactory().getCommandFor(mParents.parent, "addODataProperty", {
+								newControlId: Utils.createFieldLabelId(oRefControlForId, oSelectedElement.entityType, oSelectedElement.bindingPath),
+								index: iIndex !== undefined ? iIndex : iAddTargetIndex,
+								bindingString: oSelectedElement.bindingPath,
+								entityType: oSelectedElement.entityType,
+								parentId: mParents.parent.getId(),
+								oDataServiceVersion: sODataServiceVersion,
+								oDataServiceUri: sServiceUri,
+								propertyName: oSelectedElement.name
+							}, oParentAggregationDTMetadata, sVariantManagementReference);
+						}.bind(this));
+				}.bind(this));
 		},
 
 		_createCommandForAddLibrary: function(mParents, mActions, mRequiredLibraries, oParentAggregationDTMetadata) {
@@ -860,13 +823,8 @@ sap.ui.define([
 			}
 
 			var sVariantManagementReference;
-			var oStashedElement;
-			var sType = oRevealedElement.getMetadata().getName();
-			if (sType === "sap.ui.core._StashedControl") {
-				oStashedElement = oRevealedElement;
-			}
 			if (oRevealedElementOverlay) {
-				sVariantManagementReference = this.getVariantManagementReference(oRevealedElementOverlay, oRevealAction, false, oStashedElement);
+				sVariantManagementReference = this.getVariantManagementReference(oRevealedElementOverlay);
 			}
 
 			if (oRevealAction.changeOnRelevantContainer) {
@@ -902,7 +860,7 @@ sap.ui.define([
 				var oMoveAction = SourceParentDesignTimeMetadata.getAction("move", oRevealedElement);
 				var sVariantManagementReference;
 				if (oMoveAction) {
-					sVariantManagementReference = this.getVariantManagementReference(OverlayRegistry.getOverlay(oRevealedElement), oMoveAction, true);
+					sVariantManagementReference = this.getVariantManagementReference(OverlayRegistry.getOverlay(oRevealedElement));
 				}
 				return this.getCommandFactory().getCommandFor(mParents.relevantContainer, "move", {
 					movedElements : [{
@@ -938,23 +896,17 @@ sap.ui.define([
 			);
 
 			var sVariantManagementReference;
-			var oStashedElement;
-			var sType = oElement.getMetadata().getName();
-
-			if (sType === "sap.ui.core._StashedControl") {
-				oStashedElement = oElement;
-			}
 			if (mParents.relevantContainerOverlay) {
-				sVariantManagementReference = this.getVariantManagementReference(mParents.relevantContainerOverlay, oActionSettings, false, oStashedElement);
+				sVariantManagementReference = this.getVariantManagementReference(mParents.relevantContainerOverlay);
 			}
 
 			return this.getCommandFactory().getCommandFor(oElement, "customAdd", oActionSettings, oParentAggregationDTMetadata, sVariantManagementReference)
-			.then(function (oCustomAddCommand) {
-				if (oCustomAddCommand) {
-					oCompositeCommand.addCommand(oCustomAddCommand);
-				}
-				return oCompositeCommand;
-			});
+				.then(function (oCustomAddCommand) {
+					if (oCustomAddCommand) {
+						oCompositeCommand.addCommand(oCustomAddCommand);
+					}
+					return oCompositeCommand;
+				});
 		},
 
 		/**
@@ -964,60 +916,147 @@ sap.ui.define([
 		 * @protected
 		 */
 		_isEditable: function(oOverlay) {
-			return Promise.all([this._isEditableCheck.call(this, oOverlay, true), this._isEditableCheck.call(this, oOverlay, false)])
-			.then(function(aPromiseValues) {
-				return {
-					asSibling: aPromiseValues[0],
-					asChild: aPromiseValues[1]
-				};
-			});
+			return Promise.all([this._isEditableCheck(oOverlay, true), this._isEditableCheck(oOverlay, false)])
+				.then(function(aPromiseValues) {
+					return {
+						asSibling: aPromiseValues[0],
+						asChild: aPromiseValues[1]
+					};
+				})
+				.catch(function (vError) {
+					Log.error(vError);
+				});
 		},
 
 		_isEditableCheck: function(oOverlay, bOverlayIsSibling) {
-			return new Promise(function(resolve) {
-				var bEditable = false;
-				var mParents = _getParents(bOverlayIsSibling, oOverlay);
+			return Promise.resolve()
+				.then(function() {
+					var mParents = _getParents(bOverlayIsSibling, oOverlay);
 
-				if (!mParents.relevantContainerOverlay) {
-					return resolve(false);
-				}
-
-				this._getActions(bOverlayIsSibling, oOverlay, true).then(function(mActions) {
-					Utils.doIfAllControlsAreAvailable([oOverlay, mParents.parentOverlay], function() {
-						if (mActions.addODataProperty) {
-							var oAddODataPropertyAction = mActions.addODataProperty.action;
-							bEditable = oAddODataPropertyAction &&
+					if (!mParents.relevantContainerOverlay) {
+						return false;
+					}
+					return this._getActions(bOverlayIsSibling, oOverlay, true)
+						.then(function (mActions) {
+							return Utils.doIfAllControlsAreAvailable([oOverlay, mParents.parentOverlay], function () {
+								var bEditable = false;
+								if (mActions.addODataProperty) {
+									var oAddODataPropertyAction = mActions.addODataProperty.action;
+									bEditable = oAddODataPropertyAction &&
 										oAddODataPropertyAction.aggregation === oOverlay.getParentAggregationOverlay().getAggregationName();
-						}
+								}
 
-						if (!bEditable && mActions.reveal) {
-							bEditable = true;
-						}
+								if (!bEditable && mActions.reveal) {
+									bEditable = true;
+								}
 
-						if (!bEditable && mActions.custom) {
-							bEditable = true;
-						}
+								if (!bEditable && mActions.custom) {
+									bEditable = true;
+								}
 
-						if (!bEditable && !bOverlayIsSibling) {
-							bEditable = this.checkAggregationsOnSelf(mParents.parentOverlay, "addODataProperty");
-						}
-
-						if (bEditable) {
-							bEditable =
-								this.hasStableId(oOverlay) //don't confuse the user/Web IDE by an editable overlay without stable ID
-								&& this.hasStableId(mParents.parentOverlay);
-						}
-					}.bind(this));
-
-					resolve(bEditable);
+								if (!bEditable && !bOverlayIsSibling) {
+									return this.checkAggregationsOnSelf(mParents.parentOverlay, "addODataProperty");
+								}
+								return bEditable;
+							}.bind(this));
+						}.bind(this))
+						.then(function (bEditable) {
+							if (bEditable) {
+								bEditable =
+									this.hasStableId(oOverlay) //don't confuse the user/Web IDE by an editable overlay without stable ID
+									&& this.hasStableId(mParents.parentOverlay);
+							}
+							return bEditable;
+						}.bind(this));
 				}.bind(this));
-			}.bind(this));
+		},
+
+		getAllElements: function(bOverlayIsSibling, aElementOverlays, iIndex, sControlName) {
+			var oElementOverlay = aElementOverlays[0];
+			var mParents = _getParents(bOverlayIsSibling, oElementOverlay);
+			var mActions;
+			var aPromises = [];
+
+			var oCachedElements = this.getCachedElements(bOverlayIsSibling);
+
+			if (oCachedElements) {
+				return oCachedElements;
+			}
+
+			return this._getActions(bOverlayIsSibling, oElementOverlay)
+				.then(function(mAllActions) {
+					mActions = mAllActions;
+
+					var oAddODataPropertyPromise = Promise.resolve([]);
+					if (mActions.addODataProperty) {
+						mActions.addODataProperty.relevantContainer = oElementOverlay.getRelevantContainer(!bOverlayIsSibling);
+
+						oAddODataPropertyPromise = this._waitForChangeHandlerSettings(mActions.addODataProperty.action)
+							.then(function(mChangeHandlerSettings) {
+								// No dialog elements for metadata with changeHandlerSettings and without createFunction
+								return this._checkIfCreateFunctionIsAvailable(mChangeHandlerSettings) ?
+									this.getAnalyzer().getUnboundODataProperties(mParents.parent, mActions.addODataProperty) : [];
+							}.bind(this));
+					}
+
+					aPromises.push(
+						mActions.reveal ? this.getAnalyzer().enhanceInvisibleElements(mParents.parent, mActions) : Promise.resolve([]),
+						oAddODataPropertyPromise,
+						mActions.custom ? this.getAnalyzer().getCustomAddItems(mParents.parent, mActions.custom, mActions.aggregation) : Promise.resolve([])
+					);
+
+					if (mActions.aggregation || sControlName) {
+						this._setDialogTitle(mActions, mParents.parent, sControlName);
+					}
+				}.bind(this))
+
+				.then(function() {
+					if (mActions.addODataProperty) {
+						return Utils.isServiceUpToDate(mParents.parent);
+					}
+				})
+
+				.then(function() {
+					if (mActions.addODataProperty) {
+						return Utils.isExtensibilityEnabledInSystem(mParents.parent);
+					}
+					this.getDialog()._oCustomFieldButton.setVisible(false);
+				}.bind(this))
+
+				.then(function(bExtensibilityEnabled) {
+					if (mActions.addODataProperty) {
+						this.getDialog()._oCustomFieldButton.setVisible(bExtensibilityEnabled);
+						this.getDialog().setCustomFieldEnabled(false);
+						return Utils.isCustomFieldAvailable(mParents.parent);
+					}
+				}.bind(this))
+
+				.then(function(oCurrentFieldExtInfo) {
+					if (oCurrentFieldExtInfo) {
+						this._oCurrentFieldExtInfo = oCurrentFieldExtInfo;
+						this.getDialog().setCustomFieldEnabled(true);
+						this.getDialog().addBusinessContext(this._oCurrentFieldExtInfo.BusinessContexts);
+						this.getDialog().detachEvent('openCustomField', this._onOpenCustomField, this);
+						this.getDialog().attachEvent('openCustomField', null, this._onOpenCustomField, this);
+					}
+				}.bind(this))
+
+				.then(this._combineAnalyzerResults.bind(this, aPromises))
+
+				.then(function(aAllElements) {
+					this.setCachedElements(aAllElements, bOverlayIsSibling);
+					return aAllElements;
+				}.bind(this))
+
+				.catch(function(oError) {
+					throw oError;
+				});
 		},
 
 		/**
 		 * Retrieve the context menu item for the actions.
 		 * Two items are returned here: one for when the overlay is sibling and one for when it is child.
-		 * @param  {sap.ui.dt.ElementOverlay} oOverlay Overlay for which the context menu was opened
+		 * @param  {sap.ui.dt.ElementOverlay} aElementOverlays - List of overlays for which the context menu was opened
 		 * @return {object[]} Returns array containing the items with required data
 		 */
 		getMenuItems: function (aElementOverlays) {
@@ -1026,37 +1065,54 @@ sap.ui.define([
 			var iRank = 20;
 			var sIcon = "sap-icon://add";
 			var aMenuItems = [];
-			for (var i = 0; i < 2; i++) {
-				if (this.isAvailable(bOverlayIsSibling, aElementOverlays)) {
-					var sMenuItemText = this.getContextMenuTitle.bind(this, bOverlayIsSibling);
+			this.clearCachedElements();
+			return Promise.all([this.getAllElements(true, aElementOverlays), this.getAllElements(false, aElementOverlays)]).then(function() {
+				for (var i = 0; i < 2; i++) {
+					if (this.isAvailable(bOverlayIsSibling, aElementOverlays)) {
+						var sMenuItemText = this.getContextMenuTitle.bind(this, bOverlayIsSibling);
+						aMenuItems.push({
+							id: sPluginId,
+							text: sMenuItemText,
+							handler: function (bOverlayIsSibling, aElementOverlays) { // eslint-disable-line no-loop-func
+								// showAvailableElements has optional parameters, so currying is not possible here
+								return this.showAvailableElements(bOverlayIsSibling, aElementOverlays);
+							}.bind(this, bOverlayIsSibling),
+							enabled: this.isEnabled.bind(this, bOverlayIsSibling),
+							rank: iRank,
+							icon: sIcon
+						});
+					}
 
-					aMenuItems.push({
-						id: sPluginId,
-						text: sMenuItemText,
-						handler: function (bOverlayIsSibling, aElementOverlays) { // eslint-disable-line no-loop-func
-							// showAvailableElements has optional parameters, so currying is not possible here
-							return this.showAvailableElements(bOverlayIsSibling, aElementOverlays);
-						}.bind(this, bOverlayIsSibling),
-						enabled: this.isEnabled.bind(this, bOverlayIsSibling),
-						rank: iRank,
-						icon: sIcon,
-						group: "Add"
-					});
+					bOverlayIsSibling = false;
+					sPluginId = "CTX_ADD_ELEMENTS_AS_CHILD";
+					iRank = 30;
 				}
+				return aMenuItems;
+			}.bind(this));
+		},
 
-				bOverlayIsSibling = false;
-				sPluginId = "CTX_ADD_ELEMENTS_AS_CHILD";
-				iRank = 30;
+		_combineAnalyzerResults: function(aPromises) {
+			return Promise.all(aPromises).then(function(aAnalyzerValues) {
+				return this.getAnalyzer().getFilteredItemsList(aAnalyzerValues);
+			}.bind(this));
+		},
+
+		clearCachedElements: function() {
+			this._aCachedElements = undefined;
+		},
+
+		setCachedElements: function (aElements, bOverlayIsSibling) {
+			this._aCachedElements = this._aCachedElements || {};
+			this._aCachedElements[bOverlayIsSibling ? "asSibling" : "asChild"] = aElements;
+		},
+
+		getCachedElements: function (bOverlayIsSibling) {
+			if (!this._aCachedElements) {
+				return undefined;
 			}
-			return aMenuItems;
+			return this._aCachedElements[bOverlayIsSibling ? "asSibling" : "asChild"];
 		}
 	});
-
-	function _getAllElements (aPromises) {
-		return Promise.all(aPromises).then(function(aAnalyzerValues) {
-			return this.getAnalyzer().getFilteredItemsList(aAnalyzerValues);
-		}.bind(this));
-	}
 
 	function _getSourceParent(oRevealedElement, mParents, oRevealedElementOverlay) {
 		var oParent;

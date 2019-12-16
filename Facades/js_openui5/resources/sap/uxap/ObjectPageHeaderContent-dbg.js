@@ -94,7 +94,7 @@ sap.ui.define([
 
 					_objectImage: {type: "sap.ui.core.Control", multiple: false, visibility: "hidden"},
 
-					_placeholder: {type: "sap.ui.core.Icon", multiple: false, visibility: "hidden"}
+					_placeholder: {type: "sap.m.Avatar", multiple: false, visibility: "hidden"}
 				}
 			}
 		});

@@ -9,7 +9,7 @@ sap.ui.define([
 	"sap/ui/base/Object",
 	"sap/ui/Device",
 	"./library",
-	"./TableUtils",
+	"./utils/TableUtils",
 	"sap/ui/events/KeyCodes",
 	"sap/ui/thirdparty/jquery"
 ], function(BaseObject, Device, library, TableUtils, KeyCodes, jQuery) {
@@ -67,7 +67,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableKeyboardDelegate2
@@ -184,9 +184,7 @@ sap.ui.define([
 
 		// Select/Deselect all.
 		if (oCellInfo.isOfType(CellType.COLUMNROWHEADER)) {
-			if (!oTable._oSelectionPlugin.onHeaderSelectorPress || oTable._oSelectionPlugin.onHeaderSelectorPress()) {
-				oTable._toggleSelectAll();
-			}
+			oTable._getSelectionPlugin().onHeaderSelectorPress();
 
 		// Expand/Collapse group.
 		} else if (TableKeyboardDelegate._isElementGroupToggler(oTable, oEvent.target)) {
@@ -327,7 +325,7 @@ sap.ui.define([
 	 * If there are no interactive elements, the cell is focused instead.
 	 *
 	 * @param {sap.ui.table.Table} oTable Instance of the table.
-	 * @param {sap.ui.table.TableUtils.CellType} iCellType The type of the cell.
+	 * @param {sap.ui.table.utils.TableUtils.CellType} iCellType The type of the cell.
 	 * @param {int} iRowIndex Index of the row in the rows aggregation.
 	 * @param {int} [iColumnIndex] Index of the column in the columns aggregation. Only required for data cells.
 	 * @param {boolean} [bFirstInteractiveElement=false] If <code>true</code>, the first interactive element in a cell is focused.
@@ -443,9 +441,7 @@ sap.ui.define([
 
 				if (bActionModeNavigation) {
 					oTable.attachEventOnce("_rowsUpdated", function() {
-						setTimeout(function() {
-							TableKeyboardDelegate._focusCell(oTable, oCellInfo.type, oCellInfo.rowIndex, oCellInfo.columnIndex, true);
-						}, 0);
+						TableKeyboardDelegate._focusCell(oTable, oCellInfo.type, oCellInfo.rowIndex, oCellInfo.columnIndex, true);
 					});
 				}
 			} else if (sDirection === NavigationDirection.UP && oCellInfo.rowIndex === 0) {
@@ -458,7 +454,7 @@ sap.ui.define([
 				} else {
 					oKeyboardExtension.setActionMode(false);
 				}
-			} else if (sDirection === NavigationDirection.DOWN && oCellInfo.rowIndex === oTable.getVisibleRowCount() - 1) {
+			} else if (sDirection === NavigationDirection.DOWN && oCellInfo.rowIndex === oTable._getRowCounts().count - 1) {
 				// Leave the action mode when trying to navigate down on the last row.
 				if (!bActionMode && $ParentCell) {
 					$ParentCell.focus(); // A non-interactive element inside a cell is focused, focus the cell this element is inside.
@@ -751,6 +747,25 @@ sap.ui.define([
 
 	//******************************************************************************************
 
+	function startRangeSelectionMode(oTable) {
+		var iFocusedRowIndex = TableUtils.getRowIndexOfFocusedCell(oTable);
+		var iDataRowIndex = oTable.getRows()[iFocusedRowIndex].getIndex();
+		var oSelectionPlugin = oTable._getSelectionPlugin();
+
+		/**
+		 * Contains information that are used when the range selection mode is active.
+		 * If this property is undefined the range selection mode is not active.
+		 * @type {{startIndex: int, selected: boolean}}
+		 * @property {int} startIndex The index of the data row in which the selection mode was activated.
+		 * @property {boolean} selected True, if the data row in which the selection mode was activated is selected.
+		 * @private
+		 */
+		oTable._oRangeSelection = {
+			startIndex: iDataRowIndex,
+			selected: oSelectionPlugin.isIndexSelected(iDataRowIndex)
+		};
+	}
+
 	/**
 	 * Hook which is called by the keyboard extension when the table should enter the action mode.
 	 *
@@ -803,6 +818,17 @@ sap.ui.define([
 			if ($Cell) {
 				TableKeyboardDelegate._focusElement(this, $Cell[0], true);
 			} else {
+				var oItemNavigation = this._getItemNavigation();
+
+				if (oItemNavigation) {
+					var aItemDomRefs = oItemNavigation.aItemDomRefs;
+					var iFocusedIndex = aItemDomRefs.indexOf(oActiveElement);
+
+					if (iFocusedIndex > -1) {
+						oItemNavigation.setFocusedIndex(iFocusedIndex);
+					}
+				}
+
 				oKeyboardExtension._setSilentFocus(oActiveElement);
 			}
 		}
@@ -871,6 +897,7 @@ sap.ui.define([
 		var oKeyboardExtension = this._getKeyboardExtension();
 		var oCellInfo = TableUtils.getCellInfo(oEvent.target);
 		var sSelectionMode = this.getSelectionMode();
+		var oSelectionPlugin = this._getSelectionPlugin();
 
 		// IE fires the paste event only on editable DOM elements, but we need it on any element, e.g. cells.
 		if (Device.browser.msie && TableKeyboardDelegate._isKeyCombination(oEvent, KeyCodes.V, ModKey.CTRL)) {
@@ -925,38 +952,22 @@ sap.ui.define([
 		if (TableKeyboardDelegate._isKeyCombination(oEvent, KeyCodes.SHIFT) &&
 			sSelectionMode === SelectionMode.MultiToggle &&
 			(oCellInfo.isOfType(CellType.ROWHEADER) && TableUtils.isRowSelectorSelectionAllowed(this) ||
-			 (oCellInfo.isOfType(CellType.DATACELL | CellType.ROWACTION)) && TableUtils.isRowSelectionAllowed(this))) {
+			(oCellInfo.isOfType(CellType.DATACELL | CellType.ROWACTION)))) {
 
-			var iFocusedRowIndex = TableUtils.getRowIndexOfFocusedCell(this);
-			var iDataRowIndex = this.getRows()[iFocusedRowIndex].getIndex();
-
-			/**
-			 * Contains information that are used when the range selection mode is active.
-			 * If this property is undefined the range selection mode is not active.
-			 * @type {{startIndex: int, selected: boolean}}
-			 * @property {int} startIndex The index of the data row in which the selection mode was activated.
-			 * @property {boolean} selected True, if the data row in which the selection mode was activated is selected.
-			 * @private
-			 */
-			this._oRangeSelection = {
-				startIndex: iDataRowIndex,
-				selected: this.isIndexSelected(iDataRowIndex)
-			};
+			startRangeSelectionMode(this);
 
 		// Ctrl+A: Select/Deselect all.
 		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, KeyCodes.A, ModKey.CTRL)) {
 			oEvent.preventDefault(); // Prevent full page text selection.
 
 			if (oCellInfo.isOfType(CellType.ANYCONTENTCELL | CellType.COLUMNROWHEADER) && sSelectionMode === SelectionMode.MultiToggle) {
-				if (!this._oSelectionPlugin.onKeyboardShortcut || this._oSelectionPlugin.onKeyboardShortcut("toggle")) {
-					this._toggleSelectAll();
-				}
+				oSelectionPlugin.onKeyboardShortcut("toggle");
 			}
 
 		// Ctrl+Shift+A: Deselect all.
 		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, KeyCodes.A, ModKey.CTRL + ModKey.SHIFT)) {
 			if (oCellInfo.isOfType(CellType.ANYCONTENTCELL | CellType.COLUMNROWHEADER)) {
-				this.clearSelection();
+				oSelectionPlugin.onKeyboardShortcut("clear");
 			}
 
 		// F4: Enter the action mode.
@@ -1035,8 +1046,12 @@ sap.ui.define([
 			}
 		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, KeyCodes.SPACE)) {
 			TableKeyboardDelegate._handleSpaceAndEnter(this, oEvent);
+		} else if (TableKeyboardDelegate._isKeyCombination(oEvent, KeyCodes.SPACE, ModKey.SHIFT)) {
+			TableUtils.toggleRowSelection(this, this.getRows()[oCellInfo.rowIndex].getIndex());
+
+			startRangeSelectionMode(this);
 		} else if (this._legacyMultiSelection && !oCellInfo.isOfType(CellType.COLUMNROWHEADER) &&
-				   (TableKeyboardDelegate._isKeyCombination(oEvent, KeyCodes.SPACE, ModKey.CTRL) ||
+					(TableKeyboardDelegate._isKeyCombination(oEvent, KeyCodes.SPACE, ModKey.CTRL) ||
 					TableKeyboardDelegate._isKeyCombination(oEvent, KeyCodes.ENTER, ModKey.CTRL))) {
 			TableKeyboardDelegate._handleSpaceAndEnter(this, oEvent);
 		}
@@ -1078,7 +1093,7 @@ sap.ui.define([
 					if (bTableHasRowSelectors) {
 						TableKeyboardDelegate._focusCell(this, CellType.ROWHEADER, iRowIndex + 1);
 					} else {
-						var iVisibleRowCount = this.getVisibleRowCount();
+						var iVisibleRowCount = this._getRowCounts().count;
 						var bRowIsGroupHeaderRow = false;
 
 						for (var i = oCellInfo.rowIndex + 1; i < iVisibleRowCount; i++) {
@@ -1151,11 +1166,8 @@ sap.ui.define([
 
 		if (bScrolled) {
 			oTable.attachEventOnce("_rowsUpdated", function() {
-				setTimeout(function() {
-					var bIsGroupHeaderRow = TableUtils.Grouping.isGroupingRow(oRow.getDomRef());
-
-					setFocusNext(oTable, oRow, iRowIndex, bTableHasRowSelectors, bIsGroupHeaderRow);
-				}, 0);
+				var bIsGroupHeaderRow = TableUtils.Grouping.isGroupingRow(oRow.getDomRef());
+				setFocusNext(oTable, oRow, iRowIndex, bTableHasRowSelectors, bIsGroupHeaderRow);
 			});
 		} else if (oRow.getIndex() !== oTable._getTotalRowCount() - 1) {
 			// in case there are fixed bottom rows and the table cannot be scrolled anymore set the focus on the first fixed bottom row
@@ -1293,11 +1305,8 @@ sap.ui.define([
 
 		if (bScrolled) {
 			oTable.attachEventOnce("_rowsUpdated", function() {
-				setTimeout(function() {
-					var bIsGroupHeaderRow = TableUtils.Grouping.isGroupingRow(oRow.getDomRef());
-
-					setFocusPrevious(oTable, oRow, iRowIndex, bRowHasInteractiveRowHeader, bIsGroupHeaderRow);
-				}, 0);
+				var bIsGroupHeaderRow = TableUtils.Grouping.isGroupingRow(oRow.getDomRef());
+				setFocusPrevious(oTable, oRow, iRowIndex, bRowHasInteractiveRowHeader, bIsGroupHeaderRow);
 			});
 		} else if (oRow.getIndex() !== 0) {
 			// in case there are fixed top rows and the table cannot be scrolled anymore set the focus on the last fixed top row
@@ -1758,12 +1767,11 @@ sap.ui.define([
 					var iFocusedIndex = oFocusedItemInfo.cell;
 					var iColumnCount = oFocusedItemInfo.columnCount;
 					var iHeaderRowCount = TableUtils.getHeaderRowCount(this);
-					var iFixedTopRowCount = this.getFixedRowCount();
-					var iFixedBottomRowCount = this.getFixedBottomRowCount();
+					var mRowCounts = this._getRowCounts();
 
 					/* Column header area */
 					/* Top fixed area */
-					if (iFocusedRow < iHeaderRowCount + iFixedTopRowCount) {
+					if (iFocusedRow < iHeaderRowCount + mRowCounts.fixedTop) {
 						if (oCellInfo.isOfType(CellType.ROWACTION)) {
 							// Set the focus to the first row (row actions do not have a header).
 							TableUtils.focusItem(this, iFocusedIndex - iColumnCount * (iFocusedRow - iHeaderRowCount), oEvent);
@@ -1774,12 +1782,12 @@ sap.ui.define([
 						}
 
 					/* Scrollable area */
-					} else if (iFocusedRow >= iHeaderRowCount + iFixedTopRowCount &&
-							   iFocusedRow < iHeaderRowCount + TableUtils.getNonEmptyVisibleRowCount(this) - iFixedBottomRowCount) {
+					} else if (iFocusedRow >= iHeaderRowCount + mRowCounts.fixedTop &&
+							   iFocusedRow < iHeaderRowCount + TableUtils.getNonEmptyVisibleRowCount(this) - mRowCounts.fixedBottom) {
 						this._getScrollExtension().scrollVerticallyMax(false, true);
 						// If a fixed top area exists or we are in the row action column (has no header), then set the focus to the first row (of
 						// the top fixed area), otherwise set the focus to the first row of the column header area.
-						if (iFixedTopRowCount > 0 || oCellInfo.isOfType(CellType.ROWACTION)) {
+						if (mRowCounts.fixedTop > 0 || oCellInfo.isOfType(CellType.ROWACTION)) {
 							TableUtils.focusItem(this, iFocusedIndex - iColumnCount * (iFocusedRow - iHeaderRowCount), oEvent);
 						} else {
 							TableUtils.focusItem(this, iFocusedIndex - iColumnCount * iFocusedRow, oEvent);
@@ -1789,7 +1797,7 @@ sap.ui.define([
 					} else {
 						// Set the focus to the first row of the scrollable area and scroll to top.
 						this._getScrollExtension().scrollVerticallyMax(false, true);
-						TableUtils.focusItem(this, iFocusedIndex - iColumnCount * (iFocusedRow - iHeaderRowCount - iFixedTopRowCount), oEvent);
+						TableUtils.focusItem(this, iFocusedIndex - iColumnCount * (iFocusedRow - iHeaderRowCount - mRowCounts.fixedTop), oEvent);
 					}
 				}
 			}
@@ -1810,14 +1818,13 @@ sap.ui.define([
 				var iFocusedRow = oFocusedItemInfo.row;
 				var iHeaderRowCount = TableUtils.getHeaderRowCount(this);
 				var iNonEmptyVisibleRowCount = TableUtils.getNonEmptyVisibleRowCount(this);
-				var iFixedTopRowCount = this.getFixedRowCount();
-				var iFixedBottomRowCount = this.getFixedBottomRowCount();
+				var mRowCounts = this._getRowCounts();
 
 				preventItemNavigation(oEvent);
 
 				// Only do something if the focus is above the last row of the fixed bottom area
 				// or above the last row of the column header area when NoData is visible.
-				if (iFixedBottomRowCount === 0 ||
+				if (mRowCounts.fixedBottom === 0 ||
 					iFocusedRow < iHeaderRowCount + iNonEmptyVisibleRowCount - 1 ||
 					(TableUtils.isNoDataVisible(this) && iFocusedRow < iHeaderRowCount - 1)) {
 
@@ -1831,31 +1838,31 @@ sap.ui.define([
 					} else if (iFocusedRow < iHeaderRowCount) {
 						// If a top fixed area exists, then set the focus to the last row of the top fixed area,
 						// otherwise set the focus to the last row of the scrollable area and scroll to bottom.
-						if (iFixedTopRowCount > 0) {
+						if (mRowCounts.fixedTop > 0) {
 							TableUtils.focusItem(
-								this, iFocusedIndex + iColumnCount * (iHeaderRowCount + iFixedTopRowCount - iFocusedRow - 1), oEvent);
+								this, iFocusedIndex + iColumnCount * (iHeaderRowCount + mRowCounts.fixedTop - iFocusedRow - 1), oEvent);
 						} else {
 							this._getScrollExtension().scrollVerticallyMax(true, true);
 							TableUtils.focusItem(
 								this,
-								iFocusedIndex + iColumnCount * (iHeaderRowCount + iNonEmptyVisibleRowCount - iFixedBottomRowCount - iFocusedRow - 1),
+								iFocusedIndex + iColumnCount * (iHeaderRowCount + iNonEmptyVisibleRowCount - mRowCounts.fixedBottom - iFocusedRow - 1),
 								oEvent
 							);
 						}
 
 					/* Top fixed area */
-					} else if (iFocusedRow >= iHeaderRowCount && iFocusedRow < iHeaderRowCount + iFixedTopRowCount) {
+					} else if (iFocusedRow >= iHeaderRowCount && iFocusedRow < iHeaderRowCount + mRowCounts.fixedTop) {
 						// Set the focus to the last row of the scrollable area and scroll to bottom.
 						this._getScrollExtension().scrollVerticallyMax(true, true);
 						TableUtils.focusItem(
 							this,
-							iFocusedIndex + iColumnCount * (iHeaderRowCount + iNonEmptyVisibleRowCount - iFixedBottomRowCount - iFocusedRow - 1),
+							iFocusedIndex + iColumnCount * (iHeaderRowCount + iNonEmptyVisibleRowCount - mRowCounts.fixedBottom - iFocusedRow - 1),
 							oEvent
 						);
 
 					/* Scrollable area */
-					} else if (iFocusedRow >= iHeaderRowCount + iFixedTopRowCount &&
-							   iFocusedRow < iHeaderRowCount + iNonEmptyVisibleRowCount - iFixedBottomRowCount) {
+					} else if (iFocusedRow >= iHeaderRowCount + mRowCounts.fixedTop &&
+							   iFocusedRow < iHeaderRowCount + iNonEmptyVisibleRowCount - mRowCounts.fixedBottom) {
 						// Set the focus to the last row of the scrollable area and scroll to bottom.
 						this._getScrollExtension().scrollVerticallyMax(true, true);
 						TableUtils.focusItem(
@@ -1885,24 +1892,23 @@ sap.ui.define([
 			var oFocusedItemInfo = TableUtils.getFocusedItemInfo(this);
 			var iFocusedRow = oFocusedItemInfo.row;
 			var iHeaderRowCount = TableUtils.getHeaderRowCount(this);
-			var iFixedTopRowCount = this.getFixedRowCount();
-			var iFixedBottomRowCount = this.getFixedBottomRowCount();
+			var mRowCounts = this._getRowCounts();
 
 			// Only do something if the focus is not in the column header area or the first row of the top fixed area.
-			if (iFixedTopRowCount === 0 && iFocusedRow >= iHeaderRowCount || iFixedTopRowCount > 0 && iFocusedRow > iHeaderRowCount) {
+			if (mRowCounts.fixedTop === 0 && iFocusedRow >= iHeaderRowCount || mRowCounts.fixedTop > 0 && iFocusedRow > iHeaderRowCount) {
 				preventItemNavigation(oEvent);
 
 				var iFocusedIndex = oFocusedItemInfo.cell;
 				var iColumnCount = oFocusedItemInfo.columnCount;
 
 				/* Top fixed area - From second row downwards */
-				if (iFocusedRow < iHeaderRowCount + iFixedTopRowCount) {
+				if (iFocusedRow < iHeaderRowCount + mRowCounts.fixedTop) {
 					// Set the focus to the first row of the top fixed area.
 					TableUtils.focusItem(this, iFocusedIndex - iColumnCount * (iFocusedRow - iHeaderRowCount), oEvent);
 
 				/* Scrollable area - First row */
-				} else if (iFocusedRow === iHeaderRowCount + iFixedTopRowCount) {
-					var iPageSize = TableUtils.getNonEmptyVisibleRowCount(this) - iFixedTopRowCount - iFixedBottomRowCount;
+				} else if (iFocusedRow === iHeaderRowCount + mRowCounts.fixedTop) {
+					var iPageSize = TableUtils.getNonEmptyVisibleRowCount(this) - mRowCounts.fixedTop - mRowCounts.fixedBottom;
 					var iRowsToBeScrolled = this.getFirstVisibleRow();
 
 					this._getScrollExtension().scrollVertically(false, true, true); // Scroll up one page
@@ -1911,7 +1917,7 @@ sap.ui.define([
 					if (iRowsToBeScrolled < iPageSize) {
 						// If a fixed top area exists or we are in the row action column (has no header), then set the focus to the first row (of
 						// the top fixed area), otherwise set the focus to the first row of the column header area.
-						if (iFixedTopRowCount > 0 || oCellInfo.isOfType(CellType.ROWACTION)) {
+						if (mRowCounts.fixedTop > 0 || oCellInfo.isOfType(CellType.ROWACTION)) {
 							TableUtils.focusItem(this, iFocusedIndex - iColumnCount * (iFocusedRow - iHeaderRowCount), oEvent);
 						} else {
 							TableUtils.focusItem(this, iFocusedIndex - iColumnCount * iHeaderRowCount, oEvent);
@@ -1920,10 +1926,10 @@ sap.ui.define([
 
 				/* Scrollable area - From second row downwards */
 				/* Bottom Fixed area */
-				} else if (iFocusedRow > iHeaderRowCount + iFixedTopRowCount &&
+				} else if (iFocusedRow > iHeaderRowCount + mRowCounts.fixedTop &&
 						   iFocusedRow < iHeaderRowCount + TableUtils.getNonEmptyVisibleRowCount(this)) {
 					// Set the focus to the first row of the scrollable area.
-					TableUtils.focusItem(this, iFocusedIndex - iColumnCount * (iFocusedRow - iHeaderRowCount - iFixedTopRowCount), oEvent);
+					TableUtils.focusItem(this, iFocusedIndex - iColumnCount * (iFocusedRow - iHeaderRowCount - mRowCounts.fixedTop), oEvent);
 
 				/* Empty area */
 				} else {
@@ -1936,7 +1942,7 @@ sap.ui.define([
 			}
 
 			// If the focus is in the first row of the row action area, do nothing (row actions do not have a column header).
-			if (oCellInfo.isOfType(CellType.ROWACTION) && iFocusedRow === iHeaderRowCount && iFixedTopRowCount > 0) {
+			if (oCellInfo.isOfType(CellType.ROWACTION) && iFocusedRow === iHeaderRowCount && mRowCounts.fixedTop > 0) {
 				preventItemNavigation(oEvent);
 			}
 		}
@@ -1956,15 +1962,14 @@ sap.ui.define([
 			var iFocusedRow = oFocusedItemInfo.row;
 			var iHeaderRowCount = TableUtils.getHeaderRowCount(this);
 			var iNonEmptyVisibleRowCount = TableUtils.getNonEmptyVisibleRowCount(this);
-			var iFixedTopRowCount = this.getFixedRowCount();
-			var iFixedBottomRowCount = this.getFixedBottomRowCount();
+			var mRowCounts = this._getRowCounts();
 
 			preventItemNavigation(oEvent);
 
 			// Only do something if the focus is above the last row of the bottom fixed area
 			// or above the last row of the column header area when NoData is visible.
 			if ((TableUtils.isNoDataVisible(this) && iFocusedRow < iHeaderRowCount - 1) ||
-				iFixedBottomRowCount === 0 ||
+				mRowCounts.fixedBottom === 0 ||
 				iFocusedRow < iHeaderRowCount + iNonEmptyVisibleRowCount - 1) {
 
 				var iFocusedIndex = oFocusedItemInfo.cell;
@@ -1986,23 +1991,23 @@ sap.ui.define([
 				/* Top fixed area */
 				/* Scrollable area - From second-last row upwards */
 				} else if (iFocusedRow >= iHeaderRowCount &&
-						   iFocusedRow < iHeaderRowCount + iNonEmptyVisibleRowCount - iFixedBottomRowCount - 1) {
+						   iFocusedRow < iHeaderRowCount + iNonEmptyVisibleRowCount - mRowCounts.fixedBottom - 1) {
 					// Set the focus to the last row of the scrollable area.
 					TableUtils.focusItem(
-						this, iFocusedIndex + iColumnCount * (iHeaderRowCount + iNonEmptyVisibleRowCount - iFixedBottomRowCount - iFocusedRow - 1),
+						this, iFocusedIndex + iColumnCount * (iHeaderRowCount + iNonEmptyVisibleRowCount - mRowCounts.fixedBottom - iFocusedRow - 1),
 						oEvent
 					);
 
 				/* Scrollable area - Last row */
-				} else if (iFocusedRow === iHeaderRowCount + iNonEmptyVisibleRowCount - iFixedBottomRowCount - 1) {
-					var iPageSize = TableUtils.getNonEmptyVisibleRowCount(this) - iFixedTopRowCount - iFixedBottomRowCount;
-					var iRowsToBeScrolled = this._getTotalRowCount() - iFixedBottomRowCount - this.getFirstVisibleRow() - iPageSize * 2;
+				} else if (iFocusedRow === iHeaderRowCount + iNonEmptyVisibleRowCount - mRowCounts.fixedBottom - 1) {
+					var iPageSize = TableUtils.getNonEmptyVisibleRowCount(this) - mRowCounts.fixedTop - mRowCounts.fixedBottom;
+					var iRowsToBeScrolled = this._getTotalRowCount() - mRowCounts.fixedBottom - this.getFirstVisibleRow() - iPageSize * 2;
 
 					this._getScrollExtension().scrollVertically(true, true, true); // Scroll down one page
 
 					// If scrolling was not performed over a full page and there is a bottom fixed area,
 					// then set the focus to the last row of the bottom fixed area.
-					if (iRowsToBeScrolled < iPageSize && iFixedBottomRowCount > 0) {
+					if (iRowsToBeScrolled < iPageSize && mRowCounts.fixedBottom > 0) {
 						TableUtils.focusItem(
 							this, iFocusedIndex + iColumnCount * (iHeaderRowCount + iNonEmptyVisibleRowCount - iFocusedRow - 1), oEvent);
 					}

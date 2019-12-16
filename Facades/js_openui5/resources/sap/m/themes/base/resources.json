@@ -26,6 +26,11 @@
 			"theme": "base"
 		},
 		{
+			"name": "Avatar.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
 			"name": "Bar.less",
 			"designtime": true,
 			"theme": "base"
@@ -71,11 +76,6 @@
 			"theme": "base"
 		},
 		{
-			"name": "ColumnHeader.less",
-			"designtime": true,
-			"theme": "base"
-		},
-		{
 			"name": "ColumnListItem.less",
 			"designtime": true,
 			"theme": "base"
@@ -102,6 +102,11 @@
 		},
 		{
 			"name": "CustomTile.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "DatePicker.less",
 			"designtime": true,
 			"theme": "base"
 		},
@@ -551,6 +556,11 @@
 			"theme": "base"
 		},
 		{
+			"name": "SinglePlanningCalendarMonthGrid.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
 			"name": "SlideTile.less",
 			"designtime": true,
 			"theme": "base"
@@ -741,7 +751,12 @@
 			"theme": "base"
 		},
 		{
-			"name": "ViewSettingsPopover.less",
+			"name": "WheelSlider.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "WheelSliderContainer.less",
 			"designtime": true,
 			"theme": "base"
 		},

@@ -16,7 +16,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.transport.Transports
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @since 1.38.0
 	 */
 	var Transports = function() {
@@ -39,7 +39,10 @@ sap.ui.define([
 	 * @public
 	 */
 	Transports.prototype.getTransports = function(mParameters) {
-		var sUri, sClient, oLrepConnector, oPromise;
+		var sUri;
+		var sClient;
+		var oLrepConnector;
+		var oPromise;
 		sUri = '/sap/bc/lrep/actions/gettransports/';
 		if (mParameters['package']) {
 			sUri += '&package=' + mParameters['package'];
@@ -78,17 +81,20 @@ sap.ui.define([
 	};
 
 	/**
-	 * Reads the transports of the current user from the back end.
+	 * Reads the transports of the current user from the back end;
 	 * The "locked" attribute indicates that the provided file (package/name/type) is already locked on this transport.
 	 *
-	 * @param {object} mParameters map of parameters, see below
-	 * @param {string} mParameters.transportId - ABAP transport ID
-	 * @param {string} mParameters.changeIds - array of change ID objects with attributes "namespace", "fileName", "fileType"
+	 * @param {object} mParameters Map of parameters, see below
+	 * @param {string} mParameters.transportId ABAP transport ID
+	 * @param {string} mParameters.changeIds Array of change ID objects with attributes "namespace", "fileName", "fileType"
+	 * @param {string} mParameters.reference Application ID of the changes which should be transported
 	 * @returns {Promise} without parameters
 	 * @public
 	 */
 	Transports.prototype.makeChangesTransportable = function(mParameters) {
-		var sUri, sClient, oLrepConnector;
+		var sUri;
+		var sClient;
+		var oLrepConnector;
 		sUri = '/sap/bc/lrep/actions/make_changes_transportable/';
 		sClient = FlexUtils.getClient();
 		if (sClient) {

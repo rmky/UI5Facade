@@ -86,7 +86,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -244,6 +244,7 @@ function(
 			 * prevent the sticky elements of the control from becoming fixed at the top of the viewport.</li>
 			 * <li>If sticky column headers are enabled in the <code>sap.m.Table</code> control, setting focus on the column headers will let the table scroll to the top.</li>
 			 * <li>A transparent toolbar design is not supported for sticky bars. The toolbar will automatically get an intransparent background color.</li>
+			 * <li>This feature supports only the default height of the toolbar control.<li>
 			 * </ul>
 			 *
 			 * @since 1.58
@@ -282,7 +283,13 @@ function(
 			 *
 			 * @since 1.54
 			 */
-			contextMenu : {type : "sap.ui.core.IContextMenu", multiple : false}
+			contextMenu : {type : "sap.ui.core.IContextMenu", multiple : false},
+
+			/**
+			 * Defines the message strip to display binding-related messages.
+			 * @since 1.73
+			 */
+			_messageStrip: {type : "sap.m.MessageStrip", multiple : false, visibility : "hidden"}
 		},
 		associations: {
 
@@ -371,7 +378,14 @@ function(
 					/**
 					 * Holds which control caused the swipe event within the item.
 					 */
-					srcControl : {type : "sap.ui.core.Control"}
+					srcControl : {type : "sap.ui.core.Control"},
+
+					/**
+					 * Shows in which direction the user swipes and can have the value <code>BeginToEnd</code> (left to right in LTR languages
+					 * and right to left in RTL languages) or <code>EndToBegin</code> (right to left in LTR languages
+					 * and left to right in RTL languages)
+					 */
+					swipeDirection : {type : "sap.m.SwipeDirection"}
 				}
 			},
 
@@ -508,6 +522,9 @@ function(
 	// announce accessibility details at the initial focus
 	ListBase.prototype.bAnnounceDetails = true;
 
+	// determines whether range selection and select all feature should be enabled for MultiSelect mode
+	ListBase.prototype.bPreventMassSelection = false;
+
 	ListBase.getInvisibleText = function() {
 		return this.oInvisibleText || (this.oInvisibleText = new InvisibleText().toStatic());
 	};
@@ -519,6 +536,7 @@ function(
 		this._aNavSections = [];
 		this._aSelectedPaths = [];
 		this._iItemNeedsHighlight = 0;
+		this._iItemNeedsNavigated = 0;
 		this.data("sap-ui-fastnavgroup", "true", true); // Define group for F6 handling
 	};
 
@@ -535,7 +553,7 @@ function(
 
 		// invalidate item navigation for desktop
 		if (Device.system.desktop) {
-			this._bItemNavigationInvalidated = true;
+			this._startItemNavigation(true);
 		}
 	};
 
@@ -1070,6 +1088,17 @@ function(
 		}
 	};
 
+	ListBase.prototype.onItemNavigatedChange = function(oItem, bNeedsNavigated) {
+		this._iItemNeedsNavigated += (bNeedsNavigated ? 1 : -1);
+
+		// update navigated visibility
+		if (this._iItemNeedsNavigated == 1 && bNeedsNavigated) {
+			this.$("listUl").addClass("sapMListNavigated");
+		} else if (this._iItemNeedsNavigated == 0) {
+			this.$("listUl").removeClass("sapMListNavigated");
+		}
+	};
+
 	// this gets called when selected property of the ListItem is changed
 	ListBase.prototype.onItemSelectedChange = function(oListItem, bSelected) {
 
@@ -1287,7 +1316,57 @@ function(
 
 	// this gets called from item when selection is changed via checkbox/radiobutton/press event
 	ListBase.prototype.onItemSelect = function(oListItem, bSelected) {
-		if (this.getMode() == ListMode.MultiSelect) {
+		var sMode = this.getMode();
+
+		if (this._mRangeSelection && !this.bPreventMassSelection) {
+			// if this._mRangeSelection.selected == false, then simply select the item
+			if (!this._mRangeSelection.selected) {
+				this._fireSelectionChangeEvent([oListItem]);
+				// update the _mRangeSelection object so that RangeSelection mode can be resumed as expected by the user
+				this._mRangeSelection.index = this.getVisibleItems().indexOf(oListItem);
+				this._mRangeSelection.selected = bSelected;
+				return;
+			}
+
+			// if the item is deselected in rangeSelection mode, then this action should be prevented
+			if (!bSelected) {
+				oListItem.setSelected(true);
+				return;
+			}
+
+			var iListItemIndex = this.indexOfItem(oListItem),
+				aItems = this.getItems(),
+				iItemsRangeToSelect,
+				oItemToSelect,
+				aSelectedItemsRange = [],
+				iDirection;
+
+			if (iListItemIndex < this._mRangeSelection.index) {
+				iItemsRangeToSelect = this._mRangeSelection.index - iListItemIndex;
+				iDirection = -1;
+			} else {
+				iItemsRangeToSelect = iListItemIndex - this._mRangeSelection.index;
+				iDirection = 1;
+			}
+
+			for (var i = 1; i <= iItemsRangeToSelect; i++) {
+				oItemToSelect = aItems[this._mRangeSelection.index + (i * iDirection)];
+
+				// if item is not visible or item is already selected then do not fire the selectionChange event
+				if (oItemToSelect.isSelectable() && oItemToSelect.getVisible() && !oItemToSelect.getSelected()) {
+					oItemToSelect.setSelected(true);
+					aSelectedItemsRange.push(oItemToSelect);
+				} else if (oItemToSelect === oListItem) {
+					// oListItem.getSelected() === true, hence just add item to the aSelectedItemsRange array
+					aSelectedItemsRange.push(oItemToSelect);
+				}
+			}
+
+			this._fireSelectionChangeEvent(aSelectedItemsRange);
+			return;
+		}
+
+		if (sMode === ListMode.MultiSelect) {
 			this._fireSelectionChangeEvent([oListItem]);
 		} else if (this._bSelectionMode && bSelected) {
 			this._fireSelectionChangeEvent([oListItem]);
@@ -1337,6 +1416,36 @@ function(
 				srcControl : oSrcControl
 			});
 		}.bind(this), 0);
+	};
+
+	ListBase.prototype.onItemKeyDown = function (oItem, oEvent) {
+		if (!oEvent.shiftKey || this.getMode() !== ListMode.MultiSelect || !oItem.isSelectable() || this.bPreventMassSelection) {
+			return;
+		}
+
+		var aVisibleItems = this.getVisibleItems(),
+			bHasVisibleSelectedItems = aVisibleItems.some(function(oVisibleItem) {
+				return !!oVisibleItem.getSelected();
+			});
+
+		// if there are no visible selected items then no action required in rangeSelection mode
+		if (!bHasVisibleSelectedItems) {
+			return;
+		}
+
+		if (!this._mRangeSelection) {
+			this._mRangeSelection = {
+				index: aVisibleItems.indexOf(oItem),
+				selected: oItem.getSelected()
+			};
+		}
+	};
+
+	ListBase.prototype.onItemKeyUp = function(oItem, oEvent) {
+		// end of range selection when SHIFT key is released
+		if (oEvent.which === KeyCodes.SHIFT) {
+			this._mRangeSelection = null;
+		}
 	};
 
 	// insert or remove given item's path from selection array
@@ -1533,8 +1642,13 @@ function(
 	 */
 	ListBase.prototype.close = ListBase.prototype._removeSwipeContent;
 
-	// called on swipe event to bring in the swipeContent control
-	ListBase.prototype._onSwipe = function(oEvent) {
+	/**
+	 * Called on swipe event to bring in the swipeContent control.
+	 * Swipe direction the value can be <code>BeginToEnd</code> (left to right in LTR languages
+	 * and right to left in RTL languages) or <code>EndToBegin</code> (right to left in LTR languages
+	 * and left to right in RTL languages)
+	 */
+	ListBase.prototype._onSwipe = function(oEvent, swipeDirection) {
 		var oContent = this.getSwipeContent(),
 			oSrcControl = oEvent.srcControl;
 
@@ -1552,7 +1666,8 @@ function(
 				this.fireSwipe({
 					listItem : this._swipedItem,
 					swipeContent : oContent,
-					srcControl : oSrcControl
+					srcControl : oSrcControl,
+					swipeDirection: swipeDirection
 				}, true) && this._swipeIn();
 			}
 		}
@@ -1562,19 +1677,44 @@ function(
 		this._eventHandledByControl = oEvent.isMarked();
 	};
 
+	// Swipe from the end to the begin - right to left in LTR and left to right in RTL languages.
 	ListBase.prototype.onswipeleft = function(oEvent) {
-		var exceptDirection = sap.ui.getCore().getConfiguration().getRTL() ? "RightToLeft" : "LeftToRight";
 
-		if (this.getSwipeDirection() != exceptDirection) {
-			this._onSwipe(oEvent);
+		var bRtl = sap.ui.getCore().getConfiguration().getRTL();
+		var exceptDirection = bRtl ? SwipeDirection.EndToBegin : SwipeDirection.BeginToEnd;
+		var swipeDirection = this.getSwipeDirection();
+
+		if (swipeDirection === SwipeDirection.LeftToRight) {
+			swipeDirection = SwipeDirection.BeginToEnd;
+		} else if (swipeDirection === SwipeDirection.RightToLeft) {
+			swipeDirection = SwipeDirection.EndToBegin;
+		}
+
+		if (swipeDirection != exceptDirection) {
+			if (swipeDirection == SwipeDirection.Both) {
+				swipeDirection = bRtl ? SwipeDirection.BeginToEnd : SwipeDirection.EndToBegin;
+			}
+			this._onSwipe(oEvent, swipeDirection);
 		}
 	};
 
+	// Swipe from the begin to the end - left to right in LTR and right to left in RTL languages.
 	ListBase.prototype.onswiperight = function(oEvent) {
-		var exceptDirection = sap.ui.getCore().getConfiguration().getRTL() ? "LeftToRight" : "RightToLeft";
+		var bRtl = sap.ui.getCore().getConfiguration().getRTL();
+		var exceptDirection = bRtl ? SwipeDirection.BeginToEnd : SwipeDirection.EndToBegin;
+		var swipeDirection = this.getSwipeDirection();
 
-		if (this.getSwipeDirection() != exceptDirection) {
-			this._onSwipe(oEvent);
+		if (swipeDirection === SwipeDirection.LeftToRight) {
+			swipeDirection = SwipeDirection.BeginToEnd;
+		} else if (swipeDirection === SwipeDirection.RightToLeft) {
+			swipeDirection = SwipeDirection.EndToBegin;
+		}
+
+		if (swipeDirection != exceptDirection) {
+			if (swipeDirection == SwipeDirection.Both) {
+				swipeDirection = bRtl ? SwipeDirection.EndToBegin : SwipeDirection.BeginToEnd;
+			}
+			this._onSwipe(oEvent, swipeDirection);
 		}
 	};
 
@@ -1614,9 +1754,12 @@ function(
 	};
 
 	ListBase.prototype.addItemGroup = function(oGroup, oHeader, bSuppressInvalidate) {
-		oHeader = oHeader || new GroupHeaderListItem({
-			title: oGroup.text || oGroup.key
-		});
+		if (!oHeader) {
+			oHeader = new GroupHeaderListItem();
+			// setter is used to avoid complex binding parser checks which happens when setting values in constructor (ManagedObject)
+			// i.e., to ignore binding strings "{" "[" from the value being set
+			oHeader.setTitle(oGroup.text || oGroup.key);
+		}
 
 		oHeader._bGroupHeader = true;
 		this.addAggregation("items", oHeader, bSuppressInvalidate);
@@ -1664,25 +1807,9 @@ function(
 		return sStates;
 	};
 
-	ListBase.prototype.getAccessibilityDescription = function() {
-		var sDescription = "";
-		var oHeaderTBar = this.getHeaderToolbar();
-		if (oHeaderTBar) {
-			var oTitle = oHeaderTBar.getTitleControl();
-			if (oTitle) {
-				sDescription += oTitle.getText() + " ";
-			}
-		} else {
-			sDescription += this.getHeaderText() + " ";
-		}
-
-		sDescription += this.getAccessibilityStates() + " ";
-		return sDescription;
-	};
-
 	ListBase.prototype.getAccessibilityInfo = function() {
 		return {
-			description: this.getAccessibilityDescription().trim(),
+			description: this.getAccessibilityStates().trim(),
 			focusable: true
 		};
 	};
@@ -1789,7 +1916,7 @@ function(
 		// if focus is not on the navigation items then only invalidate the item navigation
 		var oNavigationRoot = this.getNavigationRoot();
 		var iTabIndex = (sKeyboardMode == mKeyboardMode.Edit) ? -1 : 0;
-		if (bIfNeeded && !oNavigationRoot.contains(document.activeElement)) {
+		if (bIfNeeded && oNavigationRoot && !oNavigationRoot.contains(document.activeElement)) {
 			this._bItemNavigationInvalidated = true;
 			if (!oNavigationRoot.getAttribute("tabindex")) {
 				oNavigationRoot.tabIndex = iTabIndex;
@@ -1801,7 +1928,7 @@ function(
 		if (!this._oItemNavigation) {
 			this._oItemNavigation = new ItemNavigation();
 			this._oItemNavigation.setCycling(false);
-			this.addEventDelegate(this._oItemNavigation);
+			this.addDelegate(this._oItemNavigation);
 
 			// set the tab index of active items
 			this._setItemNavigationTabIndex(iTabIndex);
@@ -2026,7 +2153,7 @@ function(
 	ListBase.prototype.onkeydown = function(oEvent) {
 
 		var bCtrlA = (oEvent.which == KeyCodes.A) && (oEvent.metaKey || oEvent.ctrlKey);
-		if (oEvent.isMarked() || !bCtrlA || !jQuery(oEvent.target).hasClass(this.sNavItemClass)) {
+		if (oEvent.isMarked() || !bCtrlA || !jQuery(oEvent.target).hasClass(this.sNavItemClass) || this.bPreventMassSelection) {
 			return;
 		}
 
@@ -2049,6 +2176,11 @@ function(
 		// check whether item navigation should be reapplied from scratch
 		if (this._bItemNavigationInvalidated) {
 			this._startItemNavigation();
+		}
+
+		// prevent text selection when preforming range selection with SHIFT + mouse click
+		if (oEvent.shiftKey && this._mRangeSelection && oEvent.srcControl.getId().includes("-selectMulti")) {
+			oEvent.preventDefault();
 		}
 	};
 
@@ -2157,6 +2289,54 @@ function(
 			}
 
 			oContextMenu.openAsContextMenu(oEvent, oLI);
+		}
+	};
+
+	ListBase.prototype.onItemUpDownModifiers = function(oItem, oEvent, iDirection) {
+		if (!this._mRangeSelection || this.bPreventMassSelection) {
+			return;
+		}
+
+		// range seleection with shift + arrow up/down only works with visible items
+		var aVisibleItems = this.getVisibleItems(),
+			iItemIndex = aVisibleItems.indexOf(oItem),
+			oItemToSelect = aVisibleItems[iItemIndex + iDirection];
+
+		if (!oItemToSelect) {
+			if (this._mRangeSelection) {
+				this._mRangeSelection = null;
+			}
+			// onItemSelect causes unexpected selection when the item is selected by space key (see ListItemBase.onsapspace)
+			// hence marking the event
+			oEvent.setMarked();
+			return;
+		}
+
+		var bItemSelected = oItemToSelect.getSelected();
+
+		if (this._mRangeSelection.direction === undefined) {
+			// store the direction when first called
+			// -1 indicates "up"
+			// 1 indicates "down"
+			this._mRangeSelection.direction = iDirection;
+		} else if (this._mRangeSelection.direction !== iDirection) {
+			if (this._mRangeSelection.index !== aVisibleItems.indexOf(oItem)) {
+				// When moving back up/down to the item where the range selection started, the item always get deselected
+				oItemToSelect = oItem;
+				bItemSelected = oItemToSelect.getSelected();
+				if (this._mRangeSelection.selected && bItemSelected) {
+					this.setSelectedItem(oItemToSelect, false, true);
+					return;
+				}
+			} else {
+				// store the new direction once the above condition is met, so that the selection/deseelction can be handled accordingly
+				this._mRangeSelection.direction = iDirection;
+			}
+		}
+
+		if (this._mRangeSelection.selected !== bItemSelected && oItemToSelect.isSelectable()) {
+			// selection change should only happen on selectable items
+			this.setSelectedItem(oItemToSelect, this._mRangeSelection.selected, true);
 		}
 	};
 

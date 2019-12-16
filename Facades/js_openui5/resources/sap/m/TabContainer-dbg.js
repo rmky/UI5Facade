@@ -9,16 +9,20 @@ sap.ui.define([
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/IconPool',
+	'sap/ui/core/util/ResponsivePaddingsEnablement',
 	'./TabContainerRenderer',
-    './TabStrip',
-    './TabStripItem',
-    './Button'
+	'./TabStrip',
+	'./TabStripItem',
+	'./Button'
 ],
-	function(library, Control, IconPool, TabContainerRenderer, TabStrip, TabStripItem, Button) {
+	function(library, Control, IconPool, ResponsivePaddingsEnablement, TabContainerRenderer, TabStrip, TabStripItem, Button) {
 		"use strict";
 
 		// shortcut for sap.m.ButtonType
 		var ButtonType = library.ButtonType;
+
+		// shortcut for PageBackgroundDesign in sap.m library
+		var PageBackgroundDesign = library.PageBackgroundDesign;
 
 		/**
 		 * Constructor for a new <code>TabContainer</code>.
@@ -54,10 +58,14 @@ sap.ui.define([
 		 * The <code>TabContainer</code> is a full-page container that takes 100% of its parent width and height.
 		 * As the control is expected to occupy the whole parent, it should be the only child of its parent.
 		 *
+		 * When using the <code>sap.m.TabContainer</code> in SAP Quartz theme, the breakpoints and layout paddings could be determined by the container's width.
+		 * To enable this concept and add responsive padding to the the <code>TabContainer</code> control, you may add the following class:
+		 * <code>sapUiResponsivePadding--header</code>.
+		 *
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.73.1
 		 *
 		 * @constructor
 		 * @public
@@ -73,7 +81,14 @@ sap.ui.define([
 					/**
 					 * Defines whether an <i>Add New Tab</i> button is displayed in the <code>TabStrip</code>.
 					 */
-					showAddNewButton : {type : "boolean", group : "Misc", defaultValue : false}
+					showAddNewButton : {type : "boolean", group : "Misc", defaultValue : false},
+
+					/**
+					 * Determines the background color of the content in <code>TabContainer</code>.
+					 *
+					 * @since 1.71
+					 */
+					backgroundDesign : {type: "sap.m.PageBackgroundDesign", group: "Appearance", defaultValue: PageBackgroundDesign.List}
 				},
 				aggregations : {
 
@@ -166,8 +181,10 @@ sap.ui.define([
 
 						// prevent the tabstrip from closing the item by default
 						oEvent.preventDefault();
-						if (this.fireItemClose({item: oRemovedItem})) {
-							this.removeItem(oRemovedItem); // the tabstrip item will also get removed
+						if (this.fireItemClose({ item: oRemovedItem })) {
+							if (!this.getBinding("items")) {
+								this.removeItem(oRemovedItem); // the tabstrip item will also get removed
+							}
 						}
 
 					}.bind(this)
@@ -196,6 +213,17 @@ sap.ui.define([
 			"icon": "icon",
 			"iconTooltip": "iconTooltip",
 			"modified": "modified"
+		};
+
+		ResponsivePaddingsEnablement.call(TabContainer.prototype, {
+			header: {selector: ".sapMTabStribContainer"}
+		});
+
+		/**
+		 * Called when control is initialized.
+		 */
+		TabContainer.prototype.init = function () {
+			this._initResponsivePaddingsEnablement();
 		};
 
 		/**

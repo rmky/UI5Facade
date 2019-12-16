@@ -40,7 +40,7 @@ sap.ui.define([
 	 * @class Static class for enabling declarative UI support.
 	 *
 	 * @author Peter Muessig, Tino Butz
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @since 1.7.0
 	 * @public
 	 * @alias sap.ui.core.DeclarativeSupport
@@ -194,7 +194,9 @@ sap.ui.define([
 
 			var mSettings = {};
 			mSettings.id = this._getId($element, oView);
-			mSettings.processingMode = oView && oView._sProcessingMode;
+			if ( oView && oView._sProcessingMode != null && fnClass.getMetadata().hasSpecialSetting("processingMode") ) {
+				mSettings.processingMode = oView._sProcessingMode;
+			}
 			this._addSettingsForAttributes(mSettings, fnClass, oElement, oView);
 			this._addSettingsForAggregations(mSettings, fnClass, oElement, oView);
 

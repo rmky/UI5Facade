@@ -44,7 +44,7 @@ sap.ui.define([
 	* @param {object} [mSettings] Initial settings for the new control
 	*
 	* @class
-	* An enhanced {@link sap.f.DynamicPage}, that contains controls with semantic-specific meaning.
+	* Provides enhanced functionality by internally aggregating {@link sap.f.DynamicPage} and contains controls with semantic-specific meaning.
 	*
 	* <h3>Overview</h3>
 	*
@@ -71,7 +71,7 @@ sap.ui.define([
 	* 	<li><code>printAction</code></li>
 	* 	<li>Any <code>customShareActions</code></li></ul></li>
 	* <li>The navigation semantic actions - <code>fullScreenAction</code>, <code>exitFullScreenAction</code>,
-	* and <code>closeAction</li></code></ul>
+	* and <code>closeAction</code></li></ul>
 	*
 	* The actions in the <code>SemanticPage</code> footer are positioned either on its left or right area and have the following predefined order:
 	*
@@ -97,7 +97,7 @@ sap.ui.define([
 	* @extends sap.ui.core.Control
 	*
 	* @author SAP SE
-	* @version 1.68.1
+	* @version 1.73.1
 	*
 	* @constructor
 	* @public
@@ -194,7 +194,19 @@ sap.ui.define([
 				*
 				* @since 1.58
 				*/
-				titleAreaShrinkRatio : {type: "sap.f.DynamicPageTitleShrinkRatio", group: "Appearance", defaultValue: "1:1.6:1.6"}
+				titleAreaShrinkRatio : {type: "sap.f.DynamicPageTitleShrinkRatio", group: "Appearance", defaultValue: "1:1.6:1.6"},
+
+				/**
+				 * Optimizes <code>SemanticPage</code> responsiveness on small screens and behavior
+				 * when expanding/collapsing the <code>SemanticPageHeader</code>.
+				 *
+				 * <b>Note:</b> It is recommended to use this property when displaying content
+				 * of adaptive controls that stretch to fill the available space. Such controls may be
+				 * {@link sap.ui.table.Table} and {@link sap.ui.table.AnalyticalTable} depending on their settings.
+				 *
+				 * @since 1.73
+				 */
+				fitContent: {type: "boolean", group: "Behavior", defaultValue: false}
 
 			},
 			defaultAggregation : "content",
@@ -680,6 +692,11 @@ sap.ui.define([
 
 		oDynamicPageTitle.setAreaShrinkRatio(sAreaShrinkRatio);
 		return this.setProperty("titleAreaShrinkRatio", oDynamicPageTitle.getAreaShrinkRatio(), true);
+	};
+
+	SemanticPage.prototype.setFitContent = function (bFitContent) {
+		this._getPage().setFitContent(bFitContent);
+		return this.setProperty("fitContent", bFitContent, true);
 	};
 
 	SemanticPage.prototype.addStyleClass = function (sClass, bSuppressRerendering) {

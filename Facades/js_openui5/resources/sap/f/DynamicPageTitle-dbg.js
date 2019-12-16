@@ -85,7 +85,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -424,6 +424,8 @@ sap.ui.define([
 		this._cacheDomElements();
 		this._toggleState(this._bExpandedState);
 		this._doNavigationActionsLayout();
+		// Needs update in order to determine its visibility by visibility of its content.
+		this._updateTopAreaVisibility();
 	};
 
 	DynamicPageTitle.prototype.exit = function () {

@@ -23,7 +23,8 @@ sap.ui.define([
 	"sap/base/util/merge",
 	"sap/ui/dt/SelectionMode",
 	"sap/base/util/includes",
-	"sap/ui/dt/DesignTimeStatus"
+	"sap/ui/dt/DesignTimeStatus",
+	"sap/base/util/restricted/_curry"
 ],
 function (
 	ManagedObject,
@@ -44,7 +45,8 @@ function (
 	merge,
 	SelectionMode,
 	includes,
-	DesignTimeStatus
+	DesignTimeStatus,
+	_curry
 ) {
 	"use strict";
 
@@ -60,7 +62,7 @@ function (
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @private
@@ -262,7 +264,10 @@ function (
 						if (this._oTaskManager.isEmpty() && this._sStatus !== DesignTimeStatus.SYNCED) {
 							this._sStatus = DesignTimeStatus.SYNCED;
 							setTimeout(function () {
-								this.fireSynced();
+								// checks if designTime status is still synced, due to asynchronity from setTimeout()
+								if (this._sStatus === DesignTimeStatus.SYNCED) {
+									this.fireSynced();
+								}
 							}.bind(this), 0);
 						}
 					}
@@ -749,13 +754,7 @@ function (
 							this._oTaskManager.complete(iTaskId);
 							return oElementOverlay;
 						}.bind(this));
-				}.bind(this),
-				// Rejected
-				function (vError) {
-					// Will be handled by catch() below
-					throw vError;
-				}
-			)
+				}.bind(this))
 			.catch(function (vError) {
 				var oError = Util.propagateError(
 					vError,
@@ -793,6 +792,8 @@ function (
 			sReason = "Cannot create overlay — no element is specified.";
 		} else if (oElement.bIsDestroyed) {
 			sReason = "Cannot create overlay — the element is already destroyed.";
+		} else if (oElement instanceof ManagedObject && !ElementUtil.isElementInTemplate(oElement)) {
+			sReason = "Element is in a bound aggregation, but not found in the binding template. Skipping overlay creation for element with id='" + oElement.getId() + "'. Please report to CA-UI5-FL-RTA component.";
 		} else {
 			sReason = Util.printf(
 				"Cannot create overlay without a valid element. Expected a descendant of sap.ui.core.Element or sap.ui.core.Component, but {0} was given",
@@ -832,7 +833,7 @@ function (
 					// on ElementOverlay and no Metadata will be loaded from the server for this Element.
 					this.getDesignTimeMetadataFor(oElement) instanceof ElementDesignTimeMetadata
 					? this.getDesignTimeMetadataFor(oElement)
-					: Util.curry(function (mMetadataExtension, mParentMetadata, oElement, mMetadata) {
+					: _curry(function (mMetadataExtension, mParentMetadata, oElement, mMetadata) {
 						mMetadata = merge({}, mMetadata, mMetadataExtension);
 
 						this._mMetadataOriginal = mMetadata;
@@ -975,6 +976,9 @@ function (
 				)
 			);
 			sError = oError.toString(); // excluding stack trace
+		} else if (oError.message.startsWith("Element is in a bound aggregation")) {
+			sSeverity = "error";
+			sError = oError.toString(); // excluding stack trace
 		}
 
 		return {
@@ -1084,17 +1088,18 @@ function (
 	 */
 	DesignTime.prototype._onElementModified = function(oEvent) {
 		var oParams = merge({}, oEvent.getParameters());
+		var oElementOverlay = oEvent.getSource();
 		oParams.type = !oParams.type ? oEvent.getId() : oParams.type;
 		switch (oParams.type) {
 			case "addOrSetAggregation":
 			case "insertAggregation":
 				if (this.getStatus() === DesignTimeStatus.SYNCING) {
-					this.attachEventOnce("synced", function (oParams) {
+					this.attachEventOnce("synced", oParams, function () {
 						// DesignTime instance at this point might be destroyed by third-parties on synced event
 						if (!this.bIsDestroyed) {
-							this._onAddAggregation(oParams.value, oParams.target, oParams.name);
+							this._onAddAggregation(arguments[1].value, arguments[1].target, arguments[1].name);
 						}
-					}.bind(this, oParams));
+					}, this);
 				} else {
 					this._onAddAggregation(oParams.value, oParams.target, oParams.name);
 				}
@@ -1114,9 +1119,11 @@ function (
 				delete oParams.target;
 
 				if (this.getStatus() === DesignTimeStatus.SYNCING) {
-					this.attachEventOnce("synced", function (oParams) {
-						this.fireElementPropertyChanged(oParams);
-					}.bind(this, oParams));
+					this.attachEventOnce("synced", oParams, function () {
+						if (!oElementOverlay.bIsDestroyed) {
+							this.fireElementPropertyChanged(arguments[1]);
+						}
+					}, this);
 				} else {
 					this.fireElementPropertyChanged(oParams);
 				}
@@ -1130,10 +1137,13 @@ function (
 	 */
 	DesignTime.prototype._onEditableChanged = function(oEvent) {
 		var oParams = merge({}, oEvent.getParameters());
-		oParams.id = oEvent.getSource().getId();
+		var oElementOverlay = oEvent.getSource();
+		oParams.id = oElementOverlay.getId();
 		if (this.getStatus() === DesignTimeStatus.SYNCING) {
-			this.attachEventOnce("synced", function () {
-				this.fireElementOverlayEditableChanged(oParams);
+			this.attachEventOnce("synced", oParams, function() {
+				if (!oElementOverlay.bIsDestroyed) {
+					this.fireElementOverlayEditableChanged(arguments[1]);
+				}
 			}, this);
 		} else {
 			this.fireElementOverlayEditableChanged(oParams);
@@ -1151,40 +1161,43 @@ function (
 			var oParentAggregationOverlay = oParentOverlay.getAggregationOverlay(sAggregationName);
 			var oElementOverlay = OverlayRegistry.getOverlay(oElement);
 
-			if (!oElementOverlay) {
+			if (
+				!oElementOverlay
+				&& oParentAggregationOverlay
+				&& oParentAggregationOverlay.getElement()
+			) {
 				var iTaskId = this._oTaskManager.add({
 					type: 'createChildOverlay',
 					element: oElement
 				});
-				oElementOverlay = this.createOverlay({
+				this.createOverlay({
 					element: oElement,
 					root: false,
 					parentMetadata: oParentAggregationOverlay.getDesignTimeMetadata().getData()
 				})
 					.then(function (oElementOverlay) {
-						oParentAggregationOverlay.insertChild(null, oElementOverlay);
-						oElementOverlay.applyStyles(); // TODO: remove after Task Manager implementation
+						var vInsertChildReply = oParentAggregationOverlay.insertChild(null, oElementOverlay);
+						if (vInsertChildReply === true) {
+							oElementOverlay.applyStyles(); // TODO: remove after Task Manager implementation
 
-						var iOverlayPosition = oParentAggregationOverlay.indexOfAggregation('children', oElementOverlay);
+							var iOverlayPosition = oParentAggregationOverlay.indexOfAggregation('children', oElementOverlay);
 
 							// `ElementOverlayAdded` event should be emitted only when overlays are ready to prevent
 							// an access to still syncing overlays (e.g. the overlay is still not available in overlay registry
 							// at this point and not registered in the plugins).
-						this.attachEventOnce("synced", function () {
-							this.fireElementOverlayAdded({
-								id: oElementOverlay.getId(),
-								targetIndex: iOverlayPosition,
-								targetId: oParentAggregationOverlay.getId(),
-								targetAggregation: oParentAggregationOverlay.getAggregationName()
-							});
-						}, this);
-						this._oTaskManager.complete(iTaskId);
-					}.bind(this),
-						function (vError) {
-							// Will be handled by catch() below
-							throw vError;
+							this.attachEventOnce("synced", oElementOverlay, function() {
+								if (!oElementOverlay.bIsDestroyed) {
+									this.fireElementOverlayAdded({
+										id: oElementOverlay.getId(),
+										targetIndex: iOverlayPosition,
+										targetId: oParentAggregationOverlay.getId(),
+										targetAggregation: oParentAggregationOverlay.getAggregationName()
+									});
+								}
+							}, this);
 						}
-					)
+						this._oTaskManager.complete(iTaskId);
+					}.bind(this))
 					.catch(function (sElementId, sAggregationOverlayId, vError) {
 						// In case of any crash or rejection the task has to be canceled
 						this._oTaskManager.cancel(iTaskId);
@@ -1201,7 +1214,7 @@ function (
 
 						// Omit error message if the element was destroyed during overlay initialisation
 						// (e.g. SimpleForm case when multi-removal takes place)
-						if (!oElement.bIsDestroyed) {
+						if (!oElement.bIsDestroyed && !oParentAggregationOverlay.bIsDestroyed) {
 							Log.error(Util.errorToString(oError));
 						}
 					}.bind(this, oElement.getId(), oParentAggregationOverlay.getId()));

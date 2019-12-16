@@ -3,9 +3,19 @@
  * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(["sap/f/cards/BaseContent", "sap/m/List", "sap/m/StandardListItem", "sap/ui/base/ManagedObject", "sap/f/cards/ActionEnablement"],
-	function (BaseContent, sapMList, StandardListItem, ManagedObject, ActionEnablement) {
+sap.ui.define([
+		"sap/f/library",
+		"sap/f/cards/BaseContent",
+		"sap/m/List",
+		"sap/m/StandardListItem",
+		"sap/ui/base/ManagedObject",
+		"sap/f/cards/IconFormatter",
+		"sap/f/cards/BindingHelper"
+	],
+	function (library, BaseContent, sapMList, StandardListItem, ManagedObject, IconFormatter, BindingHelper) {
 		"use strict";
+
+		var AreaType = library.cards.AreaType;
 
 		/**
 		 * Constructor for a new <code>ListContent</code>.
@@ -19,7 +29,7 @@ sap.ui.define(["sap/f/cards/BaseContent", "sap/m/List", "sap/m/StandardListItem"
 		 * @extends sap.f.cards.BaseContent
 		 *
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.73.1
 		 *
 		 * @constructor
 		 * @private
@@ -119,23 +129,31 @@ sap.ui.define(["sap/f/cards/BaseContent", "sap/m/List", "sap/m/StandardListItem"
 		};
 
 		/**
-		 * Binds/Sets properties to the inner item template based on the configuration object item template.
+		 * Binds/Sets properties to the inner item template based on the configuration object item template which is already parsed.
 		 * Attaches all required actions.
 		 *
 		 * @private
-		 * @param {Object} mItem The item template of the configuration object
+		 * @param {Object} mItem The item template of the configuration object.
 		 */
 		ListContent.prototype._setItem = function (mItem) {
-			/* eslint-disable no-unused-expressions */
-			mItem.title && this._bindObjectItemProperty("title", mItem.title);
-			mItem.description && this._bindObjectItemProperty("description", mItem.description);
-			mItem.icon && mItem.icon.src && this._bindItemProperty("icon", mItem.icon.src);
-			mItem.highlight && this._bindItemProperty("highlight", mItem.highlight);
-			mItem.info && this._bindItemProperty("info", mItem.info.value);
-			mItem.info && this._bindItemProperty("infoState", mItem.info.state);
-			/* eslint-enable no-unused-expressions */
+			var mSettings = {
+				iconDensityAware: false,
+				title: mItem.title && (mItem.title.value || mItem.title),
+				description: mItem.description && (mItem.description.value || mItem.description),
+				highlight: mItem.highlight,
+				info: mItem.info && mItem.info.value,
+				infoState: mItem.info && mItem.info.state
+			};
 
-			this._attachActions(mItem, this._oItemTemplate);
+			if (mItem.icon && mItem.icon.src) {
+				mSettings.icon = BindingHelper.formattedProperty(mItem.icon.src, function (sValue) {
+					return IconFormatter.formatSrc(sValue, this._sAppId);
+				}.bind(this));
+			}
+
+			this._oItemTemplate = new StandardListItem(mSettings);
+			this._oActions.setAreaType(AreaType.ContentItem);
+			this._oActions.attach(mItem, this);
 
 			var oBindingInfo = {
 				template: this._oItemTemplate
@@ -180,63 +198,12 @@ sap.ui.define(["sap/f/cards/BaseContent", "sap/m/List", "sap/m/StandardListItem"
 		};
 
 		/**
-		 * Directly bind the property when the value is of type string.
-		 * If the value is an object call bind property for both the value and the label properties.
-		 *
-		 * This allow the usage of both:
-		 *
-		 * "title": "Some item title"
-		 *
-		 * and
-		 *
-		 * "title": {
-		 * 		"label": "Some label for the title"
-		 * 		"value": "Some item title"
-		 * }
-		 *
-		 * @private
-		 * @param {string} sPropertyName The name of the property
-		 * @param {string|Object} vPropertyValue The value of the property
-		 */
-		ListContent.prototype._bindObjectItemProperty = function (sPropertyName, vPropertyValue) {
-			if (typeof vPropertyValue === "string") {
-				this._bindItemProperty(sPropertyName, vPropertyValue);
-			} else {
-				this._bindItemProperty(sPropertyName, vPropertyValue.value);
-			}
-		};
-
-		/**
-		 * Tries to create a binding info object based on sPropertyValue.
-		 * If succeeds the binding info will be used for property binding.
-		 * Else sPropertyValue will be set directly on the item template.
-		 *
-		 * @private
-		 * @param {string} sPropertyName The name of the property
-		 * @param {string} sPropertyValue The value of the property
-		 */
-		ListContent.prototype._bindItemProperty = function (sPropertyName, sPropertyValue) {
-			if (!sPropertyValue) {
-				return;
-			}
-
-			var oBindingInfo = ManagedObject.bindingParser(sPropertyValue);
-			if (oBindingInfo) {
-				this._oItemTemplate.bindProperty(sPropertyName, oBindingInfo);
-			} else {
-				this._oItemTemplate.setProperty(sPropertyName, sPropertyValue);
-			}
-		};
-
-		/**
 		 * @overwrite
 		 * @returns {sap.m.List} The inner list.
 		 */
 		ListContent.prototype.getInnerList = function () {
 			return this._getList();
 		};
-
-		ActionEnablement.enrich(ListContent);
 
 		return ListContent;
 	}

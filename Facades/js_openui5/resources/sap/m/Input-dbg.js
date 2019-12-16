@@ -67,6 +67,12 @@ function(
 	// shortcut for sap.m.InputType
 	var InputType = library.InputType;
 
+	// shortcut for sap.m.ListMode
+	var ListMode = library.ListMode;
+
+	// shortcut for sap.m.ListSeparators
+	var ListSeparators = library.ListSeparators;
+
 	/**
 	 * Constructor for a new <code>Input</code>.
 	 *
@@ -117,9 +123,13 @@ function(
 	 * <b>When not to use:</b>
 	 * Don't use the control for long texts, dates, designated search fields, fields for multiple selection.
 	 *
+	 * <h3>Known Limitations</h3>
+	 *
+	 * If <code>showValueHelp</code> or if <code>showSuggestion</code> is <code>true</code>, the native browser autofill will not fire a change event.
+	 *
 	 * @extends sap.m.InputBase
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -153,7 +163,7 @@ function(
 			/**
 			 * Only used if type=date and no datepicker is available.
 			 * The data is displayed and the user input is parsed according to this format.
-			 * NOTE: The value property is always of the form RFC 3339 (YYYY-MM-dd).
+			 * <b>Note:</b> The value property is always of the form RFC 3339 (YYYY-MM-dd).
 			 * @deprecated Since version 1.9.1.
 			 * <code>sap.m.DatePicker</code>, <code>sap.m.TimePicker</code> or <code>sap.m.DateTimePicker</code> should be used for date/time inputs and formating.
 			 */
@@ -184,13 +194,15 @@ function(
 
 			/**
 			 * If set, the value of this parameter will control the horizontal size of the suggestion list to display more data. This allows suggestion lists to be wider than the input field if there is enough space available. By default, the suggestion list is always as wide as the input field.
-			 * Note: The value will be ignored if the actual width of the input field is larger than the specified parameter value.
+			 * <b>Note:</b> The value will be ignored if the actual width of the input field is larger than the specified parameter value.
 			 * @since 1.21.1
 			 */
 			maxSuggestionWidth : {type : "sap.ui.core.CSSSize", group : "Appearance", defaultValue : null},
 
 			/**
-			 * Minimum length of the entered text in input before suggest event is fired. The default value is 1 which means the suggest event is fired after user types in input. When it's set to 0, suggest event is fired when input with no text gets focus.
+			 * Minimum length of the entered text in input before suggest event is fired. The default value is 1 which means the suggest event is fired after user types in input.
+			 *
+			 * <b>Note:</b> When it's set to 0, suggest event is fired when input with no text gets focus. In this case no suggestion popup will open.
 			 * @since 1.21.2
 			 */
 			startSuggestion : {type : "int", group : "Behavior", defaultValue : 1},
@@ -198,7 +210,7 @@ function(
 			/**
 			 * For tabular suggestions, this flag will show/hide the button at the end of the suggestion table that triggers the event "valueHelpRequest" when pressed. The default value is true.
 			 *
-			 * NOTE: If suggestions are not tabular or no suggestions are used, the button will not be displayed and this flag is without effect.
+			 * <b>Note:</b> If suggestions are not tabular or no suggestions are used, the button will not be displayed and this flag is without effect.
 			 * @since 1.22.1
 			 */
 			showTableSuggestionValueHelp : {type : "boolean", group : "Behavior", defaultValue : true},
@@ -287,7 +299,7 @@ function(
 			/**
 			 * The suggestionColumns and suggestionRows are for tabular input suggestions. This aggregation allows for binding the table cells.
 			 * The items of this aggregation are to be bound directly or to set in the suggest event method.
-			 * Note: If this aggregation is filled, the aggregation suggestionItems will be ignored.
+			 * <b>Note:</b> If this aggregation is filled, the aggregation suggestionItems will be ignored.
 			 * @since 1.21.1
 			 */
 			suggestionRows : {type : "sap.m.ColumnListItem", altTypes: ["sap.m.GroupHeaderListItem"], multiple : true, singularName : "suggestionRow", bindable : "bindable", forwarding: {getter: "_getSuggestionsTable", aggregation: "items"}},
@@ -319,7 +331,9 @@ function(
 		events : {
 
 			/**
-			 * This event is fired when the value of the input is changed - e.g. at each keypress
+			 * Fired when the value of the input is changed by user interaction - each keystroke, delete, paste, etc.
+			 *
+			 * <b>Note:</b> Browsing autocomplete suggestions does not fires the event.
 			 */
 			liveChange : {
 				parameters : {
@@ -390,7 +404,7 @@ function(
 					/**
 					 * This is the row selected in the tabular suggestion popup represented as a ColumnListItem. For one and two-value suggestions, this value will not be set.
 					 *
-					 * Note: The row result function to select a result value for the string is already executed at this time. To pick different value for the input field or to do follow up steps after the item has been selected.
+					 * <b>Note:</b> The row result function to select a result value for the string is already executed at this time. To pick different value for the input field or to do follow up steps after the item has been selected.
 					 * @since 1.21.1
 					 */
 					selectedRow : {type : "sap.m.ColumnListItem"}
@@ -424,6 +438,50 @@ function(
 
 
 	IconPool.insertFontFaceStyle();
+
+	/**
+	 * The default filter function for tabular suggestions. It checks whether some item text begins with the typed value.
+	 *
+	 * @private
+	 * @param {string} sValue the current filter string.
+	 * @param {sap.m.ColumnListItem} oColumnListItem The filtered list item.
+	 * @returns {boolean} true for items that start with the parameter sValue, false for non matching items.
+	 */
+	Input._DEFAULTFILTER_TABULAR = function(sValue, oColumnListItem) {
+		var aCells = oColumnListItem.getCells(),
+			i = 0;
+
+		for (; i < aCells.length; i++) {
+
+			if (aCells[i].getText) {
+				if (SuggestionsPopover._wordStartsWithValue(aCells[i].getText(), sValue)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	};
+
+	/**
+	 * The default result function for tabular suggestions. It returns the value of the first cell with a "text" property.
+	 *
+	 * @private
+	 * @param {sap.m.ColumnListItem} oColumnListItem The selected list item.
+	 * @returns {string} The value to be displayed in the input field.
+	 */
+	Input._DEFAULTRESULT_TABULAR = function (oColumnListItem) {
+		var aCells = oColumnListItem.getCells(),
+			i = 0;
+
+		for (; i < aCells.length; i++) {
+			// take first cell with a text method and compare value
+			if (aCells[i].getText) {
+				return aCells[i].getText();
+			}
+		}
+		return "";
+	};
 
 	/**
 	 * Initializes the control.
@@ -465,6 +523,11 @@ function(
 			this._iRefreshListTimeout = null;
 		}
 
+		if (this._oSuggestionTable) {
+			this._oSuggestionTable.destroy();
+			this._oSuggestionTable = null;
+		}
+
 		if (this._oSuggPopover) {
 			this._oSuggPopover.destroy();
 			this._oSuggPopover = null;
@@ -503,6 +566,7 @@ function(
 
 		if (this.getShowSuggestion()) {
 
+			this._oSuggPopover._bAutocompleteEnabled = this.getAutocomplete();
 			if (this.getShowTableSuggestionValueHelp()) {
 				this._addShowMoreButton();
 			} else {
@@ -607,7 +671,7 @@ function(
 		}
 
 		if (this._hasTabularSuggestions()) {
-			bHasSelectedItem = this._oSuggPopover._oSuggestionTable && !!this._oSuggPopover._oSuggestionTable.getSelectedItem();
+			bHasSelectedItem = this._oSuggestionTable && !!this._oSuggestionTable.getSelectedItem();
 		} else {
 			bHasSelectedItem = this._oSuggPopover._oList && !!this._oSuggPopover._oList.getSelectedItem();
 		}
@@ -1166,7 +1230,7 @@ function(
 		this.cancelPendingSuggest();
 
 		if (this._isSuggestionsPopoverOpen()) {
-			if (!this._updateSelectionFromList()) {
+			if (!this._updateSelectionFromList() && !this.isComposingCharacter()) {
 				this._closeSuggestionPopup();
 			}
 		}
@@ -1350,7 +1414,7 @@ function(
 		 * @public
 		 * @param {boolean} bValue Show suggestions.
 		 * @return {sap.m.Input} this Input instance for chaining.
-	 	 */
+		 */
 		Input.prototype.setShowSuggestion = function(bValue){
 			this.setProperty("showSuggestion", bValue, true);
 
@@ -1378,7 +1442,7 @@ function(
 		 * @public
 		 * @param {boolean} bValue Show suggestions.
 		 * @return {sap.m.Input} this Input instance for chaining.
-	 	 */
+		 */
 		Input.prototype.setShowTableSuggestionValueHelp = function(bValue) {
 			this.setProperty("showTableSuggestionValueHelp", bValue, true);
 
@@ -1392,6 +1456,23 @@ function(
 				this._removeShowMoreButton();
 			}
 			return this;
+		};
+
+		/**
+		 * Event handler for browsers' <code>change</code> event.
+		 *
+		 * @since 1.73
+		 * @public
+		 * @param {jQuery.Event} oEvent The event.
+		 */
+		Input.prototype.onchange = function(oEvent) {
+			if (this.getShowValueHelp() || this.getShowSuggestion()) {
+				// can not handle browser change if value help or suggestions is enabled
+				// because change is fired before the value help is opened or when a link in suggestions is clicked
+				return;
+			}
+
+			this.onChange(oEvent);
 		};
 
 		/**
@@ -1460,10 +1541,13 @@ function(
 		 * @return {object} Object containing the matched items and groups information
 		 */
 		Input.prototype._filterListItems = function (aItems, sTypedChars) {
-			var i, oListItem, oItem,
+			var i,
+				oListItem,
+				oItem,
 				aGroups = [],
 				aHitItems = [],
-				bFilter = this.getFilterSuggests();
+				bFilter = this.getFilterSuggests(),
+				bIsAnySuggestionAlreadySelected = false;
 
 			for (i = 0; i < aItems.length; i++) {
 				oItem = aItems[i];
@@ -1489,6 +1573,11 @@ function(
 					} else {
 						oListItem = new StandardListItem(oItem.getId() + "-sli");
 						oListItem.setTitle(oItem.getText());
+					}
+
+					if (!bIsAnySuggestionAlreadySelected && (this._oSuggPopover._sProposedItemText === aItems[i].getText())) {
+						oListItem.setSelected(true);
+						bIsAnySuggestionAlreadySelected = true;
 					}
 
 					if (aGroups.length) {
@@ -1523,7 +1612,8 @@ function(
 				bShowItem,
 				bFilter = this.getFilterSuggests(),
 				aHitItems = [],
-				aGroups = [];
+				aGroups = [],
+				bIsAnySuggestionAlreadySelected = false;
 
 			// filter tabular items
 			for (i = 0; i < aTabularRows.length; i++) {
@@ -1537,6 +1627,11 @@ function(
 
 					aTabularRows[i].setVisible(bShowItem);
 					bShowItem && aHitItems.push(aTabularRows[i]);
+
+					if (!bIsAnySuggestionAlreadySelected && bShowItem && this._oSuggPopover._sProposedItemText === this._fnRowResultFilter(aTabularRows[i])) {
+						aTabularRows[i].setSelected(true);
+						bIsAnySuggestionAlreadySelected = true;
+					}
 
 					if (aGroups.length && bShowItem) {
 						aGroups[aGroups.length - 1].visible = true;
@@ -1583,6 +1678,18 @@ function(
 		Input.prototype._hideSuggestionPopup = function () {
 			var oPopup = this._oSuggPopover._oPopover;
 
+			// The IE moves the cursor position at the beginning when there is a binding and delay from the back-end
+			// The workaround is to save the focus info which includes position and reset it after updating the DOM
+			function setDomValue() {
+				if (Device.browser.internet_explorer) {
+					var oFocusInfo = this.getFocusInfo();
+					this.setDOMValue(this._oSuggPopover._sTypedInValue);
+					this.applyFocusInfo(oFocusInfo);
+				} else {
+					this.setDOMValue(this._oSuggPopover._sTypedInValue);
+				}
+			}
+
 			// when the input has no value, close the Popup when not runs on the phone because the opened dialog on phone shouldn't be closed.
 			if (!this._bUseDialog) {
 				if (oPopup.isOpen()) {
@@ -1590,7 +1697,7 @@ function(
 						this._oSuggPopover._iPopupListSelectedIndex = -1;
 						this.cancelPendingSuggest();
 						if (this._oSuggPopover._sTypedInValue) {
-							this.setDOMValue(this._oSuggPopover._sTypedInValue);
+							setDomValue.call(this);
 						}
 						this._oSuggPopover._oProposedItem = null;
 						oPopup.close();
@@ -1862,7 +1969,7 @@ function(
 			oItem.setType(ListType.Active);
 			this.addAggregation("suggestionRows", oItem);
 			this._synchronizeSuggestions();
-			this._createSuggestionPopupContent();
+			this._createSuggestionPopupContent(true);
 			return this;
 		};
 
@@ -1878,7 +1985,7 @@ function(
 			oItem.setType(ListType.Active);
 			this.insertAggregation("suggestionRows", oItem, iIndex);
 			this._synchronizeSuggestions();
-			this._createSuggestionPopupContent();
+			this._createSuggestionPopupContent(true);
 			return this;
 		};
 
@@ -1994,7 +2101,7 @@ function(
 	 */
 	Input.prototype.onfocusin = function(oEvent) {
 		InputBase.prototype.onfocusin.apply(this, arguments);
-		this.$().addClass("sapMInputFocused");
+		this.addStyleClass("sapMInputFocused");
 
 		// Close the ValueStateMessage when the suggestion popup is being opened.
 		// Only do this in case a popup is used.
@@ -2009,6 +2116,20 @@ function(
 		this._bPopupHasFocus = undefined;
 
 		this._sPrevSuggValue = null;
+	};
+
+	/**
+	 * Called when the composition of a passage of text has been completed or cancelled.
+	 *
+	 * @param {jQuery.Event} oEvent The event object.
+	 * @private
+	 */
+	Input.prototype.oncompositionend = function (oEvent) {
+		InputBase.prototype.oncompositionend.apply(this, arguments);
+
+		if (this._oSuggPopover && !Device.browser.edge && !Device.browser.firefox) {
+			this._oSuggPopover._handleTypeAhead();
+		}
 	};
 
 	/**
@@ -2048,7 +2169,7 @@ function(
 	 */
 	Input.prototype.onfocusout = function(oEvent) {
 		InputBase.prototype.onfocusout.apply(this, arguments);
-		this.$().removeClass("sapMInputFocused");
+		this.removeStyleClass("sapMInputFocused");
 		this.closeValueStateMessage(this);
 		this.$("SuggDescr").text(""); // clear suggestion text, if any
 	};
@@ -2070,7 +2191,57 @@ function(
 	 * @returns {sap.m.Table} Suggestion table.
 	 */
 	Input.prototype._getSuggestionsTable = function () {
-		return this._getSuggestionsPopover()._getSuggestionsTable();
+
+		if (this._bIsBeingDestroyed) {
+			return this._oSuggestionTable;
+		}
+
+		if (!this._oSuggestionTable) {
+			this._oSuggestionTable = new Table(this.getId() + "-popup-table", {
+				mode: ListMode.SingleSelectMaster,
+				showNoData: false,
+				showSeparators: ListSeparators.None,
+				width: "100%",
+				enableBusyIndicator: false,
+				rememberSelections : false,
+				itemPress: function (oEvent) {
+					if (Device.system.desktop) {
+						this.focus();
+					}
+					this._oSuggPopover._bSuggestionItemTapped = true;
+					var oSelectedListItem = oEvent.getParameter("listItem");
+					this.setSelectionRow(oSelectedListItem, true);
+				}.bind(this)
+			});
+
+			this._oSuggestionTable.addEventDelegate({
+				onAfterRendering: function () {
+					var aTableCellsDomRef, sInputValue;
+
+					if (!this.getEnableSuggestionsHighlighting()) {
+						return;
+					}
+
+					aTableCellsDomRef = this._oSuggestionTable.$().find('tbody .sapMLabel');
+					sInputValue = (this._sTypedInValue || this.getValue()).toLowerCase();
+
+					this._oSuggPopover.highlightSuggestionItems(aTableCellsDomRef, sInputValue);
+				}.bind(this)
+			});
+
+			// initially hide the table on phone
+			if (this._bUseDialog) {
+				this._oSuggestionTable.addStyleClass("sapMInputSuggestionTableHidden");
+			}
+
+			this._oSuggestionTable.updateItems = function() {
+				Table.prototype.updateItems.apply(this, arguments);
+				this._refreshItemsDelayed();
+				return this;
+			};
+		}
+
+		return this._oSuggestionTable;
 	};
 
 	/**
@@ -2249,6 +2420,13 @@ function(
 			text : this._oRb.getText("INPUT_SUGGESTIONS_SHOW_ALL"),
 			press : function() {
 				if (this.getShowTableSuggestionValueHelp()) {
+
+					// request for value help interrupts autocomplete
+					if (this._oSuggPopover._sTypedInValue) {
+						this.updateDomValue(this._oSuggPopover._sTypedInValue);
+						this._oSuggPopover._resetTypeAhead();
+					}
+
 					this.fireValueHelpRequest({fromSuggestions: true});
 					this._oSuggPopover._iPopupListSelectedIndex = -1;
 					this._closeSuggestionPopup();
@@ -2322,7 +2500,7 @@ function(
 	/**
 	 * Helper function that creates content for the suggestion popup.
 	 *
-	 * @param {boolean|null} bTabular Content for the popup.
+	 * @param {boolean|null} bTabular Determines whether the popup content is a table or a list.
 	 * @private
 	 */
 	Input.prototype._createSuggestionPopupContent = function(bTabular) {
@@ -2331,7 +2509,7 @@ function(
 			return;
 		}
 
-		this._oSuggPopover._createSuggestionPopupContent(bTabular, this._hasTabularSuggestions());
+		this._oSuggPopover._createSuggestionPopupContent(bTabular);
 
 		if (!this._hasTabularSuggestions() && !bTabular) {
 			this._oSuggPopover._oList.attachItemPress(function (oEvent) {
@@ -2349,12 +2527,12 @@ function(
 			// tabular suggestions
 			// if no custom filter is set we replace the default filter function here
 			if (this._fnFilter === SuggestionsPopover._DEFAULTFILTER) {
-				this._fnFilter = SuggestionsPopover._DEFAULTFILTER_TABULAR;
+				this._fnFilter = Input._DEFAULTFILTER_TABULAR;
 			}
 
 			// if not custom row result function is set we set the default one
 			if (!this._fnRowResultFilter) {
-				this._fnRowResultFilter = SuggestionsPopover._DEFAULTRESULT_TABULAR;
+				this._fnRowResultFilter = Input._DEFAULTRESULT_TABULAR;
 			}
 
 			if (this.getShowTableSuggestionValueHelp()) {

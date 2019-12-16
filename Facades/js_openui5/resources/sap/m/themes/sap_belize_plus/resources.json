@@ -61,7 +61,7 @@
 			"theme": "sap_belize_plus"
 		},
 		{
-			"name": "NotificationListBase.less",
+			"name": "NotificationListItem.less",
 			"designtime": true,
 			"theme": "sap_belize_plus"
 		},
@@ -147,6 +147,11 @@
 		},
 		{
 			"name": "ViewSettingsDialog.less",
+			"designtime": true,
+			"theme": "sap_belize_plus"
+		},
+		{
+			"name": "WheelSlider.less",
 			"designtime": true,
 			"theme": "sap_belize_plus"
 		},

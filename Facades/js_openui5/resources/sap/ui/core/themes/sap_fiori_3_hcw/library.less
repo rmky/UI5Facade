@@ -114,6 +114,26 @@
 		 url('fonts/72-Bold-full.woff') format('woff');
 }
 
+// Responsive paddings
+.sapUi-Std-PaddingS {
+	padding-left: 1rem !important;
+	padding-right: 1rem !important;
+}
+
+.sapUi-Std-PaddingM {
+	padding-left: 2rem !important;
+	padding-right: 2rem !important;
+}
+
+.sapUi-Std-PaddingL {
+	padding-left: 2rem !important;
+	padding-right: 2rem !important;
+}
+
+.sapUi-Std-PaddingXL {
+	padding-left: 3rem !important;
+	padding-right: 3rem !important;
+}
 /* END "shared.less" */
 
 
@@ -163,13 +183,8 @@ html.sap-desktop ::-webkit-scrollbar-thumb:hover {
 /* Quartz High Contrast White theme  */
 /* ================================= */
 
-html:not([data-sap-ui-browser^="ie"]):not([data-sap-ui-browser^="ed"]) .sapUiIcon:focus {
+.sapUiIcon:focus {
 	outline-color: @sapUiHcStandardForeground;
-}
-
-html[data-sap-ui-browser^="ie"] .sapUiIcon:focus::after,
-html[data-sap-ui-browser^="ed"] .sapUiIcon:focus::after {
-	border-color: @sapUiHcStandardForeground;
 }
 
 .sapUiIconColorNeutral {
@@ -207,6 +222,7 @@ html[data-sap-ui-browser^="ed"] .sapUiIcon:focus::after {
 .sapUiIconBGColorContrast {
 	background-color: @sapUiHighlight;
 }
+
 /* END "Icon.less" */
 
 /* START "LocalBusyIndicator.less" */

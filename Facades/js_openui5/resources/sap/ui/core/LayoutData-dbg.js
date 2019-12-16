@@ -23,7 +23,7 @@ sap.ui.define(['./Element', './library', "sap/ui/thirdparty/jquery"],
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @public
 	 * @alias sap.ui.core.LayoutData

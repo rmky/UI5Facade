@@ -75,7 +75,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Element
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @alias sap.ui.core.Control
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
@@ -89,8 +89,12 @@ sap.ui.define([
 			properties : {
 				/**
 				 * Whether the control is currently in blocked state.
+				 *
+				 * @deprecated since version 1.69 The blocked property is deprecated.
+				 * There is no accessibility support for this property.
+				 * Blocked controls should not be used inside Controls, which rely on keyboard navigation, e.g. List controls.
 				 */
-				"blocked" : {type: "boolean", defaultValue: false, hidden: true},
+				"blocked" : {type: "boolean", defaultValue: false},
 				/**
 				 * Whether the control is currently in busy state.
 				 */
@@ -118,7 +122,7 @@ sap.ui.define([
 				 * control in the DOM of the current page. The placeholder will be hidden and have
 				 * zero dimensions (<code>display: none</code>).
 				 *
-				 * See {@link sap.ui.core.RenderManager#writeInvisiblePlaceholderData RenderManager#writeInvisiblePlaceholderData} for details.
+				 * Also see {@link module:sap/ui/core/InvisibleRenderer InvisibleRenderer}.
 				 */
 				"visible" : { type: "boolean", group : "Appearance", defaultValue: true },
 
@@ -126,7 +130,7 @@ sap.ui.define([
 				 * The IDs of a logical field group that this control belongs to.
 				 *
 				 * All fields in a logical field group should share the same <code>fieldGroupId</code>.
-				 * Once a logical field group is left, the <code>validateFieldGroup</code> event is raised.
+				 * Once a logical field group is left, the <code>validateFieldGroup</code> event is fired.
 				 *
 				 * For backward compatibility with older releases, field group IDs are syntactically not
 				 * limited, but it is suggested to use only valid {@link sap.ui.core.ID}s.
@@ -142,10 +146,14 @@ sap.ui.define([
 			events : {
 				/**
 				 * Event is fired if a logical field group defined by <code>fieldGroupIds</code> of a control was left
-				 * or the user explicitly pressed a key combination that triggers validation.
+				 * or when the user explicitly pressed the key combination that triggers validation.
+				 *
+				 * By default, the <code>RETURN</code> key without any modifier keys triggers validation,
+				 * see {@link #triggerValidateFieldGroup}.
 				 *
 				 * Listen to this event to validate data of the controls belonging to a field group.
-				 * See {@link #setFieldGroupIds}.
+				 * See {@link #setFieldGroupIds}, or consult the
+				 * {@link topic:5b0775397e394b1fb973fa207554003e Field Group} documentation.
 				 */
 				validateFieldGroup : {
 					enableEventBubbling:true,
@@ -257,8 +265,8 @@ sap.ui.define([
 	 *
 	 * @param {string} [sIdSuffix] a suffix to be appended to the cloned element id
 	 * @param {string[]} [aLocalIds] an array of local IDs within the cloned hierarchy (internally used)
-	 * @return {sap.ui.core.Element} reference to the newly created clone
-	 * @protected
+	 * @return {sap.ui.core.Control} reference to the newly created clone
+	 * @public
 	 */
 	Control.prototype.clone = function() {
 		var oClone = Element.prototype.clone.apply(this, arguments);
@@ -288,17 +296,19 @@ sap.ui.define([
 	};
 
 	/**
-	 * Triggers rerendering of this element and its children.
+	 * Marks this control and its children for a re-rendering, usually because its state has changed and now differs
+	 * from the rendered DOM.
 	 *
-	 * As <code>sap.ui.core.Element</code> "bubbles up" the invalidate, changes to children
-	 * potentially result in rerendering of the whole sub tree.
+	 * Managed settings (properties, aggregations, associations) automatically invalidate the corresponding object.
+	 * Changing the state via the standard mutators, therefore, does not require an explicit call to <code>invalidate</code>.
 	 *
-	 * The <code>oOrigin</code> parameter was introduced to allow parent controls to limit
-	 * their rerendering to certain areas that have been invalidated by their children.
-	 * As there is no strong guideline for control developers to provide the parameter, it is
-	 * not a reliable source of information. It is therefore not recommended in general to use
-	 * it, only in scenarios where a control and its descendants know each other very well
-	 * (e.g. complex controls where parent and children have the same code owner).
+	 * By default, all invalidations are buffered and processed together (asynchronously) in a new browser task.
+	 *
+	 * The <code>oOrigin</code> parameter was introduced to allow parent controls to limit their re-rendering to
+	 * certain areas that have been invalidated by their children. As there is no strong guideline for control
+	 * developers whether or not to provide the parameter, it is not a reliable source of information. It is,
+	 * therefore, not recommended in general to use it, only in scenarios where a control and its descendants
+	 * know each other very well (e.g. complex controls where parent and children have the same code owner).
 	 *
 	 * @param {sap.ui.base.ManagedObject} [oOrigin] Child control for which the method was called
 	 * @protected
@@ -348,7 +358,18 @@ sap.ui.define([
 	};
 
 	/**
-	 * Tries to replace its DOM reference by re-rendering.
+	 * Synchronously updates the DOM of this control to reflect the current object state.
+	 *
+	 * Note that this method can only be called when the control already has a DOM representation (it has
+	 * been rendered before) and when the control still is assigned to a UIArea.
+	 *
+	 * @deprecated As of 1.70, using this method is no longer recommended, but still works. Synchronous DOM
+	 *   updates via this method have several drawbacks: they only work when the control has been rendered
+	 *   before (no initial rendering possible), multiple state changes won't be combined automatically into
+	 *   a single re-rendering, they might cause additional layout trashing, standard invalidation might
+	 *   cause another async re-rendering.
+	 *
+	 *   The recommended alternative is to rely on invalidation and standard re-rendering.
 	 * @protected
 	 */
 	Control.prototype.rerender = function() {
@@ -899,15 +920,6 @@ sap.ui.define([
 	}
 
 	/**
-	 * Get the controls block state.
-	 *
-	 * @return {boolean} <code>true</code> when blocked
-	 * @private
-	 * @ui5-restricted sap.ui.core, sap.m, sap.viz
-	 * @name sap.ui.core.Control#getBlocked
-	 */
-
-	/**
 	 * Set the controls block state.
 	 *
 	 * @param {boolean} bBlocked The new blocked state to be set
@@ -1127,8 +1139,10 @@ sap.ui.define([
 	 * Triggers the <code>validateFieldGroup</code> event for this control.
 	 *
 	 * Called by <code>sap.ui.core.UIArea</code> if a field group should be validated after it lost
-	 * the focus or when the key combination was pressed that was configured to trigger validation
-	 * (defined in the UI area member <code>UIArea._oFieldGroupValidationKey</code>).
+	 * the focus or when the key combination was pressed that was configured to trigger validation.
+	 *
+	 * By default, the <code>RETURN</code> key without any modifier keys triggers validation.
+	 * There's no public API to change that key combination.
 	 *
 	 * See {@link #attachValidateFieldGroup}.
 	 *

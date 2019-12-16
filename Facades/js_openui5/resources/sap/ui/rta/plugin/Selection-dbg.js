@@ -10,7 +10,7 @@ sap.ui.define([
 	"sap/ui/dt/OverlayRegistry",
 	"sap/ui/events/KeyCodes",
 	"sap/ui/dt/Overlay",
-	"sap/ui/dt/Util",
+	"sap/base/util/restricted/_intersection",
 	"sap/ui/Device"
 ],
 function (
@@ -19,7 +19,7 @@ function (
 	OverlayRegistry,
 	KeyCodes,
 	Overlay,
-	DtUtil,
+	_intersection,
 	Device
 ) {
 	"use strict";
@@ -32,7 +32,7 @@ function (
 	 * @class The Selection plugin allows you to select or focus overlays with mouse or keyboard and navigate to others.
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -182,7 +182,20 @@ function (
 				this._setFocusOnOverlay(oNextSiblingOverlay, oEvent);
 				oEvent.preventDefault();
 			}
+		} else if (oEvent.keyCode === KeyCodes.ESCAPE) {
+			if (oOverlay) {
+				this._deselectOverlays();
+			}
 		}
+	};
+
+	/**
+	 * Deselect all selected Overlays
+	 *
+	 * @private
+	 */
+	Selection.prototype._deselectOverlays = function () {
+		this.getDesignTime().getSelectionManager().reset();
 	};
 
 	Selection.prototype._selectOverlay = function (oEvent) {
@@ -314,7 +327,7 @@ function (
 		var aSharedMultiSelectionPlugins = aMultiSelectionRequiredPlugins.slice();
 
 		aElementOverlays.forEach(function (oElementOverlay) {
-			aSharedMultiSelectionPlugins = DtUtil.intersection(aSharedMultiSelectionPlugins, oElementOverlay.getEditableByPlugins());
+			aSharedMultiSelectionPlugins = _intersection(aSharedMultiSelectionPlugins, oElementOverlay.getEditableByPlugins());
 		});
 
 		return aSharedMultiSelectionPlugins.length > 0;

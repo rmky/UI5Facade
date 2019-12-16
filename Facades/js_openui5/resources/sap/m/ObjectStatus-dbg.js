@@ -43,7 +43,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IFormContent
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -143,12 +143,18 @@ sap.ui.define([
 	 * @private
 	 */
 	ObjectStatus.prototype._getImageControl = function() {
-		var sImgId = this.getId() + '-icon';
-		var mProperties = {
-			src : this.getIcon(),
-			densityAware : this.getIconDensityAware(),
-			useIconTooltip : false
-		};
+		var sImgId = this.getId() + '-icon',
+			bIsIconOnly = !this.getText() && !this.getTitle(),
+			mProperties = {
+				src : this.getIcon(),
+				densityAware : this.getIconDensityAware(),
+				useIconTooltip : false
+			};
+
+		if (bIsIconOnly) {
+			mProperties.decorative = false;
+			mProperties.alt = sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("OBJECT_STATUS_ICON");
+		}
 
 		this._oImageControl = ImageHelper.getImageControl(sImgId, this._oImageControl, this, mProperties);
 
@@ -257,7 +263,7 @@ sap.ui.define([
 		var sSourceId = oEvent.target.id;
 
 		//event should only be fired if the click is on the text, link or icon
-		return this._isActive() && (sSourceId === this.getId() + "-link" || sSourceId === this.getId() + "-text" || sSourceId === this.getId() + "-statusIcon");
+		return this._isActive() && (sSourceId === this.getId() + "-link" || sSourceId === this.getId() + "-text" || sSourceId === this.getId() + "-statusIcon" || sSourceId === this.getId() + "-icon");
 	};
 
 	return ObjectStatus;

@@ -11,7 +11,8 @@ sap.ui.define([
 	"sap/ui/dt/OverlayRegistry",
 	"sap/ui/Device",
 	"sap/base/assert",
-	"sap/ui/events/KeyCodes"
+	"sap/ui/events/KeyCodes",
+	"sap/base/util/restricted/_debounce"
 ], function(
 	jQuery,
 	Plugin,
@@ -20,7 +21,8 @@ sap.ui.define([
 	OverlayRegistry,
 	Device,
 	assert,
-	KeyCodes
+	KeyCodes,
+	_debounce
 ) {
 	"use strict";
 
@@ -32,7 +34,7 @@ sap.ui.define([
 	 * @class The ContextMenu registers event handler to open the context menu. Menu entries can dynamically be added
 	 * @extends sap.ui.dt.Plugin
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @constructor
 	 * @private
 	 * @since 1.53
@@ -225,13 +227,9 @@ sap.ui.define([
 			});
 
 			if (aMenuItems.length > 0) {
-				this.oContextMenuControl._bUseExpPop = !!bContextMenu;
 				aMenuItems = this._sortMenuItems(aMenuItems);
 				this.oContextMenuControl.setButtons(aMenuItems, this._onItemSelected.bind(this), aSelectedOverlays);
 				this.oContextMenuControl.setStyleClass(this.getStyleClass());
-				if (bIsSubMenu) {
-					this.oContextMenuControl.setOpenNew(true);
-				}
 
 				this.oContextMenuControl.show(oOverlay, bContextMenu, {
 					x: mPosition.clientX,
@@ -296,9 +294,9 @@ sap.ui.define([
 		this._ensureSelection(this._oCurrentOverlay);
 		this.setFocusLock(true);
 
-		var aSelection = [],
-			oContextElement = this.getContextElement(),
-			sSelectedButtonId = oEventItem.data("id");
+		var aSelection = [];
+		var oContextElement = this.getContextElement();
+		var sSelectedButtonId = oEventItem.data("id");
 
 		this._aMenuItems.some(function (mMenuItemEntry) {
 			if (sSelectedButtonId === mMenuItemEntry.menuItem.id) {
@@ -317,7 +315,7 @@ sap.ui.define([
 
 	ContextMenu.prototype._onContextMenuOrClick = function(oEvent) {
 		if (!this.fnDebounced) {
-			this.fnDebounced = DtUtil.debounce(function() {
+			this.fnDebounced = _debounce(function() {
 				if (this._oCurrentEvent.type === "contextmenu") {
 					this._onContextMenu(this._oCurrentEvent);
 				} else {
@@ -377,7 +375,6 @@ sap.ui.define([
 					if (bLockOpening) {
 						this.lockMenuOpening();
 					}
-					this.oContextMenuControl.setOpenNew(true);
 					this.open(
 						{
 							clientX: oEvent.clientX,
@@ -537,7 +534,6 @@ sap.ui.define([
 			this._ensureSelection(oOverlay);
 
 			this.lockMenuOpening();
-			this.oContextMenuControl.setOpenNew(true);
 			this.open(mPosition, oOverlay, true);
 			if (oEvent.stopPropagation) {
 				oEvent.stopPropagation();
@@ -732,4 +728,4 @@ sap.ui.define([
 	};
 
 	return ContextMenu;
-}, /* bExport= */ true);
+});

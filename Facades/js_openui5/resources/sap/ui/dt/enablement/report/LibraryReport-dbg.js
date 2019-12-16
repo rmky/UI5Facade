@@ -25,7 +25,7 @@ sap.ui.define([
 	 * @extends sap.ui.dt.enablement.Test
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @private

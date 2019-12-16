@@ -15,7 +15,8 @@ sap.ui.define([
 	'sap/m/Label',
 	'sap/m/Link',
 	'sap/ui/core/HTML',
-	'sap/ui/core/Title'
+	'sap/ui/core/Title',
+	"sap/ui/thirdparty/jquery"
 ],
     function(
 		ManagedObject,
@@ -28,7 +29,8 @@ sap.ui.define([
 	   Label,
 	   Link,
 	   HTML,
-	   Title
+	   Title,
+	   jQuery
 	) {
        'use strict';
 

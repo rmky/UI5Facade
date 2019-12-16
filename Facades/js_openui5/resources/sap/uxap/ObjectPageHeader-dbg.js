@@ -20,7 +20,7 @@ sap.ui.define([
     "./ObjectPageHeaderContent",
     "./library",
     "sap/m/library",
-    "./ObjectPageHeaderRenderer"
+	"./ObjectPageHeaderRenderer"
 ], function(
     jQuery,
 	Control,
@@ -52,8 +52,11 @@ sap.ui.define([
 	// shortcut for sap.uxap.ObjectPageHeaderDesign
 	var ObjectPageHeaderDesign = library.ObjectPageHeaderDesign;
 
-	// shortcut for sap.uxap.ObjectPageHeaderPictureShape
-	var ObjectPageHeaderPictureShape = library.ObjectPageHeaderPictureShape;
+	// shortcut for sap.m.AvatarShape
+	var ObjectPageHeaderPictureShape = mobileLibrary.AvatarShape;
+
+	// shortcut for sap.m.AvatarColor
+	var ObjectPageHeaderPictureBackgroundColor = mobileLibrary.AvatarColor;
 
 	function isFunction(oObject) {
 		return typeof oObject === "function";
@@ -129,8 +132,17 @@ sap.ui.define([
 				 * Determines whether the picture should be displayed in a square or with a circle-shaped mask.
 				 */
 				objectImageShape: {
-					type: "sap.uxap.ObjectPageHeaderPictureShape",
+					type: "sap.m.AvatarShape", group: "Appearance",
 					defaultValue: ObjectPageHeaderPictureShape.Square
+				},
+
+				/**
+				 * Determines the background color of the image placeholder or icon if valid icon URI is provided.
+				 * @since 1.73
+				 */
+				objectImageBackgroundColor: {
+					type: "sap.m.AvatarColor", group: "Appearance",
+					defaultValue: ObjectPageHeaderPictureBackgroundColor.Accent6
 				},
 
 				/**
@@ -243,7 +255,7 @@ sap.ui.define([
 				 * Icon for the identifier line.
 				 */
 				_objectImage: {type: "sap.ui.core.Control", multiple: false, visibility: "hidden"},
-				_placeholder: {type: "sap.ui.core.Icon", multiple: false, visibility: "hidden"},
+				_placeholder: {type: "sap.m.Avatar", multiple: false, visibility: "hidden"},
 				_lockIconCont: {type: "sap.m.Button", multiple: false, visibility: "hidden"},
 				_lockIcon: {type: "sap.m.Button", multiple: false, visibility: "hidden"},
 				_titleArrowIconCont: {type: "sap.m.Button", multiple: false, visibility: "hidden"},
@@ -551,7 +563,7 @@ sap.ui.define([
 
 	var aPropertiesToOverride = ["objectSubtitle", "showTitleSelector", "markLocked", "markFavorite", "markFlagged",
 			"showMarkers", "showPlaceholder", "markChanges"],
-		aObjectImageProperties = ["objectImageURI", "objectImageAlt", "objectImageDensityAware", "objectImageShape"];
+		aObjectImageProperties = ["objectImageURI", "objectImageAlt", "objectImageDensityAware", "objectImageShape", "objectImageBackgroundColor"];
 
 	var fnGenerateSetterForAction = function (sPropertyName) {
 		var sConvertedSetterName = "set" + sPropertyName.charAt(0).toUpperCase() + sPropertyName.slice(1);
@@ -837,26 +849,17 @@ sap.ui.define([
 	 * @private
 	 */
 	ObjectPageHeader.prototype._adaptLayoutForDomElement = function ($headerDomRef, oEvent) {
-		var $domElement;
-
-		if ($headerDomRef) {
-			$domElement = $headerDomRef.length ? $headerDomRef[0] : $headerDomRef;
-		} else {
-			$domElement = this.getDomRef();
-		}
-
-		if (isDomElementHidden($domElement)) {
-			return;
-		}
 
 		var $identifierLine = this._findById($headerDomRef, "identifierLine"),
 			iIdentifierContWidth = $identifierLine.width(),
 			iActionsWidth = this._getActionsWidth(), // the width off all actions without hidden one
 			iActionsContProportion = iActionsWidth / iIdentifierContWidth, // the percentage(proportion) that action buttons take from the available space
 			iAvailableSpaceForActions = this._iAvailablePercentageForActions * iIdentifierContWidth,
-			$overflowButton = this._oOverflowButton.$(),
-			$actions = this._findById($headerDomRef, "actions"),
-			$actionButtons = $actions.find(".sapMBtn").not(".sapUxAPObjectPageHeaderExpandButton");
+			$overflowButton = this._oOverflowButton.$();
+
+		if (iIdentifierContWidth === 0) {
+			return;
+		}
 
 		if (iActionsContProportion > this._iAvailablePercentageForActions) {
 			this._adaptActions(iAvailableSpaceForActions);
@@ -874,7 +877,11 @@ sap.ui.define([
 		}
 
 		// verify overflow button visibility
-		if ($actionButtons.filter(":visible").length === $actionButtons.length) {
+		// adaptation is only needed for the original header
+		var $originalActions = this.$("actions");
+		var $originalActionButtons = $originalActions.find(".sapMBtn").not(".sapUxAPObjectPageHeaderExpandButton");
+
+		if ($originalActionButtons.filter(":visible").length === $originalActionButtons.length) {
 			$overflowButton.hide();
 		}
 
@@ -1258,11 +1265,6 @@ sap.ui.define([
 	ObjectPageHeader.prototype._toggleFocusableState = function (bFocusable) {
 
 	};
-
-	// util
-	function isDomElementHidden($domElem) {
-		return $domElem && !$domElem.offsetWidth && !$domElem.offsetHeight;
-	}
 
 	return ObjectPageHeader;
 });

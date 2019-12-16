@@ -59,7 +59,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IContextMenu
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @since 1.21.0
 	 *
 	 * @constructor
@@ -175,8 +175,8 @@ sap.ui.define([
 	 * The function is called once per MenuItem.
 	 *
 	 * @param {function} fn The callback function
-	 * @protected
-	 * @sap-restricted sap.m.Menu
+	 * @private
+	 * @ui5-restricted sap.m.Menu
 	 * @returns void
 	 */
 	Menu.prototype._setCustomEnhanceAccStateFunction = function(fn) {
@@ -763,12 +763,13 @@ sap.ui.define([
 		//the keyup is fired on the caller (in case of a button a click event is fired there in FF -> Bad!)
 		//The attribute _sapSelectOnKeyDown is used to avoid the problem the other way round (Space is pressed
 		//on Button which opens the menu and the space keyup immediately selects the first item)
-		if (!this._sapSelectOnKeyDown) {
+		//The device checks are made, because of the new functionality of iOS13, that brings desktop view on tablet
+		if (!this._sapSelectOnKeyDown && ( oEvent.key !== KeyCodes.Space || (!sap.ui.Device.os.macintosh && window.navigator.maxTouchPoints <= 1))) {
 			return;
 		} else {
 			this._sapSelectOnKeyDown = false;
 		}
-		if (!PseudoEvents.events.sapselect.fnCheck(oEvent)) {
+		if (!PseudoEvents.events.sapselect.fnCheck(oEvent) && oEvent.key !== "Enter") {
 			return;
 		}
 		this.selectItem(this.oHoveredItem, true, false);
@@ -789,8 +790,15 @@ sap.ui.define([
 		oEvent.stopPropagation();
 	};
 
-	Menu.prototype.onsaptabnext = Menu.prototype.onsapescape;
-	Menu.prototype.onsaptabprevious = Menu.prototype.onsapescape;
+	Menu.prototype.onsaptabnext = function(oEvent){
+		if (this.isSubMenu()){
+			oEvent.preventDefault();
+		}
+		this.close(true);
+		oEvent.stopPropagation();
+	};
+
+	Menu.prototype.onsaptabprevious = Menu.prototype.onsaptabnext;
 
 	Menu.prototype._openSubMenuDelayed = function(oItem){
 		if (!oItem) {
@@ -969,28 +977,13 @@ sap.ui.define([
 
 		if (!oItem) {
 			this.oHoveredItem = null;
-			jQuery(this.getDomRef()).removeAttr("aria-activedescendant");
 			return;
 		}
 
 		this.oHoveredItem = oItem;
 		oItem.hover(true, this);
-		this._setActiveDescendant(this.oHoveredItem);
 
 		this.scrollToItem(this.oHoveredItem);
-	};
-
-	Menu.prototype._setActiveDescendant = function(oItem){
-		if (sap.ui.getCore().getConfiguration().getAccessibility() && oItem) {
-			var that = this;
-			that.$().removeAttr("aria-activedescendant");
-			setTimeout(function(){
-				//Setting active descendant must be a bit delayed. Otherwise the screenreader does not announce it.
-				if (that.oHoveredItem === oItem) {
-					that.$().attr("aria-activedescendant", that.oHoveredItem.getId());
-				}
-			}, 10);
-		}
 	};
 
 	/**
@@ -1026,7 +1019,7 @@ sap.ui.define([
 			// Open the sub menu
 			this.oOpenedSubMenu = oSubMenu;
 			var eDock = Popup.Dock;
-			oSubMenu.open(bWithKeyboard, oItem, eDock.BeginTop, eDock.EndTop, oItem, "0 0");
+			oSubMenu.open(bWithKeyboard, oItem, eDock.BeginTop, eDock.EndTop, oItem, "-4 4");
 		}
 	};
 
@@ -1166,7 +1159,6 @@ sap.ui.define([
 	Menu.prototype.focus = function(){
 		if (this.bOpen) {
 			Control.prototype.focus.apply(this, arguments);
-			this._setActiveDescendant(this.oHoveredItem);
 		}
 	};
 

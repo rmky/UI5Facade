@@ -12,9 +12,11 @@ sap.ui.define([
 	'sap/ui/model/Filter',
 	'./FacetFilterListRenderer',
 	'./FacetFilterItem',
-	"sap/base/Log"
+	"sap/base/Log",
+	"sap/ui/model/FilterOperator",
+	"sap/ui/model/FilterType"
 ],
-	function(List, library, ChangeReason, Filter, FacetFilterListRenderer, FacetFilterItem, Log) {
+	function(List, library, ChangeReason, Filter, FacetFilterListRenderer, FacetFilterItem, Log, FilterOperator, FilterType) {
 	"use strict";
 
 
@@ -50,7 +52,7 @@ sap.ui.define([
 	 * be closed.
 	 *
 	 * @extends sap.m.List
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -82,6 +84,11 @@ sap.ui.define([
 
 			/**
 			 * Indicates that the list is displayed as a button when the FacetFilter type is set to <code>Simple</code>.
+			 *
+			 * <b>Note:</b> Set the <code>showPersonalization</code> property of the
+			 * <code>FacetFilter</code> to <code>true</code> when this property is set to
+			 * <code>false</code>. This is needed, as the non-active lists are not displayed,
+			 * and without a personalization button they can't be selected by the user.
 			 */
 			active : {type : "boolean", group : "Behavior", defaultValue : true},
 
@@ -589,25 +596,25 @@ sap.ui.define([
 					var aBindingParts = this.getBindingInfo("items").template.getBindingInfo("text").parts;
 					var path = aBindingParts[0].path;
 					if (path || path === "") { // path="" will be resolved relativelly to the parent, i.e. actual path will match the parent's one.
-						var oUserFilter = new Filter(path, sap.ui.model.FilterOperator.Contains, sSearchVal);
+						var oUserFilter = new Filter(path, FilterOperator.Contains, sSearchVal);
 						var aUserFilters = [oUserFilter];
 
 						// Add Filters for every parts from the model except the first one because the array is already
 						// predefined with a first item the first binding part
 						for (var i = 1; i < aBindingParts.length; i++) {
-							aUserFilters.push(new Filter(aBindingParts[i].path, sap.ui.model.FilterOperator.Contains, sSearchVal));
+							aUserFilters.push(new Filter(aBindingParts[i].path, FilterOperator.Contains, sSearchVal));
 						}
 
 						if (this.getEnableCaseInsensitiveSearch() && isODataModel(oBinding.getModel())){
 							//notice the single quotes wrapping the value from the UI control!
 							var sEncodedString = "'" + String(sSearchVal).replace(/'/g, "''") + "'";
 							sEncodedString = sEncodedString.toLowerCase();
-							oUserFilter = new Filter("tolower(" + path + ")", sap.ui.model.FilterOperator.Contains, sEncodedString);
+							oUserFilter = new Filter("tolower(" + path + ")", FilterOperator.Contains, sEncodedString);
 							aUserFilters = [oUserFilter];
 							// Add Filters for every parts from the model except the first one because the array is already
 							// predefined with a first item the first binding part
 							for (var i = 1; i < aBindingParts.length; i++) {
-								aUserFilters.push(new Filter("tolower(" + aBindingParts[i].path + ")", sap.ui.model.FilterOperator.Contains, sSearchVal));
+								aUserFilters.push(new Filter("tolower(" + aBindingParts[i].path + ")", FilterOperator.Contains, sSearchVal));
 							}
 						}
 						var oPartsFilters = new Filter(aUserFilters, false);
@@ -624,10 +631,10 @@ sap.ui.define([
 								}
 							}
 						}
-						oBinding.filter(oFinalFilter, sap.ui.model.FilterType.Control);
+						oBinding.filter(oFinalFilter, FilterType.Control);
 					}
 				} else {
-					oBinding.filter([], sap.ui.model.FilterType.Control);
+					oBinding.filter([], FilterType.Control);
 				}
 			} else {
 				Log.warning("No filtering performed", "The list must be defined with a binding for search to work",
@@ -760,9 +767,12 @@ sap.ui.define([
 	 * @private
 	 */
 	FacetFilterList.prototype._handleSelectAllClick = function(bSelected) {
-		var bActive;
+		var bActive,
+			bAtLeastOneItemIsSelected,
+			aItems = this._getNonGroupItems(),
+			iItemsCount = aItems.length;
 
-		this._getNonGroupItems().forEach(function (oItem) {
+		aItems.forEach(function (oItem) {
 			if (bSelected) {
 				this._addSelectedKey(oItem.getKey(), oItem.getText());
 			} else {
@@ -771,9 +781,14 @@ sap.ui.define([
 			oItem.setSelected(bSelected, true);
 		}, this);
 
+		function isSelected(oItem) {
+			return oItem.getSelected();
+		}
+
 		if (this.getMode() === ListMode.MultiSelect) {
 			// At least one item needs to be selected to consider the list as active or it appeared as active once
-			bActive = this._getOriginalActiveState() || bSelected;
+			bAtLeastOneItemIsSelected = iItemsCount > 0 && iItemsCount === aItems.filter(isSelected).length;
+			bActive = this._getOriginalActiveState() || (bSelected && bAtLeastOneItemIsSelected);
 			this.setActive(bActive);
 		}
 		setTimeout(this._updateSelectAllCheckBox.bind(this), 0);

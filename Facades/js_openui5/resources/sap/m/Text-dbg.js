@@ -7,13 +7,14 @@
 // Provides control sap.m.Text
 sap.ui.define([
 	'./library',
+	'sap/ui/core/Core',
 	'sap/ui/core/Control',
 	'sap/ui/core/library',
 	'sap/ui/Device',
 	'sap/m/HyphenationSupport',
 	"./TextRenderer"
 ],
-function(library, Control, coreLibrary, Device, HyphenationSupport, TextRenderer) {
+function(library, Core, Control, coreLibrary, Device, HyphenationSupport, TextRenderer) {
 	"use strict";
 
 	// shortcut for sap.ui.core.TextAlign
@@ -50,7 +51,7 @@ function(library, Control, coreLibrary, Device, HyphenationSupport, TextRenderer
 	 * @implements sap.ui.core.IShrinkable, sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -162,7 +163,7 @@ function(library, Control, coreLibrary, Device, HyphenationSupport, TextRenderer
 	Text.prototype.ellipsis = '...';
 
 	/**
-	 * Defines whether browser supports native line clamp or not and if browser is Chrome
+	 * Defines whether browser supports native line clamp or not
 	 *
 	 * @since 1.13.2
 	 * @returns {boolean}
@@ -170,9 +171,7 @@ function(library, Control, coreLibrary, Device, HyphenationSupport, TextRenderer
 	 * @readonly
 	 * @static
 	 */
-	Text.hasNativeLineClamp = (function () {
-		return typeof document.documentElement.style.webkitLineClamp != "undefined" && Device.browser.chrome;
-	})();
+	Text.hasNativeLineClamp = ("webkitLineClamp" in document.documentElement.style);
 
 	/**
 	 * To prevent from the layout thrashing of the <code>textContent</code> call, this method
@@ -223,13 +222,11 @@ function(library, Control, coreLibrary, Device, HyphenationSupport, TextRenderer
 			this.hasMaxLines() &&
 			!this.canUseNativeLineClamp()) {
 
-				var oCore = sap.ui.getCore();
-
-				if (oCore.isThemeApplied()) {
+				if (Core.isThemeApplied()) {
 					// set max-height for maxLines support
 					this.clampHeight();
 				} else {
-					oCore.attachThemeChanged(this._handleThemeLoad, this);
+					Core.attachThemeChanged(this._handleThemeLoad, this);
 				}
 		}
 	};
@@ -244,8 +241,7 @@ function(library, Control, coreLibrary, Device, HyphenationSupport, TextRenderer
 		// set max-height for maxLines support
 		this.clampHeight();
 
-		var oCore = sap.ui.getCore();
-		oCore.detachThemeChanged(this._handleThemeLoad, this);
+		Core.detachThemeChanged(this._handleThemeLoad, this);
 	};
 
 	/**
@@ -300,7 +296,7 @@ function(library, Control, coreLibrary, Device, HyphenationSupport, TextRenderer
 		}
 
 		// is text direction inherited as rtl
-		if (this.getTextDirection() == TextDirection.Inherit && sap.ui.getCore().getConfiguration().getRTL()) {
+		if (this.getTextDirection() == TextDirection.Inherit && Core.getConfiguration().getRTL()) {
 			return false;
 		}
 

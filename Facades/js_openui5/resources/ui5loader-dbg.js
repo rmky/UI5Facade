@@ -38,6 +38,11 @@
 		return pathOnly(document.baseURI);
 	}
 
+	/*
+	 * Whether the current browser is IE11, derived from the compatibility check for the URL Web API.
+	 */
+	var isIE11 = false;
+
 	/**
 	 * Resolve a given URL, either against the base URL of the current document or against a given base URL.
 	 *
@@ -59,6 +64,7 @@
 				_URL = null;
 			}
 		} catch (e) {
+			isIE11 = true;
 			_URL = null;
 		}
 
@@ -101,6 +107,14 @@
 		Object.keys(obj).forEach(function(key) {
 			callback(key, obj[key]);
 		});
+	}
+
+	function executeInSeparateTask(fn) {
+		setTimeout(fn, 0);
+	}
+
+	function executeInMicroTask(fn) {
+		Promise.resolve().then(fn);
 	}
 
 	// ---- hooks & configuration -----------------------------------------------------------------
@@ -154,6 +168,15 @@
 	 * @private
 	 */
 	var translate;
+
+	/**
+	 * Method used by sap.ui.require to simulate asynchronous behavior.
+	 *
+	 * The default executes the given function in a separate browser task.
+	 * Can be changed to execute in a micro task to save idle time in case of
+	 * many nested sap.ui.require calls.
+	 */
+	var simulateAsyncCallback = executeInSeparateTask;
 
 	/*
 	 * Activates strictest possible compliance with AMD spec
@@ -682,6 +705,14 @@
 
 	// ---- Modules -------------------------------------------------------------------------------
 
+	function wrapExport(value) {
+		return { moduleExport: value };
+	}
+
+	function unwrapExport(wrapper) {
+		return wrapper.moduleExport;
+	}
+
 	/**
 	 * Module neither has been required nor preloaded nor declared, but someone asked for it.
 	 */
@@ -795,7 +826,7 @@
 			// check arguments.length to allow a value of undefined
 			this.content = value;
 		}
-		this.deferred().resolve(this.value());
+		this.deferred().resolve(wrapExport(this.value()));
 		if ( this.aliases ) {
 			value = this.value();
 			this.aliases.forEach(function(alias) {
@@ -913,6 +944,77 @@
 		return mModules[sModuleName] || (mModules[sModuleName] = new Module(sModuleName));
 	};
 
+	/*
+	 * Determines the currently executing module.
+	 */
+	function getExecutingModule() {
+		if ( _execStack.length > 0 ) {
+			return _execStack[_execStack.length - 1].name;
+		}
+		return document.currentScript && document.currentScript.getAttribute("data-sap-ui-module");
+	}
+
+	// --------------------------------------------------------------------------------------------
+
+	var _globalDefine,
+		_globalDefineAMD;
+
+	function updateDefineAndInterceptAMDFlag(newDefine) {
+
+		// no change, do nothing
+		if ( _globalDefine === newDefine ) {
+			return;
+		}
+
+		// first cleanup on an old loader
+		if ( _globalDefine ) {
+			_globalDefine.amd = _globalDefineAMD;
+			_globalDefine =
+			_globalDefineAMD = undefined;
+		}
+
+		// remember the new define
+		_globalDefine = newDefine;
+
+		// intercept access to the 'amd' property of the new define, if it's not our own define
+		if ( newDefine && !newDefine.ui5 ) {
+			_globalDefineAMD = _globalDefine.amd;
+
+			Object.defineProperty(_globalDefine, "amd", {
+				get: function() {
+					var sCurrentModule = getExecutingModule();
+					if ( sCurrentModule && mShims[sCurrentModule] && mShims[sCurrentModule].amd ) {
+						log.debug("suppressing define.amd for " + sCurrentModule);
+						return undefined;
+					}
+					return _globalDefineAMD;
+				},
+				set: function(newDefineAMD) {
+					_globalDefineAMD = newDefineAMD;
+					log.debug("define.amd became " + (newDefineAMD ? "active" : "unset"));
+				},
+				configurable: true // we have to allow a redefine for debug mode or restart from CDN etc.
+			});
+		}
+	}
+
+	try {
+		Object.defineProperty(__global, "define", {
+			get: function() {
+				return _globalDefine;
+			},
+			set: function(newDefine) {
+				updateDefineAndInterceptAMDFlag(newDefine);
+				log.debug("define became " + (newDefine ? "active" : "unset"));
+			},
+			configurable: true // we have to allow a redefine for debug mode or restart from CDN etc.
+		});
+	} catch (e) {
+		log.warning("could not intercept changes to window.define, ui5loader won't be able to a change of the AMD loader");
+	}
+
+	updateDefineAndInterceptAMDFlag(__global.define);
+
 	// --------------------------------------------------------------------------------------------
 
 	function ensureStacktrace(oError) {
@@ -997,7 +1099,9 @@
 
 		this.push = function(name, deps, factory, _export) {
 			if ( log.isLoggable() ) {
-				log.debug("pushing define from " + (document.currentScript && document.currentScript.src) );
+				log.debug("pushing define() call"
+					+ (document.currentScript ? " from " + document.currentScript.src : "")
+					+ " to define queue #" + iRun);
 			}
 			aQueue.push({
 				name: name,
@@ -1009,7 +1113,7 @@
 
 			// trigger queue processing via a timer in case the currently executing script is not managed by the loader
 			if ( !vTimer ) {
-				vTimer = setTimeout(this.process.bind(this, null));
+				vTimer = setTimeout(this.process.bind(this, null, "timer"));
 			}
 		};
 
@@ -1029,8 +1133,9 @@
 		 * When called via timer, <code>oRequestedModule</code> will be undefined.
 		 *
 		 * @param {Module} [oRequestedModule] Module for which the current script was loaded.
+		 * @param {string} [sInitiator] A string describing the caller of <code>process</code>
 		 */
-		this.process = function(oRequestedModule) {
+		this.process = function(oRequestedModule, sInitiator) {
 			var bLoggable = log.isLoggable(),
 				iCurrentRun = iRun++,
 				aQueueCopy = aQueue,
@@ -1113,27 +1218,28 @@
 			}
 
 			if ( bLoggable ) {
-				log.debug("processing define queue " + iCurrentRun + (oRequestedModule ? " for " + oRequestedModule.name : "") + " with " + aQueueCopy.map(function(entry) { return entry.name; }));
+				log.debug(sLogPrefix + "[" + sInitiator + "] "
+					+ "processing define queue #" + iCurrentRun
+					+ (oRequestedModule ? " for '" + oRequestedModule.name + "'" : "")
+					+ " with entries [" + aQueueCopy.map(function(entry) { return "'" + entry.name + "'"; }) + "]");
 			}
+
 			aQueueCopy.forEach(function(oEntry) {
 				// start to resolve the dependencies
 				executeModuleDefinition(oEntry.name, oEntry.deps, oEntry.factory, oEntry._export, /* bAsync = */ true);
-				if ( bLoggable ) {
-					log.debug("define called for " + oEntry.name);
-				}
 			});
 
 			if ( sModuleName != null && !oRequestedModule.settled ) {
 				// module name still not consumed, might be a non-UI5 module (e.g. in 'global' format)
 				if ( bLoggable ) {
-					log.debug("no queued module definition for the requested module found, assume the module to be ready");
+					log.debug(sLogPrefix + "no queued module definition for the requested module found, assume the module to be ready");
 				}
 				oRequestedModule.data = undefined; // allow GC
 				oRequestedModule.ready(); // no export known, has to be retrieved via global name
 			}
 
 			if ( bLoggable ) {
-				log.debug("processing define queue done " + iCurrentRun);
+				log.debug(sLogPrefix + "processing define queue #" + iCurrentRun + " done");
 			}
 		};
 	}();
@@ -1205,18 +1311,18 @@
 
 		function onload(e) {
 			if ( log.isLoggable() ) {
-				log.debug("Javascript resource loaded: " + oModule.name);
+				log.debug("JavaScript resource loaded: " + oModule.name);
 			}
 			oScript.removeEventListener('load', onload);
 			oScript.removeEventListener('error', onerror);
-			queue.process(oModule);
+			queue.process(oModule, "onload");
 		}
 
 		function onerror(e) {
 			oScript.removeEventListener('load', onload);
 			oScript.removeEventListener('error', onerror);
 			if (sAlternativeURL) {
-				log.warning("retry loading Javascript resource: " + oModule.name);
+				log.warning("retry loading JavaScript resource: " + oModule.name);
 				if (oScript && oScript.parentNode) {
 					oScript.parentNode.removeChild(oScript);
 				}
@@ -1225,7 +1331,7 @@
 				return;
 			}
 
-			log.error("failed to load Javascript resource: " + oModule.name);
+			log.error("failed to load JavaScript resource: " + oModule.name);
 			oModule.fail(
 				ensureStacktrace(new Error("failed to load '" + oModule.name +  "' from " + oModule.url + ": script load error")));
 		}
@@ -1240,6 +1346,9 @@
 		//oScript.src = oModule.url;
 		oScript.setAttribute("data-sap-ui-module", oModule.name);
 		if ( sAlternativeURL !== undefined ) {
+			if ( mShims[oModule.name] && mShims[oModule.name].amd ) {
+				oScript.setAttribute("data-sap-ui-module-amd", "true");
+			}
 			oScript.addEventListener('load', onload);
 			oScript.addEventListener('error', onerror);
 		}
@@ -1314,7 +1423,8 @@
 		}
 
 		if ( bLoggable ) {
-			log.debug(sLogPrefix + "require '" + sModuleName + "' of type '" + oSplitName.subType + "'");
+			log.debug(sLogPrefix + "require '" + sModuleName + "'"
+					+ (oRequestingModule ? " (dependency of '" + oRequestingModule.name + "')" : ""));
 		}
 
 		// check if module has been loaded already
@@ -1329,12 +1439,12 @@
 			}
 
 			if ( oModule.state === READY ) {
-				if ( bLoggable ) {
+				if ( !bExecutedNow && bLoggable ) {
 					log.debug(sLogPrefix + "module '" + sModuleName + "' has already been loaded (skipped).");
 				}
 				// Note: this intentionally does not return oModule.promise() as the export might be temporary in case of cycles
 				// or it might have changed after repeated module execution
-				return bAsync ? Promise.resolve(oModule.value()) : oModule.value();
+				return bAsync ? Promise.resolve(wrapExport(oModule.value())) : wrapExport(oModule.value());
 			} else if ( oModule.state === FAILED ) {
 				if ( bAsync ) {
 					return oModule.deferred().promise;
@@ -1352,7 +1462,7 @@
 							log.debug("cycle detected between '" + oRequestingModule.name + "' and '" + sModuleName + "', returning undefined for '" + sModuleName + "'");
 						}
 						// Note: this must be a separate promise as the fulfillment is not the final one
-						return Promise.resolve(undefined);
+						return Promise.resolve(wrapExport(undefined));
 					}
 					return oModule.deferred().promise;
 				}
@@ -1361,12 +1471,18 @@
 					if ( log.isLoggable() ) {
 						log.debug("cycle detected between '" + (oRequestingModule ? oRequestingModule.name : "unknown") + "' and '" + sModuleName + "', returning undefined for '" + sModuleName + "'");
 					}
-					return undefined;
+					return wrapExport(undefined);
 				}
 				// async pending, load sync again
 				log.warning("Sync request triggered for '" + sModuleName + "' while async request was already pending." +
 					" Loading a module twice might cause issues and should be avoided by fully migrating to async APIs.");
 			}
+		}
+
+		if ( isIE11 && bAsync && oShim && oShim.amd ) {
+			// in IE11, we force AMD/UMD modules into sync loading to apply the define.amd workaround
+			// in other browsers, we intercept read access to window.define, see ensureDefineInterceptor
+			bAsync = false;
 		}
 
 		measure && measure.start(sModuleName, "Require module " + sModuleName, ["require"]);
@@ -1383,7 +1499,7 @@
 				// create module URL for the current extension
 				oModule.url = getResourcePath(oSplitName.baseID, aExtensions[i] + oSplitName.subType);
 				if ( bLoggable ) {
-					log.debug(sLogPrefix + "loading " + (aExtensions[i] ? aExtensions[i] + " version of " : "") + "'" + sModuleName + "' from '" + oModule.url + "'");
+					log.debug(sLogPrefix + "loading " + (aExtensions[i] ? aExtensions[i] + " version of " : "") + "'" + sModuleName + "' from '" + oModule.url + "' (using sync XHR)");
 				}
 
 				if ( syncCallBehavior ) {
@@ -1421,13 +1537,18 @@
 				throw oModule.error;
 			}
 
-			return oModule.value();
+			return wrapExport(oModule.value());
 
 		} else {
 
 			oModule.url = getResourcePath(oSplitName.baseID, aExtensions[0] + oSplitName.subType);
 			// in debug mode, fall back to the non-dbg source, otherwise try the same source again (for SSO re-connect)
 			var sAltUrl = bDebugSources ? getResourcePath(oSplitName.baseID, aExtensions[1] + oSplitName.subType) : oModule.url;
+
+			if ( log.isLoggable() ) {
+				log.debug(sLogPrefix + "loading '" + sModuleName + "' from '" + oModule.url + "' (using <script>)");
+			}
+
 			// call notification hook only once
 			ui5Require.load({ completeLoad:noop, async: true }, sAltUrl, oSplitName.baseID);
 			loadScript(oModule, /* sAlternativeURL= */ sAltUrl);
@@ -1443,26 +1564,23 @@
 	function execModule(sModuleName, bAsync) {
 
 		var oModule = mModules[sModuleName],
-			oShim = mShims[sModuleName],
 			bLoggable = log.isLoggable(),
-			sOldPrefix, sScript, vAMD, oMatch, bOldForceSyncDefines;
+			sOldPrefix, sScript, oMatch, bOldForceSyncDefines;
 
 		if ( oModule && oModule.state === LOADED && typeof oModule.data !== "undefined" ) {
 
-			// check whether the module is known to use an existing AMD loader, remember the AMD flag
-			vAMD = (oShim === true || (oShim && oShim.amd)) && typeof __global.define === "function" && __global.define.amd;
 			bOldForceSyncDefines = bForceSyncDefines;
 
 			try {
 
-				if ( vAMD ) {
-					// temp. remove the AMD Flag from the loader
-					delete __global.define.amd;
-				}
 				bForceSyncDefines = !bAsync;
 
 				if ( bLoggable ) {
-					log.debug(sLogPrefix + "executing '" + sModuleName + "'");
+					if ( typeof oModule.data === "string" ) {
+						log.warning(sLogPrefix + "executing '" + sModuleName + "' (using eval)");
+					} else {
+						log.debug(sLogPrefix + "executing '" + sModuleName + "'");
+					}
 					sOldPrefix = sLogPrefix;
 					sLogPrefix = sLogPrefix + ": ";
 				}
@@ -1523,7 +1641,7 @@
 					}
 				}
 				_execStack.pop();
-				queue.process(oModule);
+				queue.process(oModule, "after eval");
 
 				if ( bLoggable ) {
 					sLogPrefix = sOldPrefix;
@@ -1538,10 +1656,6 @@
 				oModule.fail(err);
 			} finally {
 
-				// restore AMD flag
-				if ( vAMD ) {
-					__global.define.amd = vAMD;
-				}
 				bForceSyncDefines = bOldForceSyncDefines;
 			}
 		}
@@ -1550,7 +1664,6 @@
 	function requireAll(oRequestingModule, aDependencies, fnCallback, fnErrCallback, bAsync) {
 
 		var sBaseName, aModules = [],
-			bLoggable = log.isLoggable(),
 			i, sDepModName, oError, oPromise;
 
 		try {
@@ -1576,21 +1689,18 @@
 
 			for (i = 0; i < aDependencies.length; i++) {
 				sDepModName = aDependencies[i];
-				if ( bLoggable ) {
-					log.debug(sLogPrefix + "require '" + sDepModName + "'");
-				}
 				if ( oRequestingModule ) {
 					switch ( sDepModName ) {
 					case 'require.js':
 						// the injected local require should behave like the Standard require (2nd argument = true)
-						aModules[i] = createContextualRequire(sBaseName, true);
+						aModules[i] = wrapExport(createContextualRequire(sBaseName, true));
 						break;
 					case 'module.js':
-						aModules[i] = oRequestingModule.api();
+						aModules[i] = wrapExport(oRequestingModule.api());
 						break;
 					case 'exports.js':
 						oRequestingModule.api();
-						aModules[i] = oRequestingModule._exports;
+						aModules[i] = wrapExport(oRequestingModule._exports);
 						break;
 					default:
 						break;
@@ -1598,9 +1708,6 @@
 				}
 				if ( !aModules[i] ) {
 					aModules[i] = requireModule(oRequestingModule, sDepModName, bAsync);
-				}
-				if ( bLoggable ) {
-					log.debug(sLogPrefix + "require '" + sDepModName + "': done.");
 				}
 			}
 
@@ -1625,7 +1732,7 @@
 		sResourceName = normalize(sResourceName);
 
 		if ( bLoggable ) {
-			log.debug("define(" + sResourceName + ", " + "['" + aDependencies.join("','") + "']" + ")");
+			log.debug(sLogPrefix + "define('" + sResourceName + "', " + "['" + aDependencies.join("','") + "']" + ")");
 		}
 
 		var oModule = declareModule(sResourceName);
@@ -1675,7 +1782,7 @@
 
 			// factory
 			if ( bLoggable ) {
-				log.debug("define(" + sResourceName + "): calling factory " + typeof vFactory);
+				log.debug(sLogPrefix + "define('" + sResourceName + "'): dependencies resolved, calling factory " + typeof vFactory);
 			}
 
 			if ( bExport && syncCallBehavior !== 2 ) {
@@ -1691,6 +1798,7 @@
 				// "If the factory function returns a value (an object, function, or any value that coerces to true),
 				//  then that value should be assigned as the exported value for the module."
 				try {
+					aModules = aModules.map(unwrapExport);
 					var exports = vFactory.apply(__global, aModules);
 					if ( oModule._api && oModule._api.exports !== undefined && oModule._api.exports !== oModule._exports ) {
 						exports = oModule._api.exports;
@@ -1818,6 +1926,7 @@
 		ui5Define.apply(this, oArgs);
 	}
 	amdDefine.amd = {}; // identify as AMD-spec compliant loader
+	amdDefine.ui5 = {}; // identify as ui5loader
 
 
 	/**
@@ -1855,14 +1964,15 @@
 			}
 
 			requireAll(sContextName, vDependencies, function(aModules) {
+				aModules = aModules.map(unwrapExport);
 				if ( typeof fnCallback === 'function' ) {
 					if ( bGlobalAsyncMode ) {
 						fnCallback.apply(__global, aModules);
 					} else {
 						// enforce asynchronous execution of callback even in sync mode
-						setTimeout(function() {
+						simulateAsyncCallback(function() {
 							fnCallback.apply(__global, aModules);
-						}, 0);
+						});
 					}
 				}
 			}, function(oErr) {
@@ -1870,9 +1980,9 @@
 					if ( bGlobalAsyncMode ) {
 						fnErrCallback.call(__global, oErr);
 					} else {
-						setTimeout(function() {
+						simulateAsyncCallback(function() {
 							fnErrCallback.call(__global, oErr);
-						}, 0);
+						});
 					}
 				} else {
 					throw oErr;
@@ -1919,7 +2029,10 @@
 
 	function requireSync(sModuleName) {
 		sModuleName = getMappedName(sModuleName + '.js');
-		return requireModule(null, sModuleName, /* bAsync = */ false);
+		if ( log.isLoggable() ) {
+			log.warning("sync require of '" + sModuleName + "'");
+		}
+		return unwrapExport(requireModule(null, sModuleName, /* bAsync = */ false));
 	}
 
 	function predefine(sModuleName, aDependencies, vFactory, bExport) {
@@ -2099,7 +2212,7 @@
 
 	function loadJSResourceAsync(sResource, bIgnoreErrors) {
 		sResource = getMappedName(sResource);
-		var promise = requireModule(null, sResource, /* bAsync = */ true);
+		var promise = requireModule(null, sResource, /* bAsync = */ true).then(unwrapExport);
 		return bIgnoreErrors ? promise.catch(noop) : promise;
 	}
 
@@ -2307,6 +2420,14 @@
 			},
 			set: function(v) {
 				translate = v;
+			}
+		},
+		callbackInMicroTask: {
+			get: function() {
+				return simulateAsyncCallback === executeInMicroTask;
+			},
+			set: function(v) {
+				simulateAsyncCallback = v ? executeInMicroTask : executeInSeparateTask;
 			}
 		}
 	});

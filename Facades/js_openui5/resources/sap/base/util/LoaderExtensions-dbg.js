@@ -20,6 +20,7 @@ sap.ui.define([
 	 *
 	 * @namespace
 	 * @since 1.58
+	 * @private
 	 * @ui5-restricted sap.ui.core
 	 */
 	var LoaderExtensions = {};
@@ -54,7 +55,7 @@ sap.ui.define([
 	 * @return {object} known subtypes
 	 * @static
 	 * @private
-	 * @sap-restricted sap.ui.core
+	 * @ui5-restricted sap.ui.core
 	 */
 	LoaderExtensions.getKnownSubtypes = function() {
 		return KNOWN_SUBTYPES;
@@ -66,7 +67,7 @@ sap.ui.define([
 	 * @return {string[]} the names of all required modules
 	 * @static
 	 * @private
-	 * @sap-restricted sap.ui.core
+	 * @ui5-restricted sap.ui.core
 	 */
 	LoaderExtensions.getAllRequiredModules = function() {
 		var aModuleNames = [],
@@ -116,8 +117,8 @@ sap.ui.define([
 	 * @param {string} [vUrlPrefix.url] path prefix to register
 	 * @param {boolean} [vUrlPrefix.final] flag to avoid overwriting the url path prefix for the given module name at a later point of time
 	 *
-	 * @public
-	 * @sap-restricted sap.ui.core.Core, sap.ui.core.Component
+	 * @private
+	 * @ui5-restricted sap.ui.core.Core, sap.ui.core.Component
 	 * @static
 	 * @SecSink {1|PATH} Parameter is used for future HTTP requests
 	 */
@@ -195,7 +196,7 @@ sap.ui.define([
 	 * @throws Error if loading the resource failed
 	 * @static
 	 * @private
-	 * @sap-restricted sap.ui.core, sap.ui.fl
+	 * @ui5-restricted sap.ui.core, sap.ui.fl
 	 */
 	LoaderExtensions.loadResource = function(sResourceName, mOptions) {
 		var sType,

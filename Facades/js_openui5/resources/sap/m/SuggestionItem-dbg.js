@@ -21,7 +21,7 @@ sap.ui.define(['./library', 'sap/ui/core/Item', 'sap/ui/core/IconPool'],
 	 * @extends sap.ui.core.Item
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @since 1.34
 	 *
 	 * @constructor
@@ -103,6 +103,8 @@ sap.ui.define(['./library', 'sap/ui/core/Item', 'sap/ui/core/IconPool'],
 			if (parent) {
 				parent.$("I").attr("aria-activedecendant", oItem.getId());
 			}
+		} else {
+			rm.writeAttribute("aria-selected", "false");
 		}
 		rm.writeClasses();
 		rm.write(">");

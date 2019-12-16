@@ -12,65 +12,48 @@ sap.ui.define([
 	"use strict";
 
 	/**
-	 * Provides an API to handle specific functionality for personalized changes.
+	 * Provides an API for applications to work with control variants. See also {@link sap.ui.fl.variants.VariantManagement}.
 	 *
-	 * @namespace
-	 * @name sap.ui.fl.apply.api.ControlVariantApplyAPI
-	 * @author SAP SE
+	 * @namespace sap.ui.fl.apply.api.ControlVariantApplyAPI
 	 * @experimental Since 1.67
 	 * @since 1.67
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @public
 	 */
-	var ControlVariantApplyAPI = {
+	var ControlVariantApplyAPI = /** @lends sap.ui.fl.apply.api.ControlVariantApplyAPI */{
 
 		/**
 		 *
-		 * Clears URL technical parameter 'sap-ui-fl-control-variant-id' for control variants. Use this method in case you normally want
-		 * the variant parameter in the URL, but have a few special navigation pattern, where you want to clear it. If you don't want that
-		 * parameter in general, set updateVariantInURL parameter on your variant management control to false. SAP Fiori Elements use this
-		 * method.
-		 * If a variant management control is given as parameter, only parameters specific to that control are cleared.
+		 * Clears URL technical parameter <code>sap-ui-fl-control-variant-id</code> for control variants.
+		 * Use this method in case you normally want the variant parameter in the URL, but have a few special navigation patterns where you want to clear it.
+		 * If you don't want that parameter in general, set the <code>updateVariantInURL</code> parameter on your variant management control to <code>false</code>. SAP Fiori elements use this method.
+		 * If a variant management control is given as a parameter, only parameters specific to that control are cleared.
 		 *
-		 * @param {sap.ui.base.ManagedObject} [oVariantManagementControl] - The variant management control for which the URL technical parameter has to be cleared
+		 * @param {object} mPropertyBag - Object with parameters as properties
+		 * @param {sap.ui.base.ManagedObject} mPropertyBag.control - Variant management control for which the URL technical parameter has to be cleared
 		 *
-		 * @method sap.ui.fl.apply.api.ControlVariantApplyAPI.clearVariantParameterInURL
 		 * @public
 		 */
-		clearVariantParameterInURL : function () {
-			OldControlPersonalizationAPI.clearVariantParameterInURL.apply(OldControlPersonalizationAPI, arguments);
+		clearVariantParameterInURL: function (mPropertyBag) {
+			OldControlPersonalizationAPI.clearVariantParameterInURL(mPropertyBag.control);
 		},
 
 		/**
 		 *
 		 * Activates the passed variant applicable to the passed control/component.
 		 *
-		 * @param {sap.ui.base.ManagedObject|string} vElement - The component or control (instance or ID) on which the variantModel is set
-		 * @param {string} sVariantReference - The variant reference which needs to be activated
+		 * @param {object} mPropertyBag - Object with parameters as properties
+		 * @param {sap.ui.base.ManagedObject|string} mPropertyBag.element - Component or control (instance or ID) on which the <code>variantModel</code> is set
+		 * @param {string} mPropertyBag.variantReference - Reference to the variant that needs to be activated
 		 *
-		 * @returns {Promise} Returns Promise that resolves after the variant is updated or rejects when an error occurs
+		 * @returns {Promise} Promise that resolves after the variant is updated, or is rejected if an error occurs
 		 *
-		 * @method sap.ui.fl.apply.api.ControlVariantApplyAPI.activateVariant
 		 * @public
 		 */
-		activateVariant : function() {
-			return OldControlPersonalizationAPI.activateVariant.apply(OldControlPersonalizationAPI, arguments);
-		},
-
-
-		/**
-		 * Determines the availability of an encompassing variant management control.
-		 *
-		 * @param {sap.ui.core.Element} oControl - The control which should be tested for an encompassing variant management control
-		 *
-		 * @returns {boolean} Returns true if a variant management control is encompassing the given control, else false
-		 *
-		 * @method sap.ui.fl.apply.api.ControlVariantApplyAPI.hasVariantManagement
-		 * @public
-		 */
-		hasVariantManagement : function() {
-			return OldControlPersonalizationAPI.hasVariantManagement.apply(OldControlPersonalizationAPI, arguments);
+		activateVariant: function(mPropertyBag) {
+			return OldControlPersonalizationAPI.activateVariant(mPropertyBag.element, mPropertyBag.variantReference);
 		}
+
 	};
 	return ControlVariantApplyAPI;
 }, true);

@@ -86,10 +86,14 @@ sap.ui.define([
 		 * side content disappears on screen widths of less than 720 px and can only be
 		 * viewed by triggering it.
 		 *
+		 * <b>Note:</b> If the control that has property sticky inside the <code>DynamicSideContent</code> the stickiness of that control will not work.
+		 * <code>DynamicSideContent</code> has the overflow: auto style definition and this prevents the sticky elements of the control from becoming fixed at the top of the viewport.
+		 * This applies for example to {@link sap.m.Table} and {@link sap.m.PlanningCalendar}.
+		 *
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.73.1
 		 *
 		 * @constructor
 		 * @public
@@ -103,6 +107,9 @@ sap.ui.define([
 
 				/**
 				 * Determines whether the side content is visible or hidden.
+				 *
+				 * <b>Note:</b> If both <code>showSideContent</code> and <code>showMainContent</code> properties are set to <code>true</code>,
+				 * use the <code>toggle</code> method for showing the side content on phone.
 				 */
 				showSideContent : {type : "boolean", group : "Appearance", defaultValue : true},
 
@@ -543,7 +550,7 @@ sap.ui.define([
 				this._iOldWindowWidth = this._iWindowWidth;
 
 				this._oldBreakPoint = this._currentBreakpoint;
-				this._setBreakpointFromWidth(this._iWindowWidth);
+				this._currentBreakpoint = this._getBreakPointFromWidth(this._iWindowWidth);
 
 				if ((this._oldBreakPoint !== this._currentBreakpoint)
 					|| (this._currentBreakpoint === M
@@ -551,6 +558,7 @@ sap.ui.define([
 					this._setResizeData(this._currentBreakpoint, this.getEqualSplit());
 					this._changeGridState();
 				}
+				this._setBreakpointFromWidth(this._iWindowWidth);
 			}
 		};
 
@@ -691,14 +699,6 @@ sap.ui.define([
 				}
 			} else if (!this._SCVisible && !this._MCVisible) {
 				$mainContent.addClass(HIDDEN_CLASS);
-				$sideContent.addClass(HIDDEN_CLASS);
-			//BCP: 1980254677
-			} else if (sap.ui.Device.system.phone && !this._SCVisible && this._MCVisible && bSideContentVisibleProperty && bMainContentVisibleProperty) {
-				$sideContent.removeClass().addClass(SPAN_SIZE_12_CLASS);
-				$mainContent.addClass(HIDDEN_CLASS);
-			//BCP: 1970185680
-			} else if (sap.ui.Device.system.phone && !this._MCVisible && this._SCVisible && bSideContentVisibleProperty && bMainContentVisibleProperty) {
-				$mainContent.removeClass().addClass(SPAN_SIZE_12_CLASS);
 				$sideContent.addClass(HIDDEN_CLASS);
 			} else if (this._MCVisible && bMainContentVisibleProperty) {
 				$mainContent.removeClass().addClass(SPAN_SIZE_12_CLASS);

@@ -20,7 +20,7 @@ sap.ui.define(['./library', 'sap/ui/core/search/OpenSearchProvider'],
 	 * @class
 	 * A SearchProvider which can be attached to a Search Field.
 	 * @extends sap.ui.core.search.OpenSearchProvider
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public

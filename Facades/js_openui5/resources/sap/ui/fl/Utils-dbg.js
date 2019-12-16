@@ -29,19 +29,6 @@ function(
 	View
 ) {
 	"use strict";
-	//Stack of layers in the layered repository
-	var aLayers = [
-		"VENDOR",
-		"PARTNER",
-		"CUSTOMER_BASE",
-		"CUSTOMER",
-		"USER"
-	];
-	//Precalculates index of layers
-	var mLayersIndex = {};
-	aLayers.forEach(function(sLayer, iIndex) {
-		mLayersIndex[sLayer] = iIndex;
-	});
 
 	/**
 	 * Provides utility functions for the SAPUI5 flexibility library
@@ -49,38 +36,13 @@ function(
 	 * @namespace
 	 * @alias sap.ui.fl.Utils
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @experimental Since 1.25.0
 	 */
 	var Utils = {
-
-		_aLayers : aLayers,
-		_mLayersIndex : mLayersIndex,
-		_sTopLayer : aLayers[aLayers.length - 1],
-		_sMaxLayer : aLayers[aLayers.length - 1],
 		DEFAULT_APP_VERSION : "DEFAULT_APP_VERSION",
 		APP_ID_AT_DESIGN_TIME : "${pro" + "ject.art" + "ifactId}", //avoid replaced by content of sap.ui.fl placeholder at build steps
 		VARIANT_MODEL_NAME: "$FlexVariants",
-		/**
-		 * log object exposes available log functions
-		 *
-		 * @name sap.ui.fl.Utils.log
-		 * @public
-		 */
-		log: {
-			error: function (sMessage, sDetails, sComponent) {
-				Log.error(sMessage, sDetails, sComponent);
-			},
-			warning: function (sMessage, sDetails, sComponent) {
-				Log.warning(sMessage, sDetails, sComponent);
-			},
-			debug: function (sMessage, sDetails, sComponent) {
-				Log.debug(sMessage, sDetails, sComponent);
-			},
-			info: function (sMessage, sDetails, sComponent) {
-				Log.info(sMessage, sDetails, sComponent);
-			}
-		},
 
 		/**
 		 * Formats the log message by replacing placeholders with values and logging the message.
@@ -93,7 +55,7 @@ function(
 		formatAndLogMessage: function(sLogType, aMessageComponents, aValuesToInsert, sCallStack) {
 			var sLogMessage = aMessageComponents.join(' ');
 			sLogMessage = formatMessage(sLogMessage, aValuesToInsert);
-			this.log[sLogType](sLogMessage, sCallStack || "");
+			Log[sLogType](sLogMessage, sCallStack || "");
 		},
 
 		/**
@@ -188,20 +150,6 @@ function(
 		},
 
 		/**
-		 * Returns a boolean indicating whether the current system is a trial system (only available for S/4 HANA Cloud) or not.
-		 * This function needs a ushell container to be available, otherwise it will also return false.
-		 *
-		 * @returns {boolean} Returns true if the system is a trial system, false otherwise
-		 */
-		isTrialSystem: function() {
-			var oUshellContainer = Utils.getUshellContainer();
-			if (oUshellContainer) {
-				return oUshellContainer.getLogonSystem().isTrial();
-			}
-			return false;
-		},
-
-		/**
 		 * Returns the class name of the application component owning the passed component or the component name itself if
 		 * this is already an application component.
 		 *
@@ -227,7 +175,9 @@ function(
 		 * @name sap.ui.fl.Utils.getAppDescriptor
 		 */
 		getAppDescriptor: function (oControl) {
-			var oManifest = null, oComponent = null, oComponentMetaData = null;
+			var oManifest = null;
+			var oComponent = null;
+			var oComponentMetaData = null;
 
 			// determine UI5 component out of given control
 			if (oControl) {
@@ -255,7 +205,8 @@ function(
 		 * @name sap.ui.fl.Utils.getSiteId
 		 */
 		getSiteId: function (oControl) {
-			var sSiteId = null, oAppComponent = null;
+			var sSiteId = null;
+			var oAppComponent = null;
 
 			// determine UI5 component out of given control
 			if (oControl) {
@@ -285,24 +236,7 @@ function(
 		 * @name sap.ui.fl.Utils.getSiteIdByComponentData
 		 */
 		getSiteIdByComponentData: function (oComponentData) {
-			var sSiteId = null;
-
-			sSiteId = this._getStartUpParameter(oComponentData, "hcpApplicationId");
-
-			return sSiteId;
-		},
-
-		/**
-		 * Indicates if the current application is a variant of an existing one and the VENDOR layer is selected
-		 *
-		 * @param {sap.ui.core.Control} oControl - SAPUI5 control
-		 * @returns {boolean} true if application is a variant and the VENDOR layer selected
-		 * @public
-		 * @function
-		 * @name sap.ui.fl.Utils.isAppVariantMode
-		 */
-		isAppVariantMode: function (oControl) {
-			return (Utils.isVendorLayer() && Utils.isApplicationVariant(oControl));
+			return this._getStartUpParameter(oComponentData, "hcpApplicationId");
 		},
 
 		/**
@@ -323,23 +257,6 @@ function(
 		},
 
 		/**
-		 * Indicates if the VENDOR is selected
-		 *
-		 * @returns {boolean} true if it's an application variant
-		 * @public
-		 * @function
-		 * @name sap.ui.fl.Utils.isVendorLayer
-		 */
-		isVendorLayer: function () {
-			// variant mode only supported for vendor other types are not allowed to change standard control variants
-			if (Utils.getCurrentLayer(false) === "VENDOR") {
-				return true;
-			}
-
-			return false;
-		},
-
-		/**
 		 * Indicates if the current application is a variant of an existing one
 		 *
 		 * @param {sap.ui.core.Control} oControl - SAPUI5 control
@@ -353,76 +270,6 @@ function(
 			var oAppComponent = Utils.getAppComponentForControl(oControl);
 			var sComponentName = Utils.getComponentName(oAppComponent);
 			return sFlexReference !== sComponentName;
-		},
-
-		/**
-		 * Sets the top layer that the changes are applied to; if max layer is not specified, the highest layer in the layer stack is used.
-		 *
-		 * @param {string} sMaxLayer (optional) - name of the max layer
-		 * @public
-		 * @function
-		 * @name sap.ui.fl.Utils.setMaxLayerParameter
-		 */
-		setMaxLayerParameter: function(sMaxLayer) {
-			this._sMaxLayer = sMaxLayer || this._sTopLayer;
-		},
-
-		/**
-		 * Converts layer name into index
-		 * @param {string} sLayer - layer name
-		 * @returns {int} index of the layer
-		 * @function
-		 * @name sap.ui.fl.Utils.getLayerIndex
-		 */
-		getLayerIndex: function(sLayer) {
-			return this._mLayersIndex[sLayer];
-		},
-
-		/**
-		 * Determines whether a layer is higher than the max layer.
-		 *
-		 * @param {string} sLayer - Layer name to be evaluated
-		 * @returns {boolean} <code>true</code> if input layer is higher than max layer, otherwise <code>false</code>
-		 * @public
-		 * @function
-		 * @name sap.ui.fl.Utils.isOverMaxLayer
-		 */
-		isOverMaxLayer: function(sLayer) {
-			return (this.getLayerIndex(sLayer) > this.getLayerIndex(this._sMaxLayer));
-		},
-
-		/**
-		 * Compares current layer with a provided layer
-		 * -1: Lower layer, 0: Same layer, 1: Layer above
-		 *
-		 * @param {String} sLayer - Layer name to be evaluated
-		 * @param {String} [sCurrentLayer] - Current layer name to be evaluated, if not provided the layer is taken from URL parameter
-		 * @returns {int} -1: Lower layer, 0: Same layer, 1: Layer above
-		 * @public
-		 * @function
-		 * @name sap.ui.fl.Utils.isLayerOverCurrentLayer
-		 */
-		compareAgainstCurrentLayer: function(sLayer, sCurrentLayer) {
-			var sCurrent = sCurrentLayer || Utils.getCurrentLayer(false);
-			// If sLayer is undefined, it is assumed it be on the lowest layer
-			if ((this.getLayerIndex(sCurrent) > this.getLayerIndex(sLayer)) || !sLayer) {
-				return -1;
-			} else if (this.getLayerIndex(sCurrent) === this.getLayerIndex(sLayer)) {
-				return 0;
-			}
-			return 1;
-		},
-
-		/**
-		 * Determines if filtering of changes based on layer is required.
-		 *
-		 * @returns {boolean} <code>true</code> if the top layer is also the max layer, otherwise <code>false</code>
-		 * @public
-		 * @function
-		 * @name sap.ui.fl.Utils.isLayerFilteringRequired
-		 */
-		isLayerFilteringRequired: function() {
-			return !(this._sTopLayer === this._sMaxLayer);
 		},
 
 		/**
@@ -555,9 +402,10 @@ function(
 		 */
 		getAppDescriptorComponentObjectForControl: function(oControl) {
 			var oAppComponent = this.getAppComponentForControl(oControl);
+			var oManifest = oAppComponent.getManifest();
 			return {
-				name: this.getComponentClassName(oAppComponent).replace(".Component", ""),
-				version: this.getAppVersionFromManifest(oAppComponent.getManifest())
+				name: this.getAppIdFromManifest(oManifest),
+				version: this.getAppVersionFromManifest(oManifest)
 			};
 		},
 
@@ -694,46 +542,6 @@ function(
 		},
 
 		/**
-		 * Returns the current layer as defined by the url parameter. If the end user flag is set, it always returns "USER".
-		 *
-		 * @param {boolean} bIsEndUser - the end user flag
-		 * @returns {string} the current layer
-		 * @public
-		 * @function
-		 * @name sap.ui.fl.Utils.getCurrentLayer
-		 */
-		getCurrentLayer: function (bIsEndUser) {
-			var oUriParams, sLayer;
-			if (bIsEndUser) {
-				return "USER";
-			}
-
-			oUriParams = this._getUriParameters();
-			sLayer = oUriParams.get("sap-ui-layer") || "";
-			sLayer = sLayer.toUpperCase();
-			return sLayer || "CUSTOMER";
-		},
-
-		/**
-		 * Checks if a shared newly created variant requires an ABAP package; this is relevant for the VENDOR, PARTNER and CUSTOMER_BASE layers,
-		 * whereas variants in the CUSTOMER layer are client-dependent content and can either be transported or stored as local objects ($TMP).
-		 * A variant in the CUSTOMER layer that will be transported must not be assigned to a package.
-		 *
-		 * @returns {boolean} - Indicates whether a new variant needs an ABAP package
-		 * @public
-		 * @function
-		 * @name sap.ui.fl.Utils.doesSharedVariantRequirePackage
-		 */
-		doesSharedVariantRequirePackage: function () {
-			var sCurrentLayer = Utils.getCurrentLayer(false);
-			if ((sCurrentLayer === "VENDOR") || (sCurrentLayer === "PARTNER") || (sCurrentLayer === "CUSTOMER_BASE")) {
-				return true;
-			}
-
-			return false;
-		},
-
-		/**
 		 * Returns the tenant number for the communication with the ABAP back end.
 		 *
 		 * @public
@@ -742,14 +550,15 @@ function(
 		 * @name sap.ui.fl.Utils.getClient
 		 */
 		getClient: function () {
-			var oUriParams, sClient;
+			var oUriParams;
+			var sClient;
 			oUriParams = this._getUriParameters();
 			sClient = oUriParams.get("sap-client");
 			return sClient || undefined;
 		},
 
 		_getUriParameters: function () {
-			return new UriParameters(window.location.href);
+			return UriParameters.fromQuery(window.location.search);
 		},
 		/**
 		 * Returns whether the hot fix mode is active (url parameter hotfix=true)
@@ -758,7 +567,8 @@ function(
 		 * @returns {boolean} is hotfix mode active, or not
 		 */
 		isHotfixMode: function () {
-			var oUriParams, sIsHotfixMode;
+			var oUriParams;
+			var sIsHotfixMode;
 			oUriParams = this._getUriParameters();
 			sIsHotfixMode = oUriParams.get("hotfix");
 			return (sIsHotfixMode === "true");
@@ -789,6 +599,15 @@ function(
 			}
 
 			return "";
+		},
+
+		getLrepUrl: function () {
+			var aFlexibilityServices = sap.ui.getCore().getConfiguration().getFlexibilityServices();
+			var oLrepConfiguration = aFlexibilityServices.find(function (oServiceConfig) {
+				return oServiceConfig.connector === "LrepConnector";
+			});
+
+			return oLrepConfiguration ? oLrepConfiguration.url : "";
 		},
 
 		/**
@@ -858,12 +677,12 @@ function(
 		/**
 		 * See {@link sap.ui.core.BaseTreeModifier#checkControlId} method
 		 */
-		checkControlId: function (vControl, oAppComponent, bSuppressLogging) {
+		checkControlId: function (vControl, oAppComponent) {
 			if (!oAppComponent) {
 				vControl = vControl instanceof ManagedObject ? vControl : sap.ui.getCore().byId(vControl);
 				oAppComponent = Utils.getAppComponentForControl(vControl);
 			}
-			return BaseTreeModifier.checkControlId(vControl, oAppComponent, bSuppressLogging);
+			return BaseTreeModifier.checkControlId(vControl, oAppComponent);
 		},
 
 		/**
@@ -906,39 +725,7 @@ function(
 				var oParsedHash = oURLParser.parseShellHash(hasher.getHash());
 				return oParsedHash || {};
 			}
-			return { };
-		},
-
-		/**
-		 * Sets the values for url hash and technical parameters for the component data.
-		 * Deactivates hash based navigation while performing the operations, which is then re-activated upon completion.
-		 * If the passed doesn't exist in the url hash or technical parameters, then a new object is added respectively.
-		 *
-		 * @param {object} oComponent Component instance used to get the technical parameters
-		 * @param {string} sParameterName Name of the parameter (e.g. "sap-ui-fl-control-variant-id")
-		 * @param {string[]} aValues Array of values for the technical parameter
-		 */
-		setTechnicalURLParameterValues: function (oComponent, sParameterName, aValues) {
-			var oParsedHash = Utils.getParsedURLHash(sParameterName);
-
-			if (oParsedHash.params) {
-				hasher.changed.active = false; //disable changed signal
-
-				var mTechnicalParameters = Utils.getTechnicalParametersForComponent(oComponent);
-					// if mTechnicalParameters are not available we write a warning and continue updating the hash
-				if (!mTechnicalParameters) {
-					this.log.warning("Component instance not provided, so technical parameters in component data and browser history remain unchanged");
-				}
-				if (aValues.length === 0) {
-					delete oParsedHash.params[sParameterName];
-					mTechnicalParameters && delete mTechnicalParameters[sParameterName]; // Case when ControlVariantsAPI.clearVariantParameterInURL is called with a parameter
-				} else {
-					oParsedHash.params[sParameterName] = aValues;
-					mTechnicalParameters && (mTechnicalParameters[sParameterName] = aValues); // Technical parameters need to be in sync with the URL hash
-				}
-				hasher.replaceHash(Utils.getUshellContainer().getService("URLParsing").constructShellHash(oParsedHash)); // Set hash without dispatching changed signal nor writing history
-				hasher.changed.active = true; // Re-enable signal
-			}
+			return {};
 		},
 
 		/**
@@ -968,7 +755,7 @@ function(
 		 * @private
 		 */
 		getUrlParameter: function (sParameterName) {
-			return new UriParameters(window.location.href).get(sParameterName);
+			return UriParameters.fromQuery(window.location.search).get(sParameterName);
 		},
 
 		/**
@@ -1149,8 +936,25 @@ function(
 					return sAppId;
 				}
 			}
-			this.log.warning("No Manifest received.");
+			Log.warning("No Manifest received.");
 			return "";
+		},
+
+
+		/**
+		 * Returns the descriptor Id, which is alwas the reference for descriptor changes
+		 *
+		 * @param {object} oManifest - Manifest of the component
+		 * @returns {string} Version of application if it is available in the manifest, otherwise an empty string
+		 * @public
+		 */
+		getAppIdFromManifest: function (oManifest) {
+			if (oManifest) {
+				var oSapApp = (oManifest.getEntry) ? oManifest.getEntry("sap.app") : oManifest["sap.app"];
+				return oSapApp && oSapApp.id;
+			}
+
+			throw new Error("No Manifest received, descriptor changes are not possible");
 		},
 
 		/**
@@ -1168,7 +972,7 @@ function(
 					sVersion = oSapApp.applicationVersion.version;
 				}
 			} else {
-				this.log.warning("No Manifest received.");
+				Log.warning("No Manifest received.");
 			}
 			return sVersion;
 		},
@@ -1188,7 +992,7 @@ function(
 					sUri = oSapApp.dataSources.mainService.uri;
 				}
 			} else {
-				this.log.warning("No Manifest received.");
+				Log.warning("No Manifest received.");
 			}
 			return sUri;
 		},
@@ -1238,17 +1042,6 @@ function(
 		},
 
 		/**
-		 * Returns whether provided layer is a customer dependent layer
-		 *
-		 * @param {string} sLayerName - layer name
-		 * @returns {boolean} true if provided layer is customer dependent layer else false
-		 * @public
-		 */
-		isCustomerDependentLayer : function(sLayerName) {
-			return (["CUSTOMER", "CUSTOMER_BASE"].indexOf(sLayerName) > -1);
-		},
-
-		/**
 		 * Checks if an object is in an array or not and returns the index or -1
 		 *
 		 * @param {object[]} aArray Array of objects
@@ -1259,7 +1052,8 @@ function(
 		indexOfObject: function(aArray, oObject) {
 			var iObjectIndex = -1;
 			aArray.some(function(oArrayObject, iIndex) {
-				var aKeysArray, aKeysObject;
+				var aKeysArray;
+				var aKeysObject;
 				if (!oArrayObject) {
 					aKeysArray = [];
 				} else {
@@ -1319,76 +1113,89 @@ function(
 				.catch(function(e) {
 					var sErrorMessage = "Error during execPromiseQueueSequentially processing occured";
 					sErrorMessage += e ? ": " + e.message : "";
-					this.log.error(sErrorMessage);
+					Log.error(sErrorMessage);
 
 					if (bThrowError) {
 						throw new Error(sErrorMessage);
 					}
-				}.bind(this))
+				})
 
 				.then(function() {
 					return this.execPromiseQueueSequentially(aPromiseQueue, bThrowError, bAsync);
 				}.bind(this));
 			}
 
-			this.log.error("Changes could not be applied, promise not wrapped inside function.");
+			Log.error("Changes could not be applied, promise not wrapped inside function.");
 			return this.execPromiseQueueSequentially(aPromiseQueue, bThrowError, bAsync);
 		},
 
 		/**
-		 * Function that behaves like Promise (es6) but is synchronous. Implements 'then' and 'catch' functions.
+		 * Class that behaves like a promise (es6), but is synchronous. Implements <code>then</code> and <code>catch</code> functions.
 		 * After instantiating can be used similar to standard Promises but synchronously.
 		 * As soon as one of the callback functions returns a Promise the asynchronous Promise replaces the FakePromise in further processing.
 		 *
+		 * @class sap.ui.fl.Utils.FakePromise
 		 * @param {any} vInitialValue - value on resolve FakePromise
 		 * @param {any} vError - value on reject FakePromise
 		 * @param {string} sInitialPromiseIdentifier - value identifies previous promise in chain. If the identifier is passed to the function and don't match with the FakePromiseIdentifier then native Promise execution is used for further processing
 		 * @returns {sap.ui.fl.Utils.FakePromise|Promise} Returns instantiated FakePromise only if no Promise is passed by value parameter
+		 * @private
+		 * @ui5-restricted
 		 */
 		FakePromise : function(vInitialValue, vError, sInitialPromiseIdentifier) {
 			Utils.FakePromise.fakePromiseIdentifier = "sap.ui.fl.Utils.FakePromise";
 			this.vValue = vInitialValue;
 			this.vError = vError;
 			this.bContinueWithFakePromise = arguments.length < 3 || (sInitialPromiseIdentifier === Utils.FakePromise.fakePromiseIdentifier);
+
+			var fnResolveOrReject = function(vParam, fn) {
+				try {
+					var vResolve = fn(vParam, Utils.FakePromise.fakePromiseIdentifier);
+					if (vResolve instanceof Promise ||
+							vResolve instanceof Utils.FakePromise) {
+						return vResolve;
+					}
+					return new Utils.FakePromise(vResolve);
+				} catch (oError) {
+					var vReject = oError;
+					return new Utils.FakePromise(undefined, vReject);
+				}
+			};
+
+			/**
+			 * <code>then</code> function as for promise (es6), but without a rejection handler.
+			 * @param {function} fn - Resolve handler
+			 * @returns {sap.ui.fl.Utils.FakePromise|Promise} <code>FakePromise</code> if no promise is returned by the resolve handler
+			 * @public
+			 */
 			Utils.FakePromise.prototype.then = function(fn) {
 				if (!this.bContinueWithFakePromise) {
 					return Promise.resolve(fn(this.vValue));
 				}
+
 				if (!this.vError) {
-					try {
-						this.vValue = fn(this.vValue, Utils.FakePromise.fakePromiseIdentifier);
-					} catch (oError) {
-						this.vError = oError;
-						this.vValue = null;
-						return this;
-					}
-					if (this.vValue instanceof Promise ||
-						this.vValue instanceof Utils.FakePromise) {
-						return this.vValue;
-					}
+					return fnResolveOrReject(this.vValue, fn);
 				}
 				return this;
 			};
+
+			/**
+			 * <code>catch</code> function as for promise (es6), but without a rejection handler.
+			 * @param {function} fn - Rejection handler
+			 * @returns {sap.ui.fl.Utils.FakePromise|Promise} <code>FakePromise</code> if no promise is returned by the rejection handler
+			 * @public
+			 */
 			Utils.FakePromise.prototype.catch = function(fn) {
 				if (!this.bContinueWithFakePromise) {
 					return Promise.reject(fn(this.vError));
 				}
+
 				if (this.vError) {
-					try {
-						this.vValue = fn(this.vError, Utils.FakePromise.fakePromiseIdentifier);
-					} catch (oError) {
-						this.vError = oError;
-						this.vValue = null;
-						return this;
-					}
-					this.vError = null;
-					if (this.vValue instanceof Promise ||
-						this.vValue instanceof Utils.FakePromise) {
-						return this.vValue;
-					}
+					return fnResolveOrReject(this.vError, fn);
 				}
 				return this;
 			};
+
 			if (this.vValue instanceof Promise ||
 				this.vValue instanceof Utils.FakePromise) {
 				return this.vValue;

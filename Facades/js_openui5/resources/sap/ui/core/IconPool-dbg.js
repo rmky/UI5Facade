@@ -313,6 +313,7 @@ sap.ui.define([
 				'step': 0xe0fe,
 				'sonography': 0xe0ff,
 				'soccor': 0xe100,
+				'soccer': 0xe100,
 				'physical-activity': 0xe101,
 				'pharmacy': 0xe102,
 				'official-service': 0xe103,
@@ -707,7 +708,8 @@ sap.ui.define([
 				'collapse-all': 0xe284,
 				'combine': 0xe285,
 				'split': 0xe286,
-				'megamenu': 0xe287
+				'megamenu': 0xe287,
+				"feedback": 0xe288
 			}
 		};
 

@@ -16,6 +16,11 @@
 			"theme": "sap_belize"
 		},
 		{
+			"name": "Avatar.less",
+			"designtime": true,
+			"theme": "sap_belize"
+		},
+		{
 			"name": "Bar.less",
 			"designtime": true,
 			"theme": "sap_belize"
@@ -156,7 +161,7 @@
 			"theme": "sap_belize"
 		},
 		{
-			"name": "NotificationListBase.less",
+			"name": "NotificationListGroup.less",
 			"designtime": true,
 			"theme": "sap_belize"
 		},
@@ -281,6 +286,11 @@
 			"theme": "sap_belize"
 		},
 		{
+			"name": "SinglePlanningCalendarMonthGrid.less",
+			"designtime": true,
+			"theme": "sap_belize"
+		},
+		{
 			"name": "SlideTile.less",
 			"designtime": true,
 			"theme": "sap_belize"
@@ -377,6 +387,11 @@
 		},
 		{
 			"name": "ViewSettingsDialog.less",
+			"designtime": true,
+			"theme": "sap_belize"
+		},
+		{
+			"name": "WheelSlider.less",
 			"designtime": true,
 			"theme": "sap_belize"
 		},

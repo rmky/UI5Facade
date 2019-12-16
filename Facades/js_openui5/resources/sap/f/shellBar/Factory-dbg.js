@@ -7,7 +7,6 @@ sap.ui.define([
 	"sap/ui/core/Element",
 	"sap/m/Title",
 	"sap/m/Image",
-	"sap/tnt/InfoLabel",
 	"./ContentButton",
 	"sap/m/MenuButton",
 	"sap/m/OverflowToolbar",
@@ -25,7 +24,6 @@ sap.ui.define([
 	Element,
 	Title,
 	Image,
-	InfoLabel,
 	ContentButton,
 	MenuButton,
 	OverflowToolbar,
@@ -75,7 +73,7 @@ sap.ui.define([
 				design: ToolbarDesign.Transparent,
 				style: "Clear"
 			}).addStyleClass("sapFShellBarOTB");
-			this._oControls.oOverflowToolbar._getOverflowButton().addStyleClass("sapFShellBarOverflowButton");
+			this._oControls.oOverflowToolbar._getOverflowButton().addStyleClass("sapFShellBarOverflowButton sapFShellBarItem");
 		}
 		return this._oControls.oOverflowToolbar;
 	};
@@ -205,7 +203,8 @@ sap.ui.define([
 				press: function () {
 					this._oContext.fireEvent("searchButtonPressed", {button: this._oControls.oSearch});
 				}.bind(this)
-			}).setLayoutData(new OverflowToolbarLayoutData({
+			})
+			.setLayoutData(new OverflowToolbarLayoutData({
 				priority: OverflowToolbarPriority.Low
 			}));
 		}
@@ -229,7 +228,8 @@ sap.ui.define([
 				press: function () {
 					this._oContext.fireEvent("navButtonPressed", {button: this._oControls.oNavButton});
 				}.bind(this)
-			}).setLayoutData(new OverflowToolbarLayoutData({
+			})
+			.setLayoutData(new OverflowToolbarLayoutData({
 				priority: OverflowToolbarPriority.NeverOverflow
 			}));
 		}
@@ -245,7 +245,8 @@ sap.ui.define([
 				press: function () {
 					this._oContext.fireEvent("menuButtonPressed", {button: this._oControls.oMenuButton});
 				}.bind(this)
-			}).setLayoutData(new OverflowToolbarLayoutData({
+			})
+			.setLayoutData(new OverflowToolbarLayoutData({
 				priority: OverflowToolbarPriority.NeverOverflow
 			}));
 		}
@@ -283,7 +284,7 @@ sap.ui.define([
 				}.bind(this)
 			})
 			.setLayoutData(new OverflowToolbarLayoutData({
-				priority: OverflowToolbarPriority.High
+				priority: OverflowToolbarPriority.NeverOverflow
 			}))
 			.addStyleClass("sapFShellBarGridButton");
 		}

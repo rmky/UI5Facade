@@ -50,7 +50,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -175,12 +175,14 @@ sap.ui.define([
 	BusyIndicator.prototype.setCustomIconWidth = function (sWidth) {
 		this.setProperty("customIconWidth", sWidth, true);
 		this._createCustomIcon("setWidth", sWidth);
+		this._iconImage.$().css("width", sWidth);
 		return this;
 	};
 
 	BusyIndicator.prototype.setCustomIconHeight = function (sHeight) {
 		this.setProperty("customIconHeight", sHeight, true);
 		this._createCustomIcon("setHeight", sHeight);
+		this._iconImage.$().css("height", sHeight);
 		return this;
 	};
 

@@ -12,7 +12,7 @@ sap.ui.define([
 	'sap/ui/unified/MenuTextFieldItem',
 	"sap/ui/unified/MenuRenderer",
 	'sap/ui/Device',
-	'./TableUtils',
+	'./utils/TableUtils',
 	"sap/base/assert",
 	"sap/ui/thirdparty/jquery"
 ],
@@ -33,7 +33,7 @@ sap.ui.define([
 	 * @class
 	 * The column menu provides all common actions that can be performed on a column.
 	 * @extends sap.ui.unified.Menu
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public

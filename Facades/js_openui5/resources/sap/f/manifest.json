@@ -5,7 +5,7 @@
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.68.1"
+      "version": "1.73.1"
     },
     "title": "SAPUI5 library with Fiori controls.",
     "description": "SAPUI5 library with Fiori controls.",
@@ -22,16 +22,16 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.68",
+      "minUI5Version": "1.73",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.68.1"
+          "minVersion": "1.73.1"
         },
         "sap.ui.layout": {
-          "minVersion": "1.68.1"
+          "minVersion": "1.73.1"
         },
         "sap.m": {
-          "minVersion": "1.68.1"
+          "minVersion": "1.73.1"
         }
       }
     },
@@ -40,6 +40,8 @@
       "content": {
         "controls": [
           "sap.f.Avatar",
+          "sap.f.AvatarGroup",
+          "sap.f.AvatarGroupItem",
           "sap.f.cards.Header",
           "sap.f.cards.NumericHeader",
           "sap.f.cards.NumericSideIndicator",
@@ -51,6 +53,9 @@
           "sap.f.FlexibleColumnLayout",
           "sap.f.semantic.SemanticPage",
           "sap.f.GridList",
+          "sap.f.GridListItem",
+          "sap.f.ProductSwitch",
+          "sap.f.ProductSwitchItem",
           "sap.f.ShellBar"
         ],
         "elements": [
@@ -86,6 +91,8 @@
           "sap.f.AvatarShape",
           "sap.f.AvatarSize",
           "sap.f.AvatarType",
+          "sap.f.AvatarColor",
+          "sap.f.AvatarGroupType",
           "sap.f.cards.HeaderPosition",
           "sap.f.DynamicPageTitleArea",
           "sap.f.DynamicPageTitleShrinkRatio",

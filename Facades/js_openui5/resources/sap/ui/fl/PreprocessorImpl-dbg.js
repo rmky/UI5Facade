@@ -35,7 +35,7 @@ function(
 	 * @class
 	 * @constructor
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @experimental Since 1.27.0
 	 */
 	var PreprocessorImpl = function() {};
@@ -106,7 +106,7 @@ function(
 					resolve(aModules);
 				},
 				function(oError) {
-					Utils.log.error("Code Extension not found", oError.message);
+					Log.error("Code Extension not found", oError.message);
 					resolve([]);
 				}
 			);

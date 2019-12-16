@@ -5,11 +5,12 @@
  */
 
 /**
- * Initialization Code and shared classes of library sap.f.
+ * Initialization Code and shared classes of library sap.ui.integration.
  */
 sap.ui.define(["sap/ui/base/DataType",
 		"sap/ui/Global",
 		"sap/ui/core/library",
+		"sap/m/library",
 		"sap/f/library"
 	], // library dependency
 	function (DataType) {
@@ -19,25 +20,25 @@ sap.ui.define(["sap/ui/base/DataType",
 		// delegate further initialization of this library to the Core
 		sap.ui.getCore().initLibrary({
 			name: "sap.ui.integration",
-			version: "1.68.1",
-			dependencies: ["sap.ui.core", "sap.f"],
+			version: "1.73.1",
+			dependencies: ["sap.ui.core", "sap.f", "sap.m"],
 			types: [
 				"sap.ui.integration.CardActionType",
 				"sap.ui.integration.CardDataMode"
 			],
 			controls: [
 				"sap.ui.integration.widgets.Card",
+				"sap.ui.integration.Widget",
 				"sap.ui.integration.host.HostConfiguration"
 			],
 			elements: [],
-			noLibraryCSS: true,
 
-			//define the custom tags that can be used in this library
-			customTags: {
-				"card": "sap/ui/integration/widgets/Card",
-				"host-configuration": "sap/ui/integration/host/HostConfiguration"
-			},
-			defaultTagPrefix: "ui"
+			// define the custom elements that can be used in this library
+			customElements: {
+				"card": "sap/ui/integration/customElements/CustomElementCard",
+				"widget": "sap/ui/integration/customElements/CustomElementWidget",
+				"host-configuration": "sap/ui/integration/customElements/CustomElementHostConfiguration"
+			}
 		});
 
 		/**
@@ -46,7 +47,7 @@ sap.ui.define(["sap/ui/base/DataType",
 		 * @namespace
 		 * @alias sap.ui.integration
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.73.1
 		 * @public
 		 */
 		var thisLib = sap.ui.integration;

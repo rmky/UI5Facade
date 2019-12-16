@@ -6,39 +6,57 @@
 
 sap.ui.define([
 	'./library',
+	'sap/ui/core/Core',
 	'sap/ui/Device',
 	'./NotificationListBase',
 	'sap/ui/core/InvisibleText',
 	'sap/ui/core/IconPool',
+	'sap/ui/core/Icon',
 	'sap/ui/core/ResizeHandler',
-	'sap/m/Button',
-	'sap/m/Text',
+	'sap/m/Link',
+	'sap/m/Avatar',
+	"sap/ui/events/KeyCodes",
 	'./NotificationListItemRenderer'
 ],
 function(
 	library,
+	Core,
 	Device,
 	NotificationListBase,
 	InvisibleText,
 	IconPool,
+	Icon,
 	ResizeHandler,
-	Button,
-	Text,
+	Link,
+	Avatar,
+	KeyCodes,
 	NotificationListItemRenderer
 	) {
 	'use strict';
 
-	// shortcut for sap.m.ButtonType
-	var ButtonType = library.ButtonType;
+	var RESOURCE_BUNDLE = Core.getLibraryResourceBundle('sap.m'),
+		EXPAND_TEXT = RESOURCE_BUNDLE.getText('NOTIFICATION_LIST_ITEM_SHOW_MORE'),
+		COLLAPSE_TEXT = RESOURCE_BUNDLE.getText('NOTIFICATION_LIST_ITEM_SHOW_LESS'),
+		READ_TEXT = RESOURCE_BUNDLE.getText('NOTIFICATION_LIST_ITEM_READ'),
+		UNREAD_TEXT = RESOURCE_BUNDLE.getText('NOTIFICATION_LIST_ITEM_UNREAD');
+
+	// anything better?
+	var maxTruncationHeight = 44;
+
+	// shortcut for sap.m.AvatarSize
+	var AvatarSize = library.AvatarSize;
+
+	// shortcut for sap.m.AvatarColor
+	var AvatarColor = library.AvatarColor;
 
 	/**
-	 * Constructor for a new NotificationListItem.
+	 * Constructor for a new <code>NotificationListItem<code>.
 	 *
 	 * @param {string} [sId] ID for the new control, generated automatically if no ID is given
 	 * @param {object} [mSettings] Initial settings for the new control
 	 *
 	 * @class
-	 * The NotificationListItem control shows notifications to the user.
+	 * The NotificationListItem control shows notification to the user.
 	 * <h4>Structure</h4>
 	 * The notification item holds properties for the following elements:
 	 * <ul>
@@ -50,7 +68,7 @@ function(
 	 * @extends sap.m.NotificationListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -68,6 +86,11 @@ function(
 				description: {type: 'string', group: 'Appearance', defaultValue: ''},
 
 				/**
+				 * Defines the displayed author initials.
+				 */
+				authorInitials: {type: "string", group: "Data", defaultValue: null},
+
+				/**
 				 * Determines if the text in the title and the description of the notification are truncated to the first two lines.
 				 */
 				truncate: {type: 'boolean', group: 'Appearance', defaultValue: true},
@@ -82,191 +105,63 @@ function(
 				 * The sap.m.MessageStrip control that holds the information about any error that may occur when pressing the notification buttons
 				 */
 				processingMessage: {type: 'sap.m.MessageStrip', multiple: false},
+
 				/**
-				 * The text control that holds the description text of the NotificationListItem.
+				 * The "Show More" button of the notification item.
 				 * @private
 				 */
-				_bodyText: {type: 'sap.m.Text', multiple: false, visibility: "hidden"}
+				_showMoreButton: {type: 'sap.m.Link', multiple: false, visibility: "hidden"}
 			}
 		}
 	});
 
 	/**
-	 * Sets initial values for the control.
+	 * Handles the internal event init.
 	 *
-	 * @public
+	 * @private
 	 */
-	NotificationListItem.prototype.init = function () {
-		NotificationListBase.prototype.init.call(this);
-
-		var resourceBundle = sap.ui.getCore().getLibraryResourceBundle('sap.m');
-		this._expandText = resourceBundle.getText('NOTIFICATION_LIST_ITEM_SHOW_MORE');
-		this._collapseText = resourceBundle.getText('NOTIFICATION_LIST_ITEM_SHOW_LESS');
-		this._closeText = resourceBundle.getText('NOTIFICATION_LIST_BASE_CLOSE');
-
-		//set it to an active ListItemBase to the press and tap events are fired
+	NotificationListItem.prototype.init = function() {
+		// set it to an active ListItemBase to the press and tap events are fired
 		this.setType('Active');
+		this._footerIvisibleText = new InvisibleText({id: this.getId() + "-invisibleFooterText"});
+	};
 
-		/**
-		 * @type {sap.m.Button}
-		 * @private
-		 */
-		var _closeButton = new Button(this.getId() + '-closeButton', {
-			type: ButtonType.Transparent,
-			icon: IconPool.getIconURI('decline'),
-			tooltip: this._closeText,
-			press: function () {
-				this.close();
-			}.bind(this)
+	NotificationListItem.prototype._getAuthorAvatar = function() {
+		var avatar = new Avatar({
+			initials: this.getAuthorInitials(),
+			src: this.getAuthorPicture(),
+			backgroundColor: AvatarColor.Random,
+			displaySize: AvatarSize.XS
 		});
 
-		this.setAggregation("_closeButton", _closeButton, true);
-
-		/**
-		 * @type {sap.m.Button}
-		 * @private
-		 */
-		var _collapseButton = new Button({
-			type: ButtonType.Transparent,
-			text: this.getTruncate() ? this._expandText : this._collapseText,
-			id: this.getId() + '-expandCollapseButton',
-			press: function () {
-				this._deregisterResize();
-				this.setProperty("truncate", !this.getTruncate(), true);
-				_collapseButton.setText(this.getTruncate() ? this._expandText : this._collapseText);
-
-				this.$().find('.sapMNLI-Header').toggleClass('sapMNLI-TitleWrapper--is-expanded');
-				this.$().find('.sapMNLI-TextWrapper').toggleClass('sapMNLI-TextWrapper--is-expanded', this.getDescription());
-
-				this._registerResize();
-			}.bind(this)
-		});
-
-		_collapseButton.addEventDelegate({
-			onfocusin: function () {
-				this.getDomRef().setAttribute("aria-hidden", true);
-			},
-			onfocusout: function () {
-				this.getDomRef().setAttribute("aria-hidden", false);
-			}
-		}, this);
-
-		this.setAggregation("_collapseButton", _collapseButton, true);
-
-		/**
-		 * InvisibleText used to implement the ARIA specification.
-		 * @private
-		 */
-		this._ariaDetailsText = new InvisibleText({
-			id: this.getId() + '-info'
-		}).toStatic();
-	};
-
-	//================================================================================
-	// Overwritten setters and getters
-	//================================================================================
-
-	/**
-	 * Sets the description.
-	 *
-	 * @public
-	 * @param {string} description Description.
-	 * @returns {sap.m.NotificationListItem} NotificationListItem reference for chaining.
-	 */
-	NotificationListItem.prototype.setDescription = function (description) {
-		var result = this.setProperty('description', description);
-
-		this._getDescriptionText().setText(description);
-
-		return result;
+		return avatar;
 	};
 
 	/**
-	 * Sets the DateTime.
+	 * Handles the internal event onBeforeRendering.
 	 *
-	 * @public
-	 * @param {object} dateTime DateTime.
-	 * @returns {sap.m.NotificationListBase} NotificationListBase reference for chaining.
+	 * @private
 	 */
-	NotificationListItem.prototype.setDatetime = function (dateTime) {
-		var result = NotificationListBase.prototype.setDatetime.call(this, dateTime);
-		this._updateAriaAdditionalInfo();
+	NotificationListItem.prototype.onBeforeRendering = function() {
+		NotificationListBase.prototype.onBeforeRendering.call(this);
 
-		return result;
+		if (this._resizeListenerId) {
+			ResizeHandler.deregister(this._resizeListenerId);
+			this._resizeListenerId = null;
+		}
 	};
 
-	/**
-	 * Sets the unread text.
-	 *
-	 * @public
-	 * @param {boolean} unread Indication of unread list item.
-	 * @returns {sap.m.NotificationListItem} NotificationListItem reference for chaining.
-	 */
-	NotificationListItem.prototype.setUnread = function (unread) {
-		/* @type {sap.m.NotificationListItem} Reference to <code>this</code> to allow method chaining */
-		var result = this.setProperty('unread', unread, true);
-		/* @type {sap.m.Title} */
-		var title = this.getAggregation('_headerTitle');
-		if (title) {
-			title.toggleStyleClass('sapMNLI-Unread', this.getUnread());
+	NotificationListItem.prototype.onAfterRendering = function() {
+
+		if (this.getHideShowMoreButton()) {
+			return;
 		}
 
-		return result;
-	};
+		this._updateShowMoreButtonVisibility();
 
-	/**
-	 * Sets the priority of the list item.
-	 *
-	 * @public
-	 * @param {string} priority Priority of the list item.
-	 * @param {boolean} suppressInvalidation Indication for suppressing invalidation.
-	 * @returns {sap.m.NotificationListItem} NotificationListItem reference for chaining.
-	 */
-	NotificationListItem.prototype.setPriority = function (priority, suppressInvalidation) {
-		var result = this.setProperty('priority', priority, suppressInvalidation);
-
-		this._updateAriaAdditionalInfo();
-
-		return result;
-	};
-
-	/**
-	 * Sets the author picture for list item.
-	 *
-	 * @public
-	 * @param {string} authorPicture Picture url in string format.
-	 * @param {boolean} suppressInvalidation Indication for suppressing invalidation.
-	 * @returns {sap.m.NotificationListItem} NotificationListItem reference for chaining.
-	 */
-	NotificationListItem.prototype.setAuthorPicture = function (authorPicture, suppressInvalidation) {
-		var result = this.setProperty('authorPicture', authorPicture, suppressInvalidation);
-
-		this._getAuthorImage().setSrc(authorPicture);
-
-		return result;
-	};
-
-	//================================================================================
-	// Control methods
-	//================================================================================
-
-	/**
-	 * Overwrites onBeforeRendering
-	 *
-	 * @public
-	 */
-	NotificationListItem.prototype.onBeforeRendering = function () {
-		this._updateAriaAdditionalInfo();
-		this._deregisterResize();
-	};
-
-	/**
-	 * Overwrites onAfterRendering
-	 *
-	 * @public
-	 */
-	NotificationListItem.prototype.onAfterRendering = function () {
-		this._registerResize();
+		if (this.getDomRef()) {
+			this._resizeListenerId = ResizeHandler.register(this.getDomRef(),  this._onResize.bind(this));
+		}
 	};
 
 	/**
@@ -286,239 +181,120 @@ function(
 		// in that case just focus the whole item
 		var target = event.target;
 
-		if (target !== this.getDomRef() && !target.classList.contains('sapMBtn')) {
+		if (target !== this.getDomRef() &&
+			!target.classList.contains('sapMBtn') &&
+			!target.classList.contains('sapMLnk')) {
 			event.preventDefault();
 			event.stopImmediatePropagation();
 			this.focus();
 		}
 	};
 
+	NotificationListItem.prototype.onkeydown = function(event) {
 
-	/**
-	 * Called when the control is destroyed.
-	 *
-	 * @private
-	 */
-	NotificationListItem.prototype.exit = function () {
-		this._deregisterResize();
+		if (event.target !== this.getDomRef()) {
+			return;
+		}
 
-		if (this._ariaDetailsText) {
-			this._ariaDetailsText.destroy();
-			this._ariaDetailsText = null;
+		var notificationGroup = this.getParent(),
+			visibleItems,
+			groupIndex;
+
+		if (!notificationGroup || !notificationGroup.isA('sap.m.NotificationListGroup')) {
+			return;
+		}
+
+		visibleItems = notificationGroup.getVisibleItems();
+		groupIndex = visibleItems.indexOf(this);
+
+		switch (event.which) {
+			case KeyCodes.ARROW_UP:
+				if (groupIndex === 0) {
+					return;
+				}
+
+				var previousIndex = groupIndex - 1;
+				visibleItems[previousIndex].focus();
+				break;
+			case KeyCodes.ARROW_DOWN:
+				var nextIndex = groupIndex + 1;
+				if (nextIndex === visibleItems.length) {
+					return;
+				}
+
+				visibleItems[nextIndex].focus();
+				break;
 		}
 	};
 
-	//================================================================================
-	// Private getters and setters
-	//================================================================================
-
-	/**
-	 * Returns the sap.m.Text control used in the NotificationListItem's description.
-	 *
-	 * @private
-	 * @returns {sap.m.Text} The notification description text
-	 */
-	NotificationListItem.prototype._getDescriptionText = function () {
-		var bodyText = this.getAggregation('_bodyText');
-
-		if (!bodyText) {
-			bodyText = new Text({
-				id: this.getId() + '-body',
-				text: this.getDescription(),
-				maxLines: 2
-			}).addStyleClass('sapMNLI-Text');
-
-			this.setAggregation("_bodyText", bodyText, true);
+	NotificationListItem.prototype.exit = function() {
+		if (this._resizeListenerId) {
+			ResizeHandler.deregister(this._resizeListenerId);
+			this._resizeListenerId = null;
 		}
 
-		return bodyText;
+		if (this._footerIvisibleText) {
+			this._footerIvisibleText.destroy();
+			this._footerIvisibleText = null;
+		}
 	};
 
-	//================================================================================
-	// Private and protected internal methods
-	//================================================================================
+	NotificationListItem.prototype._onResize = function () {
+		this._updateShowMoreButtonVisibility();
+	};
+
+	NotificationListItem.prototype._updateShowMoreButtonVisibility = function () {
+		var $this = this.$(),
+			title = $this.find('.sapMNLITitleText')[0],
+			description = $this.find('.sapMNLIDescription')[0],
+			canTruncate;
+
+		if ($this.length > 0) {
+			canTruncate = title.scrollHeight > maxTruncationHeight || description.scrollHeight > maxTruncationHeight;
+		}
+
+		this._getShowMoreButton().setVisible(canTruncate);
+	};
+
+	NotificationListItem.prototype._getShowMoreButton = function() {
+		var showMoreButton = this.getAggregation('_showMoreButton');
+
+		if (!showMoreButton) {
+			showMoreButton = new Link(this.getId() + '-showMoreButton', {
+				text: this.getTruncate() ? EXPAND_TEXT : COLLAPSE_TEXT,
+				press: function () {
+					var truncate = !this.getTruncate();
+					this._getShowMoreButton().setText(truncate ? EXPAND_TEXT : COLLAPSE_TEXT);
+					this.setTruncate(truncate);
+				}.bind(this)
+			});
+
+			this.setAggregation("_showMoreButton", showMoreButton, true);
+		}
+
+		return showMoreButton;
+	};
 
 	/**
-	 * Overrides the ListItemBase class toggling.
+	 * Updates invisible text.
 	 *
 	 * @private
 	 */
-	NotificationListItem.prototype._activeHandling = function () {
-		this.$().toggleClass("sapMNLIActive", this._active);
-	};
+	NotificationListItem.prototype._getFooterInvisibleText = function() {
 
-	/**
-	 * Updates the hidden text, used for the ARIA support.
-	 *
-	 * @private
-	 */
-	NotificationListItem.prototype._updateAriaAdditionalInfo = function () {
-		var resourceBundle = sap.ui.getCore().getLibraryResourceBundle('sap.m');
-		var readUnreadText = this.getUnread() ?
-			resourceBundle.getText('NOTIFICATION_LIST_ITEM_UNREAD') : resourceBundle.getText('NOTIFICATION_LIST_ITEM_READ');
-		var dueAndPriorityString = resourceBundle.getText('NOTIFICATION_LIST_ITEM_DATETIME_PRIORITY',
-			[this.getDatetime(), this.getPriority()]);
-		var authorName = this.getAuthorName();
-		var ariaText = readUnreadText + ' ';
+		var readUnreadText = this.getUnread() ? UNREAD_TEXT : READ_TEXT,
+			dueAndPriorityString = RESOURCE_BUNDLE.getText('NOTIFICATION_LIST_ITEM_DATETIME_PRIORITY', [this.getDatetime(), this.getPriority()]),
+			authorName = this.getAuthorName(),
+			ariaTexts = [readUnreadText];
 
 		if (authorName) {
-			ariaText += resourceBundle.getText('NOTIFICATION_LIST_ITEM_CREATED_BY') + ' ' + this.getAuthorName() + ' ';
+			authorName = RESOURCE_BUNDLE.getText('NOTIFICATION_LIST_ITEM_CREATED_BY');
+			ariaTexts.push(authorName);
+			ariaTexts.push(this.getAuthorName());
 		}
+		ariaTexts.push(dueAndPriorityString);
 
-		ariaText += dueAndPriorityString;
-		this._ariaDetailsText.setText(ariaText);
-	};
-
-	/**
-	 * Returns true if the text in the title or the text in the description is longer than two lines.
-	 *
-	 * @private
-	 * @returns {boolean} Whether the control should be truncated.
-	 */
-	NotificationListItem.prototype._canTruncate = function () {
-		var iTitleHeight = this.getDomRef('title-inner').scrollHeight,
-			iTitleWrapperHeight = this.$('title').parent().height();
-
-		if (iTitleHeight > iTitleWrapperHeight) {
-			return true;
-		}
-
-		if (this.getDomRef('body-inner')) {
-			var iBodyHeight = this.getDomRef('body-inner').scrollHeight,
-				iBodyWrapperHeight = this.$('body').parent().height();
-
-			if (iBodyHeight > iBodyWrapperHeight) {
-				return true;
-			}
-		}
-
-		return false;
-	};
-
-	/**
-	 * Shows and hides truncate button.
-	 *
-	 * @private
-	 */
-	NotificationListItem.prototype._showHideTruncateButton = function () {
-
-		var notificationDomRef = this.getDomRef(),
-			oCore = sap.ui.getCore(),
-			oHeaderDomRef,
-			oTextWrapperDomRef,
-			oCollapseButtonDomRef;
-
-		if (!notificationDomRef) {
-			return;
-		}
-
-		oHeaderDomRef = notificationDomRef.querySelector('.sapMNLI-Header');
-		oTextWrapperDomRef = notificationDomRef.querySelector('.sapMNLI-TextWrapper');
-		oCollapseButtonDomRef = this.getDomRef('expandCollapseButton');
-
-		if (this._canTruncate() && (!this.getHideShowMoreButton())) { // if the Notification has long text
-			// show the truncate button
-			if (oCollapseButtonDomRef) {
-				oCollapseButtonDomRef.classList.remove('sapMNLI-CollapseButtonHide');
-			}
-
-			// set the truncate button text && toggle 'collapse' class
-			if (this.getTruncate()) {
-				this.getAggregation('_collapseButton').setText(this._expandText);
-				if (oHeaderDomRef) {
-					oHeaderDomRef.classList.remove('sapMNLI-TitleWrapper--is-expanded');
-				}
-
-				if (this.getDescription() && oTextWrapperDomRef) {
-					oTextWrapperDomRef.classList.remove('sapMNLI-TextWrapper--is-expanded');
-				}
-			} else {
-				this.getAggregation('_collapseButton').setText(this._collapseText);
-				this.$().find('.sapMNLI-TextWrapper').toggleClass('sapMNLI-TextWrapper--is-expanded', this.getDescription());
-
-				if (oHeaderDomRef) {
-					oHeaderDomRef.classList.add('sapMNLI-TitleWrapper--is-expanded');
-				}
-			}
-
-		} else if (oCollapseButtonDomRef) {
-			// hide the truncate button
-			oCollapseButtonDomRef.classList.add('sapMNLI-CollapseButtonHide');
-		}
-
-		// remove classes used only to calculate text size
-		if (this.getDescription() && oTextWrapperDomRef) {
-			oTextWrapperDomRef.classList.remove('sapMNLI-TextWrapper--initial-overwrite');
-		}
-
-		if (this.getTitle() && oHeaderDomRef) {
-			oHeaderDomRef.classList.remove('sapMNLI-TitleWrapper--initial-overwrite');
-		}
-
-		oCore.detachThemeChanged(this._showHideTruncateButton, this);
-	};
-
-	/**
-	 * Deregisters resize handler.
-	 *
-	 * @private
-	 */
-	NotificationListItem.prototype._deregisterResize = function () {
-		if (this._sNotificationResizeHandler) {
-			ResizeHandler.deregister(this._sNotificationResizeHandler);
-			this._sNotificationResizeHandler = null;
-		}
-	};
-
-	/**
-	 * Registers resize handler.
-	 *
-	 * @public
-	 */
-	NotificationListItem.prototype._registerResize = function () {
-		var that = this;
-		var notificationDomRef = this.getDomRef();
-		if (!notificationDomRef) {
-			//exit for invisible items
-			return;
-		}
-		that._resizeNotification();
-
-		this._sNotificationResizeHandler = ResizeHandler.register(notificationDomRef, function () {
-			that._resizeNotification();
-		});
-	};
-
-	/**
-	 * Resize handler for the NotificationListItem.
-	 *
-	 * @private
-	 */
-	NotificationListItem.prototype._resizeNotification = function () {
-		var notificationDomRef = this.getDomRef(),
-			oDescriptionWrapper = notificationDomRef.querySelector('.sapMNLI-TextWrapper'),
-			oHeaderWrapper = notificationDomRef.querySelector('.sapMNLI-Header'),
-			core = sap.ui.getCore();
-
-		if (notificationDomRef.offsetWidth >= 640) {
-			notificationDomRef.classList.add('sapMNLI-LSize');
-		} else {
-			notificationDomRef.classList.remove('sapMNLI-LSize');
-		}
-
-		if (oDescriptionWrapper) {
-			oDescriptionWrapper.classList.remove('sapMNLI-TextWrapper--is-expanded');
-			oDescriptionWrapper.classList.add('sapMNLI-TextWrapper--initial-overwrite');
-		}
-
-		oHeaderWrapper.classList.remove('sapMNLI-TitleWrapper--is-expanded');
-		oHeaderWrapper.classList.add('sapMNLI-TitleWrapper--initial-overwrite');
-
-		if (core.isThemeApplied()) {
-			this._showHideTruncateButton();
-		} else {
-			core.attachThemeChanged(this._showHideTruncateButton, this);
-		}
+		return this._footerIvisibleText.setText(ariaTexts.join(' '));
 	};
 
 	return NotificationListItem;

@@ -262,6 +262,21 @@ html[data-sap-ui-animation="off"] {
 }
 /* END "AnchorBar.less" */
 
+/* START "BlockBase.less" */
+/* =================================== */
+/* CSS for control sap.uxap/BlockBase  */
+/* Base theme                          */
+/* =================================== */
+
+.sapUxAPBlockBase {
+	min-height: 0;
+}
+
+.sapUxAPBlockBaseDefaultSize {
+	height: 0;
+}
+/* END "BlockBase.less" */
+
 /* START "HierarchicalSelect.less" */
 /* ============================================ */
 /* CSS for control sap.uxap/HierarchicalSelect  */
@@ -374,15 +389,13 @@ html.sap-desktop .sapUxAPHierarchicalSelect {
 /* styling needed to achieve underline of the select label on phone */
 .sapUxAPObjectPageLayout-Std-Phone, html.sap-phone {
 
-	.sapUiSizeCompact .sapMSlt.sapUxAPHierarchicalSelect,
-	.sapMSlt.sapUxAPHierarchicalSelect {
+	.sapMSlt.sapUxAPHierarchicalSelect.sapMBarChild {
 		height: @sapElement_LineHeight;
 		line-height: @sapElement_LineHeight;
 		box-shadow: @sapUiFiori3HSBottomShadow, @sapUiFiori3HSTopShadow;
 		background-color: transparent;
 	}
 
-	.sapUiSizeCompact .sapUxAPHierarchicalSelect,
 	.sapUxAPHierarchicalSelect {
 
 		& .sapMSltArrow {
@@ -418,22 +431,18 @@ html.sap-desktop .sapUxAPHierarchicalSelect {
 	}
 }
 
-.sapUiSizeCompact .sapUxAPObjectPageLayout-Std-Phone .sapMSlt.sapUxAPHierarchicalSelect{
-	height: @sapElement_LineHeight;
-}
-
 .sapUiSizeCompact .sapUxAPHierarchicalSelect .sapMSltIcon,
 .sapUxAPHierarchicalSelect .sapMSltIcon{
 	top: 0.5625rem;
 }
 
 /* OVERVIEW BUTTON */
-.sapUxAPObjectPageLayout-Std-Tablet .sapUxAPHierarchicalSelect.sapMSltIconOnly,
-.sapUxAPObjectPageLayout-Std-Desktop .sapUxAPHierarchicalSelect.sapMSltIconOnly,
-.sapUiSizeCompact .sapUxAPObjectPageLayout-Std-Desktop .sapUxAPHierarchicalSelect.sapMSltIconOnly,
-html .sapUiContainer-Medium .sapUxAPHierarchicalSelect.sapMSltIconOnly,
-html .sapUiContainer-Wide .sapUxAPHierarchicalSelect.sapMSltIconOnly {
-	height: @sapElement_LineHeight;
+.sapUxAPObjectPageLayout-Std-Tablet,
+.sapUxAPObjectPageLayout-Std-Desktop,
+.sapUiSizeCompact .sapUxAPObjectPageLayout-Std-Desktop {
+	.sapUxAPHierarchicalSelect.sapMSltIconOnly {
+		height: @sapElement_LineHeight;
+	}
 }
 
 /* styling needed to achieve underline of the select label on phone on Android 4.4.2
@@ -557,14 +566,6 @@ html .sapUiContainer-Narrow .sapUiSizeCompact.sapUxAPObjectPageHeaderLockBtn .sa
 	margin-top: -0.25rem;
 }
 
-.sapUxAPObjectPageHeaderPlaceholder {
-	background-color: darken(@sapUiAccent7,8);
-}
-
-.sapUxAPObjectPageHeaderPlaceholder > .sapUiIcon {
-	color: @sapUiContentContrastTextColor;
-}
-
 .sapUxAPObjectPageHeaderObjectImageContainer .sapUiIcon {
 	color: @sapUiContentContrastTextColor;
 }
@@ -581,6 +582,17 @@ html .sapUiContainer-Narrow .sapUiSizeCompact.sapUxAPObjectPageHeaderLockBtn .sa
 	}
 }
 
+/* Phone Size */
+.sapUxAPObjectPageLayout-Std-Phone .sapUxAPObjectPageHeaderTitle.sapUxAPObjectPageHeaderSnappedTitleOnMobile > .sapFDynamicPageTitle {
+		padding: 0 0.875rem 0 1rem;
+	}
+
+/* Tablet Size */
+// Needed because on some high-end phones in landscape mode,
+// the width of the viewport is bigger than 600 (Tablet breakpoint).
+.sapUxAPObjectPageLayout-Std-Tablet .sapUxAPObjectPageHeaderTitle.sapUxAPObjectPageHeaderSnappedTitleOnMobile > .sapFDynamicPageTitle {
+		padding: 0 0.375rem 0 2rem;
+	}
 /* END "ObjectPageHeader.less" */
 
 /* START "ObjectPageHeaderContent.less" */
@@ -648,10 +660,6 @@ html .sapUxAPObjectPageLayout-Std-Desktop, html .sapUxAPObjectPageLayout-Std-Tab
 	}
 }
 
-.sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderPlaceholder > .sapUiIcon {
-	color: @sapUiContentContrastTextColor;
-}
-
 .sapUxAPObjectPageHeaderIdentifierSubTitleInContent {
 	font-size: @sapMFontMediumSize;
 }
@@ -671,6 +679,10 @@ html .sapUxAPObjectPageLayout-Std-Desktop, html .sapUxAPObjectPageLayout-Std-Tab
 	}
 }
 
+.sapUxAPObjectPageLayout:not(.sapUxAPObjectPageNoNavigation) .sapFDynamicPageHeader.sapFDynamicPageHeaderWithContent {
+	box-shadow: none;
+}
+
 html[dir=rtl] .sapUxAPObjectPageLayout,
 .sapUxAPObjectPageLayout {
 
@@ -679,7 +691,7 @@ html[dir=rtl] .sapUxAPObjectPageLayout,
 		&.sapMTB,
 		&.sapUxAPAnchorBarScrollRight .anchorBarArrowRight,
 		&.sapUxAPAnchorBarScrollLeft .anchorBarArrowLeft {
-			box-shadow: @sapUiFiori3AnchorBarBottomShadow, @sapUiFiori3AnchorBarTopShadow;
+			box-shadow: @sapUiFiori3AnchorBarBottomShadow, none;
 		}
 	}
 }
@@ -773,8 +785,11 @@ html[dir=rtl] .sapUxAPObjectPageLayout,
 	&.sapUxAPObjectPageLayoutTitleForceHovered .sapFDynamicPageTitleTransparent {
 		.title-hover(transparent);
 	}
-
   }
+}
+
+.sapUxAPObjectPageLayout:not(.sapUxAPObjectPageNoNavigation) > .sapUxAPObjectPageHeaderStickied > .sapFDynamicPageTitle {
+	box-shadow: none;
 }
 
 // footer
@@ -850,6 +865,7 @@ html[dir=rtl] .sapUxAPObjectPageLayout,
 	font-size: @sapMFontHeader5Size;
 	color: @sapUiGroupTitleTextColor;
 	padding-bottom: 0.5rem;
+	line-height: normal;
 }
 
 .sapUxAPObjectPageSubSectionHeaderTitleUppercase {
@@ -860,5 +876,29 @@ html[dir=rtl] .sapUxAPObjectPageLayout,
 	outline: 1px dotted @sapUiContentFocusColor;
 	outline-offset: -1px;
 }
+
+.sapUxAPObjectPageLayout-Std-Desktop .sapUxAPBlockContainer,
+.sapUxAPObjectPageLayout-Std-Tablet .sapUxAPBlockContainer {
+	padding-bottom: 1rem;
+}
+
+.sapUxAPObjectPageSubSection .sapUiRespGrid.sapUiRespGridHSpace1 > div {
+	margin-bottom: 0;
+}
+
+/* compact size */
+.sapUiSizeCompact {
+	.sapUxAPObjectPageLayout-Std-Desktop .sapUxAPBlockContainer,
+	.sapUxAPObjectPageLayout-Std-Tablet .sapUxAPBlockContainer,
+	.sapUxAPObjectPageLayout-Std-Phone .sapUxAPBlockContainer{
+		padding-bottom: 1rem;
+	}
+	.sapUxAPObjectPageSubSectionHeaderTitle {
+		height: 1.125rem;
+		line-height: normal;
+	}
+}
+
+
 
 /* END "ObjectPageSubSection.less" */

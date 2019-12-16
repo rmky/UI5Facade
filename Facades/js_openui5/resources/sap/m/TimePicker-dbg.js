@@ -129,7 +129,7 @@ function(
 		 * @extends sap.m.DateTimeField
 		 *
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.73.1
 		 *
 		 * @constructor
 		 * @public
@@ -322,7 +322,8 @@ function(
 				id: this.getId() + "-icon",
 				src: this.getIconSrc(),
 				noTabStop: true,
-				title: ""
+				title: "",
+				tooltip: this._oResourceBundle.getText("OPEN_PICKER_TEXT")
 			});
 
 			// idicates whether the picker is still open
@@ -1685,7 +1686,6 @@ function(
 				role: oRenderer.getAriaRole(this),
 				type: sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("ACC_CTR_TYPE_TIMEINPUT"),
 				description: [sValue, oRenderer.getLabelledByAnnouncement(this), oRenderer.getDescribedByAnnouncement(this)].join(" ").trim(),
-				multiline: false,
 				autocomplete: "none",
 				expanded: false,
 				haspopup: true,

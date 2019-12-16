@@ -7,7 +7,7 @@
 // Provides control sap.ui.table.RowAction
 sap.ui.define([
 	'sap/ui/core/Control',
-	"sap/ui/table/TableUtils",
+	"sap/ui/table/utils/TableUtils",
 	'./library',
 	'sap/ui/core/Icon',
 	'sap/ui/unified/Menu',
@@ -40,7 +40,7 @@ function(
 	 * If more action items are available as the available space allows to display an overflow mechanism is provided.
 	 * This control must only be used in the context of the <code>sap.ui.table.Table</code> control to define row actions.
 	 * @extends sap.ui.core.Control
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public

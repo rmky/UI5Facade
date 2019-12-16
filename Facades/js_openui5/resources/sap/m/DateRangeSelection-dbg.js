@@ -47,7 +47,10 @@ sap.ui.define([
 	 * date range using touch, mouse, keyboard input, or by selecting a date range in
 	 * the calendar. They can also navigate directly from one month or year to another.
 	 *
-	 * <b>Note:</b> The {@link sap.ui.unified.Calendar} is used internally only if the
+	 * <b>Note:</b>
+	 * The control is not UTC aware and the selected date range starts from 00:00:00:000 of the first date and ends in 23:59:59:999 on the second date.
+	 *
+	 * The {@link sap.ui.unified.Calendar} is used internally only if the
 	 * <code>DateRangeSelection</code> is opened (not used for the initial rendering).
 	 * If the <code>sap.ui.unified</code> library is not loaded before the
 	 * <code>DateRangeSelection</code> is opened, it will be loaded upon opening.
@@ -60,7 +63,7 @@ sap.ui.define([
 	 *
 	 * <i>When to use?</i>
 	 *
-	 * If you need a time range and know that your user is a power user who has to
+	 * If you need a date range and know that your user is a power user who has to
 	 * input lots of data. If the keyboard is the primary device used for navigating
 	 * the app, use two input fields. This allows the user to quickly jump from field
 	 * to field. By selecting a date in one of the fields, the other field should
@@ -117,8 +120,8 @@ sap.ui.define([
 	 * compact mode and provides a touch-friendly size in cozy mode.
 	 *
 	 * @extends sap.m.DatePicker
-	 * @version 1.68.1
-	 * @version 1.68.1
+	 * @version 1.73.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -674,6 +677,10 @@ sap.ui.define([
 		var sValue = this._$input.val();
 		var aDates = [undefined, undefined];
 
+		if (this.getShowFooter() && this._oPopup && !sValue) {
+			this._oPopup.getBeginButton().setEnabled(false);
+		}
+
 		this._bValid = true;
 		if (sValue != "") {
 			aDates = this._parseValue(sValue);
@@ -705,7 +712,7 @@ sap.ui.define([
 				if (oStartDate) {
 					if (!this._oDateRange.getStartDate() || this._oDateRange.getStartDate().getTime() !== oStartDate.getTime()) {
 						this._oDateRange.setStartDate(new Date(oStartDate.getTime()));
-						this._oCalendar.focusDate(oStartDate);
+						this._getCalendar().focusDate(oStartDate);
 					}
 				} else {
 					if (this._oDateRange.getStartDate()) {
@@ -717,7 +724,7 @@ sap.ui.define([
 				if (oEndDate) {
 					if (!this._oDateRange.getEndDate() || this._oDateRange.getEndDate().getTime() !== oEndDate.getTime()) {
 						this._oDateRange.setEndDate(new Date(oEndDate.getTime()));
-						this._oCalendar.focusDate(oEndDate);
+						this._getCalendar().focusDate(oEndDate);
 					}
 				} else {
 					if (this._oDateRange.getEndDate()) {
@@ -828,9 +835,8 @@ sap.ui.define([
 
 	};
 
-	DateRangeSelection.prototype._selectDate = function(oEvent){
-
-		var aSelectedDates = this._oCalendar.getSelectedDates();
+	DateRangeSelection.prototype._selectDate = function () {
+		var aSelectedDates = this._getCalendar().getSelectedDates();
 
 		if (aSelectedDates.length > 0) {
 			var oDate1 = aSelectedDates[0].getStartDate();
@@ -875,6 +881,19 @@ sap.ui.define([
 				this._oPopup.close();
 			}
 		}
+	};
+
+	DateRangeSelection.prototype._handleCalendarSelect = function(){
+		var oSelectedDates = this._getCalendar().getSelectedDates(),
+			oSelectedStartDate = oSelectedDates[0].getStartDate(),
+			oSelectedEndDate = oSelectedDates[0].getEndDate();
+
+		if (this.getShowFooter()) {
+			this._oPopup.getBeginButton().setEnabled(!!(oSelectedStartDate && oSelectedEndDate));
+			return;
+		}
+
+		this._selectDate();
 	};
 
 	/**

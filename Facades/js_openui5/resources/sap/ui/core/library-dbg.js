@@ -14,7 +14,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.core",
-		version: "1.68.1",
+		version: "1.73.1",
 		designtime: "sap/ui/core/designtime/library.designtime",
 		types: [
 
@@ -148,7 +148,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	 * @namespace
 	 * @alias sap.ui.core
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @public
 	 */
 	var thisLib = sap.ui.core;
@@ -1166,6 +1166,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	 *
 	 * @enum {string}
 	 * @public
+	 * @since 1.10
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	thisLib.MessageType = {
@@ -1404,7 +1405,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	/**
 	 * Sort order of a column.
 	 *
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @enum {string}
 	 * @public
 	 * @since 1.61.0
@@ -1693,6 +1694,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	 * @enum {string}
 	 * @public
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 * @since 1.0
 	 */
 	thisLib.ValueState = {
 
@@ -1717,6 +1719,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 		/**
 		 * State is informative.
 		 * @public
+		 * @since 1.61
 		 */
 		Information : "Information",
 

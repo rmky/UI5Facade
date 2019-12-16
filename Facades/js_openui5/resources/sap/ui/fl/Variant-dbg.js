@@ -8,14 +8,18 @@ sap.ui.define([
 	"sap/ui/thirdparty/jquery",
 	"sap/ui/base/ManagedObject",
 	"sap/ui/fl/Utils",
+	"sap/ui/fl/LayerUtils",
 	"sap/ui/fl/registry/Settings",
-	"sap/base/util/merge"
+	"sap/base/util/merge",
+	"sap/base/Log"
 ], function (
 	jQuery,
 	ManagedObject,
 	Utils,
+	LayerUtils,
 	Settings,
-	fnBaseMerge
+	merge,
+	Log
 ) {
 	"use strict";
 
@@ -27,7 +31,7 @@ sap.ui.define([
 	 * @class Variant class.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @alias sap.ui.fl.Variant
 	 * @experimental Since 1.52.0
 	 */
@@ -36,11 +40,11 @@ sap.ui.define([
 			ManagedObject.apply(this);
 
 			if (!jQuery.isPlainObject(oFile)) {
-				Utils.log.error("Constructor : sap.ui.fl.Variant : oFile is not defined");
+				Log.error("Constructor : sap.ui.fl.Variant : oFile is not defined");
 			}
 
 			this._oDefinition = oFile;
-			this._oOriginDefinition = fnBaseMerge({}, oFile);
+			this._oOriginDefinition = merge({}, oFile);
 			this._sRequest = '';
 			this._bUserDependent = (oFile.content.layer === "USER");
 			this._vRevertData = null;
@@ -302,7 +306,7 @@ sap.ui.define([
 	 */
 	Variant.prototype.getText = function (sTextId) {
 		if (typeof (sTextId) !== "string") {
-			Utils.log.error("sap.ui.fl.Variant.getTexts : sTextId is not defined");
+			Log.error("sap.ui.fl.Variant.getTexts : sTextId is not defined");
 		}
 		if (this._oDefinition.content.texts) {
 			if (this._oDefinition.content.texts[sTextId]) {
@@ -323,7 +327,7 @@ sap.ui.define([
 	 */
 	Variant.prototype.setText = function (sTextId, sNewText) {
 		if (typeof (sTextId) !== "string") {
-			Utils.log.error("sap.ui.fl.Variant.setTexts : sTextId is not defined");
+			Log.error("sap.ui.fl.Variant.setTexts : sTextId is not defined");
 			return;
 		}
 		if (this._oDefinition.content.texts) {
@@ -379,7 +383,7 @@ sap.ui.define([
 	 */
 	Variant.prototype._isReadOnlyDueToLayer = function () {
 		var sCurrentLayer;
-		sCurrentLayer = Utils.getCurrentLayer(this._bUserDependent);
+		sCurrentLayer = LayerUtils.getCurrentLayer(this._bUserDependent);
 		return (this._oDefinition.content.layer !== sCurrentLayer);
 	};
 
@@ -393,7 +397,8 @@ sap.ui.define([
 	 * @private
 	 */
 	Variant.prototype._isReadOnlyDueToOriginalLanguage = function () {
-		var sCurrentLanguage, sOriginalLanguage;
+		var sCurrentLanguage;
+		var sOriginalLanguage;
 
 		sOriginalLanguage = this.getOriginalLanguage();
 		if (!sOriginalLanguage) {
@@ -422,7 +427,7 @@ sap.ui.define([
 	 */
 	Variant.prototype.setRequest = function (sRequest) {
 		if (typeof (sRequest) !== "string") {
-			Utils.log.error("sap.ui.fl.Variant.setRequest : sRequest is not defined");
+			Log.error("sap.ui.fl.Variant.setRequest : sRequest is not defined");
 		}
 		this._sRequest = sRequest;
 	};
@@ -604,7 +609,7 @@ sap.ui.define([
 				packageName: oPropertyBag.content.packageName || "",
 				content: {title: oPropertyBag.content.content.title || ""},
 				self: sNamespace + sFileName + "." + "ctrl_variant",
-				layer: oPropertyBag.content.layer || Utils.getCurrentLayer(oPropertyBag.isUserDependent),
+				layer: oPropertyBag.content.layer || LayerUtils.getCurrentLayer(oPropertyBag.isUserDependent),
 				texts: oPropertyBag.content.texts || {},
 				namespace: sNamespace, //TODO: we need to think of a better way to create namespaces from Adaptation projects.
 				creation: "",

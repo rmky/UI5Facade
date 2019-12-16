@@ -5,22 +5,24 @@
  */
 
 sap.ui.define([
-	"sap/ui/fl/FakeLrepConnectorStorage",
-	"sap/ui/fl/FakeLrepSessionStorage"
+	"sap/ui/fl/FakeLrepConnector",
+	"sap/ui/fl/apply/_internal/connectors/SessionStorageConnector",
+	"sap/ui/fl/write/_internal/connectors/SessionStorageConnector"
 ],
 function(
-	FakeLrepConnectorStorage,
-	FakeLrepSessionStorage
+	FakeLrepConnector,
+	ApplySessionStorageConnector,
+	WriteSessionStorageConnector
 ) {
 	"use strict";
 
 	/**
-	 * Class for connecting to Fake LREP storing changes in session storage
+	 * Class for storing changes in session storage
 	 *
 	 * @class
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @private
 	 * @static
@@ -28,5 +30,35 @@ function(
 	 * @alias sap.ui.fl.FakeLrepConnectorSessionStorage
 	 */
 
-	return FakeLrepConnectorStorage(FakeLrepSessionStorage);
+	return {
+		enableFakeConnector: function (mPropertyBag) {
+			var sJsonPath = mPropertyBag ? mPropertyBag.sInitialComponentJsonPath : undefined;
+			FakeLrepConnector.setFlexibilityServicesAndClearCache("SessionStorageConnector", sJsonPath);
+		},
+		disableFakeConnector: function() {
+			FakeLrepConnector.disableFakeConnector();
+		},
+		forTesting: {
+			spyWrite: function (sandbox, assert) {
+				return FakeLrepConnector.forTesting.spyMethod(sandbox, assert, WriteSessionStorageConnector, "write");
+			},
+			getNumberOfChanges: function (sReference) {
+				return FakeLrepConnector.forTesting.getNumberOfChanges(ApplySessionStorageConnector, sReference);
+			},
+			clear: function(mPropertyBag) {
+				return FakeLrepConnector.forTesting.clear(WriteSessionStorageConnector, mPropertyBag);
+			},
+			setStorage: function(oNewStorage) {
+				FakeLrepConnector.forTesting.setStorage(ApplySessionStorageConnector, oNewStorage);
+			},
+			synchronous: {
+				clearAll: function () {
+					FakeLrepConnector.forTesting.synchronous.clearAll(window.sessionStorage);
+				},
+				getNumberOfChanges: function(sReference) {
+					return FakeLrepConnector.forTesting.synchronous.getNumberOfChanges(ApplySessionStorageConnector.oStorage, sReference);
+				}
+			}
+		}
+	};
 }, /* bExport= */ true);

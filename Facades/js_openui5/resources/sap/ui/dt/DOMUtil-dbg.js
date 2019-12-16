@@ -8,14 +8,12 @@
 sap.ui.define([
 	"sap/ui/thirdparty/jquery",
 	"sap/ui/Device",
-	"sap/ui/dt/Util",
 	// jQuery Plugin "zIndex"
 	"sap/ui/dom/jquery/zIndex"
 ],
 function(
 	jQuery,
-	Device,
-	Util
+	Device
 ) {
 	"use strict";
 
@@ -26,7 +24,7 @@ function(
 	 * Utility functionality for DOM
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @private
 	 * @static
@@ -82,8 +80,8 @@ function(
 
 		if (sap.ui.getCore().getConfiguration().getRTL()) {
 			var iParentWidth = $Parent ? $Parent.width() : jQuery(window).width();
-			//TODO: Workaround - remove when bugs in Chrome (issue 832569) and Safari (issue 336512063) get solved
-			if ((Device.browser.blink || Util.isWebkit()) && DOMUtil.hasVerticalScrollBar($Parent)) {
+			//TODO: Workaround - remove when bug in Safari (issue 336512063) is solved
+			if (Device.browser.safari && !Device.browser.mobile && DOMUtil.hasVerticalScrollBar($Parent)) {
 				mOffset.left -= DOMUtil.getScrollbarWidth();
 			}
 			// Workaround end

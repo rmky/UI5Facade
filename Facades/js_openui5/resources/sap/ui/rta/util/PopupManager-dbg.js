@@ -10,28 +10,28 @@ sap.ui.define([
 	"sap/ui/base/ManagedObject",
 	"sap/m/InstanceManager",
 	"sap/ui/dt/Overlay",
-	"sap/ui/dt/Util",
 	"sap/ui/fl/Utils",
 	"sap/ui/core/Component",
 	"sap/ui/core/ComponentContainer",
 	"sap/ui/core/Element",
 	"sap/ui/dt/util/ZIndexManager",
 	"sap/m/Dialog",
-	"sap/m/Popover"
+	"sap/m/Popover",
+	"sap/base/util/restricted/_curry"
 ],
 function (
 	jQuery,
 	ManagedObject,
 	InstanceManager,
 	Overlay,
-	dtUtil,
 	flUtils,
 	Component,
 	ComponentContainer,
 	Element,
 	ZIndexManager,
 	Dialog,
-	Popover
+	Popover,
+	_curry
 ) {
 	"use strict";
 
@@ -44,7 +44,7 @@ function (
 	 * Constructor for a new sap.ui.rta.util.PopupManager
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @constructor
 	 * @private
 	 * @since 1.48
@@ -124,7 +124,8 @@ function (
 	 * @public
 	 */
 	PopupManager.prototype.getCategorizedOpenPopups = function() {
-		var aOpenDialogs, aOpenPopovers;
+		var aOpenDialogs;
+		var aOpenPopovers;
 
 		// check if dialogs are already open when RTA is started
 		aOpenDialogs = InstanceManager.getOpenDialogs();
@@ -239,8 +240,8 @@ function (
 		};
 
 		sNewMode === 'navigation'
-			? this._applyPatchesToOpenPopups(dtUtil.curry(fnApplyFocusAndSetModal)(sNewMode))
-			: this._removePatchesToOpenPopups(dtUtil.curry(fnApplyFocusAndSetModal)(sNewMode));
+			? this._applyPatchesToOpenPopups(_curry(fnApplyFocusAndSetModal)(sNewMode))
+			: this._removePatchesToOpenPopups(_curry(fnApplyFocusAndSetModal)(sNewMode));
 	};
 
 	/**
@@ -307,10 +308,10 @@ function (
 			if (this._isSupportedPopup(oPopupElement)) {
 				if (this._isPopupAdaptable(oPopupElement)
 					&& this.getRta()._oDesignTime) {
-					oPopupElement.attachAfterOpen(this._createPopupOverlays, this);
-					this._setModal(true, oPopupElement);
+					oPopupElement.attachEventOnce("afterOpen", this._createPopupOverlays, this);
 					//PopupManager internal method
-					this.fireOpen(oPopupElement);
+					oPopupElement.attachEventOnce("afterOpen", this.fireOpen, this);
+					this._setModal(true, oPopupElement);
 				} else if (!(oPopupElement instanceof Popover)) {
 					// for all popups which are non-adaptable and non-popovers
 					this._setModal(true, oPopupElement);
@@ -464,7 +465,8 @@ function (
 	 * @private
 	 */
 	PopupManager.prototype._getAppComponentForControl = function(oControl) {
-		var oComponent, oAppComponent;
+		var oComponent;
+		var oAppComponent;
 
 		if (oControl instanceof Component) {
 			oComponent = oControl;
@@ -486,7 +488,9 @@ function (
 	 * @private
 	 */
 	PopupManager.prototype._getComponentForControl = function(oControl) {
-		var oComponent, oRootComponent, oParentControl;
+		var oComponent;
+		var oRootComponent;
+		var oParentControl;
 		if (oControl) {
 			oComponent = Component.getOwnerComponentFor(oControl);
 			if (

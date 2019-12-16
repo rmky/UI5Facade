@@ -18,7 +18,8 @@ sap.ui.define([
 	"sap/ui/fl/changeHandler/UnhideControl",
 	"sap/ui/fl/changeHandler/StashControl",
 	"sap/ui/fl/changeHandler/UnstashControl",
-	"sap/ui/fl/changeHandler/AddXML"
+	"sap/ui/fl/changeHandler/AddXML",
+	"sap/base/Log"
 ], function(
 	Utils,
 	jQuery,
@@ -33,7 +34,8 @@ sap.ui.define([
 	UnhideControl,
 	StashControl,
 	UnstashControl,
-	AddXML
+	AddXML,
+	Log
 ) {
 	"use strict";
 
@@ -43,7 +45,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.registry.ChangeRegistry
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @experimental Since 1.27.0
 	 *
 	 */
@@ -116,7 +118,7 @@ sap.ui.define([
 	/**
 	 * Registration of multiple changeHandlers for controlls.
 	 *
-	 * @param {object} mControlChanges - Map of changeHandler configuration for controlls
+	 * @param {object} mControlChanges - Map of changeHandler configuration for controls
 	 * @returns {Promise} Returns an empty promise when all changeHandlers are registered
 	 */
 	ChangeRegistry.prototype.registerControlsForChanges = function(mControlChanges) {
@@ -125,6 +127,7 @@ sap.ui.define([
 			var mChangeHandlers = {};
 			if (Array.isArray(vChangeHandlers)) {
 				vChangeHandlers.forEach(function (oChangeHandler) {
+					// check!
 					mChangeHandlers[oChangeHandler.changeType] = oChangeHandler.changeHandler;
 				});
 			} else {
@@ -136,13 +139,13 @@ sap.ui.define([
 	};
 
 	ChangeRegistry.prototype._registerChangeHandlersForControl = function (sControlType, oChangeHandlers) {
-		var oPromise = Promise.resolve(oChangeHandlers),
-			sSkipNext = "ChangeRegistry._registerChangeHandlersForControl.skip_next_then";
+		var oPromise = Promise.resolve(oChangeHandlers);
+		var sSkipNext = "ChangeRegistry._registerChangeHandlersForControl.skip_next_then";
 
 		if (typeof oChangeHandlers === "string") {
 			oPromise = Utils.requireAsync(oChangeHandlers + ".flexibility")
 			.catch(function(oError) {
-				Utils.log.error("Flexibility change handler registration failed.\nControlType: " + sControlType + "\n" + oError.message);
+				Log.error("Flexibility change handler registration failed.\nControlType: " + sControlType + "\n" + oError.message);
 				return Promise.resolve(sSkipNext); // continue without a registration
 			});
 		}
@@ -164,42 +167,38 @@ sap.ui.define([
 
 	/**
 	 * Returns the Change Registry Item for a specific control instance (if available)
-	 * @param  {string} sChangeType Change type of a <code>sap.ui.fl.Change</code> change
-	 * @param  {sap.ui.core.Control} oControl  The control instance for which the registry item will be retrieved
-	 * @param  {sap.ui.core.util.reflection.BaseTreeModifier} oModifier Control tree modifier
-	 * @return {sap.ui.fl.registry.ChangeRegistryItem|undefined} Returns the registry item or undefined if not found
+	 * @param  {string} sChangeType - Change type of a <code>sap.ui.fl.Change</code> change
+	 * @param  {sap.ui.core.Control} oControl - Control instance for which the registry item will be retrieved
+	 * @param  {sap.ui.core.util.reflection.BaseTreeModifier} oModifier - Control tree modifier
+	 * @return {Promise.<sap.ui.fl.registry.ChangeRegistryItem>|sap.ui.fl.Utils.FakePromise.<undefined>} Registry item wrapped in a promise or undefined wrapped in a FakePromise if not found
 	 * @private
 	 */
 	ChangeRegistry.prototype._getInstanceSpecificChangeRegistryItem = function (sChangeType, oControl, oModifier) {
 		var sChangeHandlerModulePath = oModifier.getChangeHandlerModulePath(oControl);
-		var oChangeHandlers = {}, vChangeHandler, oChangeHandler,
-			oSimpleChange, sControlType, oChangeRegistryItem;
 		if (typeof sChangeHandlerModulePath !== "string") {
-			return undefined; // continue without a registration
+			return new Utils.FakePromise(undefined); // continue without a registration
 		}
-
-		try {
-			oChangeHandlers = sap.ui.requireSync(sChangeHandlerModulePath);
-		} catch (error) {
-			Utils.log.error("Flexibility registration for control " + oModifier.getId(oControl) +
-				" failed to load module " + sChangeHandlerModulePath + "\n" + error.message);
-			return undefined; // continue without a registration
-		}
-
-		vChangeHandler = oChangeHandlers[sChangeType];
-		if (!vChangeHandler) {
-			return undefined;
-		}
-
-		oChangeHandler = this._getChangeHandlerEntry(sChangeType, vChangeHandler);
-		oSimpleChange = {
-			changeType: sChangeType,
-			changeHandler: oChangeHandler.changeHandler,
-			layers:oChangeHandler.layers
-		};
-		sControlType = oModifier.getControlType(oControl);
-		oChangeRegistryItem = this._createChangeRegistryItemForSimpleChange(sControlType, oSimpleChange);
-		return oChangeRegistryItem;
+		return Utils.requireAsync(sChangeHandlerModulePath)
+			.then(function(oChangeHandlers) {
+				var vChangeHandler = oChangeHandlers[sChangeType];
+				if (!vChangeHandler) {
+					return undefined;
+				}
+				var oChangeHandler = this._getChangeHandlerEntry(sChangeType, vChangeHandler);
+				var oSimpleChange = {
+					changeType: sChangeType,
+					changeHandler: oChangeHandler.changeHandler,
+					layers:oChangeHandler.layers
+				};
+				var sControlType = oModifier.getControlType(oControl);
+				var oChangeRegistryItem = this._createChangeRegistryItemForSimpleChange(sControlType, oSimpleChange);
+				return oChangeRegistryItem;
+			}.bind(this))
+			.catch(function(oError) {
+				Log.error("Flexibility registration for control " + oModifier.getId(oControl) +
+					" failed to load module " + sChangeHandlerModulePath + "\n" + oError.message);
+				return undefined; // continue without a registration
+			});
 	};
 
 	/**
@@ -244,13 +243,11 @@ sap.ui.define([
 	 * @private
 	 */
 	ChangeRegistry.prototype._getChangeRegistryItem = function (sChangeType, sControlType, sLayer) {
-		var mChangeRegistryItem;
-
 		if (!sChangeType || !sControlType) {
 			return undefined;
 		}
 
-		mChangeRegistryItem = this.getRegistryItems({
+		var mChangeRegistryItem = this.getRegistryItems({
 			changeTypeName: sChangeType,
 			controlType: sControlType,
 			layer: sLayer
@@ -264,35 +261,28 @@ sap.ui.define([
 		return mChangeRegistryItem;
 	};
 
+	ChangeRegistry.prototype._extractChangeHandlerFromRegistryItem = function (oRegistryItem) {
+		if (oRegistryItem && oRegistryItem.getChangeTypeMetadata) {
+			return oRegistryItem.getChangeTypeMetadata().getChangeHandler();
+		}
+		throw Error("No Change handler registered for the Control and Change type");
+	};
+
 	/**
 	 * Retrieve the change handler for a certain change type and control
 	 * @param  {string} sChangeType - Change type of a <code>sap.ui.fl.Change</code> change
-	 * @param  {string} sControlType - Name of the ui5 control type i.e. <code>sap.m.Button</code>
+	 * @param  {string} sControlType - Name of the ui5 control type i.e. sap.m.Button
 	 * @param  {sap.ui.core.Control} oControl - Control instance for which the change handler will be retrieved
 	 * @param  {sap.ui.core.util.reflection.BaseTreeModifier} oModifier - Control tree modifier
 	 * @param  {string} sLayer - Layer to be considered when getting the change handlers
-	 * @param  {boolean} bAsync - temporary solution for async restructuring. Get rid with the following change: 4161607
-	 * @return {promise.<object>|object} Change handler object wrapped in promise if bAsync is <code>true</code>
+	 * @return {Promise.<object>|sap.ui.fl.Utils.FakePromise.<object>} Change handler object wrapped in a promise or FakePromise
 	 */
-	ChangeRegistry.prototype.getChangeHandler = function (sChangeType, sControlType, oControl, oModifier, sLayer, bAsync) {
-		var oSpecificChangeRegistryItem, oChangeRegistryItem;
-
-		oSpecificChangeRegistryItem = this._getInstanceSpecificChangeRegistryItem(sChangeType, oControl, oModifier);
-		if (oSpecificChangeRegistryItem && oSpecificChangeRegistryItem.getChangeTypeMetadata) {
-			var oSpecificChangeHandler = oSpecificChangeRegistryItem.getChangeTypeMetadata().getChangeHandler();
-			if (oSpecificChangeHandler) {
-				return bAsync ? Promise.resolve(oSpecificChangeHandler) : oSpecificChangeHandler;
-			}
-		}
-
-		oChangeRegistryItem = this._getChangeRegistryItem(sChangeType, sControlType, sLayer);
-		if (oChangeRegistryItem && oChangeRegistryItem.getChangeTypeMetadata) {
-			var oOriginalChangeHandler = oChangeRegistryItem.getChangeTypeMetadata().getChangeHandler();
-			if (oOriginalChangeHandler) {
-				return bAsync ? Promise.resolve(oOriginalChangeHandler) : oOriginalChangeHandler;
-			}
-		}
-		return bAsync ? Promise.resolve(undefined) : undefined;
+	ChangeRegistry.prototype.getChangeHandler = function (sChangeType, sControlType, oControl, oModifier, sLayer) {
+		return this._getInstanceSpecificChangeRegistryItem(sChangeType, oControl, oModifier)
+		.then(function(oSpecificChangeRegistryItem) {
+			var oChangeRegistryItem = oSpecificChangeRegistryItem || this._getChangeRegistryItem(sChangeType, sControlType, sLayer);
+			return this._extractChangeHandlerFromRegistryItem(oChangeRegistryItem);
+		}.bind(this));
 	};
 
 	/**
@@ -327,7 +317,10 @@ sap.ui.define([
 	 * @public
 	 */
 	ChangeRegistry.prototype._createChangeRegistryItemForSimpleChange = function(sControlType, oSimpleChange) {
-		var mParam, oChangeTypeMetadata, oChangeRegistryItem, mLayerPermissions;
+		var mParam;
+		var oChangeTypeMetadata;
+		var oChangeRegistryItem;
+		var mLayerPermissions;
 
 		mLayerPermissions = Object.assign({}, this._oSettings.getDefaultLayerPermissions());
 		var oLayers = oSimpleChange.layers;
@@ -365,7 +358,8 @@ sap.ui.define([
 	 * @public
 	 */
 	ChangeRegistry.prototype.addRegistryItem = function(oRegistryItem) {
-		var sChangeType, sControlType;
+		var sChangeType;
+		var sControlType;
 		if (!oRegistryItem) {
 			return;
 		}
@@ -390,7 +384,7 @@ sap.ui.define([
 	 */
 	ChangeRegistry.prototype.removeRegistryItem = function(mParam) {
 		if (!mParam.changeTypeName && !mParam.controlType) {
-			Utils.log.error("sap.ui.fl.registry.ChangeRegistry: ChangeType and/or ControlType required");
+			Log.error("sap.ui.fl.registry.ChangeRegistry: ChangeType and/or ControlType required");
 			return;
 		}
 		//Either remove a specific changeType from a specific control type
@@ -414,6 +408,65 @@ sap.ui.define([
 				delete controlItem[mParam.changeTypeName];
 			}
 		}
+	};
+
+	ChangeRegistry.prototype._getSingleRegistryItem = function (sControlType, sChangeType) {
+		var oControlRegistrations = this._registeredItems[sControlType];
+		if (oControlRegistrations) {
+			var oChangeHandler = oControlRegistrations[sChangeType];
+			if (oChangeHandler) {
+				return oChangeHandler;
+			}
+		}
+
+		var oDefaultActiveChangeHandler = this._oDefaultActiveChangeHandlers[sChangeType];
+		if (oDefaultActiveChangeHandler) {
+			return oDefaultActiveChangeHandler;
+		}
+	};
+
+	ChangeRegistry.prototype._getRegistryItemsByChangeAndControlType = function (sControlType, sChangeType) {
+		var mResult;
+		var oRegistryItem = this._getSingleRegistryItem(sControlType, sChangeType);
+		if (oRegistryItem) {
+			mResult = {};
+			mResult[sControlType] = {};
+			mResult[sControlType][sChangeType] = oRegistryItem;
+		}
+		return mResult;
+	};
+
+	ChangeRegistry.prototype._getRegistryItemsByControlType = function (sControlType) {
+		var mResult = {};
+		mResult[sControlType] = {};
+
+		if (this._registeredItems[sControlType]) {
+			//keep the actual registry items but clone the control-changetype object structure to not modify the registry during filtering
+			var aChangeTypes = Object.keys(this._registeredItems[sControlType]);
+
+			aChangeTypes.forEach(function (sChangeType) {
+				mResult[sControlType][sChangeType] = this._getSingleRegistryItem(sControlType, sChangeType);
+			}.bind(this));
+		}
+		for (var sKey in this._oDefaultActiveChangeHandlers) {
+			mResult[sControlType][sKey] = this._oDefaultActiveChangeHandlers[sKey];
+		}
+		return mResult;
+	};
+
+	ChangeRegistry.prototype._getRegistryItemsByChangeType = function (sChangeType) {
+		var mResult = {};
+		for (var sControlType in this._registeredItems) {
+			if (this._registeredItems[sControlType][sChangeType]) {
+				mResult[sControlType] = {};
+				mResult[sControlType][sChangeType] = this._getSingleRegistryItem(sControlType, sChangeType);
+			}
+		}
+		mResult["defaultActiveForAllControls"] = {};
+		for (var key in this._oDefaultActiveChangeHandlers) {
+			mResult["defaultActiveForAllControls"][key] = this._oDefaultActiveChangeHandlers[key];
+		}
+		return mResult;
 	};
 
 	/**
@@ -441,82 +494,29 @@ sap.ui.define([
 	 * @public
 	 */
 	ChangeRegistry.prototype.getRegistryItems = function(mParam) {
+		var mResult;
 		if (!mParam) {
-			Utils.log.error("sap.ui.fl.registry.ChangeRegistry: no parameters passed for getRegistryItems");
+			Log.error("sap.ui.fl.registry.ChangeRegistry: no parameters passed for getRegistryItems");
 		}
 
 		var sChangeType = mParam.changeTypeName;
 		var sControlType = mParam.controlType;
 
 		if (!sChangeType && !sControlType) {
-			Utils.log.error("sap.ui.fl.registry.ChangeRegistry: Change Type Name and/or Control Type required");
+			Log.error("sap.ui.fl.registry.ChangeRegistry: Change Type Name and/or Control Type required");
 		}
 
-		var result = null;
 		if (sControlType && sChangeType) {
-			var oChangeHandler = this._getOrLoadChangeHandler(sControlType, sChangeType);
-
-			if (oChangeHandler) {
-				result = {};
-				result[sControlType] = {};
-				result[sControlType][sChangeType] = oChangeHandler;
-			}
+			mResult = this._getRegistryItemsByChangeAndControlType(sControlType, sChangeType);
 		} else if (sControlType) {
-			result = {};
-			result[sControlType] = {};
-			if (this._registeredItems[sControlType]) {
-				//keep the actual registry items but clone the control-changetype object structure to not modify the registry during filtering
-				var aChangeTypes = Object.keys(this._registeredItems[sControlType]);
-
-				aChangeTypes.forEach(function (sChangeType) {
-					result[sControlType][sChangeType] = this._getOrLoadChangeHandler(sControlType, sChangeType);
-				}.bind(this));
-			}
-			for (var sKey in this._oDefaultActiveChangeHandlers) {
-				result[sControlType][sKey] = this._oDefaultActiveChangeHandlers[sKey];
-			}
+			mResult = this._getRegistryItemsByControlType(sControlType);
 		} else if (sChangeType) {
-			result = {};
-			for (sControlType in this._registeredItems) {
-				if (this._registeredItems[sControlType][sChangeType]) {
-					result[sControlType] = {};
-					result[sControlType][sChangeType] = this._getOrLoadChangeHandler(sControlType, sChangeType);
-				}
-			}
-			result["defaultActiveForAllControls"] = {};
-			for (var key in this._oDefaultActiveChangeHandlers) {
-				result["defaultActiveForAllControls"][key] = this._oDefaultActiveChangeHandlers[key];
-			}
+			mResult = this._getRegistryItemsByChangeType(sChangeType);
 		}
+
 		//filter out disabled change types
-		this._filterChangeTypes(result, mParam.layer);
-		return result;
-	};
-
-	ChangeRegistry.prototype._getOrLoadChangeHandler = function (sControlType, sChangeType) {
-		var oControlRegistrations = this._registeredItems[sControlType];
-		if (oControlRegistrations) {
-			var oChangeHandler = oControlRegistrations[sChangeType];
-			if (oChangeHandler) {
-				var oChangeHandlerMetadata = oChangeHandler.getChangeTypeMetadata();
-				var oChangeHandlerImplementation = oChangeHandlerMetadata.getChangeHandler();
-				if (typeof oChangeHandlerImplementation === "string") {
-					// load the module synchronously
-					oChangeHandlerImplementation = sap.ui.requireSync(oChangeHandlerImplementation.replace(/\./g, "/"));
-					oChangeHandlerMetadata._changeHandler = oChangeHandlerImplementation;
-				}
-
-				return oChangeHandler;
-			}
-		}
-
-		var oDefaultActiveChangeHandler = this._oDefaultActiveChangeHandlers[sChangeType];
-
-		if (oDefaultActiveChangeHandler) {
-			return oDefaultActiveChangeHandler;
-		}
-
-		return null;
+		this._filterChangeTypes(mResult, mParam.layer);
+		return mResult;
 	};
 
 	/**
@@ -556,7 +556,7 @@ sap.ui.define([
 					bIsChangeTypeEnabled = oLayers[sLayer];
 
 					if (!bIsChangeTypeEnabled) {
-						Utils.log.warning("Change type " + sChangeType + " not enabled for layer " + sLayer);
+						Log.warning("Change type " + sChangeType + " not enabled for layer " + sLayer);
 						delete oControlReg[sChangeType];
 					}
 				});

@@ -8,18 +8,28 @@
  * Initialization Code and shared classes of library sap.f.
  */
 sap.ui.define(["sap/ui/base/DataType",
+	"sap/m/AvatarShape",
+	"sap/m/AvatarSize",
+	"sap/m/AvatarType",
+	"sap/m/AvatarColor",
+	"sap/m/AvatarImageFitType",
+	"sap/m/library", // library dependency
 	"sap/ui/Global",
 	"sap/ui/core/library",
-	"sap/ui/layout/library", // library dependency
-	"sap/m/library"], // library dependency
-	function(DataType) {
+	"sap/ui/layout/library"], // library dependency
+	function(DataType,
+			 AvatarShape,
+			 AvatarSize,
+			 AvatarType,
+			 AvatarColor,
+			 AvatarImageFitType) {
 
 	"use strict";
 
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.f",
-		version: "1.68.1",
+		version: "1.73.1",
 		dependencies : ["sap.ui.core", "sap.m", "sap.ui.layout"],
 		designtime: "sap/f/designtime/library.designtime",
 		interfaces: [
@@ -34,6 +44,8 @@ sap.ui.define(["sap/ui/base/DataType",
 			"sap.f.AvatarShape",
 			"sap.f.AvatarSize",
 			"sap.f.AvatarType",
+			"sap.f.AvatarColor",
+			"sap.f.AvatarGroupType",
 			"sap.f.cards.HeaderPosition",
 			"sap.f.DynamicPageTitleArea",
 			"sap.f.DynamicPageTitleShrinkRatio",
@@ -41,6 +53,8 @@ sap.ui.define(["sap/ui/base/DataType",
 		],
 		controls: [
 			"sap.f.Avatar",
+			"sap.f.AvatarGroup",
+			"sap.f.AvatarGroupItem",
 			"sap.f.cards.Header",
 			"sap.f.cards.NumericHeader",
 			"sap.f.cards.NumericSideIndicator",
@@ -52,6 +66,9 @@ sap.ui.define(["sap/ui/base/DataType",
 			"sap.f.FlexibleColumnLayout",
 			"sap.f.semantic.SemanticPage",
 			"sap.f.GridList",
+			"sap.f.GridListItem",
+			"sap.f.ProductSwitch",
+			"sap.f.ProductSwitchItem",
 			"sap.f.ShellBar"
 		],
 		elements: [
@@ -108,7 +125,7 @@ sap.ui.define(["sap/ui/base/DataType",
 	 * @namespace
 	 * @alias sap.f
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @public
 	 */
 	var thisLib = sap.f;
@@ -306,72 +323,21 @@ sap.ui.define(["sap/ui/base/DataType",
 	 * @enum {string}
 	 * @public
 	 * @since 1.46
+	 * @deprecated as of version 1.73. Use the {@link sap.m.AvatarShape} instead.
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
 	 */
-	thisLib.AvatarShape = {
-		/**
-		 * Circular shape.
-		 * @public
-		 */
-		Circle: "Circle",
-
-		/**
-		 * Square shape.
-		 * @public
-		 */
-		Square: "Square"
-	};
+	thisLib.AvatarShape = AvatarShape;
 
 	/**
 	 * Predefined sizes for the {@link sap.f.Avatar} control.
 	 *
 	 * @enum {string}
 	 * @public
+	 * @deprecated as of version 1.73. Use the {@link sap.m.AvatarSize} instead.
 	 * @since 1.46
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
 	 */
-	thisLib.AvatarSize = {
-		/**
-		 * Control size - 2rem
-		 * Font size - 0.75rem
-		 * @public
-		 */
-		XS: "XS",
-
-		/**
-		 * Control size - 3rem
-		 * Font size - 1.125rem
-		 * @public
-		 */
-		S: "S",
-
-		/**
-		 * Control size - 4rem
-		 * Font size - 1.625rem
-		 * @public
-		 */
-		M: "M",
-
-		/**
-		 * Control size - 5rem
-		 * Font size - 2rem
-		 * @public
-		 */
-		L: "L",
-
-		/**
-		 * Control size - 7rem
-		 * Font size - 2.75rem
-		 * @public
-		 */
-		XL: "XL",
-
-		/**
-		 * Custom size
-		 * @public
-		 */
-		Custom: "Custom"
-	};
+	thisLib.AvatarSize = AvatarSize;
 
 	/**
 	 * Interface for controls suitable for the <code>stickySubheaderProvider</code>
@@ -381,8 +347,8 @@ sap.ui.define(["sap/ui/base/DataType",
 	 * <ul>
 	 * <li><code>_getStickyContent</code> - returns the content (control) used in the
 	 * subheader</li>
-	 * <li><code>_returnStickyContent</code> - accepts control as argument and ensures
-	 * that the control is placed back in its place in the provider</li>
+	 * <li><code>_returnStickyContent</code> - ensures that the content (control) returned by <code>_getStickyContent</code>,
+	 * is placed back in its place in the provider</li>
 	 * <li><code>_getStickySubHeaderSticked</code> - returns boolean value that shows
 	 * where the sticky content is placed (in its provider or in the
 	 * <code>DynamicPage</code>)</li>
@@ -402,46 +368,65 @@ sap.ui.define(["sap/ui/base/DataType",
 	 *
 	 * @enum {string}
 	 * @public
+	 * @deprecated as of version 1.73. Use the {@link sap.m.AvatarType} instead.
 	 * @since 1.46
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
 	 */
-	thisLib.AvatarType = {
-		/**
-		 * The displayed content is an icon.
-		 * @public
-		 */
-		Icon: "Icon",
-		/**
-		 * The displayed content is an image.
-		 * @public
-		 */
-		Image: "Image",
-		/**
-		 * The displayed content is initials.
-		 * @public
-		 */
-		Initials: "Initials"
-	};
+	thisLib.AvatarType = AvatarType;
+
+	/**
+	 * Possible background color options for the {@link sap.f.Avatar} control.
+	 *
+	 * <b>Notes:</b>
+	 * <ul>
+	 * <li>Keep in mind that the colors are theme-dependent and can differ based
+	 * on the currently used theme.</li>
+	 * <li> If the <code>Random</code> value is assigned, a random color is
+	 * chosen from the accent options (Accent1 to Accent10).</li>
+	 * </ul>
+	 *
+	 * @enum {string}
+	 * @public
+	 * @deprecated as of version 1.73. Use the {@link sap.m.AvatarColor} instead.
+	 * @since 1.69
+	 * @ui5-metamodel This simple type also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	thisLib.AvatarColor = AvatarColor;
 
 	/**
 	 * Types of image size and position that determine how an image fits in the {@link sap.f.Avatar} control area.
 	 *
 	 * @enum {string}
 	 * @public
+	 * @deprecated as of version 1.73. Use the {@link sap.m.AvatarImageFitType} instead.
 	 * @since 1.46
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
 	 */
-	thisLib.AvatarImageFitType = {
+	thisLib.AvatarImageFitType = AvatarImageFitType;
+
+	/**
+	 * Group modes for the {@link sap.f.AvatarGroup} control.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @experimental Since 1.73.
+	 * @since 1.73
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	thisLib.AvatarGroupType = {
 		/**
-		 * The image is scaled to be large enough so that the control area is completely covered.
+		 * The avatars are displayed as partially overlapped on top of each other and the entire group has one click/tap area.
+		 *
 		 * @public
 		 */
-		Cover: "Cover",
+		Group: "Group",
+
 		/**
-		 * The image is scaled to the largest size so that both its width and height can fit in the control area.
+		 * The avatars are displayed side-by-side and each avatar has its own click/tap area.
+		 *
 		 * @public
 		 */
-		Contain: "Contain"
+		Individual: "Individual"
 	};
 
 	/**
@@ -537,6 +522,18 @@ sap.ui.define(["sap/ui/base/DataType",
 		 * @public
 		 */
 		Bottom: "Bottom"
+	};
+
+	/*
+	 * Specifies different card area types.
+	 *
+	 * @private
+	 */
+	thisLib.cards.AreaType = {
+		None: 'None',
+		ContentItem: 'ContentItem',
+		Content: 'Content',
+		Header: 'Header'
 	};
 
 	return thisLib;

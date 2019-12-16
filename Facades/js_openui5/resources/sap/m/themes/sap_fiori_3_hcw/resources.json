@@ -16,6 +16,11 @@
 			"theme": "sap_fiori_3_hcw"
 		},
 		{
+			"name": "Avatar.less",
+			"designtime": true,
+			"theme": "sap_fiori_3_hcw"
+		},
+		{
 			"name": "Breadcrumbs.less",
 			"designtime": true,
 			"theme": "sap_fiori_3_hcw"
@@ -171,7 +176,7 @@
 			"theme": "sap_fiori_3_hcw"
 		},
 		{
-			"name": "NotificationListItem.less",
+			"name": "NotificationListGroup.less",
 			"designtime": true,
 			"theme": "sap_fiori_3_hcw"
 		},
@@ -422,6 +427,11 @@
 		},
 		{
 			"name": "ViewSettingsDialog.less",
+			"designtime": true,
+			"theme": "sap_fiori_3_hcw"
+		},
+		{
+			"name": "WheelSlider.less",
 			"designtime": true,
 			"theme": "sap_fiori_3_hcw"
 		},

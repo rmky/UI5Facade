@@ -32,7 +32,7 @@ sap.ui.define([
 	 * @class The ElementMover enables movement of UI5 elements based on aggregation types, which can be used by drag and
 	 *        drop or cut and paste behavior.
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -146,29 +146,51 @@ sap.ui.define([
 			});
 	};
 
+	ElementMover.prototype._checkAggregationOverlayVisibility = function (oAggregationOverlay, oParentElement) {
+		// this function can get called on overlay registration, when there are no overlays in dom yet. In this case, DOMUtil.isVisible is always false.
+		var oAggregationOverlayDomRef = oAggregationOverlay.getDomRef();
+		var bAggregationOverlayVisibility = DOMUtil.isVisible(oAggregationOverlayDomRef);
+
+		// if there is no aggregation overlay domRef available the further check for domRef of the corresponding element is not required
+		if (!oAggregationOverlayDomRef) {
+			return bAggregationOverlayVisibility;
+		}
+		// additional check for corresponding element DomRef visibiltiy required for target zone checks during navigation mode.
+		// during navigation mode the domRef of valid overlays is given and the offsetWidth is 0. Therefor we need to check the visibility of the corresponding element additionally
+		var oParentElementDomRef = oParentElement && oParentElement.getDomRef && oParentElement.getDomRef();
+		var bAggregationElementVisibility = oParentElementDomRef ? DOMUtil.isVisible(oParentElementDomRef) : true;
+		return bAggregationOverlayVisibility || bAggregationElementVisibility;
+	};
+
 	/**
+	 * @param {sap.ui.dt.AggregationOverlay} oAggregationOverlay - Aggregation overlay to be checked for target zone
+	 * @param {sap.ui.dt.ElementOverlay} oOverlay - Overlay being moved
+	 * @param {boolean} bOverlayNotInDom - Flag defining if overlay is not in DOM
+	 * @returns {Promise.<boolean>} Resolved promise with <code>true</code> if the aggregation overlay is a valid target zone for the overlay
 	 * @protected
 	 */
 	ElementMover.prototype.checkTargetZone = function(oAggregationOverlay, oOverlay, bOverlayNotInDom) {
-		var oMovedOverlay = oOverlay || this.getMovedOverlay();
 		var oGeometry = oAggregationOverlay.getGeometry();
 		var bGeometryVisible = oGeometry && oGeometry.size.height > 0 && oGeometry.size.width > 0;
+		var oParentElement = oAggregationOverlay.getElement();
 
-		// this function can get called on overlay registration, when there are no overlays in dom yet. In this case, DOMUtil.isVisible is always false.
-		if ((bOverlayNotInDom && !bGeometryVisible)
-			|| !bOverlayNotInDom && !DOMUtil.isVisible(oAggregationOverlay.getDomRef())
-			|| !(oAggregationOverlay.getElement().getVisible && oAggregationOverlay.getElement().getVisible())) {
+		if (
+			(bOverlayNotInDom && !bGeometryVisible)
+			|| !bOverlayNotInDom && !this._checkAggregationOverlayVisibility(oAggregationOverlay, oParentElement)
+			|| !(oParentElement && oParentElement.getVisible && oParentElement.getVisible())
+		) {
 			return Promise.resolve(false);
 		}
-		var oParentElement = oAggregationOverlay.getElement();
+
 		// an aggregation can still have visible = true even if it has been removed from its parent
 		if (!oParentElement.getParent()) {
 			return Promise.resolve(false);
 		}
+
+		var oMovedOverlay = oOverlay || this.getMovedOverlay();
 		var oMovedElement = oMovedOverlay.getElement();
 		var sAggregationName = oAggregationOverlay.getAggregationName();
-
-		if (ElementUtil.isValidForAggregation(oParentElement, sAggregationName, oMovedElement)) {
+		if (oMovedElement && ElementUtil.isValidForAggregation(oParentElement, sAggregationName, oMovedElement)) {
 			return Promise.resolve(true);
 		}
 		return Promise.resolve(false);
@@ -286,8 +308,9 @@ sap.ui.define([
 	 * metadata for the relevant aggregation.
 	 * @param  {sap.ui.dt.Overlay} oMovedOverlay The overlay of the element being moved
 	 * @param  {sap.ui.dt.Overlay} oTargetAggregationOverlay The overlay of the target aggregation for the move
+	 * @param  {boolean} bInsertAtEnd Flag defining if the Element should be inserted at the End of an Aggregation
 	 */
-	ElementMover.prototype.insertInto = function(oMovedOverlay, oTargetAggregationOverlay) {
+	ElementMover.prototype.insertInto = function(oMovedOverlay, oTargetAggregationOverlay, bInsertAtEnd) {
 		var oMovedElement = oMovedOverlay.getElement();
 		var oTargetParentElement = oTargetAggregationOverlay.getElement();
 		var oAggregationDesignTimeMetadata;
@@ -303,13 +326,16 @@ sap.ui.define([
 
 		var aTargetAggregationItems = ElementUtil.getAggregation(oTargetAggregationOverlay.getElement(), oTargetAggregationOverlay.getAggregationName());
 		var iIndex = aTargetAggregationItems.indexOf(oMovedElement);
-		// Don't do anything when the element is already in the aggregation and is the first element
-		if (!(iIndex > -1 && iIndex === 0)) {
+		// insert as first element (index=0) or AFTER the last element (Index=length)
+		var iInsertIndex = bInsertAtEnd ? aTargetAggregationItems.length : 0;
+		// check if element already on desired position
+		// for checking last position, we have to reduce the iInsertIndex by one
+		if (!(iIndex > -1 && iIndex === (iInsertIndex === 0 ? iInsertIndex : iInsertIndex - 1))) {
 			if (oAggregationDesignTimeMetadata && oAggregationDesignTimeMetadata.beforeMove) {
 				oAggregationDesignTimeMetadata.beforeMove(oRelevantContainerElement, oMovedElement);
 			}
 			var sTargetAggregationName = oTargetAggregationOverlay.getAggregationName();
-			ElementUtil.insertAggregation(oTargetParentElement, sTargetAggregationName, oMovedElement, 0);
+			ElementUtil.insertAggregation(oTargetParentElement, sTargetAggregationName, oMovedElement, iInsertIndex);
 			if (oAggregationDesignTimeMetadata && oAggregationDesignTimeMetadata.afterMove) {
 				oAggregationDesignTimeMetadata.afterMove(oRelevantContainerElement, oMovedElement);
 			}

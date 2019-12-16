@@ -65,7 +65,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -92,7 +92,9 @@ sap.ui.define([
 			colorString : {type: "string", group : "Misc", defaultValue : null},
 
 			/**
-			 * Determines the color mode of the <code>ColorPicker</code>.
+			 * Determines the color representation mode the ColorPicker works with - Hue, Saturation, and Value (HSV) or Hue, Saturation, and Lightness (HSL).
+			 *
+			 * <b>Note:</b> The <code>ColorPickerMode.HSV</code> is set by default. For color composing with alpha values, please set the mode to <code>ColorPickerMode.HSL</code>
 			 * @since 1.48.0
 			 */
 			mode : {type: "sap.ui.unified.ColorPickerMode", group : "Appearance", defaultValue : ColorPickerMode.HSV},
@@ -120,7 +122,7 @@ sap.ui.define([
 
 			/*
 			 * ColorPickerBox.
-			 * All the hidden aggegations from here to the bottom are of type Control because the code also
+			 * All the hidden aggregations from here to the bottom are of type Control because the code also
 			 * works in commons.ColorPicker. It could be fixed via separation of the controls.
 			 * @private
 			 * @since 1.61
@@ -1769,6 +1771,16 @@ sap.ui.define([
 
 		// set the new cursor position
 		this.$CPCur.css("left", iX).css("top", iY);
+
+		// fixes Edge rendering glitches on (x50%) zoom: 50%, 150%, 250%, etc...
+		if (sap.ui.Device.browser.edge) {
+			var oBox = document.getElementById(this.oCPBox.getId());
+			oBox.style.verticalAlign = "top";
+			setTimeout( function() {
+				oBox.style.verticalAlign = "initial";
+			}, 0);
+		}
+
 	};
 
 	/**
@@ -2414,6 +2426,10 @@ sap.ui.define([
 		}
 		//unified: the class must be added here in order to toggle it in the button press
 		this.addStyleClass("sapUiCPDisplayRGB");
+		if (Device.system.phone) {
+			// toggle fields - HEX field will be visible initially on mobile
+			this._toggleFields();
+		}
 	};
 
 	/**
@@ -2520,9 +2536,7 @@ sap.ui.define([
 			tooltip: oRb.getText("COLORPICKER_TOGGLE_BTN_TOOLTIP"),
 			icon: "sap-icon://source-code",
 			press: function(oEvent) {
-				//todo add third state - an input field must be shown
-				that.toggleStyleClass("sapUiCPDisplayRGB", that.bPressed);
-				that.bPressed = !that.bPressed;
+				that._toggleFields();
 			}
 		});
 		this.setAggregation("_oButton", this.oButton, true);
@@ -2550,6 +2564,34 @@ sap.ui.define([
 		this.setAggregation("_oValField", this.oValField, true);
 		this.setAggregation("_oSlider", this.oSlider, true);
 		this.setAggregation("_oAlphaSlider", this.oAlphaSlider, true);
+	};
+
+	ColorPicker.prototype._toggleFields = function() {
+		if (!Device.system.phone) {
+			this.toggleStyleClass("sapUiCPDisplayRGB", this.bPressed);
+			this.bPressed = !this.bPressed;
+		} else {
+			switch (this.sVisibleFiled) {
+			case "HSL":
+				this.removeStyleClass("sapUiCPHexVisible");
+				this.toggleStyleClass("sapUiCPDisplayRGB", false);
+				this.addStyleClass("sapUiCPHideHex");
+				this.sVisibleFiled = "RGB";
+				break;
+			case "RGB":
+				this.removeStyleClass("sapUiCPHexVisible");
+				this.addStyleClass("sapUiCPHideHex");
+				this.toggleStyleClass("sapUiCPDisplayRGB", true);
+				this.sVisibleFiled = "Hex";
+				break;
+			case "Hex":
+			default:
+				this.addStyleClass("sapUiCPHexVisible");
+				this.removeStyleClass("sapUiCPHideHex");
+				this.sVisibleFiled = "HSL";
+				break;
+			}
+		}
 	};
 
 	return ColorPicker;

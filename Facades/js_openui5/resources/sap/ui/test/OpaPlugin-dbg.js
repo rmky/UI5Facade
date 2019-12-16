@@ -298,8 +298,7 @@ sap.ui.define([
 			 * @param {boolean} [oOptions.searchOpenDialogs] Only controls in the static UI area of UI5 are searched.
 			 * @param {string|function} [oOptions.controlType] @since 1.40 match all controls of a certain type
 			 * It is usually combined with viewName or searchOpenDialogs. If no control matches the type, an empty array will be returned. Examples:
-			 * <code>
-			 *     <pre>
+			 * <pre>
 			 *         // will return an array of all visible buttons
 			 *         new OpaPlugin().getMatchingControls({
 			 *             controlType: "sap.m.Button"
@@ -318,8 +317,7 @@ sap.ui.define([
 			 *             viewName: "my.View"
 			 *             controlType: "sap.m.Input"
 			 *         });
-			 *     </pre>
-			 * </code>
+			 * </pre>
 			 * @returns {sap.ui.core.Element|sap.ui.core.Element[]|null}
 			 * <ul>
 			 *     <li>if a oOptions.id is a string, will return the single matching control or null if no controls match</li>
@@ -390,18 +388,17 @@ sap.ui.define([
 			 */
 			_getFilteredControls : function(oOptions) {
 				var vControl = this._filterControlsByCondition(oOptions);
+				var oFilterOptions = $.extend({}, oOptions);
+
+				// when on the root level of oOptions, these options are already processed (see _filterControlsByCondition) and should not be processed again,
+				// as this results in error when no controls are passed to the matcher pipeline (see _filterControlsByMatchers)
+				// - the pipeline should still be executed because there could be custom matchers
+				["interactable", "visible", "enabled"].forEach(function (sProp) {
+					delete oFilterOptions[sProp];
+				});
 
 				return vControl === OpaPlugin.FILTER_FOUND_NO_CONTROLS
-					? OpaPlugin.FILTER_FOUND_NO_CONTROLS : this._filterControlsByMatchers(oOptions, vControl);
-			},
-
-			// same as _getFilteredControls, but expects any matchers in oOptions to be in declarative form
-			_getFilteredControlsByDeclaration: function (oOptions) {
-				var vControl = this._filterControlsByCondition(oOptions);
-				var oMatcherFilterOptions = $.extend({}, oOptions, {useDeclarativeMatchers: true});
-
-				return vControl === OpaPlugin.FILTER_FOUND_NO_CONTROLS
-					? OpaPlugin.FILTER_FOUND_NO_CONTROLS : this._filterControlsByMatchers(oMatcherFilterOptions, vControl);
+					? OpaPlugin.FILTER_FOUND_NO_CONTROLS : this._filterControlsByMatchers(oFilterOptions, vControl);
 			},
 
 			// filter result of getMatchingControls and maps it to FILTER_FOUND_NO_CONTROLS when no controls are found
@@ -428,7 +425,8 @@ sap.ui.define([
 
 			// instantiate any matchers with declarative syntax and run controls through matcher pipeline
 			_filterControlsByMatchers: function (oOptions, vControl) {
-				var aMatchers = oOptions.useDeclarativeMatchers ? oMatcherFactory.getFilteringMatchers(oOptions) : oOptions.matchers;
+				var oOptionsWithMatchers = $.extend({}, oOptions);
+				var aMatchers = oMatcherFactory.getFilteringMatchers(oOptionsWithMatchers);
 				var bPluginLooksForControls = this._isLookingForAControl(oOptions);
 				var vResult = null;
 
@@ -438,7 +436,7 @@ sap.ui.define([
 				 * matchers: function () {return "foo";},
 				 * success: function (sFoo) {}
 				 */
-				if ((vControl || !bPluginLooksForControls) && aMatchers) {
+				if ((vControl || !bPluginLooksForControls) && aMatchers.length) {
 					vResult = oMatcherPipeline.process({
 						matchers: aMatchers,
 						control: vControl
@@ -543,6 +541,12 @@ sap.ui.define([
 					return null;
 				}
 
+				// some control types only have static methods and cannot be instanciated (e.g.: sap.m.MessageToast)
+				if (typeof fnControlType !== "function") {
+					this._oLogger.debug("The control type " + sControlType + " must be a function.");
+					return null;
+				}
+
 				return fnControlType;
 			},
 
@@ -615,7 +619,7 @@ sap.ui.define([
 		 * Creates a filter function that returns true when a given element
 		 * has the type <code>fnControlType</code>.
 		 *
-		 * When <code>fnControlType</code> is not a function, the returned
+		 * When <code>fnControlType</code> is not defined, the returned
 		 * filter function will accept any element.
 		 *
 		 * @param {function} [fnControlType] Constructor to use for <code>instanceof</code> checks or null
@@ -623,14 +627,13 @@ sap.ui.define([
 		 * @private
 		 */
 		function makeTypeFilterFn(fnControlType) {
-			if ( fnControlType ) {
-				$.sap.assert(typeof fnControlType === 'function', "fnControlType must be a function or falsy");
-				return function(oElement) {
-					return oElement instanceof fnControlType;
-				};
-			} else {
-				return function() { return true; };
-			}
+			return function (oElement) {
+				if (!fnControlType) {
+					return true;
+				}
+
+				return oElement instanceof fnControlType;
+			};
 		}
 
 		/**

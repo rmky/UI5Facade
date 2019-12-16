@@ -227,7 +227,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.ManagedObject
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @alias sap.ui.core.Component
 	 * @since 1.9.2
 	 */
@@ -821,7 +821,6 @@ sap.ui.define([
 			// apply the model to the component with provided name ("" as key means unnamed model)
 			this.setModel(oModel, sModelName || undefined);
 		}
-
 	};
 
 
@@ -1697,7 +1696,13 @@ sap.ui.define([
 			mModelConfigurations[sModelName] = oModelConfig;
 
 		}
-
+		// add $cmd model
+		if (oManifest.getEntry("/sap.ui5/commands")) {
+			// Model for CommandExecution
+			mModelConfigurations["$cmd"] = {
+				type: 'sap.ui.model.json.JSONModel'
+			};
+		}
 		return mModelConfigurations;
 	};
 
@@ -1788,10 +1793,10 @@ sap.ui.define([
 		// Read internal URI parameter to enable model preload for testing purposes
 		// Specify comma separated list of model names. Use an empty segment for the "default" model
 		// Examples:
-		//   sap-ui-xx-preload-component-models-<componentName>=, => prelaod default model (empty string key)
-		//   sap-ui-xx-preload-component-models-<componentName>=foo, => prelaod "foo" + default model (empty string key)
-		//   sap-ui-xx-preload-component-models-<componentName>=foo,bar => prelaod "foo" + "bar" models
-		var sPreloadModels = new UriParameters(window.location.href).get("sap-ui-xx-preload-component-models-" + oManifest.getComponentName());
+		//   sap-ui-xx-preload-component-models-<componentName>=, => preload default model (empty string key)
+		//   sap-ui-xx-preload-component-models-<componentName>=foo, => preload "foo" + default model (empty string key)
+		//   sap-ui-xx-preload-component-models-<componentName>=foo,bar => preload "foo" + "bar" models
+		var sPreloadModels = UriParameters.fromQuery(window.location.search).get("sap-ui-xx-preload-component-models-" + oManifest.getComponentName());
 		var aPreloadModels = sPreloadModels && sPreloadModels.split(",");
 
 		for (var sModelName in mAllModelConfigurations) {
@@ -1848,7 +1853,7 @@ sap.ui.define([
 
 
 
-	function loadManifests(oRootMetadata, oRootManifest) {
+	function loadManifests(oRootMetadata) {
 		var aManifestsToLoad = [];
 		var aMetadataObjects = [];
 
@@ -1858,9 +1863,8 @@ sap.ui.define([
 		 * Gathers promises within aManifestsToLoad.
 		 * Gathers associates meta data objects within aMetadataObjects.
 		 * @param {object} oMetadata The metadata object
-		 * @param {sap.ui.core.Manifest} [oManifest] root manifest, which is possibly already loaded
 		 */
-		function collectLoadManifestPromises(oMetadata, oManifest) {
+		function collectLoadManifestPromises(oMetadata) {
 			// ComponentMetadata classes with a static manifest or with legacy metadata
 			// do already have a manifest, so no action required
 			if (!oMetadata._oManifest) {
@@ -1871,28 +1875,23 @@ sap.ui.define([
 				var sName = oMetadata.getComponentName();
 				var sDefaultManifestUrl = getManifestUrl(sName);
 
-				var pLoadManifest;
-				if (oManifest) {
-					// Apply a copy of the already loaded manifest to be used by the static metadata class
-					pLoadManifest = Promise.resolve(JSON.parse(JSON.stringify(oManifest.getRawJson())));
-				} else {
-					// We need to load the manifest.json for the metadata class as
-					// it might differ from the one already loaded
-					// If the manifest.json is part of the Component-preload it will be taken from there
-					pLoadManifest = LoaderExtensions.loadResource({
-						url: sDefaultManifestUrl,
-						dataType: "json",
-						async: true
-					}).catch(function(oError) {
-						Log.error(
-							"Failed to load component manifest from \"" + sDefaultManifestUrl + "\" (component " + sName
-							+ ")! Reason: " + oError
-						);
+				// We need to load the manifest.json for the metadata class as
+				// it might differ from the one already loaded
+				// If the manifest.json is part of the Component-preload it will be taken from there
+				var pLoadManifest = LoaderExtensions.loadResource({
+					url: sDefaultManifestUrl,
+					dataType: "json",
+					async: true
+				}).catch(function(oError) {
+					Log.error(
+						"Failed to load component manifest from \"" + sDefaultManifestUrl + "\" (component " + sName
+						+ ")! Reason: " + oError
+					);
 
-						// If the request fails, ignoring the error would end up in a sync call, which would fail, too.
-						return {};
-					});
-				}
+					// If the request fails, ignoring the error would end up in a sync call, which would fail, too.
+					return {};
+				});
+
 				aManifestsToLoad.push(pLoadManifest);
 				aMetadataObjects.push(oMetadata);
 			}
@@ -1903,7 +1902,7 @@ sap.ui.define([
 			}
 		}
 
-		collectLoadManifestPromises(oRootMetadata, oRootManifest);
+		collectLoadManifestPromises(oRootMetadata);
 
 		return Promise.all(aManifestsToLoad).then(function(aManifestJson) {
 			// Inject the manifest into the metadata class
@@ -1934,8 +1933,8 @@ sap.ui.define([
 	 * <b>ATTENTION:</b> This hook must only be used by UI flexibility (library:
 	 * sap.ui.fl) and will be replaced with a more generic solution!
 	 *
-	 * @sap-restricted sap.ui.fl
 	 * @private
+	 * @ui5-restricted sap.ui.fl
 	 * @since 1.37.0
 	 */
 	Component._fnLoadComponentCallback = null;
@@ -1964,10 +1963,25 @@ sap.ui.define([
 	 * sap.ui.fl) and will be replaced with a more generic solution!
 	 *
 	 * @private
-	 * @sap-restricted sap.ui.fl
+	 * @ui5-restricted sap.ui.fl
 	 * @since 1.43.0
 	 */
 	Component._fnOnInstanceCreated = null;
+
+	/**
+	 * Callback handler which will be executed once the manifest.json was
+	 * loaded for a component, but before the manifest is interpreted.
+	 * The loaded manifest will be passed into the registered function.
+	 *
+	 * The callback may modify the parsed manifest object and must return a Promise which
+	 * resolves with the manifest object. If the Promise is rejected, the component creation
+	 * fails with the rejection reason.
+	 *
+	 * @private
+	 * @ui5-restricted sap.ui.fl
+	 * @since 1.70.0
+	 */
+	Component._fnPreprocessManifest = null;
 
 	/**
 	 * Asynchronously creates a new component instance from the given configuration.
@@ -2232,7 +2246,7 @@ sap.ui.define([
 				notifyOnInstanceCreated(oInstance, vConfig);
 				return oInstance;
 			}
-        }
+		}
 
 		// load the component class
 		var vClassOrPromise = loadComponent(vConfig, {
@@ -2445,8 +2459,31 @@ sap.ui.define([
 			fnCallLoadComponentCallback;
 
 		function createSanitizedManifest( oRawManifestJSON, mOptions ) {
-			var oManifest = new Manifest( JSON.parse(JSON.stringify(oRawManifestJSON)), mOptions );
-			return oConfig.async ? Promise.resolve(oManifest) : oManifest;
+			var oManifestCopy = JSON.parse(JSON.stringify(oRawManifestJSON));
+
+			if (oConfig.async) {
+				return preprocessManifestJSON(oManifestCopy).then(function(oFinalJSON) {
+					// oFinalJSON might be modified by the flex-hook
+					return new Manifest(oFinalJSON, mOptions);
+				});
+			} else {
+				return new Manifest(oManifestCopy, mOptions);
+			}
+		}
+
+		function preprocessManifestJSON(rawJson) {
+			// call flex-hook if given
+			if (typeof Component._fnPreprocessManifest === "function") {
+				try {
+					return Component._fnPreprocessManifest(rawJson);
+				} catch (oError) {
+					// in case the hook itself crashes without 'safely' rejecting, we log the error and reject directly
+					Log.error("Failed to execute flexibility hook for manifest preprocessing.", oError);
+					return Promise.reject(oError);
+				}
+			} else {
+				return Promise.resolve(rawJson);
+			}
 		}
 
 		// url must be a string, although registerModulePath would also accept an object
@@ -2485,6 +2522,7 @@ sap.ui.define([
 			oManifest = Manifest.load({
 				manifestUrl: sManifestUrl,
 				componentName: sName,
+				processJson: preprocessManifestJSON,
 				async: oConfig.async
 			});
 		}
@@ -2523,7 +2561,8 @@ sap.ui.define([
 				manifestUrl: getManifestUrl(sName),
 				componentName: sName,
 				async: oConfig.async,
-				failOnError: false
+				failOnError: false,
+				processJson: preprocessManifestJSON
 			});
 		}
 
@@ -2965,10 +3004,9 @@ sap.ui.define([
 					// Check if we loaded the manifest.json from the default location
 					// In this case it can be directly passed to its metadata class to prevent an additional request
 					if (oManifest && typeof vManifest !== "object" && (typeof sManifestUrl === "undefined" || sManifestUrl === sDefaultManifestUrl)) {
-						pLoaded = loadManifests(oMetadata, oManifest);
-					} else {
-						pLoaded = loadManifests(oMetadata);
+						oMetadata._applyManifest(JSON.parse(JSON.stringify(oManifest.getRawJson())));
 					}
+					pLoaded = loadManifests(oMetadata);
 
 					return pLoaded.then(function() {
 						// prepare the loaded class and resolve with it
@@ -3123,7 +3161,7 @@ sap.ui.define([
 	 */
 
 	/**
-	 * Return am object with all instances of <code>sap.ui.core.Component</code>,
+	 * Return an object with all instances of <code>sap.ui.core.Component</code>,
 	 * keyed by their ID.
 	 *
 	 * Each call creates a new snapshot object. Depending on the size of the UI,
@@ -3154,7 +3192,7 @@ sap.ui.define([
 	 */
 
 	/**
-	 * Calls the given <code>callback</code> for each Component.
+	 * Calls the given <code>callback</code> for each existing component.
 	 *
 	 * The expected signature of the callback is
 	 * <pre>
@@ -3162,6 +3200,9 @@ sap.ui.define([
 	 * </pre>
 	 * where <code>oComponent</code> is the currently visited component instance and <code>sID</code>
 	 * is the ID of that instance.
+	 *
+	 * The order in which the callback is called for components is not specified and might change between
+	 * calls (over time and across different versions of UI5).
 	 *
 	 * If components are created or destroyed within the <code>callback</code>, then the behavior is
 	 * not specified. Newly added objects might or might not be visited. When a component is destroyed during
@@ -3220,6 +3261,25 @@ sap.ui.define([
 	 * @public
 	 */
 
-	return Component;
+	/**
+	 * Returns the information defined in the manifests command section. If a command name
+	 * is passed only the info for this command will be returned. If no name is passed a map
+	 * of all commands will be returned.
+	 *
+	 * @param {string} [sCommandName] The name of the command defined in manifest
+	 *
+	 * @returns {object} The command object as defined in the manifest
+	 * @private
+	 */
+	Component.prototype.getCommand = function(sCommandName) {
+		var oCommand,
+			oCommands = this.getManifestEntry("/sap.ui5/commands");
 
+		if (oCommands && sCommandName) {
+			oCommand = oCommands[sCommandName];
+		}
+		return sCommandName ? oCommand : oCommands;
+	};
+
+	return Component;
 });

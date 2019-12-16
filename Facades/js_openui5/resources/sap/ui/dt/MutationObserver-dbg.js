@@ -10,13 +10,13 @@ sap.ui.define([
 	"sap/ui/dt/OverlayUtil",
 	"sap/ui/base/ManagedObject",
 	"sap/ui/dt/DOMUtil",
-	"sap/ui/dt/Util"
+	"sap/base/util/restricted/_intersection"
 ], function(
 	jQuery,
 	OverlayUtil,
 	ManagedObject,
 	DOMUtil,
-	Util
+	_intersection
 ) {
 	"use strict";
 
@@ -28,7 +28,7 @@ sap.ui.define([
 	 * @class The MutationObserver observes changes of a ManagedObject and propagates them via events.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @constructor
 	 * @private
 	 * @since 1.30
@@ -139,7 +139,7 @@ sap.ui.define([
 			this._isRelevantNode(this._getTargetNode(oMutation))
 			|| (
 				oMutation.target.id === 'sap-ui-static'
-				&& Util.intersection(
+				&& _intersection(
 					[]
 						.concat(
 							Array.prototype.slice.call(oMutation.addedNodes),
@@ -246,4 +246,4 @@ sap.ui.define([
 	};
 
 	return MutationObserver;
-}, /* bExport= */true);
+});

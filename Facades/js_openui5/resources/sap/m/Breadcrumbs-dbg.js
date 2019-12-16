@@ -33,7 +33,10 @@ sap.ui.define([
 	"use strict";
 
 	// shortcut for sap.m.SelectType
-	var SelectType = library.SelectType;
+	var SelectType = library.SelectType,
+
+		// shortcut for sap.m.BreadCrumbsSeparatorStyle
+		SeparatorStyle = library.BreadcrumbsSeparatorStyle;
 
 	/**
 	 * Constructor for a new <code>Breadcrumbs</code>.
@@ -51,7 +54,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -71,7 +74,16 @@ sap.ui.define([
 				 * Determines the text of current/last element in the Breadcrumbs path.
 				 * @since 1.34
 				 */
-				currentLocationText: {type: "string", group: "Behavior", defaultValue: null}
+				currentLocationText: {type: "string", group: "Behavior", defaultValue: null},
+				/**
+				 * Determines the visual style of the separator between the <code>Breadcrumbs</code> elements.
+				 * @since 1.69
+				 */
+				separatorStyle: {
+					type: "sap.m.BreadcrumbsSeparatorStyle",
+					group: "Appearance",
+					defaultValue: SeparatorStyle.Slash
+				}
 			},
 			aggregations: {
 
@@ -94,7 +106,24 @@ sap.ui.define([
 		}
 	});
 
+	/**
+	 * STATIC MEMBERS
+	 */
+
+	Breadcrumbs.STYLE_MAPPER = {
+		Slash: "&#047;",
+		BackSlash: "&#092;",
+		DoubleSlash: "&#047;&#047;",
+		DoubleBackSlash: "&#092;&#092;",
+		GreaterThan: "&gt;",
+		DoubleGreaterThan: "&#187;"
+	};
+
 	/*************************************** Framework lifecycle events ******************************************/
+
+	Breadcrumbs.prototype.init = function () {
+		this._sSeparatorSymbol = Breadcrumbs.STYLE_MAPPER[this.getSeparatorStyle()];
+	};
 
 	Breadcrumbs.prototype.onBeforeRendering = function () {
 		this.bRenderingPhase = true;
@@ -566,6 +595,24 @@ sap.ui.define([
 		}
 
 		return vResult;
+	};
+
+	/**
+	* Custom setter for the <code>Breadcrumbs</code> separator style.
+	*
+	* @returns {object} this
+	* @param {string} sSeparatorStyle
+	* @public
+	* @since 1.71
+	*/
+	Breadcrumbs.prototype.setSeparatorStyle = function (sSeparatorStyle) {
+		var sSeparatorSymbol = Breadcrumbs.STYLE_MAPPER[sSeparatorStyle];
+		if (!sSeparatorSymbol){
+			return this;
+		}
+
+		this._sSeparatorSymbol = sSeparatorSymbol;
+		return this.setProperty("separatorStyle", sSeparatorStyle);
 	};
 
 	/**

@@ -5,17 +5,18 @@
  */
 
 sap.ui.define([
-	"sap/ui/fl/FakeLrepStorage"
+	"sap/ui/fl/FakeLrepConnectorLocalStorage"
 ], function(
-	FakeLrepStorage
+	FakeLrepConnectorLocalStorage
 ) {
 	/**
-	 * Class handling the Fake Lrep storage for local storage
+	 * Class handling the Fake Lrep storage for local storage;
+	 * This class stays since some tests are still using this internal; We will remove this in the near future.
 	 *
 	 * @class
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @private
 	 * @static
@@ -25,5 +26,9 @@ sap.ui.define([
 
 	"use strict";
 
-	return FakeLrepStorage(window.localStorage);
+	return {
+		deleteChanges: function() {
+			return FakeLrepConnectorLocalStorage.forTesting.synchronous.clearAll();
+		}
+	};
 }, /* bExport= */ true);

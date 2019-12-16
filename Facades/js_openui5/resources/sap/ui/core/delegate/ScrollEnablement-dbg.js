@@ -15,7 +15,6 @@ sap.ui.define([
 	'sap/ui/Device',
 	'sap/ui/base/Object',
 	'sap/ui/core/ResizeHandler',
-	"sap/ui/performance/trace/Interaction",
 	"sap/ui/thirdparty/jquery",
 	"sap/ui/events/KeyCodes"
 ],
@@ -23,7 +22,6 @@ sap.ui.define([
 		Device,
 		BaseObject,
 		ResizeHandler,
-		Interaction,
 		jQuery,
 		KeyCodes
 	) {
@@ -56,7 +54,7 @@ sap.ui.define([
 		 *
 		 * @protected
 		 * @alias sap.ui.core.delegate.ScrollEnablement
-		 * @version 1.68.1
+		 * @version 1.73.1
 		 * @author SAP SE
 		 */
 		var ScrollEnablement = BaseObject.extend("sap.ui.core.delegate.ScrollEnablement", /** @lends sap.ui.core.delegate.ScrollEnablement.prototype */ {
@@ -451,8 +449,6 @@ sap.ui.define([
 					fScrollTop = $Container.scrollTop(),
 					fVerticalMove = fScrollTop - this._scrollY;
 
-				Interaction.notifyStepStart(this._oControl);
-
 				this._scrollX = $Container.scrollLeft(); // remember position
 				this._scrollY = fScrollTop;
 
@@ -552,8 +548,6 @@ sap.ui.define([
 			},
 
 			_onEnd : function(oEvent){
-				Interaction.notifyEventStart(oEvent);
-
 				if (this._oPullDown && this._oPullDown._bTouchMode) {
 					this._oPullDown.doScrollEnd();
 					this._refresh();

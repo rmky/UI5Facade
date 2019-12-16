@@ -32,7 +32,7 @@ sap.ui.define([
 	 * @extends sap.m.Button
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -50,6 +50,20 @@ sap.ui.define([
 			 * The property is “true” when the control is toggled. The default state of this property is "false".
 			 */
 			pressed : {type : "boolean", group : "Data", defaultValue : false}
+		},
+		events: {
+			/**
+			 * Fired when the user clicks or taps on the control.
+			 */
+			press: {
+				parameters: {
+
+					/**
+					 * The current pressed state of the control.
+					 */
+					pressed: { type: "boolean" }
+				}
+			}
 		}
 	}});
 

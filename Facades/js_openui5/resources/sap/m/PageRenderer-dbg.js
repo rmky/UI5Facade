@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define([],
-	function() {
+sap.ui.define(["sap/m/library"],
+	function(library) {
 	"use strict";
 
 
@@ -63,7 +63,7 @@ sap.ui.define([],
 		}
 
 		if (oPage.getFloatingFooter()) {
-			oRm.addClass("sapMPageFloatingFooter");
+			oRm.addClass("sapMPageWithFloatingFooter");
 		}
 
 		oRm.writeClasses();
@@ -100,6 +100,11 @@ sap.ui.define([],
 			oRm.write("<" + sSubHeaderTag);
 			oRm.addClass("sapMPageSubHeader");
 			oRm.writeAccessibilityState(oPage, oPage._formatLandmarkInfo(oLandmarkInfo, "SubHeader"));
+
+			if (oSubHeader.getDesign() == library.ToolbarDesign.Info) {
+				oRm.addClass("sapMPageSubHeaderInfoBar");
+			}
+
 			oRm.writeClasses();
 			oRm.write(">");
 			this.renderBarControl(oRm, oPage, oSubHeader, {
@@ -144,6 +149,9 @@ sap.ui.define([],
 			oRm.addClass("sapMPageFooter");
 			if (!oPage.getShowFooter()) {
 				oRm.addClass("sapUiHidden");
+			}
+			if (oPage.getFloatingFooter()) {
+				oRm.addClass("sapMPageFloatingFooter");
 			}
 			oRm.writeAccessibilityState(oPage, oPage._formatLandmarkInfo(oLandmarkInfo, "Footer"));
 			oRm.writeClasses();

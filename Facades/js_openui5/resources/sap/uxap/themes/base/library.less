@@ -39,6 +39,11 @@ html .sapUiContainer-Medium .sapUxAPAnchorBar.sapMTB {
 	padding-left: 1rem;
 }
 
+.sapUxAPObjectPageLayoutTitleClickEnabled .sapUxAPAnchorBar,
+.sapUxAPObjectPageLayoutHeaderPinnable .sapUxAPAnchorBar {
+	margin-top: 0.8125rem;
+}
+
 .sapUxAPAnchorBar {
 	vertical-align: middle;
 }
@@ -302,6 +307,11 @@ Compact
 			margin-right: 0.75rem;
 		}
 	}
+
+	.sapUxAPObjectPageLayoutTitleClickEnabled .sapUxAPAnchorBar,
+	.sapUxAPObjectPageLayoutHeaderPinnable .sapUxAPAnchorBar{
+		margin-top: 0.5rem;
+	}
 }
 
 .sapUiSizeCompact .sapUxAPAnchorBar,
@@ -563,14 +573,14 @@ html[data-sap-ui-browser^="ed"] {
 }
 
 /* OVERVIEW BUTTON */
-.sapUxAPObjectPageLayout-Std-Tablet .sapUxAPHierarchicalSelect.sapMSltIconOnly,
-.sapUxAPObjectPageLayout-Std-Desktop .sapUxAPHierarchicalSelect.sapMSltIconOnly,
-html .sapUiContainer-Medium .sapUxAPHierarchicalSelect.sapMSltIconOnly,
-html .sapUiContainer-Wide .sapUxAPHierarchicalSelect.sapMSltIconOnly {
-	position: absolute;
-	right: 0;
-	top: 0;
-	height: 3rem;
+.sapUxAPObjectPageLayout-Std-Tablet,
+.sapUxAPObjectPageLayout-Std-Desktop {
+	.sapUxAPHierarchicalSelect.sapMSltIconOnly {
+		position: absolute;
+		right: 0;
+		top: 0;
+		height: 3rem;
+	}
 }
 
 .sapUiSizeCompact .sapUxAPObjectPageLayout-Std-Desktop .sapUxAPHierarchicalSelect.sapMSltIconOnly {
@@ -608,7 +618,7 @@ html .sapUiContainer-Wide .sapUxAPHierarchicalSelect.sapMSltIconOnly {
 }
 
 /* styling needed to achieve underline of the select label on phone */
-.sapUxAPObjectPageLayout-Std-Phone, .sap-phone, html .sapUiContainer-Narrow {
+.sapUxAPObjectPageLayout-Std-Phone, .sap-phone {
 	.sapUxAPHierarchicalSelect .sapMSltLabel {
 		position: relative;
 		top: 0.05rem;
@@ -618,21 +628,14 @@ html .sapUiContainer-Wide .sapUxAPHierarchicalSelect.sapMSltIconOnly {
 		padding-bottom: 0.8rem;
 	}
 
-	.sapMSlt.sapUxAPHierarchicalSelect {
+	.sapMSlt.sapUxAPHierarchicalSelect.sapMBarChild {
 		height: 3rem;
 		border: none;
 		padding-left: 1rem;
 	}
-
-	.sapUiSizeCompact .sapUxAPHierarchicalSelect .sapMSltLabel {
-		padding-bottom: 0.3rem;
-	}
-
-	.sapUiSizeCompact .sapMSlt.sapUxAPHierarchicalSelect {
-		height: 2rem;
-	}
 }
 
+.sap-phone .sapUiSizeCompact,
 .sapUiSizeCompact .sapUxAPObjectPageLayout-Std-Phone {
 	.sapUxAPHierarchicalSelect .sapMSltLabel {
 		padding-bottom: 0.3rem;
@@ -775,6 +778,11 @@ objectPageHeader Title
 		height: 3rem;
 		display: inline-block;
 		margin-right: 1rem;
+
+		& > .sapFAvatar {
+			width: 3rem;
+			height: 3rem;
+		}
 	}
 
 	.sapUxAPObjectPageHeaderStickied & .sapMImg.sapUxAPObjectPageHeaderObjectImage {
@@ -841,6 +849,10 @@ objectPageHeader Title
 			font-size: 1.5rem;
 		}
 	}
+}
+
+.sapUxAPObjectPageNoNavigation .sapUxAPObjectPageHeaderStickied .sapUxAPObjectPageHeaderIdentifier {
+	box-shadow: @sapUiShadowHeader;
 }
 
 html[data-sap-ui-animation="on"] .sapUxAPObjectPageHeaderObjectImageForce .sapUxAPObjectPageHeaderObjectImage,
@@ -1325,6 +1337,10 @@ html .sapUiContainer-Narrow .sapUxAPObjectPageHeaderContent {
 	padding-left: 1rem;
 }
 
+.sapUxAPObjectPageNoNavigation .sapUxAPObjectPageHeaderContent {
+	box-shadow: @sapUiShadowHeader;
+}
+
 .sapUxAPObjectPageHeaderContentHidden {
 	display: none;
 }
@@ -1396,6 +1412,11 @@ html .sapUiContainer-Narrow .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHe
 	height: 3rem;
 	margin-right: 1rem;
 	margin-bottom: 0.5rem;
+
+	& > .sapFAvatar {
+		width: 3rem;
+		height: 3rem;
+	}
 }
 
 .sapUxAPObjectPageHeaderContent .sapUxAPObjectPageHeaderContentImageContainer .sapUiIcon,
@@ -1534,6 +1555,15 @@ body > .sapUxAPObjectPageLayout,
 	transform: translate3d(0, 0, 0);
 }
 
+/*Transform translate3d causes problems on IE11 with Windows 10.
+The issue can be observed while scrolling some nested controls.
+BCP: 0020751294 0000432437 2019
+BCP: 1980095977
+*/
+html[data-sap-ui-browser^="ie"] .sapUxAPObjectPageWrapperTransform {
+	transform: none;
+}
+
 .sapUxAPObjectPageScroll {
 	position: relative;
 }
@@ -1600,48 +1630,6 @@ body > .sapUxAPObjectPageLayout,
 	.sapFDynamicPageTitle:hover,
 	&.sapUxAPObjectPageTitleForceHovered .sapFDynamicPageTitle {
 		cursor: pointer;
-	}
-}
-
-.sapUxAPObjectPageLayoutWithNavigation.sapUxAPObjectPageLayoutTitleClickEnabled {
-	.sapUxAPObjectPageNavigation:not(.sapUxAPObjectPageStickyAnchorBar),
-	.sapUxAPObjectPageHeaderTitle.sapUxAPObjectPageHeaderStickied .sapUxAPObjectPageStickyAnchorBar,
-	.sapUxAPObjectPageNavigation.sapUxAPObjectPageStickyAnchorBarPaddingTop {
-		padding-top: 0.8125rem;
-	}
-	.sapUxAPObjectPageNavigation.sapUxAPObjectPageNavigationHidden {
-		padding-top: 0;
-	}
-}
-
-.sapUiSizeCompact .sapUxAPObjectPageLayoutWithNavigation.sapUxAPObjectPageLayoutTitleClickEnabled {
-	.sapUxAPObjectPageNavigation:not(.sapUxAPObjectPageStickyAnchorBar),
-	.sapUxAPObjectPageHeaderTitle.sapUxAPObjectPageHeaderStickied .sapUxAPObjectPageStickyAnchorBar,
-	.sapUxAPObjectPageNavigation.sapUxAPObjectPageStickyAnchorBarPaddingTop {
-		padding-top: 0.5rem;
-	}
-	.sapUxAPObjectPageNavigation.sapUxAPObjectPageNavigationHidden {
-		padding-top: 0;
-	}
-}
-
-.sapUxAPObjectPageLayoutWithNavigation.sapUxAPObjectPageLayoutHeaderPinnable {
-	.sapUxAPObjectPageNavigation:not(.sapUxAPObjectPageStickyAnchorBar),
-	.sapUxAPObjectPageNavigation.sapUxAPObjectPageStickyAnchorBarPaddingTop {
-		padding-top: 0.8125rem;
-	}
-	.sapUxAPObjectPageNavigation.sapUxAPObjectPageNavigationHidden {
-		padding-top: 0;
-	}
-}
-
-.sapUiSizeCompact .sapUxAPObjectPageLayoutWithNavigation.sapUxAPObjectPageLayoutHeaderPinnable {
-	.sapUxAPObjectPageNavigation:not(.sapUxAPObjectPageStickyAnchorBar),
-	.sapUxAPObjectPageNavigation.sapUxAPObjectPageStickyAnchorBarPaddingTop {
-		padding-top: 0.5rem;
-	}
-	.sapUxAPObjectPageNavigation.sapUxAPObjectPageNavigationHidden {
-		padding-top: 0;
 	}
 }
 
@@ -1738,21 +1726,11 @@ html[data-sap-ui-animation='on'] .sapUxAPObjectPageLayout {
  Also the z-index causes the scroll bars of the table to show in the headerTitle.
  For more information see internal incident 1670194272. */
  /* TODO remove after 1.62 version */
-html[data-sap-ui-browser^="ie"][data-sap-ui-os^="win8"] .sapMShell {
-
-  .sapUxAPObjectPageWrapperTransform {
-    transform: none;
-  }
+html[data-sap-ui-browser^="ie"] .sapMShell {
 
   .sapUxAPObjectPageHeaderTitle {
     z-index: 3;
   }
-}
-
-.sap-desktop .sapUxAPObjectPageCustomScroller {
-    right: 0px;
-    position: absolute;
-    z-index: 100;
 }
 
 .ui-helper-clearfix:before,

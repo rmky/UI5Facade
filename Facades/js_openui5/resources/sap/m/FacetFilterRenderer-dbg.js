@@ -193,25 +193,32 @@ sap.ui.define(["sap/m/library", "sap/ui/Device", "sap/ui/core/InvisibleText"],
 
 
 		for (i = 0; i < iLength; i++) {
-			oButton = oControl._getButtonForList(aLists[i]);
+			// add button only if the list is not empty or is active
+			var bListItems = aLists[i].getItems().length > 0,
+				bListActive = aLists[i]._getOriginalActiveState(),
+				bAddButton = oControl._bCheckForAddListBtn && (bListItems || bListActive);
 
-			//remove all previous InvisibleText(s) related to the positioning
-			aOldAriaDescribedBy = oButton.removeAllAriaDescribedBy();
-			aOldAriaDescribedBy.forEach(destroyItem);
+			if (!oControl._bCheckForAddListBtn || bAddButton) {
+				oButton = oControl._getButtonForList(aLists[i]);
 
-			//get current position
-			sPosition = sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("FACETFILTERLIST_ARIA_POSITION", [(i + 1), iLength]);
-			oAccText = new InvisibleText( {text: sFacetFilterText + " " + sPosition}).toStatic();
-			oControl._aOwnedLabels.push(oAccText.getId());
-			oButton.addAriaDescribedBy(oAccText);
-			aNewAriaDescribedBy.push(oAccText.getId());
+				//remove all previous InvisibleText(s) related to the positioning
+				aOldAriaDescribedBy = oButton.removeAllAriaDescribedBy();
+				aOldAriaDescribedBy.forEach(destroyItem);
 
-			if (oControl.getShowPersonalization()) {
-				oButton.addAriaDescribedBy(FacetFilterRenderer.getAriaAnnouncement("ARIA_REMOVE"));
-			}
-			oRm.renderControl(oButton);
-			if (oControl.getShowPersonalization()) {
-				oRm.renderControl(oControl._getFacetRemoveIcon(aLists[i]));
+				//get current position
+				sPosition = sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("FACETFILTERLIST_ARIA_POSITION", [(i + 1), iLength]);
+				oAccText = new InvisibleText( {text: sFacetFilterText + " " + sPosition}).toStatic();
+				oControl._aOwnedLabels.push(oAccText.getId());
+				oButton.addAriaDescribedBy(oAccText);
+				aNewAriaDescribedBy.push(oAccText.getId());
+
+				if (oControl.getShowPersonalization()) {
+					oButton.addAriaDescribedBy(FacetFilterRenderer.getAriaAnnouncement("ARIA_REMOVE"));
+				}
+				oRm.renderControl(oButton);
+				if (oControl.getShowPersonalization()) {
+					oRm.renderControl(oControl._getFacetRemoveIcon(aLists[i]));
+				}
 			}
 		}
 		//needed because of FacetFilterRenderer.getAriaDescribedBy

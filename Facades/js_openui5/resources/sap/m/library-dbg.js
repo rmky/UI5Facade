@@ -21,6 +21,11 @@ sap.ui.define([
 	"sap/base/Log",
 	"sap/base/util/defineLazyProperty",
 	"sap/base/security/encodeCSS",
+	"./AvatarShape",
+	"./AvatarSize",
+	"./AvatarType",
+	"./AvatarColor",
+	"./AvatarImageFitType",
 	// referenced here to enable the Support feature
 	'./Support'
 ],
@@ -36,7 +41,12 @@ sap.ui.define([
 	assert,
 	Log,
 	defineLazyProperty,
-	encodeCSS
+	encodeCSS,
+	AvatarShape,
+	AvatarSize,
+	AvatarType,
+	AvatarColor,
+	AvatarImageFitType
 ) {
 
 	"use strict";
@@ -45,12 +55,18 @@ sap.ui.define([
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.m",
-		version: "1.68.1",
+		version: "1.73.1",
 		dependencies : ["sap.ui.core"],
 		designtime: "sap/m/designtime/library.designtime",
 		types: [
+			"sap.m.AvatarImageFitType",
+			"sap.m.AvatarShape",
+			"sap.m.AvatarSize",
+			"sap.m.AvatarType",
+			"sap.m.AvatarColor",
 			"sap.m.BackgroundDesign",
 			"sap.m.BarDesign",
+			"sap.m.BreadcrumbsSeparatorStyle",
 			"sap.m.ButtonType",
 			"sap.m.CarouselArrowsPlacement",
 			"sap.m.DateTimeInputType",
@@ -121,6 +137,7 @@ sap.ui.define([
 			"sap.m.SwitchType",
 			"sap.m.TileSizeBehavior",
 			"sap.m.TimePickerMaskMode",
+			"sap.m.TitleAlignment",
 			"sap.m.ToolbarDesign",
 			"sap.m.ToolbarStyle",
 			"sap.m.UploadState",
@@ -148,6 +165,7 @@ sap.ui.define([
 			"sap.m.ActionSelect",
 			"sap.m.ActionSheet",
 			"sap.m.App",
+			"sap.m.Avatar",
 			"sap.m.Bar",
 			"sap.m.BusyDialog",
 			"sap.m.BusyIndicator",
@@ -165,7 +183,6 @@ sap.ui.define([
 			"sap.m.CustomListItem",
 			"sap.m.CustomTile",
 			"sap.m.CustomTreeItem",
-			"sap.m.ColumnHeader",
 			"sap.m.DatePicker",
 			"sap.m.DateRangeSelection",
 			"sap.m.DateTimeField",
@@ -267,6 +284,7 @@ sap.ui.define([
 			"sap.m.SimpleFixFlex",
 			"sap.m.SinglePlanningCalendar",
 			"sap.m.SinglePlanningCalendarGrid",
+			"sap.m.SinglePlanningCalendarMonthGrid",
 			"sap.m.Slider",
 			"sap.m.SliderTooltip",
 			"sap.m.SliderTooltipBase",
@@ -304,7 +322,8 @@ sap.ui.define([
 			"sap.m.upload.UploadSet",
 			"sap.m.VBox",
 			"sap.m.ViewSettingsDialog",
-			"sap.m.ViewSettingsPopover",
+			"sap.m.WheelSlider",
+			"sap.m.WheelSliderContainer",
 			"sap.m.Wizard",
 			"sap.m.WizardStep",
 			"sap.m.semantic.DetailPage",
@@ -360,6 +379,8 @@ sap.ui.define([
 			"sap.m.ViewSettingsCustomTab",
 			"sap.m.ViewSettingsFilterItem",
 			"sap.m.ViewSettingsItem",
+			"sap.m.plugins.DataStateIndicator",
+			"sap.m.plugins.PluginBase",
 			"sap.m.semantic.AddAction",
 			"sap.m.semantic.CancelAction",
 			"sap.m.semantic.DeleteAction",
@@ -448,10 +469,7 @@ sap.ui.define([
 					"hideControl": "default",
 					"unhideControl": "default"
 				},
-				"sap.m.Link": {
-					"hideControl": "default",
-					"unhideControl": "default"
-				},
+				"sap.m.Link": "sap/m/flexibility/Link",
 				"sap.m.List": {
 					"hideControl": "default",
 					"unhideControl": "default",
@@ -519,7 +537,7 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.m
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @public
 	 */
 	var thisLib = sap.m;
@@ -593,6 +611,60 @@ sap.ui.define([
 	};
 
 	/**
+	 * Variations of the {@link sap.m.Breadcrumbs} separators.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @since 1.69
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+
+	thisLib.BreadcrumbsSeparatorStyle = {
+		/**
+		 * The separator will appear as "/"
+		 * @public
+		 */
+
+		Slash: "Slash",
+
+		/**
+		 * The separator will appear as "\"
+		 * @public
+		 */
+
+		BackSlash: "BackSlash",
+
+		/**
+		 * The separator will appear as "//"
+		 * @public
+		 */
+
+		DoubleSlash: "DoubleSlash",
+
+		/**
+		 * The separator will appear as "\\"
+		 * @public
+		 */
+
+		DoubleBackSlash: "DoubleBackSlash",
+
+		/**
+		 * The separator will appear as ">"
+		 * @public
+		 */
+
+		GreaterThan: "GreaterThan",
+
+		/**
+		 * The separator will appear as ">>"
+		 * @public
+		 */
+
+		DoubleGreaterThan: "DoubleGreaterThan"
+
+	};
+
+	/**
 	 * Different types for a button (predefined types).
 	 *
 	 * @enum {string}
@@ -602,43 +674,43 @@ sap.ui.define([
 	thisLib.ButtonType = {
 
 		/**
-		 * default type (no special styling)
+		 * Default type (no special styling)
 		 * @public
 		 */
 		Default : "Default",
 
 		/**
-		 * back type (back navigation button for header)
+		 * Back type (back navigation button for header)
 		 * @public
 		 */
 		Back : "Back",
 
 		/**
-		 * accept type (green button)
+		 * Accept type
 		 * @public
 		 */
 		Accept : "Accept",
 
 		/**
-		 * reject style (red button)
+		 * Reject style
 		 * @public
 		 */
 		Reject : "Reject",
 
 		/**
-		 * transparent type
+		 * Transparent type
 		 * @public
 		 */
 		Transparent : "Transparent",
 
 		/**
-		 * ghost type
+		 * Ghost type
 		 * @public
 		 */
 		Ghost : "Ghost",
 
 		/**
-		 * up type (up navigation button for header)
+		 * Up type (up navigation button for header)
 		 * @public
 		 */
 		Up : "Up",
@@ -650,11 +722,38 @@ sap.ui.define([
 		Unstyled : "Unstyled",
 
 		/**
-		 * emphasized type
+		 * Emphasized type
 		 * @public
 		 */
-		Emphasized : "Emphasized"
+		Emphasized : "Emphasized",
 
+		/**
+		 * Critical type
+		 * @public
+		 * @since 1.73
+		 */
+		Critical : "Critical",
+
+		/**
+		 * Negative type
+		 * @public
+		 * @since 1.73
+		 */
+		Negative : "Negative",
+
+		/**
+		 * Success type
+		 * @public
+		 * @since 1.73
+		 */
+		Success : "Success",
+
+		/**
+		 * Neutral type
+		 * @public
+		 * @since 1.73
+		 */
+		Neutral : "Neutral"
 	};
 
 	/**
@@ -3356,15 +3455,31 @@ sap.ui.define([
 
 		/**
 		 * Swipe from left to right
+		 * @deprecated As of version 1.72, replaced by {@link BeginToEnd}
 		 * @public
 		 */
 		LeftToRight : "LeftToRight",
 
 		/**
 		 * Swipe from right to left.
+		 * @deprecated As of version 1.72, replaced by {@link EndToBegin}
 		 * @public
 		 */
 		RightToLeft : "RightToLeft",
+
+		/**
+		 * Swipe from the beginning to the end - left to right in LTR languages and right to left in RTL languages.
+		 * @public
+		 * @since 1.72
+		 */
+		BeginToEnd : "BeginToEnd",
+
+		/**
+		 * Swipe from the end to the beginning - right to left in LTR languages and left to right in RTL languages.
+		 * @public
+		 * @since 1.72
+		 */
+		EndToBegin : "EndToBegin",
 
 		/**
 		 * Both directions (left to right or right to left)
@@ -3721,7 +3836,43 @@ sap.ui.define([
 		NavBarAndColHeaders: "NavBarAndColHeaders"
 	};
 
-	//lazy imports for MessageToast
+	/**
+	 * Declares the type of title alignment for some controls
+	 *
+	 * @enum {string}
+	 * @public
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	thisLib.TitleAlignment = {
+
+		/**
+		 * The default type (if specified in the theme)
+		 * @public
+		 */
+		Auto : "Auto",
+
+		/**
+		 * Explicitly sets the alignment to the start (left or right depending on LTR/RTL)
+		 * @public
+		 */
+		Start : "Start",
+
+		/**
+		 * Explicitly sets the alignment to the start (left or right depending on LTR/RTL)
+		 * @public
+		 */
+		Center : "Center"
+
+	};
+
+	thisLib.AvatarShape = AvatarShape;
+	thisLib.AvatarSize = AvatarSize;
+	thisLib.AvatarType = AvatarType;
+	thisLib.AvatarColor = AvatarColor;
+	thisLib.AvatarImageFitType = AvatarImageFitType;
+
+
+		//lazy imports for MessageToast
 	sap.ui.lazyRequire("sap.m.MessageToast", "show");
 
 	// requires for routing
@@ -4439,14 +4590,16 @@ sap.ui.define([
 	};
 
 	/**
-	 * Suggestion helper for sap.m.Input fields: Creates a multi-column suggest list for an sap.m.Input field based on a ValueList
-	 * annotation. The ValueList annotation will be resolved via the binding information of the Input field.
+	 * Suggestion helper for <code>sap.m.Input</code> fields when used with an OData model.
 	 *
-	 * If the annotation describes multiple input parameter the suggest provider will resolve all of these relative to the
-	 * context of the Input filed and use them for the suggestion query. The suggest provider will write all values that are
-	 * described as output parameters back to the model (relative to the context of the Input field). This can only be done if
-	 * the model runs in "TwoWay" binding mode. Both features can be switched of via the bResolveInput/bResolveOutput parameter
-	 * of the suggest function:
+	 * Creates a multi-column suggest list for an <code>sap.m.Input</code> field based on a <code>ValueList</code>
+	 * annotation. The <code>ValueList</code> annotation will be resolved via the binding information of the input field.
+	 *
+	 * If the annotation describes multiple input parameters, the suggest provider will resolve all of these relative
+	 * to the context of the input field and use them for the suggest query. The suggest provider will write all
+	 * values that are described as output parameters back to the model (relative to the context of the input field).
+	 * This can only be done if the model runs in "TwoWay" binding mode. Both features can be switched off via the
+	 * <code>bResolveInput/bResolveOutput</code> parameter of the suggest function.
 	 *
 	 * @namespace
 	 * @since 1.21.2
@@ -4723,8 +4876,8 @@ sap.ui.define([
 		setTextFieldContent: function(oTextField, sWidth){
 			oTextField.setWidth(sWidth);
 		},
-		createButton: function(){
-			var oButton = new sap.m.Button();
+		createButton: function(sId){
+			var oButton = new sap.m.Button(sId);
 			return oButton;
 		},
 		addFormClass: function(){ return "sapUiFUM"; },
@@ -4798,5 +4951,4 @@ sap.ui.define([
 	}
 
 	return thisLib;
-
 });

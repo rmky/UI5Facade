@@ -46,7 +46,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -165,6 +165,9 @@ sap.ui.define([
 
 	// default media value
 	Column.prototype._media = null;
+
+	// default forced column value
+	Column.prototype._bForcedColumn = false;
 
 	Column.prototype.exit = function() {
 		this._clearMedia();
@@ -475,21 +478,8 @@ sap.ui.define([
 		return this;
 	};
 
-	/*
-	 * Decides if we need media query or not according to given settings
-	 * Checks the given width is known screen size
-	 */
-	Column.prototype.setMinScreenWidth = function(sWidth) {
-		var parent = this.getParent();
-
-		// check if setting the old value
-		if (sWidth == this.getMinScreenWidth()) {
-			return this;
-		}
-
-		// first validate the value
-		this._validateMinWidth(sWidth);
-
+	// sets the internals for the minScreenWidth property
+	Column.prototype._setMinScreenWidth = function(sWidth) {
 		// initialize
 		this._clearMedia();
 		this._minWidth = 0;
@@ -506,12 +496,30 @@ sap.ui.define([
 				this._isWidthPredefined(sWidth);
 			}
 
+			var parent = this.getTable();
 			if (parent && parent.isActive()) {
 				this._addMedia();
 			} else {
 				this._bShouldAddMedia = true;
 			}
 		}
+	};
+
+	/*
+	 * Decides if we need media query or not according to given settings
+	 * Checks the given width is known screen size
+	 */
+	Column.prototype.setMinScreenWidth = function(sWidth) {
+		// check if setting the old value
+		if (sWidth == this.getMinScreenWidth()) {
+			return this;
+		}
+
+		// first validate the value
+		this._validateMinWidth(sWidth);
+
+		// set internal values
+		this._setMinScreenWidth(sWidth);
 
 		return this.setProperty("minScreenWidth", sWidth);
 	};
@@ -629,6 +637,21 @@ sap.ui.define([
 			}
 		}
 		return Element.prototype.getFocusDomRef.apply(this, arguments);
+	};
+
+	// returns the minScreenWidth property in pixel as integer
+	Column.prototype.getCalculatedMinScreenWidth = function() {
+		return parseInt(this._minWidth) || 0;
+	};
+
+	// forces the column not to be shown as a popin
+	Column.prototype.setForcedColumn = function(bForcedColumn) {
+		if (this._bForcedColumn == bForcedColumn) {
+			return;
+		}
+
+		this._bForcedColumn = bForcedColumn;
+		this._setMinScreenWidth(bForcedColumn ? "" : this.getMinScreenWidth());
 	};
 
 	return Column;

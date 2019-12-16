@@ -8,7 +8,7 @@
       "support/apps/uiFlexibilityDiagnostics"
     ],
     "applicationVersion": {
-      "version": "1.68.1"
+      "version": "1.73.1"
     },
     "title": "SAPUI5 library with sap.ui.fl controls.",
     "description": "SAPUI5 library with sap.ui.fl controls.",
@@ -24,13 +24,13 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.68",
+      "minUI5Version": "1.73",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.68.1"
+          "minVersion": "1.73.1"
         },
         "sap.m": {
-          "minVersion": "1.68.1"
+          "minVersion": "1.73.1"
         }
       }
     },
@@ -38,7 +38,8 @@
       "i18n": "messagebundle.properties",
       "content": {
         "controls": [
-          "sap.ui.fl.variants.VariantManagement"
+          "sap.ui.fl.variants.VariantManagement",
+          "sap.ui.fl.util.IFrame"
         ]
       }
     }

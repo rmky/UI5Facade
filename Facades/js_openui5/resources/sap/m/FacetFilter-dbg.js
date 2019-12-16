@@ -140,7 +140,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IShrinkable
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -157,6 +157,8 @@ sap.ui.define([
 		properties : {
 			/**
 			 * If set to <code>true</code> and the FacetFilter type is <code>Simple</code>, then the Add Facet icon will be displayed and each facet button will also have a Facet Remove icon displayed beside it, allowing the user to deactivate the facet.
+			 *
+			 * <b>Note:</b> Always set this property to <code>true</code> when your facet lists are not active, so that the user is able to select them and interact with them.
 			 */
 			showPersonalization : {type : "boolean", group : "Appearance", defaultValue : false},
 
@@ -1183,7 +1185,6 @@ sap.ui.define([
 	 */
 	FacetFilter.prototype._getButtonForList = function(oList) {
 
-
 		if (this._buttons[oList.getId()]) {
 
 			this._setButtonText(oList);
@@ -1541,6 +1542,10 @@ sap.ui.define([
 
 						if (oList.getMode() === ListMode.MultiSelect) {
 							oList._updateActiveState();
+							// checkbox might be clicked so in case Button for the list is added
+							// in the bar, we should check if this list has items
+							// the check is done in the renderer
+							that._bCheckForAddListBtn = true;
 						}
 						oList._fireListCloseEvent();
 						oList._search("");
@@ -1665,8 +1670,8 @@ sap.ui.define([
 	 * This method refreshes the internal model for thr FacetList. It should be called everytime when the model
 	 * of FacetFilter is changed and update to the FacetList is needed
 	 *
-	 * @protected
-	 * @sap-restricted hpa.cei.mkt.cal -> FacetFilter.controller -> OnDisplayRefreshed
+	 * @private
+	 * @ui5-restricted hpa.cei.mkt.cal -> FacetFilter.controller -> OnDisplayRefreshed
 	 * @returns {sap.m.FacetFilter}
 	 */
 	FacetFilter.prototype.refreshFacetList = function () {

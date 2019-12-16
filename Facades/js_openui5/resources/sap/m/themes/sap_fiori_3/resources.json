@@ -21,12 +21,22 @@
 			"theme": "sap_fiori_3"
 		},
 		{
+			"name": "Avatar.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
 			"name": "Bar.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
 		},
 		{
 			"name": "Breadcrumbs.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "BusyDialog.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
 		},
@@ -52,6 +62,11 @@
 		},
 		{
 			"name": "ColorPalette.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "ColumnListItem.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
 		},
@@ -92,6 +107,11 @@
 		},
 		{
 			"name": "GenericTile.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "GroupHeaderListItem.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
 		},
@@ -167,11 +187,6 @@
 		},
 		{
 			"name": "NotificationListGroup.less",
-			"designtime": true,
-			"theme": "sap_fiori_3"
-		},
-		{
-			"name": "NotificationListItem.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
 		},
@@ -391,6 +406,11 @@
 			"theme": "sap_fiori_3"
 		},
 		{
+			"name": "Title.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
 			"name": "ToggleButton.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
@@ -422,6 +442,11 @@
 		},
 		{
 			"name": "ViewSettingsDialog.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "WheelSlider.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
 		},

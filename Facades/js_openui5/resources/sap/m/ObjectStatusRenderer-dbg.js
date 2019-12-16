@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/IndicationColorSupport', 'sap/ui/core/library'],
-	function(ValueStateSupport, IndicationColorSupport, coreLibrary) {
+sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/IndicationColorSupport', 'sap/ui/core/InvisibleText', 'sap/ui/core/library'],
+	function(ValueStateSupport, IndicationColorSupport, InvisibleText, coreLibrary) {
 	"use strict";
 
 
@@ -42,7 +42,11 @@ sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/IndicationColorSupp
 			var sState = oObjStatus.getState();
 			var bInverted = oObjStatus.getInverted();
 			var sTextDir = oObjStatus.getTextDirection();
-			var bPageRTL = sap.ui.getCore().getConfiguration().getRTL();
+			var oCore = sap.ui.getCore();
+			var bPageRTL = oCore.getConfiguration().getRTL();
+			var oAccAttributes = {
+				roledescription: oCore.getLibraryResourceBundle("sap.m").getText("OBJECT_STATUS")
+			};
 			var sValueStateText;
 			var accValueText;
 
@@ -64,21 +68,21 @@ sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/IndicationColorSupp
 			if (oObjStatus._isActive()) {
 				oRm.class("sapMObjStatusActive");
 				oRm.attr("tabindex", "0");
-				oRm.accessibilityState(oObjStatus, {
-					role: "link"
-				});
+				oAccAttributes.role = "button";
+			} else {
+				oAccAttributes.role = "group";
 			}
 
 			/* ARIA region adding the aria-describedby to ObjectStatus */
 
-			if (sState != ValueState.None) {
-				oRm.accessibilityState(oObjStatus, {
-					describedby: {
-						value: oObjStatus.getId() + "sapSRH",
-						append: true
-					}
-				});
+			if (sState !== ValueState.None) {
+				oAccAttributes.describedby = {
+					value: oObjStatus.getId() + "sapSRH",
+					append: true
+				};
 			}
+
+			oRm.accessibilityState(oObjStatus, oAccAttributes);
 
 			oRm.openEnd();
 
@@ -138,10 +142,7 @@ sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/IndicationColorSupp
 				}
 				if (accValueText) {
 					oRm.openStart("span", oObjStatus.getId() + "sapSRH");
-					oRm.class("sapUiInvisibleText");
-					oRm.accessibilityState({
-						hidden: false
-					});
+					oRm.class("sapUiPseudoInvisibleText");
 					oRm.openEnd();
 					oRm.text(accValueText);
 					oRm.close("span");

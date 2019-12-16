@@ -59,7 +59,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IFormContent, sap.ui.unified.IProcessableBlobs
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -428,6 +428,19 @@ sap.ui.define([
 			},
 
 			/**
+			 * Event is fired when the size of the file is 0
+			 */
+			fileEmpty : {
+				parameters : {
+
+					/**
+					 * The name of the file to be uploaded.
+					 */
+					fileName: {type : "string"}
+				}
+			},
+
+			/**
 			 * Event is fired when the file is allowed for upload on client side.
 			 */
 			fileAllowed : {},
@@ -556,7 +569,7 @@ sap.ui.define([
 				}
 			}
 		});
-		this.oBrowse = library.FileUploaderHelper.createButton();
+		this.oBrowse = library.FileUploaderHelper.createButton(this.getId() + "-fu_button");
 		this.oFilePath.setParent(this);
 		this.oBrowse.setParent(this);
 
@@ -1632,11 +1645,17 @@ sap.ui.define([
 			if (fMaxSize && (fSize > fMaxSize)) {
 				Log.info("File: " + sName + " is of size " + fSize + " MB which exceeds the file size limit of " + fMaxSize + " MB.");
 				this.fireFileSizeExceed({
-					fileName:sName,
-					fileSize:fSize
+					fileName: sName,
+					fileSize: fSize
 				});
 
 				return false;
+			}
+			if (fSize === 0){
+				Log.info("File: " + sName + " is empty!");
+				this.fireFileEmpty({
+					fileName: sName
+				});
 			}
 			//check if the filename is too long and fire the corresponding event if necessary
 			if (this._isFilenameTooLong(sName)) {
@@ -1835,7 +1854,7 @@ sap.ui.define([
 			// sink the load event of the upload iframe
 			var that = this;
 			this._bUploading = false; // flag for uploading
-			jQuery(oIFrameRef).load(function(oEvent) {
+			jQuery(oIFrameRef).on( "load", function(oEvent) {
 				if (that._bUploading) {
 					Log.info("File uploaded to " + that.getUploadUrl());
 					var sResponse;

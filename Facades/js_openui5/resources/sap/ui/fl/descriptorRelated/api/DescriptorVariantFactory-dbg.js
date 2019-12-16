@@ -5,43 +5,45 @@
  */
 
 sap.ui.define([
-	"sap/ui/fl/Utils",
+	"sap/ui/fl/LayerUtils",
 	"sap/ui/fl/descriptorRelated/internal/Utils",
 	"sap/ui/fl/registry/Settings",
 	"sap/ui/thirdparty/jquery",
-	"sap/base/util/merge"
+	"sap/base/util/merge",
+	"sap/ui/fl/write/_internal/Storage"
 ], function(
-	FlexUtils,
+	LayerUtils,
 	Utils,
 	Settings,
 	jQuery,
-	fnBaseMerge
+	fnBaseMerge,
+	Storage
 ) {
 	"use strict";
 
 	/**
-	 * App variant/CDM app config
+	 * App variant
 	 *
 	 * @param {object} mParameters parameters
-	 * @param {string} mParameters.id the id of the app variant/CDM app config id to be provided for a new app variant/CDM app config and for deleting a app variant/CDM app config
-	 * @param {string} mParameters.reference the proposed referenced descriptor or app variant/CDM app config id (might be overwritten by the backend) to be provided when creating a new app variant/CDM app config
+	 * @param {string} mParameters.id the id of the app variant id to be provided for a new app variant and for deleting a app variant
+	 * @param {string} mParameters.reference the proposed referenced descriptor or app variant id (might be overwritten by the backend) to be provided when creating a new app variant
 	 * @param {string} [mParameters.version] version of the app variant (optional)
-	 * @param {string} [mParameters.layer='CUSTOMER] the proposed layer (might be overwritten by the backend) when creating a new app variant/CDM app config
-	 * @param {boolean} [mParameters.isAppVariantRoot=true] indicator whether this is an app variant, default is true
-	 * @param {object} mFileContent file content of the existing app variant/CDM app config to be provided if app variant/CDM app config shall be created from an existing
-	 * @param {boolean} [bDeletion=false] deletion indicator to be provided if app variant/CDM app config shall be deleted
+	 * @param {string} [mParameters.layer='CUSTOMER'] the proposed layer (might be overwritten by the backend) when creating a new app variant
+	 * @param {object} mFileContent file content of the existing app variant to be provided if app variant shall be created from an existing
+	 * @param {boolean} [bDeletion=false] deletion indicator to be provided if app variant shall be deleted
 	 * @param {sap.ui.fl.registry.Settings} oSettings settings
 	 *
 	 * @constructor
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorVariant
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @private
+	 * @deprecated Since version 1.73
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 
 
-	//App variant/CDM app config
+	//App variant
 	var DescriptorVariant = function(mParameters, mFileContent, bDeletion, oSettings) {
 		if (mParameters && bDeletion) {
 			this._id = mParameters.id;
@@ -51,9 +53,6 @@ sap.ui.define([
 			this._id = mParameters.id;
 			this._reference = mParameters.reference;
 			this._layer = mParameters.layer;
-			if (typeof mParameters.isAppVariantRoot !== "undefined") {
-				this._isAppVariantRoot = mParameters.isAppVariantRoot;
-			}
 			if (typeof mParameters.referenceVersion !== "undefined") {
 				this._referenceVersion = mParameters.referenceVersion;
 			}
@@ -70,13 +69,14 @@ sap.ui.define([
 	};
 
 	/**
-	 * Adds a descriptor inline change to the app variant/CDM app config
+	 * Adds a descriptor inline change to the app variant
 	 *
 	 * @param {sap.ui.fl.descriptorRelated.api.DescriptorInlineChange} oDescriptorInlineChange the inline change
 	 *
 	 * @return {Promise} resolving when adding the descriptor inline change was successful (without backend access)
 	 *
 	 * @private
+	 * @deprecated Since version 1.73
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorVariant.prototype.addDescriptorInlineChange = function(oDescriptorInlineChange) {
@@ -84,7 +84,7 @@ sap.ui.define([
 		return new Promise(function(resolve) {
 			var fSetHostingIdForTextKey = function(_oDescriptorInlineChange, sId) {
 				//providing "hosting id" for appdescr_app_setTitle and similar
-				//"hosting id" is app variant/CDM app config id
+				//"hosting id" is app variant id
 				if (_oDescriptorInlineChange["setHostingIdForTextKey"]) {
 					_oDescriptorInlineChange.setHostingIdForTextKey(sId);
 				}
@@ -114,6 +114,7 @@ sap.ui.define([
 	 * @return {Promise} resolving when setting of transport request was successful
 	 *
 	 * @private
+	 * @deprecated Since version 1.73
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorVariant.prototype.setTransportRequest = function(sTransportRequest) {
@@ -135,6 +136,7 @@ sap.ui.define([
 	 * @return {Promise} resolving when setting of package was successful
 	 *
 	 * @private
+	 * @deprecated Since version 1.73
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorVariant.prototype.setPackage = function(sPackage) {
@@ -150,15 +152,18 @@ sap.ui.define([
 
 	/**
 	 * Submits the app variant to the backend
-	 *
 	 * @return {Promise} resolving when submitting the app variant was successful
 	 *
 	 * @private
+	 * @deprecated Since version 1.73
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorVariant.prototype.submit = function() {
+		// In case of CRUD appvariant operations are intended for a SAP developer, it will be given to the old LREPConnector
 		var sRoute = '/sap/bc/lrep/appdescr_variants/';
 		var sMethod;
+
+		var mMap = this._getMap();
 
 		switch (this._mode) {
 			case 'NEW':
@@ -166,7 +171,7 @@ sap.ui.define([
 				break;
 			case 'FROM_EXISTING':
 				sMethod = 'PUT';
-				sRoute = sRoute + this._getMap().id;
+				sRoute = sRoute + mMap.id;
 				break;
 			case 'DELETION':
 				sMethod = 'DELETE';
@@ -176,12 +181,15 @@ sap.ui.define([
 				// do nothing
 		}
 
-		var mMap = this._getMap();
-
 		if (this._sTransportRequest) {
-		//set to URL-Parameter 'changelist', as done in LrepConnector
+			//set to URL-Parameter 'changelist', as done in LrepConnector
 			sRoute += '?changelist=' + this._sTransportRequest;
-		} else if (this._oSettings.isAtoEnabled() && FlexUtils.isCustomerDependentLayer(mMap.layer)) {
+		} else if (
+			this._oSettings.isAtoEnabled()
+			&& (this._skipIam || ((sMethod === 'PUT' || sMethod === 'DELETE') && mMap.packageName !== '$TMP'))
+			&& LayerUtils.isCustomerDependentLayer(mMap.layer)
+		) {
+			// Smart Business created KPI tiles on S4 Cloud and the query parameter will be added to support their usecase
 			sRoute += '?changelist=ATO_NOTIFICATION';
 		}
 		if (this._skipIam) {
@@ -192,16 +200,72 @@ sap.ui.define([
 		return Utils.sendRequest(sRoute, sMethod, mMap);
 	};
 
+	/**
+	 * Submits the app variant to the backend via new connectors
+	 * @return {Promise} resolving when submitting the app variant was successful
+	 *
+	 * @private
+	 * @ui5-restricted sap.ui.rta, smart business
+	 */
+	DescriptorVariant.prototype.submitViaNewConnectors = function() {
+		var mMap = this._getMap();
+
+		var mPropertyBag = {
+			flexObject: {}
+		};
+
+		if (this._sTransportRequest) {
+			mPropertyBag.transport = this._sTransportRequest;
+		} else if (
+			this._oSettings.isAtoEnabled()
+			&& (this._skipIam || ((this._mode === 'FROM_EXISTING' || this._mode === 'DELETION') && mMap.packageName !== '$TMP'))
+			&& LayerUtils.isCustomerDependentLayer(mMap.layer)
+		) {
+			// Smart Business created KPI tiles on S4 Cloud and the query parameter will be added to support their usecase
+			mPropertyBag.transport = "ATO_NOTIFICATION";
+		}
+		if (this._skipIam) {
+			mPropertyBag.skipIam = this._skipIam;
+		}
+
+		if (mMap.layer) {
+			mPropertyBag.layer = mMap.layer;
+		}
+
+		var oBackendOperation;
+		switch (this._mode) {
+			case 'NEW':
+				Object.assign(mPropertyBag.flexObject, mMap);
+				oBackendOperation = Storage.appVariant.create(mPropertyBag);
+				break;
+			case 'FROM_EXISTING':
+				mPropertyBag.reference = mMap.id;
+				oBackendOperation = Storage.appVariant.update(mPropertyBag);
+				break;
+			case 'DELETION':
+				mPropertyBag.reference = mMap.id;
+				oBackendOperation = Storage.appVariant.remove(mPropertyBag);
+				break;
+			default:
+				return Promise.reject("Please provide a valid operation.");
+		}
+
+		return oBackendOperation.then(function(oResult) {
+			return oResult;
+		});
+	};
+
 	DescriptorVariant.prototype.getId = function() {
-		return this._id;
+		return this._getMap().id;
 	};
 
 	/**
-	 * Set the reference of the app variant/CDM app config
+	 * Set the reference of the app variant
 	 *
 	 * @param {string} sReference the new reference
 	 *
 	 * @private
+	 * @deprecated Since version 1.73
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorVariant.prototype.setReference = function(sReference) {
@@ -213,6 +277,10 @@ sap.ui.define([
 
 	DescriptorVariant.prototype.getReference = function() {
 		return this._reference;
+	};
+
+	DescriptorVariant.prototype.getVersion = function() {
+		return this._version;
 	};
 
 	DescriptorVariant.prototype.getNamespace = function() {
@@ -232,11 +300,12 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns a copy of the JSON object of the app variant/CDM app config
+	 * Returns a copy of the JSON object of the app variant
 	 *
-	 * @return {object} copy of JSON object of the app variant/CDM app config
+	 * @return {object} copy of JSON object of the app variant
 	 *
 	 * @private
+	 * @deprecated Since version 1.73
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorVariant.prototype.getJson = function() {
@@ -251,19 +320,12 @@ sap.ui.define([
 					fileType: "appdescr_variant",
 					namespace: this._getNameAndNameSpace().namespace,
 					layer: this._layer,
-					packageName: this._package ? this._package : "$TMP",
-
+					packageName: this._package ? this._package : "",
 					reference: this._reference,
 					id: this._id,
 
 					content: this._content
 				};
-				if (typeof this._isAppVariantRoot !== "undefined") {
-					mResult.isAppVariantRoot = this._isAppVariantRoot;
-				}
-				if (mResult.isAppVariantRoot !== undefined && !mResult.isAppVariantRoot) {
-					mResult.fileType = "cdmapp_config";
-				}
 				if (typeof this._referenceVersion !== "undefined") {
 					mResult.referenceVersion = this._referenceVersion;
 				}
@@ -286,38 +348,61 @@ sap.ui.define([
 	};
 
 	/**
-	 * Factory for App variant/CDM app configs
+	 * Factory for App variants
 	 * @namespace
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorVariantFactory
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @private
+	 * @deprecated Since version 1.73
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	var DescriptorVariantFactory = {};
 
-	DescriptorVariantFactory._getDescriptorVariant = function(sId) {
-		var sRoute = '/sap/bc/lrep/appdescr_variants/' + sId;
-		return Utils.sendRequest(sRoute, 'GET');
+	DescriptorVariantFactory._getDescriptorVariant = function(mPropertyBag) {
+		if (mPropertyBag.isForSAPDelivery || !mPropertyBag.layer) {
+			var sRoute = '/sap/bc/lrep/appdescr_variants/' + mPropertyBag.reference;
+			return Utils.sendRequest(sRoute, 'GET');
+		}
+		return Storage.appVariant.load(mPropertyBag);
 	};
 
 	/**
-	 * Creates a new app variant/CDM app config
+	 * Creates a new app variant
 	 *
 	 * @param {object} mParameters the parameters
-	 * @param {string} mParameters.reference the proposed referenced descriptor or app variant/CDM app config id (might be overwritten by the backend)
-	 * @param {string} mParameters.id the id for the app variant/CDM app config id
+	 * @param {string} mParameters.reference the proposed referenced descriptor or app variant id (might be overwritten by the backend)
+	 * @param {string} mParameters.id the id for the app variant id
 	 * @param {string} mParameters.version optional version of the app variant
-	 * @param {string} [mParameters.layer='CUSTOMER'] the proposed layer for the app variant/CDM app config (might be overwritten by the backend)
-	 * @param {boolean} [mParameters.isAppVariantRoot=true] indicator whether this is an app variant, default is true
+	 * @param {string} [mParameters.layer='CUSTOMER'] the proposed layer for the app variant (might be overwritten by the backend)
 	 * @param {boolean} [mParameters.skipIam=false] indicator whether the default IAM item creation and registration is skipped
 
 	 * @return {Promise} resolving the new DescriptorVariant instance
 	 *
 	 * @private
+	 * @deprecated Since version 1.73
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorVariantFactory.createNew = function(mParameters) {
+		return DescriptorVariantFactory.createAppVariant(mParameters);
+	};
+
+	/**
+	 * Creates a new app variant
+	 *
+	 * @param {object} mParameters the parameters
+	 * @param {string} mParameters.reference the proposed referenced descriptor or app variant id (might be overwritten by the backend)
+	 * @param {string} mParameters.id the id for the app variant id
+	 * @param {string} mParameters.version optional version of the app variant
+	 * @param {string} [mParameters.layer='CUSTOMER'] the proposed layer for the app variant (might be overwritten by the backend)
+	 * @param {boolean} [mParameters.skipIam=false] indicator whether the default IAM item creation and registration is skipped
+	 * @return {Promise} resolving the new DescriptorVariant instance
+	 *
+	 * @private
+	 * @deprecated Since version 1.73
+	 * @ui5-restricted sap.ui.rta, smart business
+	 */
+	DescriptorVariantFactory.createAppVariant = function(mParameters) {
 		Utils.checkParameterAndType(mParameters, "reference", "string");
 		Utils.checkParameterAndType(mParameters, "id", "string");
 
@@ -330,17 +415,8 @@ sap.ui.define([
 			mParameters.layer = 'CUSTOMER';
 		} else {
 			Utils.checkParameterAndType(mParameters, "layer", "string");
-			//TODO: is this necessary? already checked in Utils-method? -> checks only type
-			if (mParameters.layer !== 'VENDOR' && mParameters.layer !== 'PARTNER' && !FlexUtils.isCustomerDependentLayer(mParameters.layer)) {
-				//TODO: this should do a reject 	return Promise.reject(oError);
-				throw new Error("Parameter \"layer\" needs to be 'VENDOR', 'PARTNER' or customer dependent");
-			}
 		}
 
-		// isAppVariantRoot
-		if (mParameters.isAppVariantRoot) {
-			Utils.checkParameterAndType(mParameters, "isAppVariantRoot", "boolean");
-		}
 		if (mParameters.skipIam) {
 			Utils.checkParameterAndType(mParameters, "skipIam", "boolean");
 		}
@@ -351,42 +427,28 @@ sap.ui.define([
 	};
 
 	/**
-	 * Creates an app variant/CDM app config instance for an existing app variant/CDM app config id
+	 * Creates an app variant instance for an existing app variant
 	 *
-	 * @param {string} sId the id of the app variant/CDM app config id
-	 *
+	 * @param {string} sId the id of the app variant
 	 * @return {Promise} resolving the DescriptorVariant instance
 	 *
 	 * @private
+	 * @deprecated Since version 1.73
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorVariantFactory.createForExisting = function(sId) {
-		if (sId === undefined || typeof sId !== "string") {
-			throw new Error("Parameter \"sId\" must be provided of type string");
-		}
-
-		var _mResult;
-		return DescriptorVariantFactory._getDescriptorVariant(sId).then(function(mResult) {
-			_mResult = mResult;
-			return Settings.getInstance();
-		}).then(function(oSettings) {
-			var mDescriptorVariantJSON = _mResult.response;
-			if (!jQuery.isPlainObject(mDescriptorVariantJSON)) {
-				//Parse if needed. Happens if backend sends wrong content type
-				mDescriptorVariantJSON = JSON.parse(mDescriptorVariantJSON);
-			}
-			return Promise.resolve(new DescriptorVariant(null, mDescriptorVariantJSON, false, oSettings));
-		});
+		return DescriptorVariantFactory.loadAppVariant(sId, false);
 	};
 
 	/**
-	 * Creates a app variant/CDM app config instance from a json
+	 * Creates a app variant instance from a json
 	 *
-	 * @param {object} mParameters DT content of app variant/CDM app config
+	 * @param {object} mParameters DT content of app variant
 	 *
 	 * @return {Promise} resolving the DescriptorVariant instance
 	 *
 	 * @private
+	 * @deprecated Since version 1.73
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorVariantFactory.createFromJson = function(mParameters) {
@@ -399,29 +461,55 @@ sap.ui.define([
 	};
 
 	/**
-	 * Creates an app variant/CDM app config deletion
+	 * Creates an app variant deletion
 	 *
-	 * @param {string} sId the id of the app variant/CDM app config id
+	 * @param {string} sId the id of the app variant
 	 *
 	 * @return {Promise} resolving the DescriptorVariant instance
 	 *
 	 * @private
+	 * @deprecated Since version 1.73
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
 	DescriptorVariantFactory.createDeletion = function(sId) {
+		return DescriptorVariantFactory.loadAppVariant(sId, true);
+	};
+
+	/**
+	 * Loads an existing app variant from backend and prepare a map for either creation or deletion
+	 *
+	 * @param {string} sId the id of the app variant
+	 * @param {boolean} bDeletion required for deletion
+	 * @param {string} [sLayer] - Current layer (required to determine the connector later in Storage)
+	 * @param {string} [bIsForSapDelivery=false] - Determines whether app variant deletion is intended for SAP delivery
+	 * @return {Promise} resolving the DescriptorVariant instance
+	 *
+	 * @private
+	 * @deprecated Since version 1.73
+	 * @ui5-restricted sap.ui.rta, smart business
+	 */
+	DescriptorVariantFactory.loadAppVariant = function(sId, bDeletion, sLayer, bIsForSapDelivery) {
 		if (sId === undefined || typeof sId !== "string") {
 			throw new Error("Parameter \"sId\" must be provided of type string");
 		}
-		var mParameter = {};
-		mParameter.id = sId;
 
 		var _mResult;
-		return DescriptorVariantFactory._getDescriptorVariant(sId).then(function(mResult) {
+		return DescriptorVariantFactory._getDescriptorVariant({
+			reference: sId,
+			layer: sLayer,
+			isForSAPDelivery: bIsForSapDelivery
+		}).then(function(mResult) {
 			_mResult = mResult;
 			return Settings.getInstance();
 		}).then(function(oSettings) {
-			var mDescriptorVariantJSON = JSON.parse(_mResult.response);
-			return Promise.resolve(new DescriptorVariant(mParameter, mDescriptorVariantJSON, true, oSettings));
+			var mDescriptorVariantJSON = _mResult.response;
+			if (!jQuery.isPlainObject(mDescriptorVariantJSON)) {
+				//Parse if needed. Happens if backend sends wrong content type
+				mDescriptorVariantJSON = JSON.parse(mDescriptorVariantJSON);
+			}
+			return bDeletion
+				? Promise.resolve(new DescriptorVariant({id: sId}, mDescriptorVariantJSON, bDeletion, oSettings))
+				: Promise.resolve(new DescriptorVariant(null, mDescriptorVariantJSON, bDeletion, oSettings));
 		});
 	};
 

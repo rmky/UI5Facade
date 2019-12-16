@@ -35,7 +35,7 @@ sap.ui.define([
 		 * @extends sap.m.InputBase
 		 *
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.73.1
 		 *
 		 * @constructor
 		 * @public
@@ -79,15 +79,13 @@ sap.ui.define([
 			InputBase.prototype.init.apply(this, arguments);
 			var oRb = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 
-			var oIcon = this.addEndIcon({
+			this.addEndIcon({
 				id: this.getId() + "-arrow",
 				src: "sap-icon://slim-arrow-down",
 				noTabStop: true,
 				alt: oRb.getText("COMBOBOX_BUTTON"),
 				decorative: false
 			});
-
-			oIcon.addAriaLabelledBy("");
 		};
 
 		/**
@@ -97,6 +95,16 @@ sap.ui.define([
 		 */
 		ComboBoxTextField.prototype.getIcon = function () {
 			return this.getAggregation("_endIcon")[0];
+		};
+
+		/**
+		 * Toggles the icon pressed style on or off.
+		 *
+		 * @param {boolean} [bState] True if the icon pressed class should be applied.
+		 * @protected
+		 */
+		ComboBoxTextField.prototype.toggleIconPressedStyle = function(bState) {
+			this.toggleStyleClass(InputBase.ICON_PRESSED_CSS_CLASS, bState);
 		};
 
 		ComboBoxTextField.prototype.onBeforeRendering = function () {

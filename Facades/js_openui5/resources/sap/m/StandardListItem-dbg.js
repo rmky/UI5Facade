@@ -36,7 +36,7 @@ sap.ui.define([
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -221,6 +221,16 @@ sap.ui.define([
 		}
 
 		return sAnnouncement;
+	};
+
+	/**
+	 * Returns <code>true</code>, if the info text is less than or equal to maximum limit of characters.
+	 * @returns {boolean} show the complete info text.
+	 *
+	 * @private
+	 */
+	StandardListItem.prototype.showCompleteInfoText = function() {
+		return this.getInfo().length <= 15;
 	};
 
 	StandardListItem.prototype.ontap = function(oEvent) {

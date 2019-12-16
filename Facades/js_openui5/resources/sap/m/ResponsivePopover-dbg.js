@@ -9,6 +9,7 @@ sap.ui.define([
 	'./Dialog',
 	'./Popover',
 	'./library',
+	'./TitleAlignmentMixin',
 	'sap/ui/core/Control',
 	'sap/ui/core/IconPool',
 	'sap/ui/base/ManagedObject',
@@ -23,6 +24,7 @@ sap.ui.define([
 		Dialog,
 		Popover,
 		library,
+		TitleAlignmentMixin,
 		Control,
 		IconPool,
 		ManagedObject,
@@ -41,7 +43,8 @@ sap.ui.define([
 	// shortcut for sap.m.PlacementType
 	var PlacementType = library.PlacementType;
 
-
+	// shortcut for sap.m.TitleAlignment
+	var TitleAlignment = library.TitleAlignment;
 
 	/**
 	 * Constructor for a new ResponsivePopover.
@@ -64,7 +67,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -150,7 +153,16 @@ sap.ui.define([
 			 * @since 1.36.4
 			 * @private
 			 */
-			resizable: {type: "boolean", group: "Dimension", defaultValue: false}
+			resizable: {type: "boolean", group: "Dimension", defaultValue: false},
+
+			/**
+			 * Specifies the Title alignment (theme specific).
+			 * If set to <code>TitleAlignment.Auto</code>, the Title will be aligned as it is set in the theme (if not set, the default value is <code>center</code>);
+			 * Other possible values are <code>TitleAlignment.Start</code> (left or right depending on LTR/RTL), and <code>TitleAlignment.Center</code> (centered)
+			 * @since 1.72
+			 * @public
+			 */
+			titleAlignment : {type : "sap.m.TitleAlignment", group : "Misc", defaultValue : TitleAlignment.Auto}
 		},
 		defaultAggregation: "content",
 		aggregations : {
@@ -304,6 +316,7 @@ sap.ui.define([
 
 		var settings = {
 			resizable: that.getResizable(),
+			titleAlignment: that.getTitleAlignment(),
 			beforeOpen: function(oEvent){
 				that.fireBeforeOpen({openBy: oEvent.getParameter('openBy')});
 			},
@@ -605,6 +618,22 @@ sap.ui.define([
 		return this._oFooter;
 	};
 
+	/**
+	 * @private
+	 */
+	ResponsivePopover.prototype._getButtonFooter = function() {
+		return Device.system.phone ? this._oControl._getToolbar() : this._oControl.getFooter();
+	};
+
+	/**
+	 *
+	 * @returns {sap.ui.core.Popup}
+	 * @private
+	 */
+	ResponsivePopover.prototype._getPopup = function() {
+		return  this._oControl.oPopup;
+	};
+
 	ResponsivePopover.prototype._setButton = function(sPos, oButton){
 		if (this._oControl instanceof Popover) {
 			var sGetterName = "get" + this._firstLetterUpperCase(sPos) + "Button",
@@ -739,7 +768,7 @@ sap.ui.define([
 
 	// forward the other necessary methods to the inner instance, but do not check the existence of generated methods like (addItem)
 	["invalidate", "close", "isOpen", "addStyleClass", "removeStyleClass", "toggleStyleClass", "hasStyleClass",
-		"getDomRef", "setBusy", "getBusy", "setBusyIndicatorDelay", "getBusyIndicatorDelay", "addEventDelegate"].forEach(function(sName){
+		"getDomRef", "setBusy", "getBusy", "setBusyIndicatorDelay", "getBusyIndicatorDelay", "addEventDelegate", "_setAriaModal"].forEach(function(sName){
 			ResponsivePopover.prototype[sName] = function() {
 				if (this._oControl && this._oControl[sName]) {
 

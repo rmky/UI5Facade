@@ -53,6 +53,7 @@ sap.ui.define([
 		constructor : function(oModel, sPath, oContext, aSorters, aFilters, mParameters){
 			ListBinding.apply(this, arguments);
 
+			this.mNormalizeCache = {};
 			this.oModel.checkFilterOperation(this.aApplicationFilters);
 			this.oCombinedFilter = FilterProcessor.combineFilters(this.aFilters, this.aApplicationFilters);
 
@@ -264,7 +265,7 @@ sap.ui.define([
 
 		this.aIndices = FilterProcessor.apply(this.aIndices, this.oCombinedFilter, function(vRef, sPath) {
 			return that.oModel.getProperty(sPath, that.oList[vRef]);
-		});
+		}, this.mNormalizeCache);
 
 		this.iLength = this.aIndices.length;
 	};

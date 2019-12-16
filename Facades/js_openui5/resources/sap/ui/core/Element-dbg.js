@@ -98,7 +98,7 @@ sap.ui.define([
 	 * @class Base Class for Elements.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @public
 	 * @alias sap.ui.core.Element
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
@@ -568,8 +568,8 @@ sap.ui.define([
 	 * @param {object} mParameters The parameters which complement the event. Hooks must not modify the parameters.
 	 * @function
 	 * @private
-	 * @experimental Since 1.58
 	 * @ui5-restricted
+	 * @experimental Since 1.58
 	 */
 	Element._interceptEvent = undefined;
 
@@ -1053,13 +1053,16 @@ sap.ui.define([
 	/**
 	 * Retrieves, modifies or removes custom data attached to an <code>Element</code>.
 	 *
-	 * Usage:
+	 * Usages:
+	 * <h4>Setting the value for a single key</h4>
 	 * <pre>
 	 *    data("myKey", myData)
 	 * </pre>
 	 * Attaches <code>myData</code> (which can be any JS data type, e.g. a number, a string, an object, or a function)
 	 * to this element, under the given key "myKey". If the key already exists,the value will be updated.
 	 *
+	 *
+	 * <h4>Setting a value for a single key (rendered to the DOM)</h4>
 	 * <pre>
 	 *    data("myKey", myData, writeToDom)
 	 * </pre>
@@ -1069,31 +1072,40 @@ sap.ui.define([
 	 * written to DOM. The key must also be a valid HTML attribute name (it must conform to <code>sap.ui.core.ID</code>
 	 * and may contain no colon) and may not start with "sap-ui". When written to HTML, the key is prefixed with "data-".
 	 *
+	 *
+	 * <h4>Getting the value for a single key</h4>
 	 * <pre>
 	 *    data("myKey")
 	 * </pre>
-	 * Retrieves whatever data has been attached to this element (using the key "myKey") before
+	 * Retrieves whatever data has been attached to this element (using the key "myKey") before.
 	 *
+	 *
+	 * <h4>Removing the value for a single key</h4>
 	 * <pre>
 	 *    data("myKey", null)
 	 * </pre>
-	 * Removes whatever data has been attached to this element (using the key "myKey") before
+	 * Removes whatever data has been attached to this element (using the key "myKey") before.
 	 *
+	 *
+	 * <h4>Removing all custom data for all keys</h4>
 	 * <pre>
 	 *    data(null)
 	 * </pre>
-	 * Removes all data
 	 *
+	 *
+	 * <h4>Getting all custom data values as a plain object</h4>
 	 * <pre>
 	 *    data()
 	 * </pre>
-	 * Returns all data, as a map
+	 * Returns all data, as a map-like object, property names are keys, property values are values.
 	 *
+	 *
+	 * <h4>Setting multiple key/value pairs in a single call</h4>
 	 * <pre>
 	 *    data({"myKey1": myData, "myKey2": null})
 	 * </pre>
 	 * Attaches <code>myData</code> (using the key "myKey1" and removes any data that had been
-	 * attached for key "myKey2"
+	 * attached for key "myKey2".
 	 *
 	 * @see See chapter {@link topic:91f0c3ee6f4d1014b6dd926db0e91070 Custom Data - Attaching Data Objects to Controls}
 	 *    in the documentation.
@@ -1192,8 +1204,8 @@ sap.ui.define([
 	 *
 	 * @param {string} [sIdSuffix] Suffix to be appended to the cloned element ID
 	 * @param {string[]} [aLocalIds] Array of local IDs within the cloned hierarchy (internally used)
-	 * @return {sap.ui.core.Element} reference to the newly created clone
-	 * @protected
+	 * @returns {sap.ui.core.Element} reference to the newly created clone
+	 * @public
 	 */
 	Element.prototype.clone = function(sIdSuffix, aLocalIds){
 
@@ -1372,7 +1384,7 @@ sap.ui.define([
 	 * @returns {Element} The first matching DOM Element for the setting or <code>null</code>
 	 * @throws {SyntaxError} When the selector string in the metadata is not a valid CSS selector group
 	 * @private
-	 * @sap-restricted internal usage for drag and drop and sap.ui.dt
+	 * @ui5-restricted internal usage for drag and drop and sap.ui.dt
 	 */
 	Element.prototype.getDomRefForSetting = function (sSettingsName) {
 		var oSetting = this.getMetadata().getAllSettings()[sSettingsName];
@@ -1395,7 +1407,7 @@ sap.ui.define([
 	 * Returns the contextual width of an element, if set, or <code>undefined</code> otherwise
 	 * @returns {*}
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted
 	 */
 	Element.prototype._getMediaContainerWidth = function () {
 		if (typeof this._oContextualSettings === "undefined") {
@@ -1411,7 +1423,7 @@ sap.ui.define([
 	 * @param {string} sName
 	 * @returns {object}
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted
 	 */
 	Element.prototype._getCurrentMediaContainerRange = function (sName) {
 		var iWidth = this._getMediaContainerWidth();
@@ -1465,7 +1477,7 @@ sap.ui.define([
 	 * @param {object} oListener
 	 * @param {string} sName
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted
 	 */
 	Element.prototype._attachMediaContainerWidthChange = function (fnFunction, oListener, sName) {
 		sName = sName || Device.media.RANGESETS.SAP_STANDARD;
@@ -1491,7 +1503,7 @@ sap.ui.define([
 	 * @param {object} oListener
 	 * @param {string} sName
 	 * @private
-	 * @sap-restricted
+	 * @ui5-restricted
 	 */
 	Element.prototype._detachMediaContainerWidthChange = function (fnFunction, oListener, sName) {
 		var oL;
@@ -1574,6 +1586,9 @@ sap.ui.define([
 	 * </pre>
 	 * where <code>oElement</code> is the currently visited element instance and <code>sID</code>
 	 * is the ID of that instance.
+	 *
+	 * The order in which the callback is called for elements is not specified and might change between
+	 * calls (over time and across different versions of UI5).
 	 *
 	 * If elements are created or destroyed within the <code>callback</code>, then the behavior is
 	 * not specified. Newly added objects might or might not be visited. When an element is destroyed during

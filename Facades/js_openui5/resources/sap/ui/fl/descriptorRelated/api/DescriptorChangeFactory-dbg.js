@@ -9,6 +9,7 @@ sap.ui.define([
 	"sap/ui/fl/descriptorRelated/internal/Utils",
 	"sap/ui/fl/registry/Settings",
 	"sap/ui/fl/Utils",
+	"sap/ui/fl/LayerUtils",
 	"sap/base/util/merge"
 ], function(
 	ChangePersistenceFactory,
@@ -16,6 +17,7 @@ sap.ui.define([
 	Utils,
 	Settings,
 	FlexUtils,
+	LayerUtils,
 	fnBaseMerge
 ) {
 	"use strict";
@@ -25,7 +27,7 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.ui.fl.descriptorRelated
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @private
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
@@ -35,7 +37,7 @@ sap.ui.define([
 	 * @namespace
 	 * @name sap.ui.fl.descriptorRelated.api
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @private
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
@@ -50,7 +52,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorChange
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @private
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
@@ -152,7 +154,7 @@ sap.ui.define([
 
 		if (this._sTransportRequest) {
 			oChange.setRequest(this._sTransportRequest);
-		} else if (this._oSettings.isAtoEnabled() && FlexUtils.isCustomerDependentLayer(this._mChangeFile.layer)) {
+		} else if (this._oSettings.isAtoEnabled() && LayerUtils.isCustomerDependentLayer(this._mChangeFile.layer)) {
 			oChange.setRequest('ATO_NOTIFICATION');
 		}
 		return oChange;
@@ -185,7 +187,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.descriptorRelated.api.DescriptorChangeFactory
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @private
 	 * @ui5-restricted sap.ui.rta, smart business
 	 */
@@ -197,7 +199,7 @@ sap.ui.define([
 	 *
 	 * @param {string} sReference the descriptor id for which the change is created
 	 * @param {object} oInlineChange the inline change instance
-	 * @param {string} sLayer layer of the descriptor change
+	 * @param {string} [sLayer] layer of the descriptor change, when nothing passed, will set it to CUSTOMER
 	 * @param {object} oAppComponent application component to get the version from
 	 * @param {string} sTool tool which creates the descriptor change (e.g. RTA, DTA, FCC ...)
 	 *
@@ -218,8 +220,12 @@ sap.ui.define([
 
 		var sAppVersion;
 		if (oAppComponent) {
-			var mManifest = oAppComponent.getManifest();
-			sAppVersion = FlexUtils.getAppVersionFromManifest(mManifest);
+			sAppVersion = oAppComponent.appVersion;
+
+			if (!oAppComponent.appId && !sAppVersion) {
+				var mManifest = oAppComponent.getManifest();
+				sAppVersion = FlexUtils.getAppVersionFromManifest(mManifest);
+			}
 		}
 
 		var mPropertyBag = {};
@@ -232,15 +238,8 @@ sap.ui.define([
 		} : {};
 		mPropertyBag.generator = sTool;
 
-		if (!sLayer) {
-			//default to 'CUSTOMER'
-			mPropertyBag.layer = 'CUSTOMER';
-		} else {
-			if (sLayer !== 'VENDOR' && sLayer !== 'PARTNER' && !FlexUtils.isCustomerDependentLayer(sLayer)) {
-				throw new Error("Parameter \"layer\" needs to be 'VENDOR', 'PARTNER' or customer dependent");
-			}
-			mPropertyBag.layer = sLayer;
-		}
+		//default to 'CUSTOMER'
+		mPropertyBag.layer = sLayer || 'CUSTOMER';
 
 		var mChangeFile = Change.createInitialFileContent(mPropertyBag);
 		return Settings.getInstance().then(function(oSettings) {

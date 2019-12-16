@@ -14,7 +14,7 @@ sap.ui.define([
 	'sap/ui/model/type/Float',
 	'sap/ui/model/type/Integer',
 	'sap/ui/model/type/Time',
-	'./TableUtils',
+	'./utils/TableUtils',
 	'./AnalyticalColumnMenu'
 ],
 	function(
@@ -46,7 +46,7 @@ sap.ui.define([
 	 * @extends sap.ui.table.Column
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public

@@ -1,0 +1,6 @@
+/*!
+ * OpenUI5
+ * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+sap.ui.define(["sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor","sap/m/ComboBox","sap/ui/core/Item","sap/ui/base/BindingParser"],function(B,C,I,a){"use strict";var b=B.extend("sap.ui.integration.designtime.baseEditor.propertyEditor.booleanEditor.BooleanEditor",{constructor:function(){B.prototype.constructor.apply(this,arguments);this._oCombo=new C({selectedKey:"{value}",value:"{value}",width:"100%",items:[true,false].map(function(o){return new I({key:o,text:String(o)});})});this._oCombo.attachChange(function(){var i=this._validate();if(i!==null){this.firePropertyChange(i);}},this);this.addContent(this._oCombo);},_validate:function(){var s=this._oCombo.getSelectedKey();var v=this._oCombo.getValue();try{var p=a.complexParser(v);if(!p&&!s&&v){throw"Not a boolean";}this._oCombo.setValueState("None");if(s){return v==='true';}return v;}catch(e){this._oCombo.setValueState("Error");this._oCombo.setValueStateText(this.getI18nProperty("BASE_EDITOR.BOOLEAN.INVALID_BINDING_OR_BOOLEAN"));return null;}},renderer:B.getMetadata().getRenderer().render});return b;});

@@ -8,7 +8,7 @@
 sap.ui.define([
 	"./library",
 	"./TableExtension",
-	"./TableUtils",
+	"./utils/TableUtils",
 	"sap/ui/Device",
 	"sap/ui/core/Popup",
 	"sap/base/Log",
@@ -91,13 +91,7 @@ sap.ui.define([
 				}
 			}
 
-			var bHasSelection = false;
-			if (window.getSelection) {
-				var oSelection = window.getSelection();
-				bHasSelection = oSelection.rangeCount ? !oSelection.getRangeAt(0).collapsed : false;
-			}
-
-			if (bHasSelection) {
+			if (window.getSelection().toString().length > 0) {
 				Log.debug("DOM Selection detected -> Click event on table skipped, Target: " + oEvent.target);
 				return true;
 			}
@@ -110,6 +104,8 @@ sap.ui.define([
 		 */
 		_handleClickSelection: function(oEvent, $Cell, oTable) {
 			TableUtils.toggleRowSelection(oTable, $Cell, null, function(iRowIndex) {
+				var oSelectionPlugin = oTable._getSelectionPlugin();
+
 				// IE and Edge perform a text selection if holding shift while clicking. This is not desired for range selection of rows.
 				if ((Device.browser.msie || Device.browser.edge) && oEvent.shiftKey) {
 					oTable._clearTextSelection();
@@ -119,28 +115,28 @@ sap.ui.define([
 
 				// Single selection
 				if (oSelMode === SelectionMode.Single) {
-					if (!oTable.isIndexSelected(iRowIndex)) {
-						oTable.setSelectedIndex(iRowIndex);
+					if (!oSelectionPlugin.isIndexSelected(iRowIndex)) {
+						oSelectionPlugin.setSelectedIndex(iRowIndex);
 					} else {
-						oTable.clearSelection();
+						oSelectionPlugin.clearSelection();
 					}
 
 				// Multi selection (range)
 				} else if (oEvent.shiftKey) {
 					// If no row is selected, getSelectedIndex returns -1. Then we simply select the clicked row.
-					var iSelectedIndex = oTable.getSelectedIndex();
+					var iSelectedIndex = oSelectionPlugin.getSelectedIndex();
 					if (iSelectedIndex >= 0) {
-						oTable.addSelectionInterval(iSelectedIndex, iRowIndex);
-					} else if (oTable._getSelectedIndicesCount() === 0) {
-						oTable.setSelectedIndex(iRowIndex);
+						oSelectionPlugin.addSelectionInterval(iSelectedIndex, iRowIndex);
+					} else if (oSelectionPlugin.getSelectedCount() === 0) {
+						oSelectionPlugin.setSelectedIndex(iRowIndex);
 					}
 
 				// Multi selection (toggle)
 				} else if (!oTable._legacyMultiSelection) {
-					if (!oTable.isIndexSelected(iRowIndex)) {
-						oTable.addSelectionInterval(iRowIndex, iRowIndex);
+					if (!oSelectionPlugin.isIndexSelected(iRowIndex)) {
+						oSelectionPlugin.addSelectionInterval(iRowIndex, iRowIndex);
 					} else {
-						oTable.removeSelectionInterval(iRowIndex, iRowIndex);
+						oSelectionPlugin.removeSelectionInterval(iRowIndex, iRowIndex);
 					}
 
 				// Multi selection (legacy)
@@ -356,93 +352,6 @@ sap.ui.define([
 				}
 			}.bind(oTable));
 		}
-	};
-
-	/*
-	 * Provides drag&drop resize capabilities for visibleRowCountMode "Interactive".
-	 */
-	var InteractiveResizeHelper = {
-
-		/*
-		 * Initializes the drag&drop for resizing
-		 */
-		initInteractiveResizing: function(oTable, oEvent) {
-			var $Body = jQuery(document.body),
-				$Splitter = oTable.$("sb"),
-				$Document = jQuery(document),
-				offset = $Splitter.offset(),
-				height = $Splitter.height(),
-				width = $Splitter.width(),
-				bTouch = oTable._isTouchEvent(oEvent);
-
-			// Fix for IE text selection while dragging
-			$Body.bind("selectstart", InteractiveResizeHelper.onSelectStartWhileInteractiveResizing);
-
-			$Body.append(
-				"<div id=\"" + oTable.getId() + "-ghost\" class=\"sapUiTableInteractiveResizerGhost\" style =\" height:" + height + "px; width:"
-				+ width + "px; left:" + offset.left + "px; top:" + offset.top + "px\" ></div>");
-
-			// Append overlay over splitter to enable correct functionality of moving the splitter
-			$Splitter.append(
-				"<div id=\"" + oTable.getId() + "-rzoverlay\" style =\"left: 0px; right: 0px; bottom: 0px; top: 0px; position:absolute\" ></div>");
-
-			$Document.bind((bTouch ? "touchend" : "mouseup") + ".sapUiTableInteractiveResize",
-				InteractiveResizeHelper.exitInteractiveResizing.bind(oTable));
-			$Document.bind((bTouch ? "touchmove" : "mousemove") + ".sapUiTableInteractiveResize",
-				InteractiveResizeHelper.onMouseMoveWhileInteractiveResizing.bind(oTable)
-			);
-
-			oTable._disableTextSelection();
-		},
-
-		/*
-		 * Drops the previous dragged horizontal splitter bar and recalculates the amount of rows to be displayed.
-		 */
-		exitInteractiveResizing: function(oEvent) {
-			var $Body = jQuery(document.body),
-				$Document = jQuery(document),
-				$This = this.$(),
-				$Ghost = this.$("ghost"),
-				iLocationY = ExtensionHelper._getEventPosition(oEvent, this).y;
-
-			var iNewHeight = iLocationY - $This.find(".sapUiTableCCnt").offset().top - $Ghost.height() - $This.find(".sapUiTableFtr").height();
-
-			// TBD: Move this to the table code
-			this._updateRows(this._calculateRowsToDisplay(iNewHeight), TableUtils.RowsUpdateReason.Resize);
-			this._setRowContentHeight(iNewHeight);
-
-			$Ghost.remove();
-			this.$("rzoverlay").remove();
-
-			$Body.unbind("selectstart", InteractiveResizeHelper.onSelectStartWhileInteractiveResizing);
-			$Document.unbind("touchend.sapUiTableInteractiveResize");
-			$Document.unbind("touchmove.sapUiTableInteractiveResize");
-			$Document.unbind("mouseup.sapUiTableInteractiveResize");
-			$Document.unbind("mousemove.sapUiTableInteractiveResize");
-
-			this._enableTextSelection();
-		},
-
-		/*
-		 * Handler for the selectstart event triggered in IE to select the text. Avoid this during resize drag&drop.
-		 */
-		onSelectStartWhileInteractiveResizing: function(oEvent) {
-			oEvent.preventDefault();
-			oEvent.stopPropagation();
-			return false;
-		},
-
-		/*
-		 * Handler for the move events while dragging the horizontal resize bar.
-		 */
-		onMouseMoveWhileInteractiveResizing: function(oEvent) {
-			var iLocationY = ExtensionHelper._getEventPosition(oEvent, this).y;
-			var iMin = this.$().offset().top;
-			if (iLocationY > iMin) {
-				this.$("ghost").css("top", iLocationY + "px");
-			}
-		}
-
 	};
 
 	/*
@@ -746,10 +655,7 @@ sap.ui.define([
 			this._getKeyboardExtension().initItemNavigation();
 
 			if (oEvent.button === 0) { // left mouse button
-				if (oEvent.target === this.getDomRef("sb")) { // mousedown on interactive resize bar
-					InteractiveResizeHelper.initInteractiveResizing(this, oEvent);
-
-				} else if (oEvent.target === this.getDomRef("rsz")) { // mousedown on column resize bar
+				if (oEvent.target === this.getDomRef("rsz")) { // mousedown on column resize bar
 					oEvent.preventDefault();
 					oEvent.stopPropagation();
 					ColumnResizeHelper.initColumnResizing(this, oEvent);
@@ -881,11 +787,7 @@ sap.ui.define([
 				// forward the event
 				if (!this._findAndfireCellEvent(this.fireCellClick, oEvent)) {
 					if (oCellInfo.isOfType(TableUtils.CELLTYPE.COLUMNROWHEADER)) {
-						if (this._oSelectionPlugin.onHeaderSelectorPress) {
-							this._oSelectionPlugin.onHeaderSelectorPress();
-						} else {
-							this._toggleSelectAll();
-						}
+						this._getSelectionPlugin().onHeaderSelectorPress();
 					} else {
 						ExtensionHelper._handleClickSelection(oEvent, $Cell, this);
 					}
@@ -924,7 +826,7 @@ sap.ui.define([
 	 * @class Extension for sap.ui.table.Table which handles mouse and touch related things.
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TablePointerExtension
@@ -940,7 +842,7 @@ sap.ui.define([
 			this._delegate = ExtensionDelegate;
 
 			// Register the delegate
-			oTable.addEventDelegate(this._delegate, oTable);
+			TableUtils.addDelegate(oTable, this._delegate, oTable);
 
 			oTable._iLastHoveredColumnIndex = 0;
 			oTable._bIsColumnResizerMoving = false;
@@ -988,7 +890,6 @@ sap.ui.define([
 		_debug: function() {
 			this._ExtensionHelper = ExtensionHelper;
 			this._ColumnResizeHelper = ColumnResizeHelper;
-			this._InteractiveResizeHelper = InteractiveResizeHelper;
 			this._ReorderHelper = ReorderHelper;
 			this._ExtensionDelegate = ExtensionDelegate;
 			this._RowHoverHandler = RowHoverHandler;

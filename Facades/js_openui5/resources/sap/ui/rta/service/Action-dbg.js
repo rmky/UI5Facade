@@ -6,10 +6,14 @@
 
 sap.ui.define([
 	"sap/ui/dt/OverlayRegistry",
-	"sap/ui/dt/Util"
+	"sap/ui/dt/Util",
+	"sap/base/util/restricted/_castArray",
+	"sap/base/util/restricted/_pick"
 ], function (
 	OverlayRegistry,
-	DtUtil
+	DtUtil,
+	_castArray,
+	_pick
 ) {
 	"use strict";
 
@@ -21,7 +25,7 @@ sap.ui.define([
 	 * @author SAP SE
 	 * @experimental Since 1.58
 	 * @since 1.58
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @private
 	 * @ui5-restricted
 	 *
@@ -85,7 +89,7 @@ sap.ui.define([
 		}
 
 		function get(vControlIds) {
-			var aControlIds = DtUtil.castArray(vControlIds);
+			var aControlIds = _castArray(vControlIds);
 			var aElementOverlays = aControlIds.map(function (sControlId) {
 				var oElementOverlay = OverlayRegistry.getOverlay(sControlId);
 
@@ -99,13 +103,13 @@ sap.ui.define([
 			return getActions(aElementOverlays)
 				.then(function(aMenuItems) {
 					return aMenuItems.map(function (mMenuItem) {
-						return DtUtil.pick(mMenuItem, ['id', 'icon', 'rank', 'group', 'enabled', 'text']);
+						return _pick(mMenuItem, ['id', 'icon', 'rank', 'group', 'enabled', 'text']);
 					});
 				});
 		}
 
 		function execute(vControlIds, sActionId) {
-			var aControlIds = DtUtil.castArray(vControlIds);
+			var aControlIds = _castArray(vControlIds);
 			var aElementOverlays = aControlIds.map(function (sControlId) {
 				var oElementOverlay = OverlayRegistry.getOverlay(sControlId);
 
@@ -180,7 +184,7 @@ sap.ui.define([
 				 *
 				 * @name sap.ui.rta.service.Action.get
 				 * @param {string|string[]} vControlIds - Control ID or an array of IDs to get actions for
-				 * @returns {promise.<sap.ui.rta.service.Action.ActionObject[]>} List of available actions wrapped in a promise
+				 * @returns {Promise.<sap.ui.rta.service.Action.ActionObject[]>} List of available actions wrapped in a promise
 				 * @public
 				 * @function
 				 */
@@ -192,7 +196,7 @@ sap.ui.define([
 				 * @name sap.ui.rta.service.Action.execute
 				 * @param {string|string[]} vControlIds - Control ID or an array of IDs to get actions for
 				 * @param {string} sActionId - Action ID to be executed on the specified controls
-				 * @returns {promise.<any>} Result of the operation wrapped in a promise.
+				 * @returns {Promise.<any>} Result of the operation wrapped in a promise.
 				 * @public
 				 * @function
 				 */

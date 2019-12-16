@@ -8,8 +8,10 @@ sap.ui.define([
 	"sap/ui/model/json/JSONModel",
 	"sap/base/Log",
 	"sap/ui/base/ManagedObjectObserver",
-	"sap/ui/core/Core"
-], function (Control, JSONModel, Log, ManagedObjectObserver, Core) {
+	"sap/ui/core/Core",
+	"sap/f/cards/CardActions",
+	"./BindingHelper"
+], function (Control, JSONModel, Log, ManagedObjectObserver, Core, CardActions, BindingHelper) {
 	"use strict";
 
 	/**
@@ -24,7 +26,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @private
@@ -33,6 +35,7 @@ sap.ui.define([
 	 */
 	var BaseContent = Control.extend("sap.f.cards.BaseContent", {
 		metadata: {
+			library: "sap.f",
 			aggregations: {
 
 				/**
@@ -100,6 +103,8 @@ sap.ui.define([
 		}.bind(this));
 
 		this.setBusyIndicatorDelay(0);
+
+		this._oActions = new CardActions();
 	};
 
 	/**
@@ -120,6 +125,11 @@ sap.ui.define([
 		if (this._oDataProvider) {
 			this._oDataProvider.destroy();
 			this._oDataProvider = null;
+		}
+
+		if (this._oActions) {
+			this._oActions.destroy();
+			this._oActions = null;
 		}
 	};
 
@@ -158,10 +168,12 @@ sap.ui.define([
 			return this;
 		}
 
-		var oList = this.getInnerList();
-		if (oList && oConfiguration.maxItems) {
+		var oList = this.getInnerList(),
+			maxItems = oConfiguration.maxItems;
+		if (oList && maxItems) {
 			oList.setGrowing(true);
-			oList.setGrowingThreshold(oConfiguration.maxItems);
+			//If pass trough parameters maxItems is a string
+			oList.setGrowingThreshold(parseInt(maxItems));
 			oList.addStyleClass("sapFCardMaxItems");
 		}
 
@@ -202,9 +214,9 @@ sap.ui.define([
 		if (this._oDataProvider) {
 			this._oDataProvider.destroy();
 		}
-
-		this._oDataProvider = this._oDataProviderFactory.create(oDataSettings, this._oServiceManager);
-
+		if (this._oDataProviderFactory) {
+			this._oDataProvider = this._oDataProviderFactory.create(oDataSettings, this._oServiceManager);
+		}
 		if (this._oDataProvider) {
 			this.setBusy(true);
 
@@ -238,15 +250,14 @@ sap.ui.define([
 	 */
 	function _bind(sAggregation, oControl, oBindingInfo) {
 		var oBindingContext = this.getBindingContext(),
-			oModel = this.getModel("parameters"),
 			oAggregation = oControl.getAggregation(sAggregation);
 
 		if (oBindingContext) {
 			oBindingInfo.path = oBindingContext.getPath();
 			oControl.bindAggregation(sAggregation, oBindingInfo);
 
-			if (oModel && oAggregation) {
-				oModel.setProperty("/visibleItems", oAggregation.length);
+			if (this.getModel("parameters") && oAggregation) {
+				this.getModel("parameters").setProperty("/visibleItems", oAggregation.length);
 			}
 
 			if (!this._mObservers[sAggregation]) {
@@ -254,11 +265,11 @@ sap.ui.define([
 					if (oChanges.name === sAggregation && (oChanges.mutation === "insert" || oChanges.mutation === "remove")) {
 						var oAggregation = oControl.getAggregation(sAggregation);
 						var iLength = oAggregation ? oAggregation.length : 0;
-						if (oModel) {
-							oModel.setProperty("/visibleItems", iLength);
+						if (this.getModel("parameters")) {
+							this.getModel("parameters").setProperty("/visibleItems", iLength);
 						}
 					}
-				});
+				}.bind(this));
 				this._mObservers[sAggregation].observe(oControl, { aggregations: [sAggregation] });
 			}
 		}
@@ -323,13 +334,14 @@ sap.ui.define([
 		return this;
 	};
 
-	BaseContent.create = function (sType, oConfiguration, oServiceManager, oDataProviderFactory) {
+	BaseContent.create = function (sType, oConfiguration, oServiceManager, oDataProviderFactory, sAppId) {
 		return new Promise(function (resolve, reject) {
 			var fnCreateContentInstance = function (Content) {
 				var oContent = new Content();
+				oContent._sAppId = sAppId;
 				oContent.setServiceManager(oServiceManager);
 				oContent.setDataProviderFactory(oDataProviderFactory);
-				oContent.setConfiguration(oConfiguration);
+				oContent.setConfiguration(BindingHelper.createBindingInfos(oConfiguration));
 				resolve(oContent);
 			};
 
@@ -354,6 +366,9 @@ sap.ui.define([
 							.catch(function () {
 								reject("Analytical content type is not available with this distribution.");
 							});
+						break;
+					case "analyticscloud":
+						sap.ui.require(["sap/f/cards/AnalyticsCloudContent"], fnCreateContentInstance);
 						break;
 					case "timeline":
 						Core.loadLibrary("sap.suite.ui.commons", {
@@ -395,6 +410,8 @@ sap.ui.define([
 			case "TimelineContent":
 				iHeight = BaseContent._getMinTimelineHeight(oContent); break;
 			case "AnalyticalContent":
+				iHeight = 14; break;
+			case "AnalyticsCloudContent":
 				iHeight = 14; break;
 			case "ObjectContent":
 				iHeight = 0; break;

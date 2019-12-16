@@ -12,7 +12,9 @@ sap.ui.define([
 	"sap/m/Title",
 	"sap/m/Button",
 	"sap/m/Bar",
+	'sap/m/TitleAlignmentMixin',
 	"sap/ui/core/ContextMenuSupport",
+	"sap/ui/core/util/ResponsivePaddingsEnablement",
 	"sap/ui/core/library",
 	"sap/ui/Device",
 	"sap/ui/core/Element",
@@ -27,7 +29,9 @@ function(
 	Title,
 	Button,
 	Bar,
+	TitleAlignmentMixin,
 	ContextMenuSupport,
+	ResponsivePaddingsEnablement,
 	coreLibrary,
 	Device,
 	Element,
@@ -49,6 +53,9 @@ function(
 
 		// shortcut for sap.ui.core.TitleLevel
 		var TitleLevel = coreLibrary.TitleLevel;
+
+		// shortcut for sap.m.TitleAlignment
+		var TitleAlignment = library.TitleAlignment;
 
 		var DIV = "div";
 		var HEADER = "header";
@@ -79,11 +86,14 @@ function(
 		 * This is enabled with the <code>floatingFooter</code> property.
 		 *
 		 * <b>Note:</b> All accessibility information for the different areas and their corresponding ARIA roles is set in the aggregation <code>landmarkInfo</code> of type {@link sap.m.PageAccessibleLandmarkInfo}
-		 *
+		 * <h3>Responsive Behavior</h3>
+		 * When using the sap.m.Page in SAP Quartz theme, the breakpoints and layout paddings could be determined by the container's width.
+		 * To enable this concept and add responsive paddings to an element of the Page control, you may add the following classes depending on your use case:
+		 * <code>sapUiResponsivePadding--header</code>, <code>sapUiResponsivePadding--subHeader</code>, <code>sapUiResponsivePadding--content</code>, <code>sapUiResponsivePadding--footer</code>, <code>sapUiResponsivePadding--floatingFooter</code>.
 		 * @extends sap.ui.core.Control
 		 * @mixes sap.ui.core.ContextMenuSupport
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.73.1
 		 *
 		 * @public
 		 * @alias sap.m.Page
@@ -194,7 +204,16 @@ function(
 					 * Decides whether the footer can float.
 					 * When set to true, the footer is not fixed below the content area anymore, but rather floats over it with a slight offset from the bottom.
 					 */
-					floatingFooter: {type: "boolean", group:"Appearance", defaultValue: false }
+					floatingFooter: {type: "boolean", group:"Appearance", defaultValue: false },
+
+					/**
+					 * Specifies the Title alignment (theme specific).
+					 * If set to <code>TitleAlignment.Auto</code>, the Title will be aligned as it is set in the theme (if not set, the default value is <code>center</code>);
+					 * Other possible values are <code>TitleAlignment.Start</code> (left or right depending on LTR/RTL), and <code>TitleAlignment.Center</code> (centered)
+					 * @since 1.72
+					 * @public
+					 */
+					titleAlignment : {type : "sap.m.TitleAlignment", group : "Misc", defaultValue : TitleAlignment.Auto}
 				},
 				defaultAggregation: "content",
 				aggregations: {
@@ -260,6 +279,14 @@ function(
 
 		ContextMenuSupport.apply(Page.prototype);
 
+		ResponsivePaddingsEnablement.call(Page.prototype, {
+			header: {suffix: "intHeader"},
+			subHeader: {selector: ".sapMPageSubHeader .sapMIBar"},
+			content: {suffix: "cont"},
+			footer: {selector: ".sapMPageFooter:not(.sapMPageFloatingFooter) .sapMIBar"},
+			floatingFooter: {selector: ".sapMPageFloatingFooter.sapMPageFooter"}
+		});
+
 		// Add title propagation support
 		TitlePropagationSupport.call(Page.prototype, "content", function () {
 			return this._headerTitle ? this._headerTitle.getId() : false;
@@ -269,6 +296,7 @@ function(
 
 		Page.prototype.init = function () {
 			this._initTitlePropagationSupport();
+			this._initResponsivePaddingsEnablement();
 		};
 
 		// Return true if scrolling is allowed
@@ -546,6 +574,9 @@ function(
 				this.setAggregation("_internalHeader", new Bar(this.getId() + "-intHeader"), true); // don"t invalidate - this is only called before/during rendering, where invalidation would lead to double rendering,  or when invalidation anyway happens
 				oInternalHeader = this.getAggregation("_internalHeader");
 
+				// call the method that registers this Bar for alignment
+				this._setupBarTitleAlignment(oInternalHeader, this.getId() + "_internalHeader");
+
 				if (this.getShowNavButton() && this._navBtn) {
 					this._updateHeaderContent(this._navBtn, "left", 0);
 				}
@@ -731,6 +762,9 @@ function(
 		Page.prototype._getAdaptableContent = function () {
 			return this._getAnyHeader();
 		};
+
+		// enrich the control functionality with TitleAlignmentMixin
+		TitleAlignmentMixin.mixInto(Page.prototype);
 
 		return Page;
 	});

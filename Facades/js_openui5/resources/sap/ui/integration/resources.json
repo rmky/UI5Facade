@@ -12,6 +12,1233 @@
 			"name": ".theming"
 		},
 		{
+			"name": "Widget-dbg.js",
+			"module": "sap/ui/integration/Widget.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/Log.js",
+				"sap/base/util/LoaderExtensions.js",
+				"sap/ui/core/ComponentContainer.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/integration/WidgetRenderer.js",
+				"sap/ui/integration/util/Manifest.js",
+				"sap/ui/thirdparty/jquery.js"
+			]
+		},
+		{
+			"name": "Widget.js",
+			"module": "sap/ui/integration/Widget.js",
+			"required": [
+				"sap/base/Log.js",
+				"sap/base/util/LoaderExtensions.js",
+				"sap/ui/core/ComponentContainer.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/integration/WidgetRenderer.js",
+				"sap/ui/integration/util/Manifest.js",
+				"sap/ui/thirdparty/jquery.js"
+			]
+		},
+		{
+			"name": "WidgetComponent-dbg.js",
+			"module": "sap/ui/integration/WidgetComponent.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/core/UIComponent.js",
+				"sap/ui/model/json/JSONModel.js"
+			]
+		},
+		{
+			"name": "WidgetComponent.js",
+			"module": "sap/ui/integration/WidgetComponent.js",
+			"required": [
+				"sap/ui/core/UIComponent.js",
+				"sap/ui/model/json/JSONModel.js"
+			]
+		},
+		{
+			"name": "WidgetRenderer-dbg.js",
+			"module": "sap/ui/integration/WidgetRenderer.js",
+			"isDebug": true
+		},
+		{
+			"name": "WidgetRenderer.js",
+			"module": "sap/ui/integration/WidgetRenderer.js"
+		},
+		{
+			"name": "customElements/CustomElementBase-dbg.js",
+			"module": "sap/ui/integration/customElements/CustomElementBase.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/Log.js",
+				"sap/base/strings/camelize.js",
+				"sap/base/strings/hyphenate.js",
+				"sap/ui/integration/thirdparty/customElements.js",
+				"sap/ui/integration/thirdparty/customEvent.js",
+				"sap/ui/integration/util/Utils.js"
+			]
+		},
+		{
+			"name": "customElements/CustomElementBase.js",
+			"module": "sap/ui/integration/customElements/CustomElementBase.js",
+			"required": [
+				"sap/base/Log.js",
+				"sap/base/strings/camelize.js",
+				"sap/base/strings/hyphenate.js",
+				"sap/ui/integration/thirdparty/customElements.js",
+				"sap/ui/integration/thirdparty/customEvent.js",
+				"sap/ui/integration/util/Utils.js"
+			]
+		},
+		{
+			"name": "customElements/CustomElementCard-dbg.js",
+			"module": "sap/ui/integration/customElements/CustomElementCard.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/integration/customElements/CustomElementBase.js",
+				"sap/ui/integration/customElements/CustomElementHostConfiguration.js",
+				"sap/ui/integration/widgets/Card.js"
+			]
+		},
+		{
+			"name": "customElements/CustomElementCard.js",
+			"module": "sap/ui/integration/customElements/CustomElementCard.js",
+			"required": [
+				"sap/ui/integration/customElements/CustomElementBase.js",
+				"sap/ui/integration/customElements/CustomElementHostConfiguration.js",
+				"sap/ui/integration/widgets/Card.js"
+			]
+		},
+		{
+			"name": "customElements/CustomElementHostConfiguration-dbg.js",
+			"module": "sap/ui/integration/customElements/CustomElementHostConfiguration.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/integration/customElements/CustomElementBase.js",
+				"sap/ui/integration/host/HostConfiguration.js"
+			]
+		},
+		{
+			"name": "customElements/CustomElementHostConfiguration.js",
+			"module": "sap/ui/integration/customElements/CustomElementHostConfiguration.js",
+			"required": [
+				"sap/ui/integration/customElements/CustomElementBase.js",
+				"sap/ui/integration/host/HostConfiguration.js"
+			]
+		},
+		{
+			"name": "customElements/CustomElementWidget-dbg.js",
+			"module": "sap/ui/integration/customElements/CustomElementWidget.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/integration/Widget.js",
+				"sap/ui/integration/customElements/CustomElementBase.js"
+			]
+		},
+		{
+			"name": "customElements/CustomElementWidget.js",
+			"module": "sap/ui/integration/customElements/CustomElementWidget.js",
+			"required": [
+				"sap/ui/integration/Widget.js",
+				"sap/ui/integration/customElements/CustomElementBase.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/BaseEditor-dbg.js",
+			"module": "sap/ui/integration/designtime/baseEditor/BaseEditor.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/Log.js",
+				"sap/base/i18n/ResourceBundle.js",
+				"sap/base/util/ObjectPath.js",
+				"sap/base/util/isPlainObject.js",
+				"sap/base/util/merge.js",
+				"sap/base/util/restricted/_merge.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/integration/designtime/baseEditor/util/createPromise.js",
+				"sap/ui/model/json/JSONModel.js",
+				"sap/ui/model/resource/ResourceModel.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/BaseEditor.js",
+			"module": "sap/ui/integration/designtime/baseEditor/BaseEditor.js",
+			"required": [
+				"sap/base/Log.js",
+				"sap/base/i18n/ResourceBundle.js",
+				"sap/base/util/ObjectPath.js",
+				"sap/base/util/isPlainObject.js",
+				"sap/base/util/merge.js",
+				"sap/base/util/restricted/_merge.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/integration/designtime/baseEditor/util/createPromise.js",
+				"sap/ui/model/json/JSONModel.js",
+				"sap/ui/model/resource/ResourceModel.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/PropertyEditor-dbg.js",
+			"module": "sap/ui/integration/designtime/baseEditor/PropertyEditor.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/util/isPlainObject.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/integration/designtime/baseEditor/util/createPromise.js",
+				"sap/ui/integration/designtime/baseEditor/util/escapeParameter.js",
+				"sap/ui/integration/designtime/baseEditor/util/findClosestInstance.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/PropertyEditor.js",
+			"module": "sap/ui/integration/designtime/baseEditor/PropertyEditor.js",
+			"required": [
+				"sap/base/util/isPlainObject.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/integration/designtime/baseEditor/util/createPromise.js",
+				"sap/ui/integration/designtime/baseEditor/util/escapeParameter.js",
+				"sap/ui/integration/designtime/baseEditor/util/findClosestInstance.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/PropertyEditors-dbg.js",
+			"module": "sap/ui/integration/designtime/baseEditor/PropertyEditors.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/core/Control.js",
+				"sap/ui/integration/designtime/baseEditor/util/createPromise.js",
+				"sap/ui/integration/designtime/baseEditor/util/findClosestInstance.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/PropertyEditors.js",
+			"module": "sap/ui/integration/designtime/baseEditor/PropertyEditors.js",
+			"required": [
+				"sap/ui/core/Control.js",
+				"sap/ui/integration/designtime/baseEditor/util/createPromise.js",
+				"sap/ui/integration/designtime/baseEditor/util/findClosestInstance.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n.properties",
+			"locale": "",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_ar.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_ar.properties",
+			"locale": "ar",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_bg.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_bg.properties",
+			"locale": "bg",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_ca.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_ca.properties",
+			"locale": "ca",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_cs.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_cs.properties",
+			"locale": "cs",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_da.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_da.properties",
+			"locale": "da",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_de.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_de.properties",
+			"locale": "de",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_el.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_el.properties",
+			"locale": "el",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_en.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_en.properties",
+			"locale": "en",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_en_US_sappsd.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_en_US_sappsd.properties",
+			"locale": "en_US_sappsd",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_en_US_saptrc.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_en_US_saptrc.properties",
+			"locale": "en_US_saptrc",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_es.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_es.properties",
+			"locale": "es",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_et.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_et.properties",
+			"locale": "et",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_fi.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_fi.properties",
+			"locale": "fi",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_fr.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_fr.properties",
+			"locale": "fr",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_hi.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_hi.properties",
+			"locale": "hi",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_hr.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_hr.properties",
+			"locale": "hr",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_hu.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_hu.properties",
+			"locale": "hu",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_it.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_it.properties",
+			"locale": "it",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_iw.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_iw.properties",
+			"locale": "iw",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_ja.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_ja.properties",
+			"locale": "ja",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_kk.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_kk.properties",
+			"locale": "kk",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_ko.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_ko.properties",
+			"locale": "ko",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_lt.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_lt.properties",
+			"locale": "lt",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_lv.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_lv.properties",
+			"locale": "lv",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_ms.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_ms.properties",
+			"locale": "ms",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_nl.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_nl.properties",
+			"locale": "nl",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_no.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_no.properties",
+			"locale": "no",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_pl.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_pl.properties",
+			"locale": "pl",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_pt.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_pt.properties",
+			"locale": "pt",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_ro.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_ro.properties",
+			"locale": "ro",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_ru.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_ru.properties",
+			"locale": "ru",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_sh.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_sh.properties",
+			"locale": "sh",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_sk.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_sk.properties",
+			"locale": "sk",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_sl.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_sl.properties",
+			"locale": "sl",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_sv.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_sv.properties",
+			"locale": "sv",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_th.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_th.properties",
+			"locale": "th",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_tr.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_tr.properties",
+			"locale": "tr",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_uk.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_uk.properties",
+			"locale": "uk",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_vi.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_vi.properties",
+			"locale": "vi",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_zh_CN.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_zh_CN.properties",
+			"locale": "zh_CN",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/i18n/i18n_zh_TW.properties",
+			"module": "sap/ui/integration/designtime/baseEditor/i18n/i18n_zh_TW.properties",
+			"locale": "zh_TW",
+			"raw": "designtime/baseEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/BasePropertyEditor-dbg.js",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/util/restricted/_merge.js",
+				"sap/m/Label.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/integration/designtime/baseEditor/util/ObjectBinding.js",
+				"sap/ui/model/json/JSONModel.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/BasePropertyEditor.js",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor.js",
+			"required": [
+				"sap/base/util/restricted/_merge.js",
+				"sap/m/Label.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/integration/designtime/baseEditor/util/ObjectBinding.js",
+				"sap/ui/model/json/JSONModel.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/arrayEditor/ArrayEditor-dbg.js",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/arrayEditor/ArrayEditor.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/util/deepClone.js",
+				"sap/base/util/restricted/_merge.js",
+				"sap/ui/core/Fragment.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/arrayEditor/ArrayEditor.fragment.xml",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/arrayEditor/ArrayEditor.fragment.xml",
+			"required": [
+				"sap/m/Bar.js",
+				"sap/m/Button.js",
+				"sap/m/Label.js",
+				"sap/m/VBox.js",
+				"sap/ui/core/CustomData.js",
+				"sap/ui/core/Fragment.js",
+				"sap/ui/integration/designtime/baseEditor/PropertyEditors.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/arrayEditor/ArrayEditor.js",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/arrayEditor/ArrayEditor.js",
+			"required": [
+				"sap/base/util/deepClone.js",
+				"sap/base/util/restricted/_merge.js",
+				"sap/ui/core/Fragment.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/booleanEditor/BooleanEditor-dbg.js",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/booleanEditor/BooleanEditor.js",
+			"isDebug": true,
+			"required": [
+				"sap/m/ComboBox.js",
+				"sap/ui/base/BindingParser.js",
+				"sap/ui/core/Item.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/booleanEditor/BooleanEditor.js",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/booleanEditor/BooleanEditor.js",
+			"required": [
+				"sap/m/ComboBox.js",
+				"sap/ui/base/BindingParser.js",
+				"sap/ui/core/Item.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/enumStringEditor/EnumStringEditor-dbg.js",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/enumStringEditor/EnumStringEditor.js",
+			"isDebug": true,
+			"required": [
+				"sap/m/ComboBox.js",
+				"sap/ui/base/BindingParser.js",
+				"sap/ui/core/Item.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/enumStringEditor/EnumStringEditor.js",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/enumStringEditor/EnumStringEditor.js",
+			"required": [
+				"sap/m/ComboBox.js",
+				"sap/ui/base/BindingParser.js",
+				"sap/ui/core/Item.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/iconEditor/IconEditor-dbg.js",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/iconEditor/IconEditor.js",
+			"isDebug": true,
+			"required": [
+				"sap/m/Input.js",
+				"sap/ui/core/Fragment.js",
+				"sap/ui/core/IconPool.js",
+				"sap/ui/core/ListItem.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor.js",
+				"sap/ui/model/Filter.js",
+				"sap/ui/model/FilterOperator.js",
+				"sap/ui/model/json/JSONModel.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/iconEditor/IconEditor.js",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/iconEditor/IconEditor.js",
+			"required": [
+				"sap/m/Input.js",
+				"sap/ui/core/Fragment.js",
+				"sap/ui/core/IconPool.js",
+				"sap/ui/core/ListItem.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor.js",
+				"sap/ui/model/Filter.js",
+				"sap/ui/model/FilterOperator.js",
+				"sap/ui/model/json/JSONModel.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/iconEditor/IconSelection.fragment.xml",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/iconEditor/IconSelection.fragment.xml",
+			"required": [
+				"sap/m/SelectDialog.js",
+				"sap/m/StandardListItem.js",
+				"sap/ui/core/Fragment.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/jsonEditor/Editor.fragment.xml",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/jsonEditor/Editor.fragment.xml",
+			"required": [
+				"sap/m/Bar.js",
+				"sap/m/Button.js",
+				"sap/m/Dialog.js",
+				"sap/m/MessageStrip.js",
+				"sap/m/Title.js",
+				"sap/ui/core/Fragment.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/jsonEditor/JsonEditor-dbg.js",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/jsonEditor/JsonEditor.js",
+			"isDebug": true,
+			"required": [
+				"sap/m/Input.js",
+				"sap/ui/core/Fragment.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/jsonEditor/JsonEditor.js",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/jsonEditor/JsonEditor.js",
+			"required": [
+				"sap/m/Input.js",
+				"sap/ui/core/Fragment.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/numberEditor/NumberEditor-dbg.js",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/numberEditor/NumberEditor.js",
+			"isDebug": true,
+			"required": [
+				"sap/m/Input.js",
+				"sap/ui/base/BindingParser.js",
+				"sap/ui/core/format/NumberFormat.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/numberEditor/NumberEditor.js",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/numberEditor/NumberEditor.js",
+			"required": [
+				"sap/m/Input.js",
+				"sap/ui/base/BindingParser.js",
+				"sap/ui/core/format/NumberFormat.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/parametersEditor/ParametersEditor-dbg.js",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/parametersEditor/ParametersEditor.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/util/deepClone.js",
+				"sap/base/util/isPlainObject.js",
+				"sap/ui/core/Fragment.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor.js",
+				"sap/ui/model/json/JSONModel.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/parametersEditor/ParametersEditor.js",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/parametersEditor/ParametersEditor.js",
+			"required": [
+				"sap/base/util/deepClone.js",
+				"sap/base/util/isPlainObject.js",
+				"sap/ui/core/Fragment.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor.js",
+				"sap/ui/model/json/JSONModel.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/parametersEditor/ParametersTable.fragment.xml",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/parametersEditor/ParametersTable.fragment.xml",
+			"required": [
+				"sap/m/Button.js",
+				"sap/m/Column.js",
+				"sap/m/ColumnListItem.js",
+				"sap/m/Input.js",
+				"sap/m/Table.js",
+				"sap/m/Text.js",
+				"sap/m/Toolbar.js",
+				"sap/m/ToolbarSpacer.js",
+				"sap/ui/core/Fragment.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/stringEditor/StringEditor-dbg.js",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/stringEditor/StringEditor.js",
+			"isDebug": true,
+			"required": [
+				"sap/m/Input.js",
+				"sap/ui/base/BindingParser.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/propertyEditor/stringEditor/StringEditor.js",
+			"module": "sap/ui/integration/designtime/baseEditor/propertyEditor/stringEditor/StringEditor.js",
+			"required": [
+				"sap/m/Input.js",
+				"sap/ui/base/BindingParser.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/util/ObjectBinding-dbg.js",
+			"module": "sap/ui/integration/designtime/baseEditor/util/ObjectBinding.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/util/ObjectPath.js",
+				"sap/base/util/deepClone.js",
+				"sap/ui/base/BindingParser.js",
+				"sap/ui/base/ManagedObject.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/util/ObjectBinding.js",
+			"module": "sap/ui/integration/designtime/baseEditor/util/ObjectBinding.js",
+			"required": [
+				"sap/base/util/ObjectPath.js",
+				"sap/base/util/deepClone.js",
+				"sap/ui/base/BindingParser.js",
+				"sap/ui/base/ManagedObject.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/util/createPromise-dbg.js",
+			"module": "sap/ui/integration/designtime/baseEditor/util/createPromise.js",
+			"isDebug": true
+		},
+		{
+			"name": "designtime/baseEditor/util/createPromise.js",
+			"module": "sap/ui/integration/designtime/baseEditor/util/createPromise.js"
+		},
+		{
+			"name": "designtime/baseEditor/util/escapeParameter-dbg.js",
+			"module": "sap/ui/integration/designtime/baseEditor/util/escapeParameter.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/util/isPlainObject.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/util/escapeParameter.js",
+			"module": "sap/ui/integration/designtime/baseEditor/util/escapeParameter.js",
+			"required": [
+				"sap/base/util/isPlainObject.js"
+			]
+		},
+		{
+			"name": "designtime/baseEditor/util/findClosestInstance-dbg.js",
+			"module": "sap/ui/integration/designtime/baseEditor/util/findClosestInstance.js",
+			"isDebug": true
+		},
+		{
+			"name": "designtime/baseEditor/util/findClosestInstance.js",
+			"module": "sap/ui/integration/designtime/baseEditor/util/findClosestInstance.js"
+		},
+		{
+			"name": "designtime/cardEditor/CardEditor-dbg.js",
+			"module": "sap/ui/integration/designtime/cardEditor/CardEditor.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/integration/designtime/baseEditor/BaseEditor.js",
+				"sap/ui/integration/designtime/cardEditor/config/index.js"
+			]
+		},
+		{
+			"name": "designtime/cardEditor/CardEditor.js",
+			"module": "sap/ui/integration/designtime/cardEditor/CardEditor.js",
+			"required": [
+				"sap/ui/integration/designtime/baseEditor/BaseEditor.js",
+				"sap/ui/integration/designtime/cardEditor/config/index.js"
+			]
+		},
+		{
+			"name": "designtime/cardEditor/PropertyEditor-dbg.js",
+			"module": "sap/ui/integration/designtime/cardEditor/PropertyEditor.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/integration/designtime/baseEditor/PropertyEditor.js"
+			]
+		},
+		{
+			"name": "designtime/cardEditor/PropertyEditor.js",
+			"module": "sap/ui/integration/designtime/cardEditor/PropertyEditor.js",
+			"required": [
+				"sap/ui/integration/designtime/baseEditor/PropertyEditor.js"
+			]
+		},
+		{
+			"name": "designtime/cardEditor/PropertyEditors-dbg.js",
+			"module": "sap/ui/integration/designtime/cardEditor/PropertyEditors.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/integration/designtime/baseEditor/PropertyEditors.js"
+			]
+		},
+		{
+			"name": "designtime/cardEditor/PropertyEditors.js",
+			"module": "sap/ui/integration/designtime/cardEditor/PropertyEditors.js",
+			"required": [
+				"sap/ui/integration/designtime/baseEditor/PropertyEditors.js"
+			]
+		},
+		{
+			"name": "designtime/cardEditor/config/HeaderConfig-dbg.js",
+			"module": "sap/ui/integration/designtime/cardEditor/config/HeaderConfig.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/integration/designtime/cardEditor/config/generateActionConfig.js"
+			]
+		},
+		{
+			"name": "designtime/cardEditor/config/HeaderConfig.js",
+			"module": "sap/ui/integration/designtime/cardEditor/config/HeaderConfig.js",
+			"required": [
+				"sap/ui/integration/designtime/cardEditor/config/generateActionConfig.js"
+			]
+		},
+		{
+			"name": "designtime/cardEditor/config/ListCardConfig-dbg.js",
+			"module": "sap/ui/integration/designtime/cardEditor/config/ListCardConfig.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/integration/designtime/cardEditor/config/generateActionConfig.js"
+			]
+		},
+		{
+			"name": "designtime/cardEditor/config/ListCardConfig.js",
+			"module": "sap/ui/integration/designtime/cardEditor/config/ListCardConfig.js",
+			"required": [
+				"sap/ui/integration/designtime/cardEditor/config/generateActionConfig.js"
+			]
+		},
+		{
+			"name": "designtime/cardEditor/config/ObjectCardConfig-dbg.js",
+			"module": "sap/ui/integration/designtime/cardEditor/config/ObjectCardConfig.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/integration/designtime/cardEditor/config/generateActionConfig.js"
+			]
+		},
+		{
+			"name": "designtime/cardEditor/config/ObjectCardConfig.js",
+			"module": "sap/ui/integration/designtime/cardEditor/config/ObjectCardConfig.js",
+			"required": [
+				"sap/ui/integration/designtime/cardEditor/config/generateActionConfig.js"
+			]
+		},
+		{
+			"name": "designtime/cardEditor/config/TableCardConfig-dbg.js",
+			"module": "sap/ui/integration/designtime/cardEditor/config/TableCardConfig.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/integration/designtime/cardEditor/config/generateActionConfig.js"
+			]
+		},
+		{
+			"name": "designtime/cardEditor/config/TableCardConfig.js",
+			"module": "sap/ui/integration/designtime/cardEditor/config/TableCardConfig.js",
+			"required": [
+				"sap/ui/integration/designtime/cardEditor/config/generateActionConfig.js"
+			]
+		},
+		{
+			"name": "designtime/cardEditor/config/generateActionConfig-dbg.js",
+			"module": "sap/ui/integration/designtime/cardEditor/config/generateActionConfig.js",
+			"isDebug": true,
+			"required": [
+				"sap/base/util/restricted/_merge.js"
+			]
+		},
+		{
+			"name": "designtime/cardEditor/config/generateActionConfig.js",
+			"module": "sap/ui/integration/designtime/cardEditor/config/generateActionConfig.js",
+			"required": [
+				"sap/base/util/restricted/_merge.js"
+			]
+		},
+		{
+			"name": "designtime/cardEditor/config/generateDataConfig-dbg.js",
+			"module": "sap/ui/integration/designtime/cardEditor/config/generateDataConfig.js",
+			"isDebug": true
+		},
+		{
+			"name": "designtime/cardEditor/config/generateDataConfig.js",
+			"module": "sap/ui/integration/designtime/cardEditor/config/generateDataConfig.js"
+		},
+		{
+			"name": "designtime/cardEditor/config/index-dbg.js",
+			"module": "sap/ui/integration/designtime/cardEditor/config/index.js",
+			"isDebug": true,
+			"required": [
+				"sap/ui/integration/designtime/cardEditor/config/HeaderConfig.js",
+				"sap/ui/integration/designtime/cardEditor/config/ListCardConfig.js",
+				"sap/ui/integration/designtime/cardEditor/config/ObjectCardConfig.js",
+				"sap/ui/integration/designtime/cardEditor/config/TableCardConfig.js",
+				"sap/ui/integration/designtime/cardEditor/config/generateDataConfig.js"
+			]
+		},
+		{
+			"name": "designtime/cardEditor/config/index.js",
+			"module": "sap/ui/integration/designtime/cardEditor/config/index.js",
+			"required": [
+				"sap/ui/integration/designtime/cardEditor/config/HeaderConfig.js",
+				"sap/ui/integration/designtime/cardEditor/config/ListCardConfig.js",
+				"sap/ui/integration/designtime/cardEditor/config/ObjectCardConfig.js",
+				"sap/ui/integration/designtime/cardEditor/config/TableCardConfig.js",
+				"sap/ui/integration/designtime/cardEditor/config/generateDataConfig.js"
+			]
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n.properties",
+			"locale": "",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_ar.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_ar.properties",
+			"locale": "ar",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_bg.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_bg.properties",
+			"locale": "bg",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_ca.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_ca.properties",
+			"locale": "ca",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_cs.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_cs.properties",
+			"locale": "cs",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_da.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_da.properties",
+			"locale": "da",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_de.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_de.properties",
+			"locale": "de",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_el.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_el.properties",
+			"locale": "el",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_en.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_en.properties",
+			"locale": "en",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_en_US_sappsd.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_en_US_sappsd.properties",
+			"locale": "en_US_sappsd",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_en_US_saptrc.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_en_US_saptrc.properties",
+			"locale": "en_US_saptrc",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_es.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_es.properties",
+			"locale": "es",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_et.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_et.properties",
+			"locale": "et",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_fi.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_fi.properties",
+			"locale": "fi",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_fr.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_fr.properties",
+			"locale": "fr",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_hi.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_hi.properties",
+			"locale": "hi",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_hr.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_hr.properties",
+			"locale": "hr",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_hu.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_hu.properties",
+			"locale": "hu",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_it.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_it.properties",
+			"locale": "it",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_iw.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_iw.properties",
+			"locale": "iw",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_ja.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_ja.properties",
+			"locale": "ja",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_kk.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_kk.properties",
+			"locale": "kk",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_ko.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_ko.properties",
+			"locale": "ko",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_lt.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_lt.properties",
+			"locale": "lt",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_lv.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_lv.properties",
+			"locale": "lv",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_ms.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_ms.properties",
+			"locale": "ms",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_nl.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_nl.properties",
+			"locale": "nl",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_no.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_no.properties",
+			"locale": "no",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_pl.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_pl.properties",
+			"locale": "pl",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_pt.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_pt.properties",
+			"locale": "pt",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_ro.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_ro.properties",
+			"locale": "ro",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_ru.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_ru.properties",
+			"locale": "ru",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_sh.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_sh.properties",
+			"locale": "sh",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_sk.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_sk.properties",
+			"locale": "sk",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_sl.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_sl.properties",
+			"locale": "sl",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_sv.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_sv.properties",
+			"locale": "sv",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_th.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_th.properties",
+			"locale": "th",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_tr.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_tr.properties",
+			"locale": "tr",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_uk.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_uk.properties",
+			"locale": "uk",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_vi.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_vi.properties",
+			"locale": "vi",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_zh_CN.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_zh_CN.properties",
+			"locale": "zh_CN",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/cardEditor/i18n/i18n_zh_TW.properties",
+			"module": "sap/ui/integration/designtime/cardEditor/i18n/i18n_zh_TW.properties",
+			"locale": "zh_TW",
+			"raw": "designtime/cardEditor/i18n/i18n.properties"
+		},
+		{
+			"name": "designtime/library-preload.designtime.js",
+			"module": "sap/ui/integration/designtime/library-preload.designtime.js",
+			"merged": true,
+			"designtime": true,
+			"required": [
+				"sap/base/Log.js",
+				"sap/base/i18n/ResourceBundle.js",
+				"sap/base/util/ObjectPath.js",
+				"sap/base/util/deepClone.js",
+				"sap/base/util/isPlainObject.js",
+				"sap/base/util/merge.js",
+				"sap/base/util/restricted/_merge.js",
+				"sap/m/ComboBox.js",
+				"sap/m/Input.js",
+				"sap/m/Label.js",
+				"sap/ui/base/BindingParser.js",
+				"sap/ui/base/ManagedObject.js",
+				"sap/ui/core/Control.js",
+				"sap/ui/core/Fragment.js",
+				"sap/ui/core/IconPool.js",
+				"sap/ui/core/Item.js",
+				"sap/ui/core/ListItem.js",
+				"sap/ui/core/format/NumberFormat.js",
+				"sap/ui/model/Filter.js",
+				"sap/ui/model/FilterOperator.js",
+				"sap/ui/model/json/JSONModel.js",
+				"sap/ui/model/resource/ResourceModel.js"
+			],
+			"included": [
+				"sap/ui/integration/designtime/baseEditor/BaseEditor.js",
+				"sap/ui/integration/designtime/baseEditor/PropertyEditor.js",
+				"sap/ui/integration/designtime/baseEditor/PropertyEditors.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/arrayEditor/ArrayEditor.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/booleanEditor/BooleanEditor.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/enumStringEditor/EnumStringEditor.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/iconEditor/IconEditor.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/jsonEditor/JsonEditor.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/numberEditor/NumberEditor.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/parametersEditor/ParametersEditor.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/stringEditor/StringEditor.js",
+				"sap/ui/integration/designtime/baseEditor/util/ObjectBinding.js",
+				"sap/ui/integration/designtime/baseEditor/util/createPromise.js",
+				"sap/ui/integration/designtime/baseEditor/util/escapeParameter.js",
+				"sap/ui/integration/designtime/baseEditor/util/findClosestInstance.js",
+				"sap/ui/integration/designtime/cardEditor/CardEditor.js",
+				"sap/ui/integration/designtime/cardEditor/PropertyEditor.js",
+				"sap/ui/integration/designtime/cardEditor/PropertyEditors.js",
+				"sap/ui/integration/designtime/cardEditor/config/HeaderConfig.js",
+				"sap/ui/integration/designtime/cardEditor/config/ListCardConfig.js",
+				"sap/ui/integration/designtime/cardEditor/config/ObjectCardConfig.js",
+				"sap/ui/integration/designtime/cardEditor/config/TableCardConfig.js",
+				"sap/ui/integration/designtime/cardEditor/config/generateActionConfig.js",
+				"sap/ui/integration/designtime/cardEditor/config/generateDataConfig.js",
+				"sap/ui/integration/designtime/cardEditor/config/index.js"
+			]
+		},
+		{
+			"name": "designtime/library-preload.designtime.js.map",
+			"isDebug": true,
+			"designtime": true
+		},
+		{
 			"name": "host/HostConfiguration-dbg.js",
 			"module": "sap/ui/integration/host/HostConfiguration.js",
 			"isDebug": true,
@@ -66,56 +1293,10 @@
 			"isDebug": true,
 			"required": [
 				"sap/f/library.js",
+				"sap/m/library.js",
 				"sap/ui/Global.js",
 				"sap/ui/base/DataType.js",
 				"sap/ui/core/library.js"
-			]
-		},
-		{
-			"name": "library-h2-preload-dbg.js",
-			"module": "sap/ui/integration/library-h2-preload.js",
-			"isDebug": true,
-			"merged": true,
-			"required": [
-				"sap/base/Log.js",
-				"sap/f/CardRenderer.js",
-				"sap/f/cards/BaseContent.js",
-				"sap/f/cards/DataProviderFactory.js",
-				"sap/f/cards/Header.js",
-				"sap/f/cards/NumericHeader.js",
-				"sap/f/library.js",
-				"sap/m/HBox.js",
-				"sap/m/Text.js",
-				"sap/m/VBox.js",
-				"sap/ui/Global.js",
-				"sap/ui/base/DataType.js",
-				"sap/ui/base/EventProvider.js",
-				"sap/ui/base/Object.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/core/Core.js",
-				"sap/ui/core/Icon.js",
-				"sap/ui/core/Manifest.js",
-				"sap/ui/core/library.js",
-				"sap/ui/model/json/JSONModel.js",
-				"sap/ui/model/resource/ResourceModel.js",
-				"sap/ui/thirdparty/jquery.js",
-				"sap/ui/thirdparty/less.js"
-			],
-			"included": [
-				"sap/ui/integration/library.js",
-				"sap/ui/integration/manifest.json",
-				"sap-ui-integration.js",
-				"sap/ui/integration/host/HostConfiguration.js",
-				"sap/ui/integration/host/HostConfigurationCompiler.js",
-				"sap/ui/integration/library-bootstrap.js",
-				"sap/ui/integration/sap-ui-integration-config.js",
-				"sap/ui/integration/services/Data.js",
-				"sap/ui/integration/services/Navigation.js",
-				"sap/ui/integration/services/Service.js",
-				"sap/ui/integration/util/CardManifest.js",
-				"sap/ui/integration/util/CustomElements.js",
-				"sap/ui/integration/util/ServiceManager.js",
-				"sap/ui/integration/widgets/Card.js"
 			]
 		},
 		{
@@ -124,43 +1305,122 @@
 			"merged": true,
 			"required": [
 				"sap/base/Log.js",
+				"sap/base/i18n/ResourceBundle.js",
+				"sap/base/strings/camelize.js",
+				"sap/base/strings/hyphenate.js",
+				"sap/base/util/LoaderExtensions.js",
+				"sap/base/util/ObjectPath.js",
+				"sap/base/util/deepClone.js",
+				"sap/base/util/isPlainObject.js",
+				"sap/base/util/merge.js",
+				"sap/base/util/restricted/_merge.js",
 				"sap/f/CardRenderer.js",
 				"sap/f/cards/BaseContent.js",
 				"sap/f/cards/DataProviderFactory.js",
 				"sap/f/cards/Header.js",
 				"sap/f/cards/NumericHeader.js",
 				"sap/f/library.js",
+				"sap/m/Bar.js",
+				"sap/m/Button.js",
+				"sap/m/Column.js",
+				"sap/m/ColumnListItem.js",
+				"sap/m/ComboBox.js",
+				"sap/m/Dialog.js",
 				"sap/m/HBox.js",
+				"sap/m/Input.js",
+				"sap/m/Label.js",
+				"sap/m/MessageStrip.js",
+				"sap/m/SelectDialog.js",
+				"sap/m/StandardListItem.js",
+				"sap/m/Table.js",
 				"sap/m/Text.js",
+				"sap/m/Title.js",
+				"sap/m/Toolbar.js",
+				"sap/m/ToolbarSpacer.js",
 				"sap/m/VBox.js",
+				"sap/m/library.js",
 				"sap/ui/Global.js",
+				"sap/ui/base/BindingParser.js",
 				"sap/ui/base/DataType.js",
 				"sap/ui/base/EventProvider.js",
+				"sap/ui/base/ManagedObject.js",
 				"sap/ui/base/Object.js",
+				"sap/ui/core/ComponentContainer.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Core.js",
+				"sap/ui/core/CustomData.js",
+				"sap/ui/core/Fragment.js",
 				"sap/ui/core/Icon.js",
+				"sap/ui/core/IconPool.js",
+				"sap/ui/core/Item.js",
+				"sap/ui/core/ListItem.js",
 				"sap/ui/core/Manifest.js",
+				"sap/ui/core/UIComponent.js",
+				"sap/ui/core/format/NumberFormat.js",
 				"sap/ui/core/library.js",
+				"sap/ui/model/Filter.js",
+				"sap/ui/model/FilterOperator.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/model/resource/ResourceModel.js",
 				"sap/ui/thirdparty/jquery.js",
-				"sap/ui/thirdparty/less.js"
+				"sap/ui/thirdparty/less.js",
+				"ui5loader-autoconfig.js"
 			],
 			"included": [
 				"sap/ui/integration/library.js",
 				"sap/ui/integration/manifest.json",
 				"sap-ui-integration.js",
+				"sap/ui/integration/Widget.js",
+				"sap/ui/integration/WidgetComponent.js",
+				"sap/ui/integration/WidgetRenderer.js",
+				"sap/ui/integration/customElements/CustomElementBase.js",
+				"sap/ui/integration/customElements/CustomElementCard.js",
+				"sap/ui/integration/customElements/CustomElementHostConfiguration.js",
+				"sap/ui/integration/customElements/CustomElementWidget.js",
+				"sap/ui/integration/designtime/baseEditor/BaseEditor.js",
+				"sap/ui/integration/designtime/baseEditor/PropertyEditor.js",
+				"sap/ui/integration/designtime/baseEditor/PropertyEditors.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/arrayEditor/ArrayEditor.fragment.xml",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/arrayEditor/ArrayEditor.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/booleanEditor/BooleanEditor.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/enumStringEditor/EnumStringEditor.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/iconEditor/IconEditor.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/iconEditor/IconSelection.fragment.xml",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/jsonEditor/Editor.fragment.xml",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/jsonEditor/JsonEditor.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/numberEditor/NumberEditor.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/parametersEditor/ParametersEditor.js",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/parametersEditor/ParametersTable.fragment.xml",
+				"sap/ui/integration/designtime/baseEditor/propertyEditor/stringEditor/StringEditor.js",
+				"sap/ui/integration/designtime/baseEditor/util/ObjectBinding.js",
+				"sap/ui/integration/designtime/baseEditor/util/createPromise.js",
+				"sap/ui/integration/designtime/baseEditor/util/escapeParameter.js",
+				"sap/ui/integration/designtime/baseEditor/util/findClosestInstance.js",
+				"sap/ui/integration/designtime/cardEditor/CardEditor.js",
+				"sap/ui/integration/designtime/cardEditor/PropertyEditor.js",
+				"sap/ui/integration/designtime/cardEditor/PropertyEditors.js",
+				"sap/ui/integration/designtime/cardEditor/config/HeaderConfig.js",
+				"sap/ui/integration/designtime/cardEditor/config/ListCardConfig.js",
+				"sap/ui/integration/designtime/cardEditor/config/ObjectCardConfig.js",
+				"sap/ui/integration/designtime/cardEditor/config/TableCardConfig.js",
+				"sap/ui/integration/designtime/cardEditor/config/generateActionConfig.js",
+				"sap/ui/integration/designtime/cardEditor/config/generateDataConfig.js",
+				"sap/ui/integration/designtime/cardEditor/config/index.js",
 				"sap/ui/integration/host/HostConfiguration.js",
 				"sap/ui/integration/host/HostConfigurationCompiler.js",
 				"sap/ui/integration/library-bootstrap.js",
 				"sap/ui/integration/sap-ui-integration-config.js",
+				"sap/ui/integration/sap-ui-integration-define-nojQuery.js",
 				"sap/ui/integration/services/Data.js",
 				"sap/ui/integration/services/Navigation.js",
 				"sap/ui/integration/services/Service.js",
-				"sap/ui/integration/util/CardManifest.js",
-				"sap/ui/integration/util/CustomElements.js",
+				"sap/ui/integration/thirdparty/customElements.js",
+				"sap/ui/integration/thirdparty/customEvent.js",
+				"sap/ui/integration/util/Manifest.js",
+				"sap/ui/integration/util/ParameterMap.js",
 				"sap/ui/integration/util/ServiceManager.js",
+				"sap/ui/integration/util/Utils.js",
 				"sap/ui/integration/widgets/Card.js"
 			]
 		},
@@ -174,6 +1434,11 @@
 			"merged": true,
 			"required": [
 				"sap/base/Log.js",
+				"sap/base/strings/camelize.js",
+				"sap/base/strings/hyphenate.js",
+				"sap/base/util/LoaderExtensions.js",
+				"sap/base/util/deepClone.js",
+				"sap/base/util/merge.js",
 				"sap/f/CardRenderer.js",
 				"sap/f/cards/BaseContent.js",
 				"sap/f/cards/DataProviderFactory.js",
@@ -183,92 +1448,55 @@
 				"sap/m/HBox.js",
 				"sap/m/Text.js",
 				"sap/m/VBox.js",
+				"sap/m/library.js",
 				"sap/ui/Global.js",
 				"sap/ui/base/DataType.js",
 				"sap/ui/base/EventProvider.js",
 				"sap/ui/base/Object.js",
+				"sap/ui/core/ComponentContainer.js",
 				"sap/ui/core/Control.js",
 				"sap/ui/core/Core.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/core/Manifest.js",
+				"sap/ui/core/UIComponent.js",
 				"sap/ui/core/library.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/model/resource/ResourceModel.js",
 				"sap/ui/thirdparty/jquery.js",
-				"sap/ui/thirdparty/less.js"
+				"sap/ui/thirdparty/less.js",
+				"ui5loader-autoconfig.js"
 			],
 			"included": [
 				"sap-ui-integration.js",
+				"sap/ui/integration/Widget.js",
+				"sap/ui/integration/WidgetComponent.js",
+				"sap/ui/integration/WidgetRenderer.js",
+				"sap/ui/integration/customElements/CustomElementBase.js",
+				"sap/ui/integration/customElements/CustomElementCard.js",
+				"sap/ui/integration/customElements/CustomElementHostConfiguration.js",
+				"sap/ui/integration/customElements/CustomElementWidget.js",
 				"sap/ui/integration/host/HostConfiguration.js",
 				"sap/ui/integration/host/HostConfigurationCompiler.js",
 				"sap/ui/integration/library-bootstrap.js",
 				"sap/ui/integration/library.js",
 				"sap/ui/integration/manifest.json",
 				"sap/ui/integration/sap-ui-integration-config.js",
+				"sap/ui/integration/sap-ui-integration-define-nojQuery.js",
 				"sap/ui/integration/services/Data.js",
 				"sap/ui/integration/services/Navigation.js",
 				"sap/ui/integration/services/Service.js",
-				"sap/ui/integration/util/CardManifest.js",
-				"sap/ui/integration/util/CustomElements.js",
+				"sap/ui/integration/thirdparty/customElements.js",
+				"sap/ui/integration/thirdparty/customEvent.js",
+				"sap/ui/integration/util/Manifest.js",
+				"sap/ui/integration/util/ParameterMap.js",
 				"sap/ui/integration/util/ServiceManager.js",
+				"sap/ui/integration/util/Utils.js",
 				"sap/ui/integration/widgets/Card.js"
 			]
 		},
 		{
 			"name": "library-preload.js.map",
 			"isDebug": true
-		},
-		{
-			"name": "library-preload.json",
-			"module": "sap/ui/integration/library-preload.json",
-			"merged": true,
-			"required": [
-				"sap/base/Log.js",
-				"sap/f/CardRenderer.js",
-				"sap/f/cards/BaseContent.js",
-				"sap/f/cards/DataProviderFactory.js",
-				"sap/f/cards/Header.js",
-				"sap/f/cards/NumericHeader.js",
-				"sap/f/library-preload.json",
-				"sap/f/library.js",
-				"sap/m/HBox.js",
-				"sap/m/Text.js",
-				"sap/m/VBox.js",
-				"sap/ui/Global.js",
-				"sap/ui/base/DataType.js",
-				"sap/ui/base/EventProvider.js",
-				"sap/ui/base/Object.js",
-				"sap/ui/core/Control.js",
-				"sap/ui/core/Core.js",
-				"sap/ui/core/Icon.js",
-				"sap/ui/core/Manifest.js",
-				"sap/ui/core/library-preload.json",
-				"sap/ui/core/library.js",
-				"sap/ui/model/json/JSONModel.js",
-				"sap/ui/model/resource/ResourceModel.js",
-				"sap/ui/thirdparty/jquery.js",
-				"sap/ui/thirdparty/less.js"
-			],
-			"included": [
-				"sap-ui-integration.js",
-				"sap/ui/integration/host/HostConfiguration.js",
-				"sap/ui/integration/host/HostConfigurationCompiler.js",
-				"sap/ui/integration/library-bootstrap.js",
-				"sap/ui/integration/library.js",
-				"sap/ui/integration/manifest.json",
-				"sap/ui/integration/sap-ui-integration-config.js",
-				"sap/ui/integration/services/Data.js",
-				"sap/ui/integration/services/Navigation.js",
-				"sap/ui/integration/services/Service.js",
-				"sap/ui/integration/util/CardManifest.js",
-				"sap/ui/integration/util/CustomElements.js",
-				"sap/ui/integration/util/ServiceManager.js",
-				"sap/ui/integration/widgets/Card.js"
-			]
-		},
-		{
-			"name": "library.dependencies.json",
-			"designtime": true
 		},
 		{
 			"name": "library.dependencies.xml",
@@ -279,14 +1507,11 @@
 			"module": "sap/ui/integration/library.js",
 			"required": [
 				"sap/f/library.js",
+				"sap/m/library.js",
 				"sap/ui/Global.js",
 				"sap/ui/base/DataType.js",
 				"sap/ui/core/library.js"
 			]
-		},
-		{
-			"name": "library.templates.xml",
-			"designtime": true
 		},
 		{
 			"name": "manifest.json",
@@ -560,19 +1785,15 @@
 			"name": "sap-ui-integration-define-nojQuery-dbg.js",
 			"module": "sap/ui/integration/sap-ui-integration-define-nojQuery.js",
 			"isDebug": true,
-			"merged": true,
-			"included": [
-				"sap/ui/thirdparty/jquery.js",
-				"sap/ui/thirdparty/ui/jquery/jquery-ui-position.js"
+			"required": [
+				"ui5loader-autoconfig.js"
 			]
 		},
 		{
 			"name": "sap-ui-integration-define-nojQuery.js",
 			"module": "sap/ui/integration/sap-ui-integration-define-nojQuery.js",
-			"merged": true,
-			"included": [
-				"sap/ui/thirdparty/jquery.js",
-				"sap/ui/thirdparty/ui/jquery/jquery-ui-position.js"
+			"required": [
+				"ui5loader-autoconfig.js"
 			]
 		},
 		{
@@ -618,37 +1839,113 @@
 			"module": "sap/ui/integration/services/Service.js"
 		},
 		{
-			"name": "util/CardManifest-dbg.js",
-			"module": "sap/ui/integration/util/CardManifest.js",
+			"name": "themes/base/.theming",
+			"theme": "base"
+		},
+		{
+			"name": "themes/base/CustomElementBase.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "themes/base/CustomElementCard.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "themes/base/library-RTL-dbg.css",
+			"isDebug": true,
+			"theme": "base"
+		},
+		{
+			"name": "themes/base/library-RTL.css",
+			"theme": "base"
+		},
+		{
+			"name": "themes/base/library-dbg.css",
+			"isDebug": true,
+			"theme": "base"
+		},
+		{
+			"name": "themes/base/library-parameters.json",
+			"theme": "base"
+		},
+		{
+			"name": "themes/base/library.css",
+			"theme": "base"
+		},
+		{
+			"name": "themes/base/library.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "themes/base/library.source.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "thirdparty/customElements-dbg.js",
+			"module": "sap/ui/integration/thirdparty/customElements.js",
+			"isDebug": true
+		},
+		{
+			"name": "thirdparty/customElements.js",
+			"module": "sap/ui/integration/thirdparty/customElements.js"
+		},
+		{
+			"name": "thirdparty/customEvent-dbg.js",
+			"module": "sap/ui/integration/thirdparty/customEvent.js",
+			"isDebug": true
+		},
+		{
+			"name": "thirdparty/customEvent.js",
+			"module": "sap/ui/integration/thirdparty/customEvent.js"
+		},
+		{
+			"name": "thirdparty/licenses/CustomElements-BSD-LICENSE.txt"
+		},
+		{
+			"name": "thirdparty/licenses/CustomEvent-polyfill-LICENSE.txt"
+		},
+		{
+			"name": "util/Manifest-dbg.js",
+			"module": "sap/ui/integration/util/Manifest.js",
 			"isDebug": true,
 			"required": [
 				"sap/base/Log.js",
+				"sap/base/util/deepClone.js",
+				"sap/base/util/merge.js",
 				"sap/ui/base/Object.js",
-				"sap/ui/core/Manifest.js"
+				"sap/ui/core/Manifest.js",
+				"sap/ui/integration/util/ParameterMap.js"
 			]
 		},
 		{
-			"name": "util/CardManifest.js",
-			"module": "sap/ui/integration/util/CardManifest.js",
+			"name": "util/Manifest.js",
+			"module": "sap/ui/integration/util/Manifest.js",
 			"required": [
 				"sap/base/Log.js",
+				"sap/base/util/deepClone.js",
+				"sap/base/util/merge.js",
 				"sap/ui/base/Object.js",
-				"sap/ui/core/Manifest.js"
+				"sap/ui/core/Manifest.js",
+				"sap/ui/integration/util/ParameterMap.js"
 			]
 		},
 		{
-			"name": "util/CustomElements-dbg.js",
-			"module": "sap/ui/integration/util/CustomElements.js",
+			"name": "util/ParameterMap-dbg.js",
+			"module": "sap/ui/integration/util/ParameterMap.js",
 			"isDebug": true,
 			"required": [
-				"sap/base/Log.js"
+				"sap/ui/core/Core.js"
 			]
 		},
 		{
-			"name": "util/CustomElements.js",
-			"module": "sap/ui/integration/util/CustomElements.js",
+			"name": "util/ParameterMap.js",
+			"module": "sap/ui/integration/util/ParameterMap.js",
 			"required": [
-				"sap/base/Log.js"
+				"sap/ui/core/Core.js"
 			]
 		},
 		{
@@ -669,11 +1966,21 @@
 			]
 		},
 		{
+			"name": "util/Utils-dbg.js",
+			"module": "sap/ui/integration/util/Utils.js",
+			"isDebug": true
+		},
+		{
+			"name": "util/Utils.js",
+			"module": "sap/ui/integration/util/Utils.js"
+		},
+		{
 			"name": "widgets/Card-dbg.js",
 			"module": "sap/ui/integration/widgets/Card.js",
 			"isDebug": true,
 			"required": [
 				"sap/base/Log.js",
+				"sap/base/util/LoaderExtensions.js",
 				"sap/f/CardRenderer.js",
 				"sap/f/cards/BaseContent.js",
 				"sap/f/cards/DataProviderFactory.js",
@@ -687,7 +1994,7 @@
 				"sap/ui/core/Core.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/integration/library.js",
-				"sap/ui/integration/util/CardManifest.js",
+				"sap/ui/integration/util/Manifest.js",
 				"sap/ui/integration/util/ServiceManager.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/model/resource/ResourceModel.js",
@@ -699,6 +2006,7 @@
 			"module": "sap/ui/integration/widgets/Card.js",
 			"required": [
 				"sap/base/Log.js",
+				"sap/base/util/LoaderExtensions.js",
 				"sap/f/CardRenderer.js",
 				"sap/f/cards/BaseContent.js",
 				"sap/f/cards/DataProviderFactory.js",
@@ -712,7 +2020,7 @@
 				"sap/ui/core/Core.js",
 				"sap/ui/core/Icon.js",
 				"sap/ui/integration/library.js",
-				"sap/ui/integration/util/CardManifest.js",
+				"sap/ui/integration/util/Manifest.js",
 				"sap/ui/integration/util/ServiceManager.js",
 				"sap/ui/model/json/JSONModel.js",
 				"sap/ui/model/resource/ResourceModel.js",

@@ -60,7 +60,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @since 1.34.0
 	 *
 	 * @public
@@ -133,7 +133,12 @@ sap.ui.define([
 				 * Defines the type of text wrapping to be used (hyphenated or normal).
 				 * @since 1.60
 				 */
-				wrappingType: {type: "sap.m.WrappingType", group: "Appearance", defaultValue: WrappingType.Normal}
+				wrappingType: {type: "sap.m.WrappingType", group: "Appearance", defaultValue: WrappingType.Normal},
+				/**
+				 * Width of the control.
+				 * @since 1.72
+				 */
+				width: {type: "sap.ui.core.CSSSize", group: "Appearance"}
 			},
 			defaultAggregation: "tileContent",
 			aggregations: {
@@ -319,6 +324,10 @@ sap.ui.define([
 			default:
 			// do nothing
 		}
+	};
+
+	GenericTile.prototype._isSmall = function() {
+		return this.getSizeBehavior() === TileSizeBehavior.Small || window.matchMedia("(max-width: 374px)").matches;
 	};
 
 	GenericTile.prototype.exit = function () {
@@ -999,7 +1008,7 @@ sap.ui.define([
 			case library.LoadState.Failed:
 				return sAriaText + "\n" + this._oFailedText.getText();
 			default :
-				if (jQuery.trim(sAriaText).length === 0) { // If the string is empty or just whitespace, IE renders an empty tooltip (e.g. "" + "\n" + "")
+				if (sAriaText.trim().length === 0) { // If the string is empty or just whitespace, IE renders an empty tooltip (e.g. "" + "\n" + "")
 					return "";
 				} else {
 					return sAriaText;
@@ -1087,7 +1096,7 @@ sap.ui.define([
 	 */
 	GenericTile.prototype._isTooltipSuppressed = function () {
 		var sTooltip = this.getTooltip_Text();
-		if (sTooltip && sTooltip.length > 0 && jQuery.trim(sTooltip).length === 0) {
+		if (sTooltip && sTooltip.length > 0 && sTooltip.trim().length === 0) {
 			return true;
 		} else {
 			return false;

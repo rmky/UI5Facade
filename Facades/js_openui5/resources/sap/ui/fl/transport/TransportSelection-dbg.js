@@ -5,12 +5,12 @@
  */
 
 sap.ui.define([
-	"sap/ui/fl/Utils",
+	"sap/ui/fl/LayerUtils",
 	"sap/ui/fl/transport/Transports",
 	"sap/ui/fl/transport/TransportDialog",
 	"sap/ui/fl/registry/Settings"
 ], function(
-	Utils,
+	LayerUtils,
 	Transports,
 	TransportDialog,
 	FlexSettings
@@ -21,7 +21,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.transport.TransportSelection
 	 * @constructor
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @since 1.38.0
 	 * Helper object to select an ABAP transport for an LREP object. This is not a generic utility to select a transport request, but part
 	 *        of the SmartVariant control.
@@ -58,7 +58,7 @@ sap.ui.define([
 		var that = this;
 
 		if (oObjectInfo) {
-			var sLayerType = Utils.getCurrentLayer(false);
+			var sLayerType = LayerUtils.getCurrentLayer(false);
 
 			// if object layer are known and layer is CUSTOMER
 			// check in settings if the adaptation transport organizer (ATO) is enabled
@@ -103,7 +103,7 @@ sap.ui.define([
 
 				if (that._checkDialog(oGetTransportsResult)) {
 					that._openDialog({
-						hidePackage: !Utils.doesSharedVariantRequirePackage(),
+						hidePackage: !LayerUtils.doesCurrentLayerRequirePackage(),
 						pkg: oObjectInfo.package,
 						transports: oGetTransportsResult.transports,
 						lrepObject: that._toLREPObject(oObjectInfo)
@@ -259,7 +259,7 @@ sap.ui.define([
 	 *
 	 * @param {array} aChanges array of {sap.ui.fl.Change}
 	 * @param {object} oControl object of the root control for the transport
-	 * @returns {Promise} promise that resolves without parameters
+	 * @returns {Promise} promise that resolves without parameters or rejects with "cancel" value in case of escape/cancel from transport dialog triggered
 	 * @public
 	 */
 	TransportSelection.prototype.setTransports = function(aChanges, oControl) {
@@ -286,6 +286,9 @@ sap.ui.define([
 				// bring up the transport dialog to get the transport information for a change
 				if (oCurrentChange.getDefinition().packageName !== "$TMP") {
 					return that.openTransportSelection(oCurrentChange, oControl).then(function(oTransportInfo) {
+						if (oTransportInfo === "cancel") {
+							return Promise.reject("cancel");
+						}
 						oCurrentChange.setRequest(oTransportInfo.transport);
 
 						if (oTransportInfo.fromDialog === true) {
@@ -341,7 +344,7 @@ sap.ui.define([
 			};
 			var fnError = function(oError) {
 				if (oError.sId === 'cancel') {
-					resolve();
+					resolve(oError.sId);
 				} else {
 					reject(oError);
 				}
@@ -373,37 +376,41 @@ sap.ui.define([
 	 * Prepare all changes and assign them to an existing transport.
 	 *
 	 * @public
-	 * @param {Object} oTransportInfo - object containing the package name and the transport
-	 * @param {string} oTransportInfo.packageName - name of the package
-	 * @param {string} oTransportInfo.transport - ID of the transport
-	 * @param {Array} aAllLocalChanges - array that includes all local changes
-	 * @param {Array} [aAppVariantDescriptors] - array that includes all app variant descriptors
+	 * @param {Object} oTransportInfo Object containing the package name and the transport
+	 * @param {string} oTransportInfo.packageName Name of the package
+	 * @param {string} oTransportInfo.transport ID of the transport
+	 * @param {Array} aAllLocalChanges Array that includes all local changes
+	 * @param {Array} [aAppVariantDescriptors] Array that includes all app variant descriptors
+	 * @param {object} oContentParameters Object containing parameters added into the publish request
+	 * @param {string} oContentParameters.reference Application ID of the changes which should be transported
+	 * @param {string} oContentParameters.appVersion Version of the application for which the changes should be transported
+	 * @param {string} oContentParameters.layer Layer in which the changes are stored
 	 * @returns {Promise} Returns a Promise which resolves without parameters
 	 */
-	TransportSelection.prototype._prepareChangesForTransport = function(oTransportInfo, aAllLocalChanges, aAppVariantDescriptors) {
-		if (aAllLocalChanges.length > 0) {
-			// Pass list of changes to be transported with transport request to backend
-			var oTransports = new Transports();
-			var aTransportData = oTransports._convertToChangeTransportData(aAllLocalChanges, aAppVariantDescriptors);
-			var oTransportParams = {};
-			//packageName is '' in CUSTOMER layer (no package input field in transport dialog)
-			oTransportParams.package = oTransportInfo.packageName;
-			oTransportParams.transportId = oTransportInfo.transport;
-			oTransportParams.changeIds = aTransportData;
+	TransportSelection.prototype._prepareChangesForTransport = function(oTransportInfo, aAllLocalChanges, aAppVariantDescriptors, oContentParameters) {
+		// Pass list of changes to be transported with transport request to backend
+		var oTransports = new Transports();
+		var aTransportData = oTransports._convertToChangeTransportData(aAllLocalChanges, aAppVariantDescriptors);
+		var oTransportParams = {};
+		//packageName is '' in CUSTOMER layer (no package input field in transport dialog)
+		oTransportParams.package = oTransportInfo.packageName;
+		oTransportParams.transportId = oTransportInfo.transport;
+		oTransportParams.changeIds = aTransportData;
+		oTransportParams.reference = oContentParameters.reference;
+		oTransportParams.appVersion = oContentParameters.appVersion;
+		oTransportParams.layer = oContentParameters.layer;
 
-			return oTransports.makeChangesTransportable(oTransportParams).then(function() {
-				// remove the $TMP package from all changes; has been done on the server as well,
-				// but is not reflected in the client cache until the application is reloaded
-				aAllLocalChanges.forEach(function(oChange) {
-					if (oChange.getPackage() === '$TMP') {
-						var oDefinition = oChange.getDefinition();
-						oDefinition.packageName = oTransportInfo.packageName;
-						oChange.setResponse(oDefinition);
-					}
-				});
+		return oTransports.makeChangesTransportable(oTransportParams).then(function() {
+			// remove the $TMP package from all changes; has been done on the server as well,
+			// but is not reflected in the client cache until the application is reloaded
+			aAllLocalChanges.forEach(function(oChange) {
+				if (oChange.getPackage() === '$TMP') {
+					var oDefinition = oChange.getDefinition();
+					oDefinition.packageName = oTransportInfo.packageName;
+					oChange.setResponse(oDefinition);
+				}
 			});
-		}
-		return Promise.resolve();
+		});
 	};
 
 	return TransportSelection;

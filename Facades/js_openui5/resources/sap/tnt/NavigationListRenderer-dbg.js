@@ -5,8 +5,8 @@
  */
 
 // Provides the default renderer for control sap.tnt.NavigationList
-sap.ui.define(['sap/ui/core/Renderer'],
-	function(Renderer) {
+sap.ui.define([],
+	function() {
 		"use strict";
 
 		/**
@@ -15,7 +15,9 @@ sap.ui.define(['sap/ui/core/Renderer'],
 		 * @author SAP SE
 		 * @namespace
 		 */
-		var NavigationListRenderer = {};
+		var NavigationListRenderer = {
+			apiVersion: 2
+		};
 
 		/**
 		 * Renders the HTML for the given control, using the provided {@link sap.ui.core.RenderManager}.
@@ -25,48 +27,52 @@ sap.ui.define(['sap/ui/core/Renderer'],
 		 */
 		NavigationListRenderer.render = function (rm, control) {
 			var role,
-				visibleGroupsCount,
 				groups = control.getItems(),
 				expanded = control.getExpanded(),
-				visibleGroups = [];
-
-			rm.write("<ul");
-			rm.writeControlData(control);
-
-			var width = control.getWidth();
-			if (width && expanded) {
-				rm.addStyle("width", width);
-			}
-			rm.writeStyles();
-
-			rm.addClass("sapTntNavLI");
-
-			if (!expanded) {
-				rm.addClass("sapTntNavLICollapsed");
-			}
-
-			rm.writeClasses();
-
-			// ARIA
-			role = !expanded || control.hasStyleClass("sapTntNavLIPopup") ? 'menubar' : 'tree';
-
-			rm.writeAttribute("role", role);
-
-			rm.write(">");
+				visibleGroups = [],
+				hasGroupWithIcon = false;
 
 			//Checking which groups should render
 			groups.forEach(function(group) {
 				if (group.getVisible()) {
 					visibleGroups.push(group);
+
+					if (group.getIcon()) {
+						hasGroupWithIcon = true;
+					}
 				}
 			});
 
-			// Rendering the visible groups
-			visibleGroups.forEach(function(group, index) {
-				group.render(rm, control, index, visibleGroupsCount);
+			rm.openStart("ul", control);
+
+			var width = control.getWidth();
+			if (width && expanded) {
+				rm.style("width", width);
+			}
+
+			rm.class("sapTntNavLI");
+
+			if (!expanded) {
+				rm.class("sapTntNavLICollapsed");
+			}
+
+			if (!hasGroupWithIcon) {
+				rm.class("sapTntNavLINoIcons");
+			}
+
+			// ARIA
+			role = !expanded || control.hasStyleClass("sapTntNavLIPopup") ? 'menubar' : 'tree';
+
+			rm.attr("role", role);
+			rm.openEnd();
+
+			// Rendering visible groups
+			visibleGroups.forEach(function(group) {
+				group.render(rm, control);
 			});
 
-			rm.write("</ul>");
+
+			rm.close("ul");
 		};
 
 		return NavigationListRenderer;

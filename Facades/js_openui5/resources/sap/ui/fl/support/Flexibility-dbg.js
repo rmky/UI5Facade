@@ -26,10 +26,10 @@ sap.ui.define([
 		 *
 		 * @abstract
 		 * @extends sap.ui.core.support.Plugin
-		 * @version 1.68.1
-		 * @sap-restricted
-		 * @constructor
+		 * @version 1.73.1
 		 * @private
+		 * @ui5-restricted
+		 * @constructor
 		 */
 		var Flexibility = Plugin.extend("sap.ui.fl.support.Flexibility", {
 			constructor: function (oSupportStub) {

@@ -46,6 +46,9 @@ sap.ui.define([
 			// shortcut for sap.ui.core.TextDirection
 			var TextDirection = coreLibrary.TextDirection;
 
+			// shortcut for sap.m.ButtonType
+			var ButtonType = library.ButtonType;
+
 			/**
 			 * Provides easier methods to create sap.m.Dialog with type sap.m.DialogType.Message, such as standard alerts,
 			 * confirmation dialogs, or arbitrary message dialogs.
@@ -59,6 +62,7 @@ sap.ui.define([
 			 * Only the recommended options are documented for those functions.
 			 * </ul>
 			 * <b>NOTE:</b> All options of show() are available for the other template functions as well, but it is recommended to use show() only in more specific scenarios.
+			 * <b>NOTE:</b> Due to the static nature of the <code>MessageBox</code> class, you cannot expect data binding support from its helper functions. If this is required you can use the <code>sap.m.Dialog</code> instead.
 			 * Example:
 			 * <pre>
 			 *	sap.ui.define(["sap/m/MessageBox"], function(MessageBox) {
@@ -193,30 +197,20 @@ sap.ui.define([
 
 			(function () {
 				var Action = MessageBox.Action,
-						Icon = MessageBox.Icon,
-						//set the information icon according to the used theme
-						bInformationIconUsed = Parameters.get("_sap_m_Message_Box_Information_Icon") === "true",
-						sSrcIcon = bInformationIconUsed ? "message-information" : "hint",
-						mClasses = {
-							"INFORMATION": "sapMMessageBoxInfo",
-							"WARNING": "sapMMessageBoxWarning",
-							"ERROR": "sapMMessageBoxError",
-							"SUCCESS": "sapMMessageBoxSuccess",
-							"QUESTION": "sapMMessageBoxQuestion",
-							"STANDARD":  "sapMMessageBoxStandard"
-						},
-						mIcons = {
-							"INFORMATION": IconPool.getIconURI(sSrcIcon),
-							"WARNING": IconPool.getIconURI("message-warning"),
-							"ERROR": IconPool.getIconURI("message-error"),
-							"SUCCESS": IconPool.getIconURI("message-success"),
-							"QUESTION": IconPool.getIconURI("question-mark")
-						};
+						Icon = MessageBox.Icon;
 
 				var _verifyBundle = function () {
 					if (MessageBox._rb !== sap.ui.getCore().getLibraryResourceBundle("sap.m")) {
 						MessageBox._rb = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 					}
+				};
+
+				var _fnIsCustomAction = function (mOptions) {
+					if (mOptions && mOptions.actions && mOptions.actions.length > 0) {
+						return true;
+					}
+
+					return false;
 				};
 
 				/**
@@ -269,6 +263,7 @@ sap.ui.define([
 				 * @param {boolean} [mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
 				 * @param {string} [mOptions.details] Added since version 1.28.0. If 'details' is set in the MessageBox, a 'Show detail' link is added. When you click the link, the text area containing 'details' information is then displayed. The initial visibility is not configurable and the details are hidden by default.
 				 * @param {sap.ui.core.CSSSize} [mOptions.contentWidth] The width of the MessageBox
+				 * @param {boolean} [mOptions.closeOnNavigation=true] Whether the MessageBox will be closed automatically when a routing navigation occurs.
 				 * @public
 				 * @static
 				 */
@@ -283,6 +278,24 @@ sap.ui.define([
 								horizontalScrolling: true,
 								details: "",
 								contentWidth: null
+							},
+							//set the information icon according to the used theme
+							bInformationIconUsed = Parameters.get("_sap_m_Message_Box_Information_Icon") === "true",
+							sSrcIcon = bInformationIconUsed ? "message-information" : "hint",
+							mClasses = {
+								"INFORMATION": "sapMMessageBoxInfo",
+								"WARNING": "sapMMessageBoxWarning",
+								"ERROR": "sapMMessageBoxError",
+								"SUCCESS": "sapMMessageBoxSuccess",
+								"QUESTION": "sapMMessageBoxQuestion",
+								"STANDARD":  "sapMMessageBoxStandard"
+							},
+							mIcons = {
+								"INFORMATION": IconPool.getIconURI(sSrcIcon),
+								"WARNING": IconPool.getIconURI("message-warning"),
+								"ERROR": IconPool.getIconURI("message-error"),
+								"SUCCESS": IconPool.getIconURI("message-success"),
+								"QUESTION": IconPool.getIconURI("question-mark")
 							};
 
 					_verifyBundle();
@@ -306,6 +319,10 @@ sap.ui.define([
 						};
 					}
 
+					if (mOptions && mOptions.isCustomAction === undefined) {
+						mOptions.isCustomAction = _fnIsCustomAction(mOptions);
+					}
+
 					if (mOptions && mOptions.hasOwnProperty("details")) {
 						mDefaults.icon = Icon.INFORMATION;
 						mDefaults.actions = [Action.OK, Action.CANCEL];
@@ -318,12 +335,14 @@ sap.ui.define([
 					if (typeof mOptions.actions !== "undefined" && !Array.isArray(mOptions.actions)) {
 						mOptions.actions = [mOptions.actions];
 					}
+
 					if (!mOptions.actions || mOptions.actions.length === 0) {
 						mOptions.actions = [Action.OK];
+						mOptions.isCustomAction = false;
 					}
 
 					/** creates a button for the given action */
-					function button(sAction) {
+					function button(sAction, sButtonType) {
 						var sText;
 
 						// Don't check in ResourceBundle library if the button is with custom text
@@ -334,6 +353,7 @@ sap.ui.define([
 						var oButton = new Button({
 							id: ElementMetadata.uid("mbox-btn-"),
 							text: sText || sAction,
+							type: sButtonType,
 							press: function () {
 								oResult = sAction;
 								oDialog.close();
@@ -342,8 +362,11 @@ sap.ui.define([
 						return oButton;
 					}
 
+					var sButtonType;
+
 					for (i = 0; i < mOptions.actions.length; i++) {
-						aButtons.push(button(mOptions.actions[i]));
+						sButtonType = !mOptions.isCustomAction && Action.OK === mOptions.actions[i] ? ButtonType.Emphasized : ButtonType.Default;
+						aButtons.push(button(mOptions.actions[i], sButtonType));
 					}
 
 					function getInformationLayout(mOptions, oMessageText) {
@@ -460,7 +483,8 @@ sap.ui.define([
 						afterClose: onclose,
 						buttons: aButtons,
 						ariaLabelledBy: oMessageText ? oMessageText.getId() : undefined,
-						contentWidth: mOptions.contentWidth
+						contentWidth: mOptions.contentWidth,
+						closeOnNavigation: mOptions.closeOnNavigation
 					});
 
 					oDialog.setProperty("role",  DialogRoleType.AlertDialog);
@@ -516,6 +540,7 @@ sap.ui.define([
 				 * @param {sap.ui.core.TextDirection} [mOptions.textDirection] Added since version 1.28. Specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
 				 * @param {boolean} [mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
 				 * @param {boolean} [mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
+				 * @param {boolean} [mOptions.closeOnNavigation=true] Whether the MessageBox will be closed automatically when a routing navigation occurs.
 				 * @public
 				 * @static
 				 */
@@ -543,6 +568,10 @@ sap.ui.define([
 							id: sDialogId,
 							styleClass: sStyleClass
 						};
+					}
+
+					if (mOptions) {
+						mOptions.isCustomAction = _fnIsCustomAction(mOptions);
 					}
 
 					mOptions = jQuery.extend({}, mDefaults, mOptions);
@@ -591,6 +620,7 @@ sap.ui.define([
 				 * @param {sap.ui.core.TextDirection} [mOptions.textDirection] Added since version 1.28. Specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
 				 * @param {boolean} [mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
 				 * @param {boolean} [mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
+				 * @param {boolean} [mOptions.closeOnNavigation=true] Whether the MessageBox will be closed automatically when a routing navigation occurs.
 				 * @public
 				 * @static
 				 */
@@ -620,13 +650,17 @@ sap.ui.define([
 						};
 					}
 
+					if (mOptions) {
+						mOptions.isCustomAction = _fnIsCustomAction(mOptions);
+					}
+
 					mOptions = jQuery.extend({}, mDefaults, mOptions);
 
 					return MessageBox.show(vMessage, mOptions);
 				};
 
 				/**
-				 *Displays an error dialog with the given message, an ERROR icon, a CLOSE button..
+				 * Displays an error dialog with the given message, an ERROR icon, a CLOSE button..
 				 * If a callback is given, it is called after the error box
 				 * has been closed by the user with one of the buttons.
 				 *
@@ -662,6 +696,7 @@ sap.ui.define([
 				 * @param {sap.ui.core.TextDirection} [mOptions.textDirection] Specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
 				 * @param {boolean} [mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
 				 * @param {boolean} [mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
+				 * @param {boolean} [mOptions.closeOnNavigation=true] Whether the MessageBox will be closed automatically when a routing navigation occurs.
 				 * @public
 				 * @since 1.30
 				 * @static
@@ -676,6 +711,10 @@ sap.ui.define([
 						id: ElementMetadata.uid("error"),
 						initialFocus: null
 					};
+
+					if (mOptions) {
+						mOptions.isCustomAction = _fnIsCustomAction(mOptions);
+					}
 
 					mOptions = jQuery.extend({}, mDefaults, mOptions);
 
@@ -718,6 +757,7 @@ sap.ui.define([
 				 * @param {sap.ui.core.TextDirection} [mOptions.textDirection] Specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
 				 * @param {boolean} [mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
 				 * @param {boolean} [mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
+				 * @param {boolean} [mOptions.closeOnNavigation=true] Whether the MessageBox will be closed automatically when a routing navigation occurs.
 				 * @public
 				 * @since 1.30
 				 * @static
@@ -732,6 +772,10 @@ sap.ui.define([
 						id: ElementMetadata.uid("info"),
 						initialFocus: null
 					};
+
+					if (mOptions) {
+						mOptions.isCustomAction = _fnIsCustomAction(mOptions);
+					}
 
 					mOptions = jQuery.extend({}, mDefaults, mOptions);
 
@@ -774,6 +818,7 @@ sap.ui.define([
 				 * @param {sap.ui.core.TextDirection} [mOptions.textDirection] Specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
 				 * @param {boolean} [mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
 				 * @param {boolean} [mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
+				 * @param {boolean} [mOptions.closeOnNavigation=true] Whether the MessageBox will be closed automatically when a routing navigation occurs.
 				 * @public
 				 * @since 1.30
 				 * @static
@@ -788,6 +833,10 @@ sap.ui.define([
 						id: ElementMetadata.uid("warning"),
 						initialFocus: null
 					};
+
+					if (mOptions) {
+						mOptions.isCustomAction = _fnIsCustomAction(mOptions);
+					}
 
 					mOptions = jQuery.extend({}, mDefaults, mOptions);
 
@@ -830,6 +879,7 @@ sap.ui.define([
 				 * @param {sap.ui.core.TextDirection} [mOptions.textDirection] Specifies the element's text directionality with enumerated options. By default, the control inherits text direction from the DOM.
 				 * @param {boolean} [mOptions.verticalScrolling] verticalScrolling is deprecated since version 1.30.4. VerticalScrolling, this option indicates if the user can scroll vertically inside the MessageBox when the content is larger than the content area.
 				 * @param {boolean} [mOptions.horizontalScrolling] horizontalScrolling is deprecated since version 1.30.4. HorizontalScrolling, this option indicates if the user can scroll horizontally inside the MessageBox when the content is larger than the content area.
+				 * @param {boolean} [mOptions.closeOnNavigation=true] Whether the MessageBox will be closed automatically when a routing navigation occurs.
 				 * @public
 				 * @since 1.30
 				 * @static
@@ -844,6 +894,10 @@ sap.ui.define([
 						id: ElementMetadata.uid("success"),
 						initialFocus: null
 					};
+
+					if (mOptions) {
+						mOptions.isCustomAction = _fnIsCustomAction(mOptions);
+					}
 
 					mOptions = jQuery.extend({}, mDefaults, mOptions);
 

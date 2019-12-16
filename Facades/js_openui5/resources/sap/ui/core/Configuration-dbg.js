@@ -17,7 +17,8 @@ sap.ui.define([
 	"sap/base/util/deepEqual",
 	"sap/base/util/Version",
 	"sap/base/Log",
-	"sap/base/assert"
+	"sap/base/assert",
+	"sap/base/util/isEmptyObject"
 ],
 	function(
 		jQuery,
@@ -31,7 +32,8 @@ sap.ui.define([
 		deepEqual,
 		Version,
 		Log,
-		assert
+		assert,
+		isEmptyObject
 	) {
 	"use strict";
 
@@ -131,7 +133,7 @@ sap.ui.define([
 					"bindingSyntax"         : { type : "string",   defaultValue : "default", noUrl:true }, // default|simple|complex
 					"versionedLibCss"       : { type : "boolean",  defaultValue : false },
 					"manifestFirst"         : { type : "boolean",  defaultValue : false },
-					"flexibilityServices"   : { type : "string",  defaultValue : "/sap/bc/lrep" },
+					"flexibilityServices"   : { type : "string",   defaultValue : "/sap/bc/lrep"},
 					"whitelistService"      : { type : "string",   defaultValue : null,      noUrl: true }, // url/to/service
 					"frameOptions"          : { type : "string",   defaultValue : "default", noUrl: true }, // default/allow/deny/trusted (default => allow)
 					"frameOptionsConfig"    : { type : "object",   defaultValue : undefined, noUrl:true },  // advanced frame options configuration
@@ -247,14 +249,39 @@ sap.ui.define([
 				}
 			}
 
+			function getMetaTagValue(sName) {
+				var oMetaTag = document.querySelector("META[name='" + sName + "']"),
+				    sMetaContent = oMetaTag && oMetaTag.getAttribute("content");
+				if (sMetaContent) {
+					return sMetaContent;
+				}
+			}
+
+			function validateThemeOrigin(sOrigin) {
+				var sAllowedOrigins = getMetaTagValue("sap-allowedThemeOrigins");
+				return !!sAllowedOrigins && sAllowedOrigins.split(",").some(function(sAllowedOrigin) {
+					return sAllowedOrigin === "*" || sOrigin === sAllowedOrigin.trim();
+				});
+			}
+
 			function validateThemeRoot(sThemeRoot) {
 				var oThemeRoot,
 					sPath;
 
 				try {
-					oThemeRoot = new URI(sThemeRoot, window.location.href).normalize();
-					sPath = oThemeRoot.path();
-					return sPath + (sPath.slice(-1) === '/' ? '' : '/') + "UI5/";
+					// Remove search query as they are not supported for themeRoots/resourceRoots
+					oThemeRoot = new URI(sThemeRoot).search("");
+
+					// If the URL is absolute, validate the origin
+					var sOrigin = oThemeRoot.origin();
+					if (sOrigin && validateThemeOrigin(sOrigin)) {
+						sPath = oThemeRoot.toString();
+					} else {
+						// For relative URLs or not allowed origins
+						// ensure same origin and resolve relative paths based on href
+						sPath = oThemeRoot.absoluteTo(window.location.href).origin(window.location.origin).normalize().toString();
+					}
+					return sPath + (sPath.endsWith('/') ? '' : '/') + "UI5/";
 				} catch (e) {
 					// malformed URL are also not accepted
 				}
@@ -305,14 +332,6 @@ sap.ui.define([
 			this._compatversion._default = _getCVers();
 			for (var n in M_COMPAT_FEATURES) {
 				this._compatversion[n] = _getCVers(n);
-			}
-
-			function getMetaTagValue(sName) {
-				var oMetaTag = document.querySelector("META[name='" + sName + "']"),
-				    sMetaContent = oMetaTag && oMetaTag.getAttribute("content");
-				if (sMetaContent) {
-					return sMetaContent;
-				}
 			}
 
 			// 6. apply the settings from the url (only if not blocked by app configuration)
@@ -475,6 +494,13 @@ sap.ui.define([
 				config["frameOptions"] = "allow";
 			}
 
+			// in case the flexibilityServices configuration was set to a non-empty, non-default value, sap.ui.fl becomes mandatory
+			if (config.flexibilityServices
+					&& config.flexibilityServices !== M_SETTINGS.flexibilityServices.defaultValue
+					&& config.modules.indexOf("sap.ui.fl.library") == -1) {
+				config.modules.push("sap.ui.fl.library");
+			}
+
 			var aCSSLibs = config['preloadLibCss'];
 			if ( aCSSLibs.length > 0 ) {
 				// a leading "!" denotes that the application has loaded the file already
@@ -510,7 +536,6 @@ sap.ui.define([
 					Log.info("  " + n + " = " + config[n]);
 				}
 			}
-
 
 			// Setup animation mode. If no animation mode is provided
 			// the value is set depending on the animation setting.
@@ -1148,8 +1173,8 @@ sap.ui.define([
 		 *
 		 * @returns {boolean} whether the design mode is active or not.
 		 * @since 1.13.2
-		 * private
-	 	 * @sap-restricted sap.watt com.sap.webide
+		 * @private
+	 	 * @ui5-restricted sap.watt com.sap.webide
 		 */
 		getDesignMode : function() {
 			return this["xx-designMode"];
@@ -1160,8 +1185,8 @@ sap.ui.define([
 		 *
 		 * @returns {boolean} whether the activation of the controller code is suppressed or not
 		 * @since 1.13.2
-		 * private
-	 	 * @sap-restricted sap.watt com.sap.webide
+		 * @private
+	 	 * @ui5-restricted sap.watt com.sap.webide
 		 */
 		getSuppressDeactivationOfControllerCode : function() {
 			return this["xx-suppressDeactivationOfControllerCode"];
@@ -1172,8 +1197,8 @@ sap.ui.define([
 		 *
 		 * @returns {boolean} whether the activation of the controller code is suppressed or not
 		 * @since 1.26.4
-		 * private
-	 	 * @sap-restricted sap.watt com.sap.webide
+		 * @private
+	 	 * @ui5-restricted sap.watt com.sap.webide
 		 */
 		getControllerCodeDeactivated : function() {
 			return this.getDesignMode() && !this.getSuppressDeactivationOfControllerCode();
@@ -1226,7 +1251,8 @@ sap.ui.define([
 		 * <code>handleURL</code>, <code>onIndexLoad</code> or <code>onIndexLoaded</code>.
 		 *
 		 * @returns {object} object containing the callback functions for the AppCacheBuster
-		 * @sap-restricted
+		 * @private
+		 * @ui5-restricted
 		 */
 		getAppCacheBusterHooks : function() {
 			return this["xx-appCacheBusterHooks"];
@@ -1237,7 +1263,7 @@ sap.ui.define([
 		 *
 		 * @returns {boolean} true if customizing is disabled
 		 * @private
-		 * @sap-restricted
+		 * @ui5-restricted
 		 */
 		getDisableCustomizing : function() {
 			return this["xx-disableCustomizing"];
@@ -1288,17 +1314,6 @@ sap.ui.define([
 		},
 
 		/**
-		 * Returns a flag if the changes-bundle for flexibility should be requested in case they are not preloaded
-		 *
-		 * @returns {boolean} flag if the changes-bundle for flexibility should be requested in case they are not preloaded
-		 * @private
-		 * @since 1.60.0
-		 */
-		isFlexBundleRequestForced : function() {
-			return this["xx-flexBundleRequestForced"];
-		},
-
-		/**
 		 * Returns the URL from where the UI5 flexibility services are called;
 		 * if empty, the flexibility services are not called.
 		 *
@@ -1307,7 +1322,42 @@ sap.ui.define([
 		 * @since 1.60.0
 		 */
 		getFlexibilityServices : function() {
+			if (!this.flexibilityServices) {
+				this.flexibilityServices = [];
+			}
+
+			if (typeof this.flexibilityServices === 'string') {
+				if (this.flexibilityServices[0] === "/") {
+					this.flexibilityServices = [{
+						url : this.flexibilityServices,
+						layers : ["ALL"],
+						connector : "LrepConnector"
+					}];
+				} else {
+					this.flexibilityServices = JSON.parse(this.flexibilityServices);
+				}
+			}
+
 			return this.flexibilityServices;
+		},
+
+		/**
+		 * Sets the UI5 flexibility services configuration.
+		 *
+		 * @param {object[]} aFlexibilityServices Connector configuration
+		 * @param {string} [aFlexibilityServices.connector] Name of the connector
+		 * @param {string} [aFlexibilityServices.applyConnector] Name of the full module name of the custom apply connector
+		 * @param {string} [aFlexibilityServices.writeConnector] Name of the full module name of the custom write connector
+		 * @param {boolean} [aFlexibilityServices.custom=false] Flag to identify the connector as custom or fl owned
+		 * @param {string} [aFlexibilityServices.url] Url for requests sent by the connector
+		 * @param {string} [aFlexibilityServices.path] Path for loading data in the ObjectPath connector
+		 * @param {sap.ui.fl.Layer[]} [aFlexibilityServices.layers] List of layers in which the connector is allowed to write
+		 * @private
+		 * @ui5-restricted sap.ui.fl, other ui5 bootstrapping tools
+		 * @since 1.73.0
+		 */
+		setFlexibilityServices: function (aFlexibilityServices) {
+			this.flexibilityServices = aFlexibilityServices;
 		},
 
 		/**
@@ -1652,7 +1702,7 @@ sap.ui.define([
 			function fallback(that) {
 				var oLocale = that.oConfiguration.language;
 				// if any user settings have been defined, add the private use subtag "sapufmt"
-				if ( !jQuery.isEmptyObject(that.mSettings) ) {
+				if ( !isEmptyObject(that.mSettings) ) {
 					// TODO move to Locale/LocaleData
 					var l = oLocale.toString();
 					if ( l.indexOf("-x-") < 0 ) {

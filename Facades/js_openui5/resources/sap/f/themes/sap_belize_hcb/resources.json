@@ -6,11 +6,6 @@
 			"theme": "sap_belize_hcb"
 		},
 		{
-			"name": "Avatar.less",
-			"designtime": true,
-			"theme": "sap_belize_hcb"
-		},
-		{
 			"name": "Card.less",
 			"designtime": true,
 			"theme": "sap_belize_hcb"

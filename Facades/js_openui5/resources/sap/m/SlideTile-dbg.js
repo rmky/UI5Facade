@@ -40,7 +40,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @since 1.34
 	 *
 	 * @public
@@ -71,7 +71,12 @@ sap.ui.define([
 				 *  This property has to be set consistently for the <code>SlideTile</code> along with all its inner <code>GenericTile</code>
 				 *  elements, so that they match one another visually.
 				 */
-				sizeBehavior: {type: "sap.m.TileSizeBehavior", defaultValue: TileSizeBehavior.Responsive}
+				sizeBehavior: {type: "sap.m.TileSizeBehavior", defaultValue: TileSizeBehavior.Responsive},
+				/**
+				 * Width of the control.
+				 * @since 1.72
+				 */
+				width: {type: "sap.ui.core.CSSSize", group: "Appearance"}
 			},
 			defaultAggregation: "tiles",
 			aggregations: {

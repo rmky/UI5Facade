@@ -44,7 +44,7 @@ function(
 	 * @extends sap.ui.rta.toolbar.Base
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @private
@@ -53,7 +53,7 @@ function(
 	 * @experimental Since 1.48. This class is experimental. API might be changed in future.
 	 */
 	var Adaptation = Base.extend("sap.ui.rta.toolbar.Adaptation", {
-		renderer: 'sap.ui.rta.toolbar.AdaptationRenderer',
+		renderer: "sap.ui.rta.toolbar.AdaptationRenderer",
 		animation: true,
 		metadata: {
 			events: {
@@ -94,11 +94,16 @@ function(
 
 	var DEVICE_SET = "sapUiRtaToolbar";
 
+	Adaptation.prototype.init = function() {
+		Device.media.attachHandler(this._onSizeChanged, this, DEVICE_SET);
+
+		Base.prototype.init.apply(this, arguments);
+	};
+
 	Adaptation.prototype.onAfterRendering = function () {
 		if (!Device.media.hasRangeSet(DEVICE_SET)) {
 			Device.media.initRangeSet(DEVICE_SET, [600, 900], "px", [Adaptation.modes.MOBILE, Adaptation.modes.TABLET, Adaptation.modes.DESKTOP]);
 		}
-		Device.media.attachHandler(this._onSizeChanged, this, DEVICE_SET);
 		this._onSizeChanged(Device.media.getCurrentRange(DEVICE_SET));
 
 		Base.prototype.onAfterRendering.apply(this, arguments);
@@ -122,25 +127,32 @@ function(
 		var sMode = mParams.name;
 		this.sMode = sMode;
 
-		var oSaveButton = this.getControl('exit');
+		var oSaveButton = this.getControl("exit");
 		var oOverflowToolbarContent = this.getControl("overflowToolbar").getContent();
+		var bShowAppVariantButton = false;
 		switch (sMode) {
 			case Adaptation.modes.MOBILE:
+				bShowAppVariantButton = false;
 				oSaveButton.setIcon("sap-icon://decline");
 				oSaveButton.setText("");
 				setLayoutPriority(oOverflowToolbarContent, "Low", "AlwaysOverflow");
+				replaceIconAndTextForAppVariantsButton.call(this, bShowAppVariantButton);
 				this._setWidthOfHBoxes(false);
 				break;
 			case Adaptation.modes.TABLET:
+				bShowAppVariantButton = false;
 				oSaveButton.setIcon("");
 				oSaveButton.setText(this.getTextResources().getText("BTN_EXIT"));
 				setLayoutPriority(oOverflowToolbarContent, "Low", "AlwaysOverflow");
+				replaceIconAndTextForAppVariantsButton.call(this, bShowAppVariantButton);
 				this._setWidthOfHBoxes(false);
 				break;
 			case Adaptation.modes.DESKTOP:
+				bShowAppVariantButton = true;
 				oSaveButton.setIcon("");
 				oSaveButton.setText(this.getTextResources().getText("BTN_EXIT"));
 				setLayoutPriority(oOverflowToolbarContent, "AlwaysOverflow", "Low");
+				replaceIconAndTextForAppVariantsButton.call(this, bShowAppVariantButton);
 				this._setWidthOfHBoxes(true);
 				break;
 			default:
@@ -152,7 +164,7 @@ function(
 		var oContent = this.getItems();
 
 		if (bCalculateWidth) {
-			var iWidth = this.getControl('modeSwitcher').$().outerWidth();
+			var iWidth = this.getControl("modeSwitcher").$().outerWidth();
 			var iHalfWidthOfModeSwitcher = iWidth && Math.floor(iWidth / 2);
 
 			if (!iHalfWidthOfModeSwitcher) {
@@ -166,11 +178,27 @@ function(
 		}
 	}
 
+	function replaceIconAndTextForAppVariantsButton(bShowIcon) {
+		var oManageAppsButton = this.getControl("manageApps");
+		var oAppVariantOverviewButton = this.getControl("appVariantOverview");
+		if (bShowIcon) {
+			oManageAppsButton.setIcon("sap-icon://dimension");
+			oManageAppsButton.setText("");
+			oAppVariantOverviewButton.setIcon("sap-icon://dimension");
+			oAppVariantOverviewButton.setText("");
+		} else {
+			oManageAppsButton.setIcon("");
+			oManageAppsButton.setText(this.getTextResources().getText("BTN_MANAGE_APPS_TXT"));
+			oAppVariantOverviewButton.setIcon("");
+			oAppVariantOverviewButton.setText(this.getTextResources().getText("BTN_MANAGE_APPS_TXT"));
+		}
+	}
+
 	Adaptation.prototype._setWidthOfHBoxes = function(bCalculateWidth) {
 		// in DESKTOP mode, as the mode switcher segmented buttons are of dynamic size (depending on text), we have to adjust the width of the two hboxes
 		// we add/subtract half the size of the mode switcher to the HBoxes
 		if (bCalculateWidth) {
-			var oModeSwitcherDomRef = this.getControl('modeSwitcher').getDomRef();
+			var oModeSwitcherDomRef = this.getControl("modeSwitcher").getDomRef();
 
 			// if the domRef is not there it is (still) in the overflow of the toolbar, so we have to wait until it is rendered
 			if (!oModeSwitcherDomRef) {
@@ -180,7 +208,7 @@ function(
 						this.getControl("modeSwitcher").removeEventDelegate(this._oDelegate, this);
 					}
 				};
-				this.getControl('modeSwitcher').addEventDelegate(this._oDelegate, this);
+				this.getControl("modeSwitcher").addEventDelegate(this._oDelegate, this);
 				calculateAndSetWidthOfBothBoxes.call(this, bCalculateWidth);
 			} else {
 				calculateAndSetWidthOfBothBoxes.call(this, bCalculateWidth);
@@ -207,7 +235,7 @@ function(
 	 * 			place for Icon in Fiori Toolbar
 	 * 		HBox
 	 * 			OverflowToolbar
-	 * 				Segmented Button, Buttons for Undo, Redo, manageApps, appVariantOverview, restore, publish
+	 * 				Segmented Button, Buttons for Undo, Redo, manageApps, appVariantOverview, restore, publish, saveAs
 	 * 			Save & Exit Button
 	 *
 	 * @returns {sap.ui.core.Control[]} Returns the controls in a structure described above.
@@ -245,7 +273,7 @@ function(
 										key: "navigation"
 									})
 								],
-								selectionChange: this.eventHandler.bind(this, 'ModeChange'),
+								selectionChange: this.eventHandler.bind(this, "ModeChange"),
 								layoutData: new OverflowToolbarLayoutData({
 									priority: "High"
 								})
@@ -256,7 +284,7 @@ function(
 								icon: "sap-icon://undo",
 								enabled: false,
 								tooltip: this.getTextResources().getText("BTN_UNDO"),
-								press: this.eventHandler.bind(this, 'Undo'),
+								press: this.eventHandler.bind(this, "Undo"),
 								layoutData: new OverflowToolbarLayoutData({
 									priority: "NeverOverflow"
 								})
@@ -267,35 +295,35 @@ function(
 								iconFirst: false,
 								enabled: false,
 								tooltip: this.getTextResources().getText("BTN_REDO"),
-								press: this.eventHandler.bind(this, 'Redo'),
+								press: this.eventHandler.bind(this, "Redo"),
 								layoutData: new OverflowToolbarLayoutData({
 									priority: "NeverOverflow"
 								})
 							}),
 							this._mControls["manageApps"] = new Button({
 								type:"Transparent",
-								icon: "sap-icon://message-information",
+								icon: "sap-icon://dimension",
 								enabled: false,
 								visible: false,
-								tooltip: this.getTextResources().getText("BTN_MANAGE_APPS"),
-								press: this.eventHandler.bind(this, 'ManageApps'),
+								tooltip: this.getTextResources().getText("BTN_MANAGE_APPS_TXT"),
+								press: this.eventHandler.bind(this, "ManageApps"),
 								layoutData: new OverflowToolbarLayoutData({
 									priority: "Low"
 								})
 							}),
 							this._mControls["appVariantOverview"] = new MenuButton({
 								type:"Transparent",
-								icon: "sap-icon://message-information",
+								icon: "sap-icon://dimension",
 								enabled: false,
 								visible: false,
-								tooltip: this.getTextResources().getText("BTN_MANAGE_APPS"),
+								tooltip: this.getTextResources().getText("BTN_MANAGE_APPS_TXT"),
 								menu: new Menu({
-									itemSelected: this.eventHandler.bind(this, 'AppVariantOverview'),
+									itemSelected: this.eventHandler.bind(this, "AppVariantOverview"),
 									items: [
-										new MenuItem('keyUser', {
+										new MenuItem("keyUser", {
 											text: this.getTextResources().getText("MENU_ITEM_KEY_USER")
 										}),
-										new MenuItem('developer', {
+										new MenuItem("developer", {
 											text: this.getTextResources().getText("MENU_ITEM_SAP_DEVELOPER")
 										})
 									]
@@ -310,7 +338,7 @@ function(
 								visible: true,
 								enabled: false,
 								tooltip: this.getTextResources().getText("BTN_RESTORE"),
-								press: this.eventHandler.bind(this, 'Restore'),
+								press: this.eventHandler.bind(this, "Restore"),
 								layoutData: new OverflowToolbarLayoutData({
 									priority: "Low"
 								})
@@ -321,7 +349,7 @@ function(
 								visible: this.getPublishVisible(),
 								text: this.getTextResources().getText("BTN_PUBLISH"),
 								tooltip: this.getTextResources().getText("BTN_PUBLISH"),
-								press: this.eventHandler.bind(this, 'Transport'), // Fixme: rename event
+								press: this.eventHandler.bind(this, "Transport"), // Fixme: rename event
 								layoutData: new OverflowToolbarLayoutData({
 									priority: "Low"
 								})
@@ -332,7 +360,7 @@ function(
 								enabled: false,
 								visible: false,
 								tooltip: this.getTextResources().getText("TOOLTIP_SAVE_AS"),
-								press: this.eventHandler.bind(this, 'SaveAs'),
+								press: this.eventHandler.bind(this, "SaveAs"),
 								layoutData: new OverflowToolbarLayoutData({
 									priority: "Low"
 								})
@@ -347,7 +375,7 @@ function(
 						type:"Transparent",
 						text: this.getTextResources().getText("BTN_EXIT"),
 						tooltip: this.getTextResources().getText("BTN_EXIT"),
-						press: this.eventHandler.bind(this, 'Exit'),
+						press: this.eventHandler.bind(this, "Exit"),
 						icon: "sap-icon://decline"
 					})
 				],
@@ -359,16 +387,16 @@ function(
 	};
 
 	Adaptation.prototype.setUndoRedoEnabled = function (bCanUndo, bCanRedo) {
-		this.getControl('undo').setEnabled(bCanUndo);
-		this.getControl('redo').setEnabled(bCanRedo);
+		this.getControl("undo").setEnabled(bCanUndo);
+		this.getControl("redo").setEnabled(bCanRedo);
 	};
 
 	Adaptation.prototype.setPublishEnabled = function (bEnabled) {
-		this.getControl('publish').setEnabled(bEnabled);
+		this.getControl("publish").setEnabled(bEnabled);
 	};
 
 	Adaptation.prototype.setRestoreEnabled = function (bEnabled) {
-		this.getControl('restore').setEnabled(bEnabled);
+		this.getControl("restore").setEnabled(bEnabled);
 	};
 
 	/* Methods propagation */

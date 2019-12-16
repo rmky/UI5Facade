@@ -17,7 +17,8 @@ sap.ui.define([
 	'sap/ui/core/Locale',
 	"./MonthsRowRenderer",
 	"sap/ui/dom/containsOrEquals",
-	"sap/ui/thirdparty/jquery"
+	"sap/ui/thirdparty/jquery",
+	"sap/ui/unified/DateRange"
 ], function(
 	Control,
 	LocaleData,
@@ -30,7 +31,8 @@ sap.ui.define([
 	Locale,
 	MonthsRowRenderer,
 	containsOrEquals,
-	jQuery
+	jQuery,
+	DateRange
 ) {
 	"use strict";
 
@@ -59,7 +61,7 @@ sap.ui.define([
 	 * The MontsRow works with JavaScript Date objects, but only the month and the year are used to display and interact.
 	 * As representation for a month, the 1st of the month will always be returned in the API.
 	 * @extends sap.ui.core.Control
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -224,7 +226,7 @@ sap.ui.define([
 	// overwrite invalidate to recognize changes on selectedDates
 	MonthsRow.prototype.invalidate = function(oOrigin) {
 
-		if (!this._bDateRangeChanged && (!oOrigin || !(oOrigin instanceof sap.ui.unified.DateRange))) {
+		if (!this._bDateRangeChanged && (!oOrigin || !(oOrigin instanceof DateRange))) {
 			Control.prototype.invalidate.apply(this, arguments);
 		} else if (this.getDomRef() && !this._sInvalidateMonths) {
 			// DateRange changed -> only rerender months
@@ -519,6 +521,17 @@ sap.ui.define([
 
 	};
 
+	/**
+	 * Sets the parent control instance which contains the legend
+	 * to the MonthsRow control instance
+	 * @ui5-restricted sap.m.PlanningCalendar
+	 * @private
+	 * @param {*} oControl containing the legend
+	 */
+	MonthsRow.prototype._setLegendControlOrigin = function (oControl) {
+		this._oLegendControlOrigin = oControl;
+	};
+
 	/*
 	 * if used inside CalendarMonthInterval get the value from the parent
 	 * To don't have sync issues...
@@ -526,6 +539,10 @@ sap.ui.define([
 	MonthsRow.prototype.getLegend = function(){
 
 		var oParent = this.getParent();
+
+		if (this._oLegendControlOrigin) {
+			return this._oLegendControlOrigin.getLegend();
+		}
 
 		if (oParent && oParent.getLegend) {
 			return oParent.getLegend();
@@ -1188,7 +1205,7 @@ sap.ui.define([
 					oStartDate.setDate(1); // begin of month
 				}
 			} else {
-				oDateRange = new sap.ui.unified.DateRange();
+				oDateRange = new DateRange();
 				oAggOwner.addAggregation("selectedDates", oDateRange, true); // no re-rendering
 			}
 
@@ -1240,7 +1257,7 @@ sap.ui.define([
 					}
 				} else {
 					// not selected -> select
-					oDateRange = new sap.ui.unified.DateRange({startDate: oDate.toLocalJSDate()});
+					oDateRange = new DateRange({startDate: oDate.toLocalJSDate()});
 					oAggOwner.addAggregation("selectedDates", oDateRange, true); // no re-rendering
 				}
 				sYyyymm = this._oFormatYyyymm.format(oDate.toUTCJSDate(), true);

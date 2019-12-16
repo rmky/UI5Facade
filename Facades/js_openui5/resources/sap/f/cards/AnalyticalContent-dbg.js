@@ -4,16 +4,17 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
+		"sap/f/library",
 		"sap/f/cards/BaseContent",
+		"sap/f/cards/BindingResolver",
 		"sap/viz/ui5/controls/VizFrame",
 		"sap/viz/ui5/controls/common/feeds/FeedItem",
 		"sap/viz/ui5/data/FlattenedDataset",
 		"sap/base/Log",
 		"sap/ui/core/Core",
-		"jquery.sap.global",
-		"sap/f/cards/ActionEnablement"
+		"jquery.sap.global"
 	],
-	function (BaseContent, VizFrame, FeedItem, FlattenedDataset, Log, Core, jQuery, ActionEnablement) {
+	function (library, BaseContent, BindingResolver, VizFrame, FeedItem, FlattenedDataset, Log, Core, jQuery) {
 		"use strict";
 
 		/**
@@ -53,6 +54,8 @@ sap.ui.define([
 			"Donut": "donut"
 		};
 
+		var AreaType = library.cards.AreaType;
+
 		/**
 		 * Constructor for a new <code>AnalyticalContent</code>.
 		 *
@@ -66,7 +69,7 @@ sap.ui.define([
 		 * @extends sap.f.cards.BaseContent
 		 *
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.73.1
 		 *
 		 * @constructor
 		 * @private
@@ -156,8 +159,8 @@ sap.ui.define([
 		 * @private
 		 */
 		AnalyticalContent.prototype._updateModel = function () {
-			this._createChart();
 			BaseContent.prototype._updateModel.apply(this, arguments);
+			this._createChart();
 		};
 
 		/**
@@ -173,12 +176,14 @@ sap.ui.define([
 				return;
 			}
 
+			var oResolvedChartObject = BindingResolver.resolveValue(oChartObject, this.getModel(), "/");
+
 			var aDimensionNames = [];
 			if (oChartObject.dimensions) {
 				var aDimensions = [];
 				for (var i = 0; i < oChartObject.dimensions.length; i++) {
 					var oDimension = oChartObject.dimensions[i];
-					var sName = oDimension.value.substring(1, oDimension.value.length - 1);
+					var sName = oResolvedChartObject.dimensions[i].label;
 					aDimensionNames.push(sName);
 					var oDimensionMap = {
 						name: sName,
@@ -194,7 +199,7 @@ sap.ui.define([
 				var aMeasures = [];
 				for (var i = 0; i < oChartObject.measures.length; i++) {
 					var oMeasure = oChartObject.measures[i];
-					var sName = oMeasure.value.substring(1, oMeasure.value.length - 1);
+					var sName = oResolvedChartObject.measures[i].label;
 					aMeasureNames.push(sName);
 					var oMeasureMap = {
 						name: sName,
@@ -235,10 +240,12 @@ sap.ui.define([
 					})
 				]
 			});
-			var oVizProperties = this._getVizPropertiesObject(oChartObject);
+
+			var oVizProperties = this._getVizPropertiesObject(oResolvedChartObject);
 			oChart.setVizProperties(oVizProperties);
 
-			this._attachActions(oChartObject, this);
+			this._oActions.setAreaType(AreaType.Content);
+			this._oActions.attach(oChartObject, this);
 
 			this.setAggregation("_content", oChart);
 		};
@@ -264,8 +271,6 @@ sap.ui.define([
 				}
 			}
 		};
-
-		ActionEnablement.enrich(AnalyticalContent);
 
 		return AnalyticalContent;
 	});

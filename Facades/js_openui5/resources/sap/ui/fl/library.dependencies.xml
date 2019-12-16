@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <library  version="2.0" name="sap.ui.fl">
-  <module name="sap/ui/fl/Cache.js" size="21602" compressedSize="6486">
+  <module name="sap/ui/fl/Cache.js" size="18789" compressedSize="5492">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -9,23 +9,30 @@
       <module name="sap/base/util/ObjectPath.js"/>
       <module name="sap/ui/fl/LrepConnector.js"/>
       <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/StaticFileConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/CompatibilityConnector.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/Change.js" size="29984" compressedSize="11269">
+  <module name="sap/ui/fl/Change.js" size="32889" compressedSize="12073">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
+      <module name="sap/base/Log.js"/>
+      <module name="sap/base/util/includes.js"/>
       <module name="sap/ui/base/ManagedObject.js"/>
+      <module name="sap/ui/fl/LayerUtils.js"/>
       <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js"/>
       <module name="sap/ui/fl/registry/Settings.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/ChangePersistence.js" size="57088" compressedSize="20077">
+  <module name="sap/ui/fl/ChangePersistence.js" size="58840" compressedSize="20181">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
+      <module name="sap/base/Log.js"/>
       <module name="sap/base/util/isEmptyObject.js"/>
       <module name="sap/base/util/merge.js"/>
       <module name="sap/m/MessageBox.js"/>
@@ -33,19 +40,22 @@
       <module name="sap/ui/core/Component.js"/>
       <module name="sap/ui/fl/Cache.js"/>
       <module name="sap/ui/fl/Change.js"/>
-      <module name="sap/ui/fl/LrepConnector.js"/>
+      <module name="sap/ui/fl/LayerUtils.js"/>
       <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/Variant.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/Applier.js"/>
+      <module name="sap/ui/fl/apply/_internal/flexState/FlexState.js"/>
       <module name="sap/ui/fl/context/ContextManager.js"/>
       <module name="sap/ui/fl/registry/Settings.js"/>
       <module name="sap/ui/fl/transport/TransportSelection.js"/>
       <module name="sap/ui/fl/variants/VariantController.js"/>
+      <module name="sap/ui/fl/write/_internal/CompatibilityConnector.js"/>
       <module name="sap/ui/model/json/JSONModel.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/ChangePersistenceFactory.js" size="8541" compressedSize="2609">
+  <module name="sap/ui/fl/ChangePersistenceFactory.js" size="8006" compressedSize="2410">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/core/Component.js"/>
@@ -55,23 +65,27 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/ControlPersonalizationAPI.js" size="17665" compressedSize="6354">
+  <module name="sap/ui/fl/ControlPersonalizationAPI.js" size="17438" compressedSize="6213">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
+      <module name="sap/base/Log.js"/>
       <module name="sap/base/util/includes.js"/>
+      <module name="sap/base/util/merge.js"/>
       <module name="sap/ui/base/ManagedObject.js"/>
       <module name="sap/ui/core/Component.js"/>
       <module name="sap/ui/core/Element.js"/>
       <module name="sap/ui/core/util/reflection/JsControlTreeModifier.js"/>
       <module name="sap/ui/fl/FlexControllerFactory.js"/>
+      <module name="sap/ui/fl/LayerUtils.js"/>
       <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/apply/_internal/controlVariants/URLHandler.js"/>
       <module name="sap/ui/fl/registry/ChangeRegistry.js"/>
       <module name="sap/ui/fl/variants/VariantManagement.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/DefaultVariant.js" size="5612" compressedSize="1438">
+  <module name="sap/ui/fl/DefaultVariant.js" size="5618" compressedSize="1442">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/fl/Change.js"/>
@@ -84,117 +98,94 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/FakeLrepConnector.js" size="11248" compressedSize="4173">
+  <module name="sap/ui/fl/FakeLrepConnector.js" size="4176" compressedSize="1968">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/fl/apply/_internal/connectors/ObjectPathConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/ObjectStorageUtils.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/FakeLrepConnectorLocalStorage.js" size="1628" compressedSize="919">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/fl/Cache.js"/>
-      <module name="sap/ui/fl/ChangePersistenceFactory.js"/>
-      <module name="sap/ui/fl/LrepConnector.js"/>
-      <module name="sap/ui/thirdparty/jquery.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/fl/FakeLrepConnectorLocalStorage.js" size="640" compressedSize="286">
-    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="sap/ui/fl/FakeLrepConnectorStorage.js"/>
-      <module name="sap/ui/fl/FakeLrepLocalStorage.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/fl/FakeLrepConnectorSessionStorage.js" size="650" compressedSize="288">
-    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="sap/ui/fl/FakeLrepConnectorStorage.js"/>
-      <module name="sap/ui/fl/FakeLrepSessionStorage.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/fl/FakeLrepConnectorStorage.js" size="20640" compressedSize="7726">
-    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="sap/ui/fl/Cache.js"/>
-      <module name="sap/ui/fl/ChangePersistenceFactory.js"/>
       <module name="sap/ui/fl/FakeLrepConnector.js"/>
-      <module name="sap/ui/fl/LrepConnector.js"/>
-      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/LocalStorageConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/LocalStorageConnector.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/FakeLrepLocalStorage.js" size="533" compressedSize="260">
+  <module name="sap/ui/fl/FakeLrepConnectorSessionStorage.js" size="1930" compressedSize="1032">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="sap/ui/fl/FakeLrepStorage.js"/>
+      <module name="sap/ui/fl/FakeLrepConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/SessionStorageConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/SessionStorageConnector.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/FakeLrepSessionStorage.js" size="539" compressedSize="262">
+  <module name="sap/ui/fl/FakeLrepLocalStorage.js" size="749" compressedSize="322">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="sap/ui/fl/FakeLrepStorage.js"/>
+      <module name="sap/ui/fl/FakeLrepConnectorLocalStorage.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/FakeLrepStorage.js" size="5368" compressedSize="1852">
+  <module name="sap/ui/fl/FlexController.js" size="34802" compressedSize="11720">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/fl/FlexController.js" size="58049" compressedSize="19646">
-    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
+      <module name="sap/base/Log.js"/>
+      <module name="sap/base/util/restricted/_uniqWith.js"/>
       <module name="sap/ui/core/Component.js"/>
-      <module name="sap/ui/core/Element.js"/>
       <module name="sap/ui/core/util/reflection/JsControlTreeModifier.js"/>
       <module name="sap/ui/core/util/reflection/XmlTreeModifier.js"/>
       <module name="sap/ui/fl/Change.js"/>
       <module name="sap/ui/fl/ChangePersistenceFactory.js"/>
-      <module name="sap/ui/fl/FlexCustomData.js"/>
+      <module name="sap/ui/fl/LayerUtils.js"/>
       <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/Variant.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/Applier.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/Reverter.js"/>
+      <module name="sap/ui/fl/apply/_internal/controlVariants/URLHandler.js"/>
       <module name="sap/ui/fl/context/ContextManager.js"/>
-      <module name="sap/ui/fl/registry/ChangeHandlerRegistration.js"/>
       <module name="sap/ui/fl/registry/ChangeRegistry.js"/>
-      <module name="sap/ui/fl/registry/Settings.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/FlexControllerFactory.js" size="5845" compressedSize="1463">
+  <module name="sap/ui/fl/FlexControllerFactory.js" size="6071" compressedSize="1589">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
+      <module name="sap/base/Log.js"/>
       <module name="sap/ui/fl/ChangePersistenceFactory.js"/>
       <module name="sap/ui/fl/FlexController.js"/>
       <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/Applier.js"/>
       <module name="sap/ui/fl/variants/VariantModel.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/FlexCustomData.js" size="11625" compressedSize="2984">
+  <module name="sap/ui/fl/Layer.js" size="404" compressedSize="313">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="sap/ui/core/CustomData.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/LrepConnector.js" size="31830" compressedSize="10332">
+  <module name="sap/ui/fl/LayerUtils.js" size="5890" compressedSize="1942">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/UriParameters.js"/>
+      <module name="sap/ui/thirdparty/hasher.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/LrepConnector.js" size="16104" compressedSize="6027">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/merge.js"/>
-      <module name="sap/ui/dom/includeScript.js"/>
       <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/thirdparty/URI.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/fl/Persistence.js" size="9694" compressedSize="3215">
-    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="sap/ui/fl/ChangePersistenceFactory.js"/>
-      <module name="sap/ui/fl/DefaultVariant.js"/>
-      <module name="sap/ui/fl/StandardVariant.js"/>
-      <module name="sap/ui/fl/Utils.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
@@ -205,7 +196,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/PreprocessorImpl.js" size="4089" compressedSize="1427">
+  <module name="sap/ui/fl/PreprocessorImpl.js" size="4083" compressedSize="1423">
     <description>Provides object sap.ui.fl.ProcessorImpl</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -228,14 +219,14 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/StandardVariant.js" size="5206" compressedSize="1508">
+  <module name="sap/ui/fl/StandardVariant.js" size="5211" compressedSize="1512">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/fl/Change.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/Utils.js" size="48106" compressedSize="14455">
+  <module name="sap/ui/fl/Utils.js" size="41135" compressedSize="12545">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -251,20 +242,23 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/Variant.js" size="17200" compressedSize="6486">
+  <module name="sap/ui/fl/Variant.js" size="17241" compressedSize="6516">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
+      <module name="sap/base/Log.js"/>
       <module name="sap/base/util/merge.js"/>
       <module name="sap/ui/base/ManagedObject.js"/>
+      <module name="sap/ui/fl/LayerUtils.js"/>
       <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/registry/Settings.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/XmlPreprocessorImpl.js" size="4074" compressedSize="1654">
+  <module name="sap/ui/fl/XmlPreprocessorImpl.js" size="4067" compressedSize="1651">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
+      <module name="sap/base/Log.js"/>
       <module name="sap/ui/core/Component.js"/>
       <module name="sap/ui/fl/ChangePersistenceFactory.js"/>
       <module name="sap/ui/fl/FlexControllerFactory.js"/>
@@ -272,49 +266,274 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/apply/api/ControlPersonalizationApplyAPI.js" size="1570" compressedSize="328">
+  <module name="sap/ui/fl/apply/_internal/ChangesController.js" size="2344" compressedSize="739">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/fl/FlexControllerFactory.js"/>
+      <module name="sap/ui/fl/Utils.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/Storage.js" size="4456" compressedSize="1544">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/fl/apply/_internal/StorageResultMerger.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/Utils.js"/>
+      <module name="sap/ui/fl/apply/_internal/storageResultDisassemble.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/StorageResultMerger.js" size="9904" compressedSize="3166">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/merge.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/changes/Applier.js" size="13816" compressedSize="4886">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/Log.js"/>
+      <module name="sap/ui/core/Element.js"/>
+      <module name="sap/ui/core/util/reflection/JsControlTreeModifier.js"/>
+      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/FlexCustomData.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/Utils.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/changes/FlexCustomData.js" size="11631" compressedSize="2992">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/core/CustomData.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/changes/Reverter.js" size="6076" compressedSize="2197">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/Log.js"/>
+      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/FlexCustomData.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/Utils.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/changes/Utils.js" size="4546" compressedSize="1394">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/FlexCustomData.js"/>
+      <module name="sap/ui/fl/registry/ChangeHandlerRegistration.js"/>
+      <module name="sap/ui/fl/registry/ChangeRegistry.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/connectors/BackendConnector.js" size="1924" compressedSize="751">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/base/util/restricted/_pick.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/Utils.js"/>
+      <module name="sap/ui/fl/apply/connectors/BaseConnector.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/connectors/JsObjectConnector.js" size="1171" compressedSize="561">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/ObjectStorageConnector.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/connectors/KeyUserConnector.js" size="867" compressedSize="368">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/BackendConnector.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/connectors/LocalStorageConnector.js" size="846" compressedSize="342">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/ObjectStorageConnector.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/connectors/LrepConnector.js" size="4118" compressedSize="1415">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/base/util/restricted/_pick.js"/>
+      <module name="sap/ui/dom/includeScript.js"/>
+      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/Utils.js"/>
+      <module name="sap/ui/fl/apply/connectors/BaseConnector.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/connectors/ObjectPathConnector.js" size="1434" compressedSize="601">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/Utils.js"/>
+      <module name="sap/ui/fl/apply/connectors/BaseConnector.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/connectors/ObjectStorageConnector.js" size="1982" compressedSize="719">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/ObjectStorageUtils.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/Utils.js"/>
+      <module name="sap/ui/fl/apply/connectors/BaseConnector.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/connectors/ObjectStorageUtils.js" size="3337" compressedSize="977">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/connectors/PersonalizationConnector.js" size="911" compressedSize="376">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/BackendConnector.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/connectors/SessionStorageConnector.js" size="858" compressedSize="344">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/ObjectStorageConnector.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/connectors/StaticFileConnector.js" size="3050" compressedSize="1110">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/Log.js"/>
+      <module name="sap/base/util/LoaderExtensions.js"/>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/Utils.js"/>
+      <module name="sap/ui/fl/apply/connectors/BaseConnector.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/connectors/Utils.js" size="12262" compressedSize="3979">
+    <description>global XMLHttpRequest</description>
+    <requires>
+      <module name="sap/base/Log.js"/>
+      <module name="sap/base/security/encodeURLParameters.js"/>
+      <module name="sap/ui/fl/Layer.js"/>
+      <module name="sap/ui/fl/LayerUtils.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/controlVariants/URLHandler.js" size="19250" compressedSize="5709">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/Log.js"/>
+      <module name="sap/base/util/isEmptyObject.js"/>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/ui/base/ManagedObjectObserver.js"/>
+      <module name="sap/ui/core/Component.js"/>
+      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/thirdparty/hasher.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/flexState/FlexState.js" size="1871" compressedSize="748">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/ui/fl/apply/_internal/flexState/prepareMap.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/flexState/prepareMap.js" size="1219" compressedSize="274">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/_internal/storageResultDisassemble.js" size="2017" compressedSize="739">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/fl/apply/_internal/connectors/Utils.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/api/ControlVariantApplyAPI.js" size="2366" compressedSize="423">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/fl/ControlPersonalizationAPI.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/apply/api/ControlVariantApplyAPI.js" size="2835" compressedSize="501">
+  <module name="sap/ui/fl/apply/api/FlexRuntimeInfoAPI.js" size="3569" compressedSize="715">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/fl/ControlPersonalizationAPI.js"/>
+      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/apply/_internal/ChangesController.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/apply/api/SmartVariantManagementApplyAPI.js" size="6835" compressedSize="1687">
+  <module name="sap/ui/fl/apply/api/SmartVariantManagementApplyAPI.js" size="7442" compressedSize="1789">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
+      <module name="sap/base/Log.js"/>
       <module name="sap/ui/fl/ChangePersistenceFactory.js"/>
       <module name="sap/ui/fl/DefaultVariant.js"/>
+      <module name="sap/ui/fl/LayerUtils.js"/>
       <module name="sap/ui/fl/StandardVariant.js"/>
       <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/registry/Settings.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/changeHandler/AddXML.js" size="6408" compressedSize="2306">
+  <module name="sap/ui/fl/apply/api/UI2PersonalizationApplyAPI.js" size="2147" compressedSize="657">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/fl/Cache.js"/>
+      <module name="sap/ui/fl/apply/_internal/ChangesController.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/apply/connectors/BaseConnector.js" size="1267" compressedSize="302">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/changeHandler/AddXML.js" size="5993" compressedSize="2042">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/LoaderExtensions.js"/>
       <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/changeHandler/Base.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/changeHandler/Base.js" size="1630" compressedSize="444">
+  <module name="sap/ui/fl/changeHandler/Base.js" size="3010" compressedSize="884">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
+      <module name="sap/base/util/LoaderExtensions.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/changeHandler/BaseRename.js" size="4670" compressedSize="1468">
+  <module name="sap/ui/fl/changeHandler/BaseRename.js" size="4653" compressedSize="1457">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/base/Log.js"/>
       <module name="sap/ui/fl/changeHandler/Base.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
@@ -326,7 +545,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/changeHandler/ChangeHandlerMediator.js" size="7024" compressedSize="2651">
+  <module name="sap/ui/fl/changeHandler/ChangeHandlerMediator.js" size="7027" compressedSize="2655">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -349,17 +568,17 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/changeHandler/MoveControls.js" size="12306" compressedSize="4788">
+  <module name="sap/ui/fl/changeHandler/MoveControls.js" size="12520" compressedSize="4825">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/base/Log.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/changeHandler/MoveElements.js" size="5179" compressedSize="2058">
+  <module name="sap/ui/fl/changeHandler/MoveElements.js" size="5160" compressedSize="2051">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/base/Log.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
@@ -400,6 +619,12 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
+  <module name="sap/ui/fl/changeHandler/UpdateIFrame.js" size="3670" compressedSize="1070">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
   <module name="sap/ui/fl/changeHandler/XmlTreeModifier.js" size="348" compressedSize="256">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
@@ -407,11 +632,12 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/codeExt/CodeExtManager.js" size="4241" compressedSize="1882">
+  <module name="sap/ui/fl/codeExt/CodeExtManager.js" size="4321" compressedSize="1916">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/fl/Change.js"/>
       <module name="sap/ui/fl/LrepConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/CompatibilityConnector.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
@@ -422,7 +648,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/context/Context.js" size="5751" compressedSize="2634">
+  <module name="sap/ui/fl/context/Context.js" size="5732" compressedSize="2627">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
@@ -430,10 +656,11 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/context/ContextManager.js" size="10399" compressedSize="2790">
+  <module name="sap/ui/fl/context/ContextManager.js" size="10442" compressedSize="2815">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
+      <module name="sap/ui/fl/LayerUtils.js"/>
       <module name="sap/ui/fl/LrepConnector.js"/>
       <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/context/Context.js"/>
@@ -456,49 +683,34 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/core/EventDelegate.js" size="4060" compressedSize="1486">
-    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="sap/ui/base/EventProvider.js"/>
-      <module name="sap/ui/fl/Utils.js"/>
-      <module name="sap/ui/fl/core/FlexVisualizer.js"/>
-      <module name="sap/ui/fl/registry/ChangeRegistry.js"/>
-      <module name="sap/ui/thirdparty/jquery.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/fl/core/FlexVisualizer.js" size="852" compressedSize="282">
-    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/fl/descriptorRelated/api/DescriptorChangeFactory.js" size="7375" compressedSize="2464">
+  <module name="sap/ui/fl/descriptorRelated/api/DescriptorChangeFactory.js" size="7300" compressedSize="2343">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/merge.js"/>
       <module name="sap/ui/fl/Change.js"/>
       <module name="sap/ui/fl/ChangePersistenceFactory.js"/>
+      <module name="sap/ui/fl/LayerUtils.js"/>
       <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/descriptorRelated/internal/Utils.js"/>
       <module name="sap/ui/fl/registry/Settings.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js" size="38521" compressedSize="10082">
+  <module name="sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js" size="39868" compressedSize="10604">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/fl/descriptorRelated/internal/Utils.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/descriptorRelated/api/DescriptorVariantFactory.js" size="13954" compressedSize="5147">
+  <module name="sap/ui/fl/descriptorRelated/api/DescriptorVariantFactory.js" size="16427" compressedSize="5568">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/merge.js"/>
-      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/LayerUtils.js"/>
       <module name="sap/ui/fl/descriptorRelated/internal/Utils.js"/>
       <module name="sap/ui/fl/registry/Settings.js"/>
+      <module name="sap/ui/fl/write/_internal/Storage.js"/>
       <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
@@ -592,7 +804,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/library-h2-preload.js" size="20038">
+  <module name="sap/ui/fl/library-h2-preload.js" size="28812">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/security/encodeURLParameters.js"/>
@@ -601,10 +813,12 @@
       <module name="sap/base/util/LoaderExtensions.js"/>
       <module name="sap/base/util/ObjectPath.js"/>
       <module name="sap/base/util/UriParameters.js"/>
-      <module name="sap/base/util/deepEqual.js"/>
       <module name="sap/base/util/includes.js"/>
       <module name="sap/base/util/isEmptyObject.js"/>
       <module name="sap/base/util/merge.js"/>
+      <module name="sap/base/util/restricted/_omit.js"/>
+      <module name="sap/base/util/restricted/_pick.js"/>
+      <module name="sap/base/util/restricted/_uniqWith.js"/>
       <module name="sap/base/util/uid.js"/>
       <module name="sap/m/App.js"/>
       <module name="sap/m/Bar.js"/>
@@ -623,6 +837,7 @@
       <module name="sap/m/IconTabFilter.js"/>
       <module name="sap/m/Input.js"/>
       <module name="sap/m/InputListItem.js"/>
+      <module name="sap/m/InstanceManager.js"/>
       <module name="sap/m/Label.js"/>
       <module name="sap/m/Link.js"/>
       <module name="sap/m/List.js"/>
@@ -649,7 +864,6 @@
       <module name="sap/m/VBox.js"/>
       <module name="sap/m/library.js"/>
       <module name="sap/ui/Device.js"/>
-      <module name="sap/ui/base/EventProvider.js"/>
       <module name="sap/ui/base/ManagedObject.js"/>
       <module name="sap/ui/base/ManagedObjectObserver.js"/>
       <module name="sap/ui/base/Object.js"/>
@@ -667,8 +881,6 @@
       <module name="sap/ui/core/mvc/Controller.js"/>
       <module name="sap/ui/core/mvc/View.js"/>
       <module name="sap/ui/core/mvc/XMLView.js"/>
-      <module name="sap/ui/core/routing/HashChanger.js"/>
-      <module name="sap/ui/core/routing/History.js"/>
       <module name="sap/ui/core/support/Plugin.js"/>
       <module name="sap/ui/core/support/Support.js"/>
       <module name="sap/ui/core/util/File.js"/>
@@ -688,6 +900,7 @@
       <module name="sap/ui/model/PropertyBinding.js"/>
       <module name="sap/ui/model/base/ManagedObjectModel.js"/>
       <module name="sap/ui/model/json/JSONModel.js"/>
+      <module name="sap/ui/rta/util/validateStableIds.js"/>
       <module name="sap/ui/support/library.js"/>
       <module name="sap/ui/thirdparty/URI.js"/>
       <module name="sap/ui/thirdparty/hasher.js"/>
@@ -709,15 +922,12 @@
       <module name="sap/ui/fl/FakeLrepConnector.js"/>
       <module name="sap/ui/fl/FakeLrepConnectorLocalStorage.js"/>
       <module name="sap/ui/fl/FakeLrepConnectorSessionStorage.js"/>
-      <module name="sap/ui/fl/FakeLrepConnectorStorage.js"/>
       <module name="sap/ui/fl/FakeLrepLocalStorage.js"/>
-      <module name="sap/ui/fl/FakeLrepSessionStorage.js"/>
-      <module name="sap/ui/fl/FakeLrepStorage.js"/>
       <module name="sap/ui/fl/FlexController.js"/>
       <module name="sap/ui/fl/FlexControllerFactory.js"/>
-      <module name="sap/ui/fl/FlexCustomData.js"/>
+      <module name="sap/ui/fl/Layer.js"/>
+      <module name="sap/ui/fl/LayerUtils.js"/>
       <module name="sap/ui/fl/LrepConnector.js"/>
-      <module name="sap/ui/fl/Persistence.js"/>
       <module name="sap/ui/fl/Preprocessor.js"/>
       <module name="sap/ui/fl/PreprocessorImpl.js"/>
       <module name="sap/ui/fl/RegistrationDelegator.js"/>
@@ -725,9 +935,34 @@
       <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/Variant.js"/>
       <module name="sap/ui/fl/XmlPreprocessorImpl.js"/>
-      <module name="sap/ui/fl/apply/api/ControlPersonalizationApplyAPI.js"/>
+      <module name="sap/ui/fl/apply/_internal/ChangesController.js"/>
+      <module name="sap/ui/fl/apply/_internal/Storage.js"/>
+      <module name="sap/ui/fl/apply/_internal/StorageResultMerger.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/Applier.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/FlexCustomData.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/Reverter.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/Utils.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/BackendConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/JsObjectConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/KeyUserConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/LocalStorageConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/LrepConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/ObjectPathConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/ObjectStorageConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/ObjectStorageUtils.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/PersonalizationConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/SessionStorageConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/StaticFileConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/Utils.js"/>
+      <module name="sap/ui/fl/apply/_internal/controlVariants/URLHandler.js"/>
+      <module name="sap/ui/fl/apply/_internal/flexState/FlexState.js"/>
+      <module name="sap/ui/fl/apply/_internal/flexState/prepareMap.js"/>
+      <module name="sap/ui/fl/apply/_internal/storageResultDisassemble.js"/>
       <module name="sap/ui/fl/apply/api/ControlVariantApplyAPI.js"/>
+      <module name="sap/ui/fl/apply/api/FlexRuntimeInfoAPI.js"/>
       <module name="sap/ui/fl/apply/api/SmartVariantManagementApplyAPI.js"/>
+      <module name="sap/ui/fl/apply/api/UI2PersonalizationApplyAPI.js"/>
+      <module name="sap/ui/fl/apply/connectors/BaseConnector.js"/>
       <module name="sap/ui/fl/changeHandler/AddXML.js"/>
       <module name="sap/ui/fl/changeHandler/Base.js"/>
       <module name="sap/ui/fl/changeHandler/BaseRename.js"/>
@@ -742,6 +977,7 @@
       <module name="sap/ui/fl/changeHandler/StashControl.js"/>
       <module name="sap/ui/fl/changeHandler/UnhideControl.js"/>
       <module name="sap/ui/fl/changeHandler/UnstashControl.js"/>
+      <module name="sap/ui/fl/changeHandler/UpdateIFrame.js"/>
       <module name="sap/ui/fl/changeHandler/XmlTreeModifier.js"/>
       <module name="sap/ui/fl/codeExt/CodeExtManager.js"/>
       <module name="sap/ui/fl/context/BaseContextProvider.js"/>
@@ -749,8 +985,6 @@
       <module name="sap/ui/fl/context/ContextManager.js"/>
       <module name="sap/ui/fl/context/DeviceContextProvider.js"/>
       <module name="sap/ui/fl/context/SwitchContextProvider.js"/>
-      <module name="sap/ui/fl/core/EventDelegate.js"/>
-      <module name="sap/ui/fl/core/FlexVisualizer.js"/>
       <module name="sap/ui/fl/descriptorRelated/api/DescriptorChangeFactory.js"/>
       <module name="sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js"/>
       <module name="sap/ui/fl/descriptorRelated/api/DescriptorVariantFactory.js"/>
@@ -796,19 +1030,37 @@
       <module name="sap/ui/fl/transport/TransportDialog.js"/>
       <module name="sap/ui/fl/transport/TransportSelection.js"/>
       <module name="sap/ui/fl/transport/Transports.js"/>
+      <module name="sap/ui/fl/util/IFrame.js"/>
+      <module name="sap/ui/fl/util/IFrameRenderer.js"/>
       <module name="sap/ui/fl/util/ManagedObjectModel.js"/>
       <module name="sap/ui/fl/variants/VariantController.js"/>
       <module name="sap/ui/fl/variants/VariantManagement.js"/>
       <module name="sap/ui/fl/variants/VariantModel.js"/>
-      <module name="sap/ui/fl/variants/util/VariantUtil.js"/>
-      <module name="sap/ui/fl/write/ChangesController.js"/>
+      <module name="sap/ui/fl/write/_internal/CompatibilityConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/SaveAs.js"/>
+      <module name="sap/ui/fl/write/_internal/Storage.js"/>
+      <module name="sap/ui/fl/write/_internal/StorageFeaturesMerger.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/BackendConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/JsObjectConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/KeyUserConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/LocalStorageConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/LrepConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/ObjectPathConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/ObjectStorageConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/PersonalizationConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/SessionStorageConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/Utils.js"/>
+      <module name="sap/ui/fl/write/api/AppVariantWriteAPI.js"/>
       <module name="sap/ui/fl/write/api/ChangesWriteAPI.js"/>
       <module name="sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js"/>
+      <module name="sap/ui/fl/write/api/FeaturesAPI.js"/>
       <module name="sap/ui/fl/write/api/PersistenceWriteAPI.js"/>
       <module name="sap/ui/fl/write/api/SmartVariantManagementWriteAPI.js"/>
+      <module name="sap/ui/fl/write/api/UI2PersonalizationWriteAPI.js"/>
+      <module name="sap/ui/fl/write/connectors/BaseConnector.js"/>
     </includes>
   </module>
-  <module name="sap/ui/fl/library-preload.js" size="280125">
+  <module name="sap/ui/fl/library-preload.js" size="310832">
     <requires>
       <module name="sap/base/Log.js"/>
       <module name="sap/base/security/encodeURLParameters.js"/>
@@ -817,10 +1069,12 @@
       <module name="sap/base/util/LoaderExtensions.js"/>
       <module name="sap/base/util/ObjectPath.js"/>
       <module name="sap/base/util/UriParameters.js"/>
-      <module name="sap/base/util/deepEqual.js"/>
       <module name="sap/base/util/includes.js"/>
       <module name="sap/base/util/isEmptyObject.js"/>
       <module name="sap/base/util/merge.js"/>
+      <module name="sap/base/util/restricted/_omit.js"/>
+      <module name="sap/base/util/restricted/_pick.js"/>
+      <module name="sap/base/util/restricted/_uniqWith.js"/>
       <module name="sap/base/util/uid.js"/>
       <module name="sap/m/Bar.js"/>
       <module name="sap/m/Button.js"/>
@@ -852,7 +1106,6 @@
       <module name="sap/m/VBox.js"/>
       <module name="sap/m/library.js"/>
       <module name="sap/ui/Device.js"/>
-      <module name="sap/ui/base/EventProvider.js"/>
       <module name="sap/ui/base/ManagedObject.js"/>
       <module name="sap/ui/base/ManagedObjectObserver.js"/>
       <module name="sap/ui/base/Object.js"/>
@@ -868,8 +1121,6 @@
       <module name="sap/ui/core/mvc/Controller.js"/>
       <module name="sap/ui/core/mvc/View.js"/>
       <module name="sap/ui/core/mvc/XMLView.js"/>
-      <module name="sap/ui/core/routing/HashChanger.js"/>
-      <module name="sap/ui/core/routing/History.js"/>
       <module name="sap/ui/core/util/reflection/BaseTreeModifier.js"/>
       <module name="sap/ui/core/util/reflection/JsControlTreeModifier.js"/>
       <module name="sap/ui/core/util/reflection/XmlTreeModifier.js"/>
@@ -900,15 +1151,12 @@
       <module name="sap/ui/fl/FakeLrepConnector.js"/>
       <module name="sap/ui/fl/FakeLrepConnectorLocalStorage.js"/>
       <module name="sap/ui/fl/FakeLrepConnectorSessionStorage.js"/>
-      <module name="sap/ui/fl/FakeLrepConnectorStorage.js"/>
       <module name="sap/ui/fl/FakeLrepLocalStorage.js"/>
-      <module name="sap/ui/fl/FakeLrepSessionStorage.js"/>
-      <module name="sap/ui/fl/FakeLrepStorage.js"/>
       <module name="sap/ui/fl/FlexController.js"/>
       <module name="sap/ui/fl/FlexControllerFactory.js"/>
-      <module name="sap/ui/fl/FlexCustomData.js"/>
+      <module name="sap/ui/fl/Layer.js"/>
+      <module name="sap/ui/fl/LayerUtils.js"/>
       <module name="sap/ui/fl/LrepConnector.js"/>
-      <module name="sap/ui/fl/Persistence.js"/>
       <module name="sap/ui/fl/Preprocessor.js"/>
       <module name="sap/ui/fl/PreprocessorImpl.js"/>
       <module name="sap/ui/fl/RegistrationDelegator.js"/>
@@ -916,9 +1164,34 @@
       <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/Variant.js"/>
       <module name="sap/ui/fl/XmlPreprocessorImpl.js"/>
-      <module name="sap/ui/fl/apply/api/ControlPersonalizationApplyAPI.js"/>
+      <module name="sap/ui/fl/apply/_internal/ChangesController.js"/>
+      <module name="sap/ui/fl/apply/_internal/Storage.js"/>
+      <module name="sap/ui/fl/apply/_internal/StorageResultMerger.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/Applier.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/FlexCustomData.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/Reverter.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/Utils.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/BackendConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/JsObjectConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/KeyUserConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/LocalStorageConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/LrepConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/ObjectPathConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/ObjectStorageConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/ObjectStorageUtils.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/PersonalizationConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/SessionStorageConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/StaticFileConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/Utils.js"/>
+      <module name="sap/ui/fl/apply/_internal/controlVariants/URLHandler.js"/>
+      <module name="sap/ui/fl/apply/_internal/flexState/FlexState.js"/>
+      <module name="sap/ui/fl/apply/_internal/flexState/prepareMap.js"/>
+      <module name="sap/ui/fl/apply/_internal/storageResultDisassemble.js"/>
       <module name="sap/ui/fl/apply/api/ControlVariantApplyAPI.js"/>
+      <module name="sap/ui/fl/apply/api/FlexRuntimeInfoAPI.js"/>
       <module name="sap/ui/fl/apply/api/SmartVariantManagementApplyAPI.js"/>
+      <module name="sap/ui/fl/apply/api/UI2PersonalizationApplyAPI.js"/>
+      <module name="sap/ui/fl/apply/connectors/BaseConnector.js"/>
       <module name="sap/ui/fl/changeHandler/AddXML.js"/>
       <module name="sap/ui/fl/changeHandler/Base.js"/>
       <module name="sap/ui/fl/changeHandler/BaseRename.js"/>
@@ -933,6 +1206,7 @@
       <module name="sap/ui/fl/changeHandler/StashControl.js"/>
       <module name="sap/ui/fl/changeHandler/UnhideControl.js"/>
       <module name="sap/ui/fl/changeHandler/UnstashControl.js"/>
+      <module name="sap/ui/fl/changeHandler/UpdateIFrame.js"/>
       <module name="sap/ui/fl/changeHandler/XmlTreeModifier.js"/>
       <module name="sap/ui/fl/codeExt/CodeExtManager.js"/>
       <module name="sap/ui/fl/context/BaseContextProvider.js"/>
@@ -940,8 +1214,6 @@
       <module name="sap/ui/fl/context/ContextManager.js"/>
       <module name="sap/ui/fl/context/DeviceContextProvider.js"/>
       <module name="sap/ui/fl/context/SwitchContextProvider.js"/>
-      <module name="sap/ui/fl/core/EventDelegate.js"/>
-      <module name="sap/ui/fl/core/FlexVisualizer.js"/>
       <module name="sap/ui/fl/descriptorRelated/api/DescriptorChangeFactory.js"/>
       <module name="sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js"/>
       <module name="sap/ui/fl/descriptorRelated/api/DescriptorVariantFactory.js"/>
@@ -958,188 +1230,45 @@
       <module name="sap/ui/fl/transport/TransportDialog.js"/>
       <module name="sap/ui/fl/transport/TransportSelection.js"/>
       <module name="sap/ui/fl/transport/Transports.js"/>
+      <module name="sap/ui/fl/util/IFrame.js"/>
+      <module name="sap/ui/fl/util/IFrameRenderer.js"/>
       <module name="sap/ui/fl/util/ManagedObjectModel.js"/>
       <module name="sap/ui/fl/variants/VariantController.js"/>
       <module name="sap/ui/fl/variants/VariantManagement.js"/>
       <module name="sap/ui/fl/variants/VariantModel.js"/>
-      <module name="sap/ui/fl/variants/util/VariantUtil.js"/>
-      <module name="sap/ui/fl/write/ChangesController.js"/>
+      <module name="sap/ui/fl/write/_internal/CompatibilityConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/SaveAs.js"/>
+      <module name="sap/ui/fl/write/_internal/Storage.js"/>
+      <module name="sap/ui/fl/write/_internal/StorageFeaturesMerger.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/BackendConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/JsObjectConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/KeyUserConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/LocalStorageConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/LrepConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/ObjectPathConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/ObjectStorageConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/PersonalizationConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/SessionStorageConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/Utils.js"/>
+      <module name="sap/ui/fl/write/api/AppVariantWriteAPI.js"/>
       <module name="sap/ui/fl/write/api/ChangesWriteAPI.js"/>
       <module name="sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js"/>
+      <module name="sap/ui/fl/write/api/FeaturesAPI.js"/>
       <module name="sap/ui/fl/write/api/PersistenceWriteAPI.js"/>
       <module name="sap/ui/fl/write/api/SmartVariantManagementWriteAPI.js"/>
+      <module name="sap/ui/fl/write/api/UI2PersonalizationWriteAPI.js"/>
+      <module name="sap/ui/fl/write/connectors/BaseConnector.js"/>
     </includes>
   </module>
-  <module name="sap/ui/fl/library-preload.json" size="0">
+  <module name="sap/ui/fl/library-preload.support.js" size="4119">
     <requires>
-      <module name="sap/base/Log.js"/>
-      <module name="sap/base/security/encodeURLParameters.js"/>
-      <module name="sap/base/strings/capitalize.js"/>
-      <module name="sap/base/strings/formatMessage.js"/>
-      <module name="sap/base/util/LoaderExtensions.js"/>
       <module name="sap/base/util/ObjectPath.js"/>
-      <module name="sap/base/util/UriParameters.js"/>
-      <module name="sap/base/util/deepEqual.js"/>
-      <module name="sap/base/util/includes.js"/>
-      <module name="sap/base/util/isEmptyObject.js"/>
-      <module name="sap/base/util/merge.js"/>
-      <module name="sap/base/util/uid.js"/>
-      <module name="sap/m/Bar.js"/>
-      <module name="sap/m/Button.js"/>
-      <module name="sap/m/CheckBox.js"/>
-      <module name="sap/m/Column.js"/>
-      <module name="sap/m/ColumnListItem.js"/>
-      <module name="sap/m/ComboBox.js"/>
-      <module name="sap/m/Dialog.js"/>
-      <module name="sap/m/DialogRenderer.js"/>
-      <module name="sap/m/Input.js"/>
-      <module name="sap/m/InputListItem.js"/>
-      <module name="sap/m/Label.js"/>
-      <module name="sap/m/List.js"/>
-      <module name="sap/m/MessageBox.js"/>
-      <module name="sap/m/MessageToast.js"/>
-      <module name="sap/m/ObjectIdentifier.js"/>
-      <module name="sap/m/OverflowToolbar.js"/>
-      <module name="sap/m/OverflowToolbarLayoutData.js"/>
-      <module name="sap/m/Page.js"/>
-      <module name="sap/m/RadioButton.js"/>
-      <module name="sap/m/ResponsivePopover.js"/>
-      <module name="sap/m/SearchField.js"/>
-      <module name="sap/m/SelectList.js"/>
-      <module name="sap/m/Table.js"/>
-      <module name="sap/m/Text.js"/>
-      <module name="sap/m/Title.js"/>
-      <module name="sap/m/Toolbar.js"/>
-      <module name="sap/m/ToolbarSpacer.js"/>
-      <module name="sap/m/VBox.js"/>
-      <module name="sap/m/library-preload.json"/>
-      <module name="sap/m/library.js"/>
-      <module name="sap/ui/Device.js"/>
-      <module name="sap/ui/base/EventProvider.js"/>
-      <module name="sap/ui/base/ManagedObject.js"/>
-      <module name="sap/ui/base/ManagedObjectObserver.js"/>
-      <module name="sap/ui/base/Object.js"/>
-      <module name="sap/ui/core/BusyIndicator.js"/>
-      <module name="sap/ui/core/Component.js"/>
-      <module name="sap/ui/core/Control.js"/>
-      <module name="sap/ui/core/CustomData.js"/>
-      <module name="sap/ui/core/Element.js"/>
-      <module name="sap/ui/core/Icon.js"/>
-      <module name="sap/ui/core/InvisibleText.js"/>
-      <module name="sap/ui/core/ListItem.js"/>
-      <module name="sap/ui/core/library-preload.json"/>
-      <module name="sap/ui/core/library.js"/>
-      <module name="sap/ui/core/mvc/Controller.js"/>
-      <module name="sap/ui/core/mvc/View.js"/>
-      <module name="sap/ui/core/mvc/XMLView.js"/>
-      <module name="sap/ui/core/routing/HashChanger.js"/>
-      <module name="sap/ui/core/routing/History.js"/>
-      <module name="sap/ui/core/util/reflection/BaseTreeModifier.js"/>
-      <module name="sap/ui/core/util/reflection/JsControlTreeModifier.js"/>
-      <module name="sap/ui/core/util/reflection/XmlTreeModifier.js"/>
-      <module name="sap/ui/dom/includeScript.js"/>
-      <module name="sap/ui/events/KeyCodes.js"/>
-      <module name="sap/ui/layout/Grid.js"/>
-      <module name="sap/ui/layout/HorizontalLayout.js"/>
-      <module name="sap/ui/model/Context.js"/>
-      <module name="sap/ui/model/Filter.js"/>
-      <module name="sap/ui/model/FilterOperator.js"/>
-      <module name="sap/ui/model/PropertyBinding.js"/>
-      <module name="sap/ui/model/base/ManagedObjectModel.js"/>
-      <module name="sap/ui/model/json/JSONModel.js"/>
-      <module name="sap/ui/thirdparty/URI.js"/>
-      <module name="sap/ui/thirdparty/hasher.js"/>
-      <module name="sap/ui/thirdparty/jquery.js"/>
-      <module name="sap/ui/util/Storage.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-    <includes>
-      <module name="sap/ui/fl/Cache.js"/>
-      <module name="sap/ui/fl/Change.js"/>
-      <module name="sap/ui/fl/ChangePersistence.js"/>
-      <module name="sap/ui/fl/ChangePersistenceFactory.js"/>
-      <module name="sap/ui/fl/ControlPersonalizationAPI.js"/>
-      <module name="sap/ui/fl/DefaultVariant.js"/>
-      <module name="sap/ui/fl/EventHistory.js"/>
-      <module name="sap/ui/fl/FakeLrepConnector.js"/>
-      <module name="sap/ui/fl/FakeLrepConnectorLocalStorage.js"/>
-      <module name="sap/ui/fl/FakeLrepConnectorSessionStorage.js"/>
-      <module name="sap/ui/fl/FakeLrepConnectorStorage.js"/>
-      <module name="sap/ui/fl/FakeLrepLocalStorage.js"/>
-      <module name="sap/ui/fl/FakeLrepSessionStorage.js"/>
-      <module name="sap/ui/fl/FakeLrepStorage.js"/>
-      <module name="sap/ui/fl/FlexController.js"/>
-      <module name="sap/ui/fl/FlexControllerFactory.js"/>
-      <module name="sap/ui/fl/FlexCustomData.js"/>
-      <module name="sap/ui/fl/LrepConnector.js"/>
-      <module name="sap/ui/fl/Persistence.js"/>
-      <module name="sap/ui/fl/Preprocessor.js"/>
-      <module name="sap/ui/fl/PreprocessorImpl.js"/>
-      <module name="sap/ui/fl/RegistrationDelegator.js"/>
-      <module name="sap/ui/fl/StandardVariant.js"/>
-      <module name="sap/ui/fl/Utils.js"/>
-      <module name="sap/ui/fl/Variant.js"/>
-      <module name="sap/ui/fl/XmlPreprocessorImpl.js"/>
-      <module name="sap/ui/fl/apply/api/ControlPersonalizationApplyAPI.js"/>
-      <module name="sap/ui/fl/apply/api/ControlVariantApplyAPI.js"/>
-      <module name="sap/ui/fl/apply/api/SmartVariantManagementApplyAPI.js"/>
-      <module name="sap/ui/fl/changeHandler/AddXML.js"/>
-      <module name="sap/ui/fl/changeHandler/Base.js"/>
-      <module name="sap/ui/fl/changeHandler/BaseRename.js"/>
-      <module name="sap/ui/fl/changeHandler/BaseTreeModifier.js"/>
-      <module name="sap/ui/fl/changeHandler/ChangeHandlerMediator.js"/>
-      <module name="sap/ui/fl/changeHandler/HideControl.js"/>
-      <module name="sap/ui/fl/changeHandler/JsControlTreeModifier.js"/>
-      <module name="sap/ui/fl/changeHandler/MoveControls.js"/>
-      <module name="sap/ui/fl/changeHandler/MoveElements.js"/>
-      <module name="sap/ui/fl/changeHandler/PropertyBindingChange.js"/>
-      <module name="sap/ui/fl/changeHandler/PropertyChange.js"/>
-      <module name="sap/ui/fl/changeHandler/StashControl.js"/>
-      <module name="sap/ui/fl/changeHandler/UnhideControl.js"/>
-      <module name="sap/ui/fl/changeHandler/UnstashControl.js"/>
-      <module name="sap/ui/fl/changeHandler/XmlTreeModifier.js"/>
-      <module name="sap/ui/fl/codeExt/CodeExtManager.js"/>
-      <module name="sap/ui/fl/context/BaseContextProvider.js"/>
-      <module name="sap/ui/fl/context/Context.js"/>
-      <module name="sap/ui/fl/context/ContextManager.js"/>
-      <module name="sap/ui/fl/context/DeviceContextProvider.js"/>
-      <module name="sap/ui/fl/context/SwitchContextProvider.js"/>
-      <module name="sap/ui/fl/core/EventDelegate.js"/>
-      <module name="sap/ui/fl/core/FlexVisualizer.js"/>
-      <module name="sap/ui/fl/descriptorRelated/api/DescriptorChangeFactory.js"/>
-      <module name="sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js"/>
-      <module name="sap/ui/fl/descriptorRelated/api/DescriptorVariantFactory.js"/>
-      <module name="sap/ui/fl/descriptorRelated/internal/Utils.js"/>
-      <module name="sap/ui/fl/fieldExt/Access.js"/>
-      <module name="sap/ui/fl/library.js"/>
-      <module name="sap/ui/fl/manifest.json"/>
-      <module name="sap/ui/fl/registry/ChangeHandlerRegistration.js"/>
-      <module name="sap/ui/fl/registry/ChangeRegistry.js"/>
-      <module name="sap/ui/fl/registry/ChangeRegistryItem.js"/>
-      <module name="sap/ui/fl/registry/ChangeTypeMetadata.js"/>
-      <module name="sap/ui/fl/registry/Settings.js"/>
-      <module name="sap/ui/fl/registry/SimpleChanges.js"/>
-      <module name="sap/ui/fl/transport/TransportDialog.js"/>
-      <module name="sap/ui/fl/transport/TransportSelection.js"/>
-      <module name="sap/ui/fl/transport/Transports.js"/>
-      <module name="sap/ui/fl/util/ManagedObjectModel.js"/>
-      <module name="sap/ui/fl/variants/VariantController.js"/>
-      <module name="sap/ui/fl/variants/VariantManagement.js"/>
-      <module name="sap/ui/fl/variants/VariantModel.js"/>
-      <module name="sap/ui/fl/variants/util/VariantUtil.js"/>
-      <module name="sap/ui/fl/write/ChangesController.js"/>
-      <module name="sap/ui/fl/write/api/ChangesWriteAPI.js"/>
-      <module name="sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js"/>
-      <module name="sap/ui/fl/write/api/PersistenceWriteAPI.js"/>
-      <module name="sap/ui/fl/write/api/SmartVariantManagementWriteAPI.js"/>
-    </includes>
-  </module>
-  <module name="sap/ui/fl/library-preload.support.js" size="4162">
-    <requires>
+      <module name="sap/m/InstanceManager.js"/>
       <module name="sap/ui/core/Component.js"/>
       <module name="sap/ui/dt/DesignTime.js"/>
       <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/registry/ChangeRegistry.js"/>
+      <module name="sap/ui/rta/util/validateStableIds.js"/>
       <module name="sap/ui/support/library.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
@@ -1147,27 +1276,31 @@
       <module name="sap/ui/fl/library.support.js"/>
     </includes>
   </module>
-  <module name="sap/ui/fl/library.js" size="1335" compressedSize="809">
+  <module name="sap/ui/fl/library.js" size="3148" compressedSize="1143">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/m/library.js"/>
       <module name="sap/ui/core/library.js"/>
       <module name="sap/ui/fl/RegistrationDelegator.js"/>
+      <module name="sap/ui/fl/Utils.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/library.support.js" size="4029" compressedSize="2263">
+  <module name="sap/ui/fl/library.support.js" size="3986" compressedSize="2356">
     <description>Adds support rules of the &lt;code&gt;sap.ui.fl&lt;/code&gt; library to the support infrastructure.</description>
     <requires>
+      <module name="sap/base/util/ObjectPath.js"/>
+      <module name="sap/m/InstanceManager.js"/>
       <module name="sap/ui/core/Component.js"/>
       <module name="sap/ui/dt/DesignTime.js"/>
       <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/registry/ChangeRegistry.js"/>
+      <module name="sap/ui/rta/util/validateStableIds.js"/>
       <module name="sap/ui/support/library.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/manifest.json" size="951">
+  <module name="sap/ui/fl/manifest.json" size="986">
   </module>
   <module name="sap/ui/fl/messagebundle.properties" size="5802">
   </module>
@@ -1253,7 +1386,7 @@
   </module>
   <module name="sap/ui/fl/messagebundle_zh_TW.properties" size="6504">
   </module>
-  <module name="sap/ui/fl/registry/ChangeHandlerRegistration.js" size="2711" compressedSize="1625">
+  <module name="sap/ui/fl/registry/ChangeHandlerRegistration.js" size="2714" compressedSize="1629">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/fl/registry/ChangeRegistry.js"/>
@@ -1261,9 +1394,10 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/registry/ChangeRegistry.js" size="21165" compressedSize="7914">
+  <module name="sap/ui/fl/registry/ChangeRegistry.js" size="20948" compressedSize="8199">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
+      <module name="sap/base/Log.js"/>
       <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/changeHandler/AddXML.js"/>
       <module name="sap/ui/fl/changeHandler/HideControl.js"/>
@@ -1281,28 +1415,28 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/registry/ChangeRegistryItem.js" size="2898" compressedSize="1142">
+  <module name="sap/ui/fl/registry/ChangeRegistryItem.js" size="2887" compressedSize="1131">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
+      <module name="sap/base/Log.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/registry/ChangeTypeMetadata.js" size="4812" compressedSize="1788">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/Log.js"/>
       <module name="sap/ui/fl/Utils.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/registry/ChangeTypeMetadata.js" size="3901" compressedSize="1243">
-    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="sap/ui/fl/Utils.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/fl/registry/Settings.js" size="11622" compressedSize="4264">
+  <module name="sap/ui/fl/registry/Settings.js" size="7673" compressedSize="2695">
     <description>global Error</description>
     <requires>
+      <module name="sap/base/Log.js"/>
       <module name="sap/base/util/UriParameters.js"/>
-      <module name="sap/ui/base/EventProvider.js"/>
-      <module name="sap/ui/fl/Cache.js"/>
-      <module name="sap/ui/fl/LrepConnector.js"/>
       <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/write/_internal/CompatibilityConnector.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
@@ -1342,7 +1476,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/support/apps/contentbrowser/controller/ContentDetails.controller.js" size="9696" compressedSize="3986" excludeFromAllInOne="true">
+  <module name="sap/ui/fl/support/apps/contentbrowser/controller/ContentDetails.controller.js" size="9710" compressedSize="3994" excludeFromAllInOne="true">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/m/Button.js"/>
@@ -1356,7 +1490,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/support/apps/contentbrowser/controller/ContentDetailsEdit.controller.js" size="8126" compressedSize="3298" excludeFromAllInOne="true">
+  <module name="sap/ui/fl/support/apps/contentbrowser/controller/ContentDetailsEdit.controller.js" size="8147" compressedSize="3310" excludeFromAllInOne="true">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/m/Button.js"/>
@@ -1392,7 +1526,7 @@
   </module>
   <module name="sap/ui/fl/support/apps/contentbrowser/i18n/i18n.properties" size="1356" excludeFromAllInOne="true">
   </module>
-  <module name="sap/ui/fl/support/apps/contentbrowser/lrepConnector/LRepConnector.js" size="11475" compressedSize="3081" excludeFromAllInOne="true">
+  <module name="sap/ui/fl/support/apps/contentbrowser/lrepConnector/LRepConnector.js" size="11435" compressedSize="3088" excludeFromAllInOne="true">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/fl/Utils.js"/>
@@ -1401,7 +1535,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/support/apps/contentbrowser/manifest.json" size="2851" excludeFromAllInOne="true">
+  <module name="sap/ui/fl/support/apps/contentbrowser/manifest.json" size="2876" excludeFromAllInOne="true">
   </module>
   <module name="sap/ui/fl/support/apps/contentbrowser/utils/DataUtils.js" size="4406" compressedSize="1377" excludeFromAllInOne="true">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
@@ -1476,7 +1610,7 @@
       <module name="sap/ui/fl/support/apps/contentbrowser/controller/Layers.controller.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/support/apps/contentbrowser/view/MainView.view.xml" size="197" excludeFromAllInOne="true">
+  <module name="sap/ui/fl/support/apps/contentbrowser/view/MainView.view.xml" size="164" excludeFromAllInOne="true">
     <requires>
       <module name="sap/m/SplitApp.js"/>
       <module name="sap/ui/core/mvc/XMLView.js"/>
@@ -1546,7 +1680,7 @@
       <module name="sap/ui/layout/VerticalLayout.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/transport/TransportDialog.js" size="14598" compressedSize="6494">
+  <module name="sap/ui/fl/transport/TransportDialog.js" size="14642" compressedSize="6522">
     <description>Provides control sap.ui.fl.transport.TransportDialog.</description>
     <requires>
       <module name="sap/m/Button.js"/>
@@ -1561,21 +1695,39 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/transport/TransportSelection.js" size="15390" compressedSize="3609">
+  <module name="sap/ui/fl/transport/TransportSelection.js" size="16105" compressedSize="3695">
     <description>OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
-      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/LayerUtils.js"/>
       <module name="sap/ui/fl/registry/Settings.js"/>
       <module name="sap/ui/fl/transport/TransportDialog.js"/>
       <module name="sap/ui/fl/transport/Transports.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/transport/Transports.js" size="5203" compressedSize="1674">
+  <module name="sap/ui/fl/transport/Transports.js" size="5329" compressedSize="1694">
     <description>global Promise</description>
     <requires>
       <module name="sap/ui/fl/LrepConnector.js"/>
       <module name="sap/ui/fl/Utils.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/util/IFrame.js" size="2489" compressedSize="1141">
+    <description>Provides control sap.ui.fl.util.IFrame</description>
+    <requires>
+      <module name="sap/ui/core/Control.js"/>
+      <module name="sap/ui/core/library.js"/>
+      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/library.js"/>
+      <module name="sap/ui/fl/util/IFrameRenderer.js"/>
+      <module name="sap/ui/model/json/JSONModel.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/util/IFrameRenderer.js" size="1195" compressedSize="511">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
@@ -1587,16 +1739,21 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/variants/VariantController.js" size="22760" compressedSize="8995">
+  <module name="sap/ui/fl/variants/VariantController.js" size="23238" compressedSize="9159">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
+      <module name="sap/base/Log.js"/>
+      <module name="sap/base/util/ObjectPath.js"/>
+      <module name="sap/base/util/includes.js"/>
       <module name="sap/ui/fl/Change.js"/>
+      <module name="sap/ui/fl/LayerUtils.js"/>
       <module name="sap/ui/fl/Utils.js"/>
       <module name="sap/ui/fl/Variant.js"/>
+      <module name="sap/ui/fl/apply/_internal/controlVariants/URLHandler.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/variants/VariantManagement.js" size="48680" compressedSize="29438">
+  <module name="sap/ui/fl/variants/VariantManagement.js" size="50432" compressedSize="30484">
     <description>Provides control sap.ui.fl.variants.VariantManagement.</description>
     <requires>
       <module name="sap/m/Bar.js"/>
@@ -1639,7 +1796,7 @@
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/variants/VariantModel.js" size="43425" compressedSize="17845">
+  <module name="sap/ui/fl/variants/VariantModel.js" size="44276" compressedSize="17645">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/ObjectPath.js"/>
@@ -1648,75 +1805,226 @@
       <module name="sap/ui/core/BusyIndicator.js"/>
       <module name="sap/ui/core/util/reflection/JsControlTreeModifier.js"/>
       <module name="sap/ui/fl/Change.js"/>
+      <module name="sap/ui/fl/LayerUtils.js"/>
       <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/Reverter.js"/>
+      <module name="sap/ui/fl/apply/_internal/controlVariants/URLHandler.js"/>
       <module name="sap/ui/fl/changeHandler/Base.js"/>
-      <module name="sap/ui/fl/variants/util/VariantUtil.js"/>
       <module name="sap/ui/model/json/JSONModel.js"/>
-      <module name="sap/ui/thirdparty/jquery.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/variants/util/VariantUtil.js" size="11176" compressedSize="5268">
+  <module name="sap/ui/fl/write/_internal/CompatibilityConnector.js" size="7727" compressedSize="1643">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/fl/FakeLrepConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/Storage.js"/>
+      <module name="sap/ui/fl/write/_internal/Storage.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/_internal/SaveAs.js" size="13247" compressedSize="5310">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/Log.js"/>
-      <module name="sap/base/util/deepEqual.js"/>
-      <module name="sap/ui/base/ManagedObjectObserver.js"/>
-      <module name="sap/ui/core/Component.js"/>
-      <module name="sap/ui/core/routing/HashChanger.js"/>
-      <module name="sap/ui/core/routing/History.js"/>
-      <module name="sap/ui/fl/Utils.js"/>
-      <module name="sap/ui/thirdparty/jquery.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/fl/write/ChangesController.js" size="1241" compressedSize="511">
-    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
-      <module name="sap/ui/fl/FlexControllerFactory.js"/>
-      <module name="sap/ui/fl/Utils.js"/>
-      <module name="ui5loader-autoconfig.js"/>
-    </requires>
-  </module>
-  <module name="sap/ui/fl/write/api/ChangesWriteAPI.js" size="6561" compressedSize="1539">
-    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
-    <requires>
       <module name="sap/base/util/includes.js"/>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/ui/fl/Change.js"/>
+      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/apply/_internal/ChangesController.js"/>
+      <module name="sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js"/>
+      <module name="sap/ui/fl/descriptorRelated/api/DescriptorVariantFactory.js"/>
+      <module name="sap/ui/fl/transport/TransportSelection.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/_internal/Storage.js" size="8412" compressedSize="2048">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/ObjectPath.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/Utils.js"/>
+      <module name="sap/ui/fl/write/_internal/StorageFeaturesMerger.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/Utils.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/_internal/StorageFeaturesMerger.js" size="1229" compressedSize="529">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/_internal/connectors/BackendConnector.js" size="6752" compressedSize="1867">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/base/util/restricted/_pick.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/BackendConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/Utils.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/Utils.js"/>
+      <module name="sap/ui/fl/write/connectors/BaseConnector.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/_internal/connectors/JsObjectConnector.js" size="884" compressedSize="392">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/JsObjectConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/ObjectStorageConnector.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/_internal/connectors/KeyUserConnector.js" size="1148" compressedSize="538">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/ui/fl/Layer.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/KeyUserConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/BackendConnector.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/_internal/connectors/LocalStorageConnector.js" size="811" compressedSize="342">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/ObjectStorageConnector.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/_internal/connectors/LrepConnector.js" size="14572" compressedSize="4633">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/base/util/restricted/_pick.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/LrepConnector.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/Utils.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/Utils.js"/>
+      <module name="sap/ui/fl/write/connectors/BaseConnector.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/_internal/connectors/ObjectPathConnector.js" size="1174" compressedSize="561">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/ObjectPathConnector.js"/>
+      <module name="sap/ui/fl/write/connectors/BaseConnector.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/_internal/connectors/ObjectStorageConnector.js" size="3984" compressedSize="1714">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/ObjectStorageUtils.js"/>
+      <module name="sap/ui/fl/write/connectors/BaseConnector.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/_internal/connectors/PersonalizationConnector.js" size="1431" compressedSize="621">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/ui/fl/Layer.js"/>
+      <module name="sap/ui/fl/apply/_internal/connectors/PersonalizationConnector.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/BackendConnector.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/_internal/connectors/SessionStorageConnector.js" size="815" compressedSize="339">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/util/merge.js"/>
+      <module name="sap/ui/fl/write/_internal/connectors/ObjectStorageConnector.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/_internal/connectors/Utils.js" size="6187" compressedSize="1347">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/fl/apply/_internal/connectors/Utils.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/api/AppVariantWriteAPI.js" size="6717" compressedSize="1526">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/fl/apply/_internal/ChangesController.js"/>
+      <module name="sap/ui/fl/write/_internal/SaveAs.js"/>
+      <module name="sap/ui/fl/write/_internal/Storage.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/api/ChangesWriteAPI.js" size="6783" compressedSize="2054">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/base/Log.js"/>
+      <module name="sap/base/util/includes.js"/>
+      <module name="sap/base/util/restricted/_omit.js"/>
       <module name="sap/ui/core/Component.js"/>
       <module name="sap/ui/core/Element.js"/>
-      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/core/util/reflection/JsControlTreeModifier.js"/>
+      <module name="sap/ui/fl/apply/_internal/ChangesController.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/Applier.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/Reverter.js"/>
       <module name="sap/ui/fl/descriptorRelated/api/DescriptorChangeFactory.js"/>
       <module name="sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js"/>
-      <module name="sap/ui/fl/write/ChangesController.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js" size="3964" compressedSize="482">
+  <module name="sap/ui/fl/write/api/ControlPersonalizationWriteAPI.js" size="5321" compressedSize="960">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/fl/ControlPersonalizationAPI.js"/>
+      <module name="sap/ui/fl/Utils.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/write/api/PersistenceWriteAPI.js" size="9071" compressedSize="2062">
+  <module name="sap/ui/fl/write/api/FeaturesAPI.js" size="1511" compressedSize="436">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/fl/registry/Settings.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/api/PersistenceWriteAPI.js" size="13911" compressedSize="3539">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/base/util/includes.js"/>
+      <module name="sap/base/util/restricted/_omit.js"/>
       <module name="sap/ui/core/util/reflection/JsControlTreeModifier.js"/>
-      <module name="sap/ui/fl/Cache.js"/>
-      <module name="sap/ui/fl/Utils.js"/>
+      <module name="sap/ui/fl/apply/_internal/ChangesController.js"/>
+      <module name="sap/ui/fl/apply/_internal/changes/FlexCustomData.js"/>
       <module name="sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory.js"/>
-      <module name="sap/ui/fl/write/ChangesController.js"/>
+      <module name="sap/ui/fl/write/_internal/SaveAs.js"/>
+      <module name="sap/ui/fl/write/api/FeaturesAPI.js"/>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>
-  <module name="sap/ui/fl/write/api/SmartVariantManagementWriteAPI.js" size="5849" compressedSize="1386">
+  <module name="sap/ui/fl/write/api/SmartVariantManagementWriteAPI.js" size="7160" compressedSize="1650">
     <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
     <requires>
       <module name="sap/ui/fl/ChangePersistenceFactory.js"/>
       <module name="sap/ui/fl/DefaultVariant.js"/>
       <module name="sap/ui/fl/StandardVariant.js"/>
       <module name="sap/ui/fl/apply/api/SmartVariantManagementApplyAPI.js"/>
+      <module name="sap/ui/fl/transport/TransportSelection.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/api/UI2PersonalizationWriteAPI.js" size="3413" compressedSize="1054">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
+      <module name="sap/ui/fl/Cache.js"/>
+      <module name="sap/ui/fl/apply/_internal/ChangesController.js"/>
+      <module name="ui5loader-autoconfig.js"/>
+    </requires>
+  </module>
+  <module name="sap/ui/fl/write/connectors/BaseConnector.js" size="6266" compressedSize="1423">
+    <description>! OpenUI5 (c) Copyright 2009-2019 SAP SE or an SAP affiliate company. Licensed under the Apache License, Version 2.0 - see LICENSE.txt.</description>
+    <requires>
       <module name="ui5loader-autoconfig.js"/>
     </requires>
   </module>

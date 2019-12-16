@@ -39,7 +39,7 @@
 		color: @_sap_ui_rta_Toolbar_Base_TextColor;
 	}
 
-	.sapMSegB > .sapMSegBBtn {
+	.sapMSegB > .sapMSegBBtn .sapMSegBBtnInner {
 		background-color: @_sap_ui_rta_Toolbar_Base_BaseColor;
 		color: @_sap_ui_rta_Toolbar_Base_TextColor;
 		border: none;
@@ -48,43 +48,51 @@
 
 	.sapMSegBBtn.sapMSegBBtnFocusable {
 
-		&:hover,
-		&.sapMSegBBtnSel:hover {
+		&:hover .sapMSegBBtnInner,
+		&.sapMSegBBtnSel:hover .sapMSegBBtnInner {
 			color: @_sap_ui_rta_Toolbar_Base_SegBBtnHoverBG;
 		}
 
-		&:focus {
+		&:focus .sapMSegBBtnInner {
 			outline: 1px dotted @_sap_ui_rta_Toolbar_Base_TextColor;
 			outline-offset: -1px;
 		}
 
 		&.sapMSegBBtnSel {
 
-			&:hover::after {
+			&:hover .sapMSegBBtnInner::after {
 				border-bottom: 2px solid @_sap_ui_rta_Toolbar_Base_SegBBtnHoverBG;
 			}
 
-			&:hover {
+			&:hover .sapMSegBBtnInner {
 				background-color: @_sap_ui_rta_Toolbar_Base_BaseColor;
 			}
 
-			&::after {
+			& .sapMSegBBtnInner::after {
 				position: absolute;
 				display: block;
 				content: '';
 				border-bottom: 2px solid @_sap_ui_rta_Toolbar_Base_TextColor;
 				left: 0.4375rem;
 				right: 0.4375rem;
+				bottom: 0;
 			}
-			+ .sapMSegBBtn{
+
+			+ .sapMSegBBtn .sapMSegBBtnInner {
 				border-left: none;
+			}
+
+			.sapMSegBBtnInner:hover {
+				border: none;
 			}
 		}
 	}
 
 	.sapMSegBBtnFocusable.sapMBtnActive:hover {
-		background-color: @_sap_ui_rta_Toolbar_Base_BaseColor;
-		&::after {
+		.sapMSegBBtnInner {
+			background-color: @_sap_ui_rta_Toolbar_Base_BaseColor;
+		}
+		& .sapMSegBBtnInner::after {
 			border-bottom: 2px solid @_sap_ui_rta_Toolbar_Base_SegBBtnHoverBG;
 		}
 	}
@@ -255,7 +263,7 @@
 
 /* START "FieldRepository.less" */
 /******************************************************************
-	Style of the RTA FieldRepository
+	Style of the RTA FieldRepository  - base Theme
 *******************************************************************/
 
 .sap-desktop.sapUiBLyBackOverride {
@@ -323,6 +331,11 @@
 	padding-left: 10px;
 }
 
+.sapUIRtaFieldRepositoryDialog .sapUIRtaListItem > .sapMLIBSelectM {
+	width: 2rem;
+	margin-right: 5px;
+}
+
 .sapUIRtaFieldRepositoryDialog .sapUIRtaBusinessContextContainer{
 	width: 100%;
 	margin-top: 4px;
@@ -330,8 +343,13 @@
 	border-bottom: 1px solid @sapUiGroupTitleBorderColor;
 }
 
+.sapUIRtaFieldRepositoryDialog .sapUIRtaListItem {
+	font-size: 0;
+}
+
 .sapUIRtaFieldRepositoryDialog .sapUIRtaBusinessContextContainer > div:not(:first-child) {
 	padding-left: 35px;
+	padding-right: 10px;
 }
 .sapUIRtaFieldRepositoryDialog .sapUIRtaBusinessContextContainer > div {
 	padding-left: 10px;
@@ -632,7 +650,6 @@
 /******************************************************************
 	Style of the RTA Contextmenu - base Theme
 *******************************************************************/
-@_sap_ui_dt_ContextMenu_BorderColor : lighten(@sapSelectedColor, 34);	// #cce7fa
 @_sap_ui_dt_ContextMenu_BoxShadow : @sapUiUx3ToolPopupShadow;			// 0px 6px 12px 0px fade(black, 30);
 @_sap_ui_dt_ContextMenu_FocusColor : @sapUiWhite;						// #fff
 
@@ -675,3 +692,12 @@
 	}
 }
 /* END "ContextMenu.less" */
+
+/* START "MessageBox.less" */
+.sapUiRtaMessageBox {
+	& .sapMLnk,
+	& .sapMText {
+		display: inline;
+	}
+}
+/* END "MessageBox.less" */

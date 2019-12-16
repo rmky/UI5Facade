@@ -6,7 +6,7 @@
 
 // Provides helper sap.ui.table.TableExtension.
 sap.ui.define([
-"sap/ui/base/Object", "./TableUtils"
+"sap/ui/base/Object", "./utils/TableUtils"
 ], function(BaseObject, TableUtils) {
 	"use strict";
 
@@ -19,7 +19,7 @@ sap.ui.define([
 	 * @abstract
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableExtension

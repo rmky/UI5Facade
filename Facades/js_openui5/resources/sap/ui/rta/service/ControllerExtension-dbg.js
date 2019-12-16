@@ -30,7 +30,7 @@ function (
 	 * @author SAP SE
 	 * @experimental Since 1.58
 	 * @since 1.58
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @private
 	 * @ui5-restricted
 	*/
@@ -103,8 +103,8 @@ function (
 						scenario: oFlexSettings.scenario
 					};
 
-					var oPreparedChange = ChangesWriteAPI.create(oChangeSpecificData, oAppComponent);
-					PersistenceWriteAPI.add(oPreparedChange, oAppComponent);
+					var oPreparedChange = ChangesWriteAPI.create({changeSpecificData: oChangeSpecificData, selector: oAppComponent});
+					PersistenceWriteAPI.add({change: oPreparedChange, selector: oAppComponent});
 					return oPreparedChange.getDefinition();
 				},
 

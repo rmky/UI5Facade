@@ -4,25 +4,31 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
+	'sap/f/library',
 	'sap/ui/core/Control',
-	"sap/f/cards/ActionEnablement",
+	"sap/f/cards/CardActions",
 	'sap/m/NumericContent',
 	'sap/m/Text',
 	'sap/ui/model/json/JSONModel',
 	"sap/f/cards/NumericSideIndicator",
 	"sap/f/cards/NumericHeaderRenderer",
+	"sap/f/cards/BindingHelper",
 	"sap/base/strings/formatMessage"
 ], function (
+		library,
 		Control,
-		ActionEnablement,
+		CardActions,
 		NumericContent,
 		Text,
 		JSONModel,
 		NumericSideIndicator,
 		NumericHeaderRenderer,
+		BindingHelper,
 		formatMessage
 	) {
 		"use strict";
+
+	var AreaType = library.cards.AreaType;
 
 	/**
 	 * Constructor for a new <code>NumericHeader</code>.
@@ -47,7 +53,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -57,6 +63,7 @@ sap.ui.define([
 	 */
 	var NumericHeader = Control.extend("sap.f.cards.NumericHeader", {
 		metadata: {
+			library: "sap.f",
 			interfaces: ["sap.f.cards.IHeader"],
 			properties: {
 
@@ -178,6 +185,11 @@ sap.ui.define([
 		if (this._oDataProvider) {
 			this._oDataProvider.destroy();
 			this._oDataProvider = null;
+		}
+
+		if (this._oActions) {
+			this._oActions.destroy();
+			this._oActions = null;
 		}
 	};
 
@@ -404,7 +416,7 @@ sap.ui.define([
 				withMargin: false,
 				nullifyValue: false,
 				animateTextChange: false,
-				truncateValueTo: 5
+				truncateValueTo: 100
 			});
 			this.setAggregation("_mainIndicator", oControl);
 		}
@@ -421,15 +433,19 @@ sap.ui.define([
 	 *
 	 * @private
 	 * @static
-	 * @param {map} mConfiguration A map containing the header configuration options.
+	 * @param {map} mConfiguration A map containing the header configuration options, which are already parsed.
+	 * @param {Object} oServiceManager A service manager instance to handle services.
+	 * @param {Object} oDataProviderFactory A DataProviderFactory instance.
+	 * @param {string} sAppId The sap.app/id from the manifest.
 	 * @return {sap.f.cards.NumericHeader} The created NumericHeader
 	 */
-	NumericHeader.create = function (mConfiguration, oServiceManager, oDataProviderFactory) {
+	NumericHeader.create = function (mConfiguration, oServiceManager, oDataProviderFactory, sAppId) {
 		var mSettings = {
 			title: mConfiguration.title,
 			subtitle: mConfiguration.subTitle,
 			unitOfMeasurement: mConfiguration.unitOfMeasurement,
-			details: mConfiguration.details
+			details: mConfiguration.details,
+			sideIndicators: mConfiguration.sideIndicators
 		};
 
 		if (mConfiguration.mainIndicator) {
@@ -439,17 +455,21 @@ sap.ui.define([
 			mSettings.state = mConfiguration.mainIndicator.state; // TODO convert ValueState to ValueColor
 		}
 
-		if (mConfiguration.sideIndicators) {
-			mSettings.sideIndicators = mConfiguration.sideIndicators.map(function (mIndicator) { // TODO validate that it is an array and with no more than 2 elements
-				return new NumericSideIndicator(mIndicator);
-			});
-		}
-
 		if (mConfiguration.status && typeof mConfiguration.status.text === "string") {
 			mSettings.statusText = mConfiguration.status.text;
 		}
 
+		mSettings = BindingHelper.createBindingInfos(mSettings);
+
+		if (mConfiguration.sideIndicators) {
+			mSettings.sideIndicators = mSettings.sideIndicators.map(function (mIndicator) { // TODO validate that it is an array and with no more than 2 elements
+				return new NumericSideIndicator(mIndicator);
+			});
+		}
+
 		var oHeader = new NumericHeader(mSettings);
+
+		oHeader._sAppId = sAppId;
 
 		if (mConfiguration.status && mConfiguration.status.text && mConfiguration.status.text.format) {
 			NumericHeader._bindStatusText(mConfiguration.status.text.format, oHeader);
@@ -459,11 +479,16 @@ sap.ui.define([
 		oHeader.setDataProviderFactory(oDataProviderFactory);
 		oHeader._setData(mConfiguration.data);
 
-		oHeader._attachActions(mConfiguration, oHeader);
+		var oActions = new CardActions({
+			areaType: AreaType.Header
+		});
+		oActions.attach(mConfiguration, oHeader);
+		oHeader._oActions = oActions;
+
 		return oHeader;
 	};
 
-/**
+	/**
 	 * Binds the statusText of a header to the provided format configuration.
 	 *
 	 * @private
@@ -595,8 +620,6 @@ sap.ui.define([
 
 		return sSideIndicatorIds;
 	};
-
-	ActionEnablement.enrich(NumericHeader);
 
 	return NumericHeader;
 });

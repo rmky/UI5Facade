@@ -29,7 +29,7 @@ sap.ui.define([
 	 * Holds layout data for a grid item.
 	 *
 	 * @extends sap.ui.core.LayoutData
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -38,6 +38,9 @@ sap.ui.define([
 	 */
 	var GridItemLayoutData = LayoutData.extend("sap.ui.layout.cssgrid.GridItemLayoutData", { metadata: {
 		library: "sap.ui.layout",
+		interfaces: [
+			"sap.ui.layout.cssgrid.IGridItemLayoutData"
+		],
 		properties: {
 
 			/**
@@ -82,27 +85,16 @@ sap.ui.define([
 	 * Updates the display:grid styles of a single item
 	 *
 	 * @private
-	 * @static
 	 * @param {sap.ui.core.Control} oItem The item which styles have to be updated
 	 */
-	GridItemLayoutData._setItemStyles = function (oItem) {
+	GridItemLayoutData.prototype.setItemStyles = function (oItem) {
 
-		if (!oItem) {
-			return;
-		}
-
-		var oLayoutData = GridItemLayoutData._getLayoutDataForControl(oItem),
-			oElement = GridItemLayoutData._getElement(oItem),
+		var oLayoutData = this,
 			oProperties,
 			sProp,
 			sPropValue;
 
-		if (!oElement) {
-			return;
-		}
-
-		if (!oLayoutData) {
-			GridItemLayoutData._removeItemStyles(oElement);
+		if (!oItem) {
 			return;
 		}
 
@@ -113,30 +105,10 @@ sap.ui.define([
 				sPropValue = oLayoutData.getProperty(sProp);
 
 				if (typeof sPropValue !== "undefined") {
-					GridItemLayoutData._setItemStyle(oElement, mGridItemProperties[sProp], sPropValue);
+					GridItemLayoutData._setItemStyle(oItem, mGridItemProperties[sProp], sPropValue);
 				}
 			}
 		}
-	};
-
-	/**
-	 * Return the DOM ref of the item or the item's wrapper
-	 *
-	 * @param {sap.ui.core.Control} oItem The item
-	 */
-	GridItemLayoutData._getElement = function (oItem) {
-		var oItemDom = oItem.getDomRef();
-
-		if (!oItemDom) {
-			return undefined;
-		}
-
-		var oWrapper = oItemDom.parentNode;
-
-		if (oWrapper && oWrapper.classList.contains("sapUiLayoutCSSGridItemWrapper")) {
-			return oWrapper;
-		}
-		return oItemDom;
 	};
 
 	/**
@@ -146,7 +118,7 @@ sap.ui.define([
 	 * @static
 	 * @param {HTMLElement} oItemDom The Item DOM reference
 	 */
-	GridItemLayoutData._removeItemStyles = function (oItemDom) {
+	GridItemLayoutData.removeItemStyles = function (oItemDom) {
 		for (var sProp in mGridItemProperties) {
 			oItemDom.style.removeProperty(mGridItemProperties[sProp]);
 		}
@@ -166,42 +138,6 @@ sap.ui.define([
 			oItemDom.style.removeProperty(sProperty);
 		} else {
 			oItemDom.style.setProperty(sProperty, sValue);
-		}
-	};
-
-	/**
-	 * @private
-	 * @static
-	 * @param {sap.ui.core.Control} oControl The control to get the layoutData from
-	 * @returns {sap.ui.layout.cssgrid.GridItemLayoutData|undefined} The layoutData used by the grid item
-	 */
-	GridItemLayoutData._getLayoutDataForControl = function (oControl) {
-		var oLayoutData,
-			aLayoutData,
-			oInnerLayoutData;
-
-		if (!oControl) {
-			return undefined;
-		}
-
-		oLayoutData = oControl.getLayoutData();
-
-		if (!oLayoutData) {
-			return undefined;
-		}
-
-		if (oLayoutData.isA("sap.ui.layout.cssgrid.GridItemLayoutData")) {
-			return oLayoutData;
-		}
-
-		if (oLayoutData.isA("sap.ui.core.VariantLayoutData")) {
-			aLayoutData = oLayoutData.getMultipleLayoutData();
-			for (var i = 0; i < aLayoutData.length; i++) {
-				oInnerLayoutData = aLayoutData[i];
-				if (oInnerLayoutData.isA("sap.ui.layout.cssgrid.GridItemLayoutData")) {
-					return oInnerLayoutData;
-				}
-			}
 		}
 	};
 

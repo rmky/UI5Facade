@@ -15,7 +15,6 @@ sap.ui.define(["sap/base/Log"], function (Log) {
 	 * @param {string} option.maxBufferLength Number of entries in the stack before the beacon is send
 	 * @private
 	 * @ui5-restricted sap.ui.core
-	 *
 	 */
 	var BeaconRequest = function (option) {
 		option = option || {};
@@ -34,11 +33,20 @@ sap.ui.define(["sap/base/Log"], function (Log) {
 
 		/**
 		 * Send data if the browser has been closed
+		 *
+		 * The "visibilitychange" event is not fired in Safari when the browser tab is closed.
 		 */
 		document.addEventListener("visibilitychange", function () {
 			if (document.visibilityState === "hidden") {
 				this.send();
 			}
+		}.bind(this));
+
+		/**
+		 * Ensure that the date is sent if the "visibilitychange" event was not fired.
+		 */
+		window.addEventListener("unload", function () {
+			this.send();
 		}.bind(this));
 	};
 
@@ -73,18 +81,20 @@ sap.ui.define(["sap/base/Log"], function (Log) {
 	 * Send all data stored in buffer and clear the buffer afterwards
 	 */
 	BeaconRequest.prototype.send = function() {
-		// prepare the content to be x-www-form-urlencoded
-		var sBody = this._aBuffer.reduce(function(sResult, oEntry) {
-			sResult +=  "&" + oEntry.key + "=" + oEntry.value;
-			return sResult;
-		}, "sap-fesr-only=1");
+		if (this.getBufferLength()) {
+			// prepare the content to be x-www-form-urlencoded
+			var sBody = this._aBuffer.reduce(function(sResult, oEntry) {
+				sResult +=  "&" + oEntry.key + "=" + oEntry.value;
+				return sResult;
+			}, "sap-fesr-only=1");
 
-		//blobs are supported in all browsers using sendBeacon
-		var oBeaconDataToSend = new Blob([sBody], {
-			type: "application/x-www-form-urlencoded;charset=UTF-8"
-		});
-		window.navigator.sendBeacon(this._sUrl, oBeaconDataToSend);
-		this.clear();
+			//blobs are supported in all browsers using sendBeacon
+			var oBeaconDataToSend = new Blob([sBody], {
+				type: "application/x-www-form-urlencoded;charset=UTF-8"
+			});
+			window.navigator.sendBeacon(this._sUrl, oBeaconDataToSend);
+			this.clear();
+		}
 	};
 
 	/**

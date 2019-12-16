@@ -42,7 +42,7 @@ sap.ui.define([
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -143,7 +143,7 @@ sap.ui.define([
 		if (!this._oPopin) {
 			this._oPopin = new TablePopin({
 				id: this.getId() + "-sub"
-			}).addEventDelegate({
+			}).addDelegate({
 				// handle the events of pop-in
 				ontouchstart: this.ontouchstart,
 				ontouchmove: this.ontouchmove,
@@ -241,11 +241,14 @@ sap.ui.define([
 	};
 
 	ColumnListItem.prototype.onfocusin = function(oEvent) {
-		if (oEvent.isMarked() || oEvent.srcControl !== this) {
+		if (oEvent.isMarked()) {
 			return;
 		}
 
-		this.$().children(".sapMListTblCellDup").find(":sapTabbable").attr("tabindex", -1);
+		if (oEvent.srcControl === this) {
+			this.$().children(".sapMListTblCellDup").find(":sapTabbable").attr("tabindex", -1);
+		}
+
 		ListItemBase.prototype.onfocusin.apply(this, arguments);
 	};
 

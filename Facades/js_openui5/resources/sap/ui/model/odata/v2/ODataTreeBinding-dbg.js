@@ -20,7 +20,8 @@ sap.ui.define([
 	'sap/ui/model/Context',
 	"sap/base/Log",
 	"sap/base/assert",
-	"sap/ui/thirdparty/jquery"
+	"sap/ui/thirdparty/jquery",
+	"sap/base/util/isEmptyObject"
 ],
 	function(
 		TreeBinding,
@@ -37,7 +38,8 @@ sap.ui.define([
 		Context,
 		Log,
 		assert,
-		jQuery
+		jQuery,
+		isEmptyObject
 	) {
 	"use strict";
 
@@ -196,6 +198,8 @@ sap.ui.define([
 
 			this.aSorters = aSorters || [];
 			this.sFilterParams = "";
+
+			this.mNormalizeCache = {};
 
 			// The ODataTreeBinding expects there to be only an array in this.aApplicationFilters later on.
 			// Wrap the given application filters inside an array if necessary
@@ -1650,7 +1654,7 @@ sap.ui.define([
 			var aFiltered = FilterProcessor.apply([sKey], oCombinedFilter, function(vRef, sPath) {
 				var oContext = that.oModel.getContext('/' + vRef);
 				return that.oModel.getProperty(sPath, oContext);
-			});
+			}, that.mNormalizeCache);
 			return aFiltered.length > 0;
 		};
 
@@ -2059,7 +2063,7 @@ sap.ui.define([
 				this._fireChange({ reason: ChangeReason.Context });
 			} else {
 				// path could not be resolved, but some data was already available, so we fire a context-change
-				if (!jQuery.isEmptyObject(this.oAllKeys) || !jQuery.isEmptyObject(this.oKeys) || !jQuery.isEmptyObject(this._aNodes)) {
+				if (!isEmptyObject(this.oAllKeys) || !isEmptyObject(this.oKeys) || !isEmptyObject(this._aNodes)) {
 					this.resetData();
 					this._fireChange({ reason: ChangeReason.Context });
 				}
@@ -2104,8 +2108,8 @@ sap.ui.define([
 			this.detachEvent("selectionChanged", fnFunction, oListener);
 			return this;
 		};
-		this.fireSelectionChanged = this.fireSelectionChanged || function(mArguments) {
-			this.fireEvent("selectionChanged", mArguments);
+		this.fireSelectionChanged = this.fireSelectionChanged || function(oParameters) {
+			this.fireEvent("selectionChanged", oParameters);
 			return this;
 		};
 

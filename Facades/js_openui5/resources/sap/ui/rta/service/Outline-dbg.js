@@ -8,19 +8,19 @@ sap.ui.define([
 	"sap/ui/dt/OverlayRegistry",
 	"sap/ui/dt/ElementOverlay",
 	"sap/ui/dt/AggregationOverlay",
-	"sap/ui/rta/Utils",
 	"sap/ui/dt/Util",
 	"sap/base/util/deepEqual",
 	"sap/base/util/merge",
+	"sap/base/util/restricted/_omit",
 	"sap/ui/thirdparty/jquery"
 ], function(
 	OverlayRegistry,
 	ElementOverlay,
 	AggregationOverlay,
-	RtaUtils,
 	DtUtil,
 	deepEqual,
 	merge,
+	_omit,
 	jQuery
 ) {
 	"use strict";
@@ -34,7 +34,7 @@ sap.ui.define([
 	 * @author SAP SE
 	 * @experimental Since 1.56
 	 * @since 1.56
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @private
 	 * @ui5-restricted
 	*/
@@ -293,7 +293,7 @@ sap.ui.define([
 			}
 
 			// Remove unwanted properties
-			oResponse = RtaUtils.omit(oResponse, ["elementOverlay", "editable", "target", "id", "elementId"]);
+			oResponse = _omit(oResponse, ["elementOverlay", "editable", "target", "id", "elementId"]);
 
 			//Check if the new update already exists - if present remove the previous occurrence
 			this.aUpdates = oOutline._removeDuplicate(this.aUpdates, oResponse);

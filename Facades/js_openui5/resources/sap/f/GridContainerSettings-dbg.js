@@ -22,6 +22,10 @@ sap.ui.define([
 	 * @returns {int} The size in 'px'. The result is rounded up with Math.ceil(). Returns NaN if the size can not be parsed.
 	 */
 	function cssSizeToPx(sCssSize) {
+		if (sCssSize === null || sCssSize === undefined) {
+			return sCssSize;
+		}
+
 		if (sCssSize === 0 || sCssSize === "0") {
 			return 0;
 		}
@@ -35,7 +39,7 @@ sap.ui.define([
 				iValue = Rem.toPx(parseFloat(aMatch[1]));
 			}
 		} else {
-			Log.error("Css size '" + sCssSize + "' is not supported for GridContainer. Only 'px' and 'rem' are supported.");
+			Log.error("Css size '" + sCssSize + "' is not supported for some features in GridContainer. Only 'px' and 'rem' are supported.");
 			iValue = NaN;
 		}
 
@@ -54,14 +58,14 @@ sap.ui.define([
 	 * Can be used to define the sizes of columns and rows for different screen sizes, by using the <code>layout</code> aggregations of <code>sap.f.GridContainer</code>.
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @see {@link topic:32d4b9c2b981425dbc374d3e9d5d0c2e Grid Controls}
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @experimental Since 1.65 This class is experimental. The API may change.
 	 * @since 1.65
@@ -84,9 +88,27 @@ sap.ui.define([
 				/**
 				 * The width of the columns.
 				 *
-				 * <b>Note:</b> Use only 'px' or 'rem'. Some features may not work as expected otherwise.
+				 * <b>Note:</b> Values different than single size in 'px' or 'rem' are not supported for the polyfill for IE.
 				 */
 				columnSize: { type: "sap.ui.core.CSSSize", defaultValue: "80px" },
+
+				/**
+				 * Sets the minimum width of the columns. Setting this together with <code>maxColumnSize</code> will allow the columns to breath between those two values.
+				 *
+				 * <b>Note:</b> Will not work in combination with <code>columnSize</code>.
+				 *
+				 * <b>Note:</b> Not supported for the polyfill for IE.
+				 */
+				minColumnSize: { type: "sap.ui.core.CSSSize" },
+
+				/**
+				 * Sets the maximum width of the columns. Setting this together with <code>minColumnSize</code> will allow the columns to breath between those two values.
+				 *
+				 * <b>Note:</b> Will not work in combination with <code>columnSize</code>.
+				 *
+				 * <b>Note:</b> Not supported for the polyfill for IE.
+				 */
+				maxColumnSize: { type: "sap.ui.core.CSSSize" },
 
 				/**
 				 * The height of the rows.
@@ -111,6 +133,14 @@ sap.ui.define([
 	 */
 	GridContainerSettings.prototype.getColumnSizeInPx = function () {
 		return cssSizeToPx(this.getColumnSize());
+	};
+
+	/**
+	 * Gets the minimum column size, converted to its 'px' value.
+	 * @returns {int} The 'px' value. NaN if 'px' value can not be calculated.
+	 */
+	GridContainerSettings.prototype.getMinColumnSizeInPx = function () {
+		return cssSizeToPx(this.getMinColumnSize());
 	};
 
 	/**
@@ -158,6 +188,18 @@ sap.ui.define([
 			iRowSize = this.getRowSizeInPx();
 
 		return Math.ceil((iItemHeight + iGapSize) / (iRowSize + iGapSize));
+	};
+
+	/**
+	 * Calculates how many columns would an item need to fit, based on its width.
+	 * @param {int} iItemWidth The width of the item.
+	 * @returns {int} The calculated columns for the given width. NaN if it can not be calculated.
+	 */
+	GridContainerSettings.prototype.calculateColumnsForItem = function (iItemWidth) {
+		var iGapSize = this.getGapInPx(),
+			iColumnSize = this.getColumnSizeInPx();
+
+		return Math.ceil((iItemWidth + iGapSize) / (iColumnSize + iGapSize));
 	};
 
 	return GridContainerSettings;

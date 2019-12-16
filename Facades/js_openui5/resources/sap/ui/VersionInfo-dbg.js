@@ -239,7 +239,7 @@ sap.ui.define(['sap/base/util/LoaderExtensions'], function (LoaderExtensions) {
 	 * list of libraries
 	 * @static
 	 * @private
-	 * @sap-restricted sap.ui.core
+	 * @ui5-restricted sap.ui.core
 	 */
 	VersionInfo._getTransitiveDependencyForLibraries = function(aLibraries) {
 
@@ -266,7 +266,7 @@ sap.ui.define(['sap/base/util/LoaderExtensions'], function (LoaderExtensions) {
 	 *    The property "dependencies" is an array with all transitive dependencies of the component.
 	 * @static
 	 * @private
-	 * @sap-restricted sap.ui.core
+	 * @ui5-restricted sap.ui.core
 	 */
 	VersionInfo._getTransitiveDependencyForComponent = function(sComponentName) {
 		transformVersionInfo();

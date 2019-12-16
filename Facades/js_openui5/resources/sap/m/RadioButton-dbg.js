@@ -9,6 +9,7 @@ sap.ui.define([
 	'./library',
 	'sap/ui/core/Control',
 	'sap/ui/core/EnabledPropagator',
+	'sap/ui/core/message/MessageMixin',
 	'./RadioButtonGroup',
 	'./Label',
 	'sap/ui/core/library',
@@ -19,6 +20,7 @@ function(
 	library,
 	Control,
 	EnabledPropagator,
+	MessageMixin,
 	RadioButtonGroup,
 	Label,
 	coreLibrary,
@@ -82,7 +84,7 @@ function(
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -169,18 +171,11 @@ function(
 			editableParent: { type: "boolean", group: "Behavior", defaultValue: true, visibility: "hidden"},
 
 			/**
-			 * Specifies the aria-posinset of the RadioButton.
-			 * @since 1.61
+			 * Defines the text that appears in the tooltip of the <code>RadioButton</code>. If this is not specified, a default text is shown from the resource bundle.
 			 * @private
 			 */
-			posinset: {type: "string", group: "Data", defaultValue: "", visibility: "hidden"},
+			valueStateText: { type: "string", group: "Misc", defaultValue: null, visibility: "hidden" }
 
-			/**
-			 * Specifies the aria-setsize of the RadioButton.
-			 * @since 1.61
-			 * @private
-			 */
-			setsize: {type: "string", group: "Data", defaultValue: "", visibility: "hidden"}
 		},
 		events : {
 
@@ -213,23 +208,11 @@ function(
 		designtime: "sap/m/designtime/RadioButton.designtime"
 	}});
 
-
-	/**
-	 * Method to set a RadioButton's state to active or inactive.
-	 *
-	 * @name sap.m.RadioButton#setActiveState
-	 * @function
-	 * @param {boolean} bActive - Sets the active state to true or false
-	 * @type void
-	 * @public
-	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
-	 */
-
-	/**
-	 * This file defines behavior for the control,
-	 */
-
 	EnabledPropagator.call(RadioButton.prototype);
+
+	// Apply the message mixin so all Messages on the RadioButton will have additionalText property set to ariaLabelledBy's text of the RadioButton
+	// and have valueState property of the RadioButton set to the message type.
+	MessageMixin.call(RadioButton.prototype);
 
 	RadioButton.prototype._groupNames = {};
 
@@ -596,11 +579,6 @@ function(
 		return this._changeGroupName(this.getGroupName());
 	};
 
-	RadioButton.prototype.onAfterRendering = function() {
-		var sGroupName = this.getGroupName();
-		this._setAriaPositionAttributes(sGroupName);
-	};
-
 	/**
 	 * Destroys all related objects to the RadioButton
 	 * @public
@@ -668,6 +646,17 @@ function(
 	};
 
 	/**
+	 * Sets the private valueStateText property. Required, in order to make the MessageMixin work.
+	 *
+	 * @private
+	 * @param {string} sText The new value of the property.
+	 * @returns {sap.m.RadioButton} Reference to the control instance for chaining.
+	 */
+	RadioButton.prototype.setValueStateText = function(sText) {
+		return this.setProperty("valueStateText", sText, true);
+	};
+
+	/**
 	 * Changes the groupname of a RadioButton.
 	 * @param {string} sNewGroupName - Name of the new group.
 	 * @param {string} sOldGroupName - Name of the old group.
@@ -679,7 +668,6 @@ function(
 
 		if (aOldGroup && aOldGroup.indexOf(this) !== -1) {
 			aOldGroup.splice(aOldGroup.indexOf(this), 1);
-			this._setAriaPositionAttributes(sOldGroupName);
 		}
 
 		if (!aNewGroup) {
@@ -688,44 +676,11 @@ function(
 
 		if (aNewGroup.indexOf(this) === -1) {
 			aNewGroup.push(this);
-			this._setAriaPositionAttributes(sNewGroupName);
 		}
-
-	};
-
-	/**
-	 * Recalculates and sets the correct aria-posinset and aria-setsize attribute values
-	 * This is done based on the rendered in the DOM radio buttons which are in the provided group.
-	 *
-	 * @param {string} [sGroupName] The name of the group for which the ARIA attributes should be recalculated
-	 * @private
-	 */
-	RadioButton.prototype._setAriaPositionAttributes = function (sGroupName) {
-		var aGroup = this._groupNames[sGroupName],
-			iRenderedIndex = 0,
-			iRenderedInGroupCount;
-
-		if (!aGroup.length || !this.getDomRef()) {
-			return;
-		}
-
-		// Find how many buttons are rendered in the group
-		iRenderedInGroupCount = aGroup.reduce(function (iRenderedInGroupCount, oRadioButton) {
-			return oRadioButton.getDomRef() ? ++iRenderedInGroupCount : iRenderedInGroupCount;
-		}, 0);
-
-		// For every radio button in the group - recalculate its index and set its properties
-		aGroup.forEach(function(oRadioButton) {
-			var oRadioDom = oRadioButton.getDomRef();
-			if (oRadioDom) {
-				oRadioDom.setAttribute("aria-posinset", ++iRenderedIndex);
-				oRadioDom.setAttribute("aria-setsize", iRenderedInGroupCount);
-			}
-		});
 	};
 
 	// Private properties setter generation
-	["editableParent", "posinset", "setsize"].forEach(function(privatePropName) {
+	["editableParent"].forEach(function(privatePropName) {
 		RadioButton.prototype["_set" + capitalize(privatePropName)] = function (vValue) {
 			// prevent invalidation as the parent will rerender its children
 			return this.setProperty(privatePropName, vValue, true);

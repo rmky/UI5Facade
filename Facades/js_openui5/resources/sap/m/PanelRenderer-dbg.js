@@ -3,8 +3,8 @@
  * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(["sap/m/library"],
-	function(library) {
+sap.ui.define(["sap/m/library", "sap/ui/Device"],
+	function(library, Device) {
 	"use strict";
 
 	// shortcut for sap.m.ToolbarDesign
@@ -92,13 +92,13 @@ sap.ui.define(["sap/m/library"],
 			oRm.renderControl(oHeaderTBar);
 
 		} else if (sHeaderText || bIsExpandable) {
-			oRm.write("<h1");
+			oRm.write("<h2");
 			oRm.addClass("sapMPanelHdr");
 			oRm.writeClasses();
 			oRm.writeAttribute("id", oControl.getId() + "-header");
 			oRm.write(">");
 			oRm.writeEscaped(sHeaderText);
-			oRm.write("</h1>");
+			oRm.write("</h2>");
 		}
 
 		if (bIsExpandable) {
@@ -108,15 +108,21 @@ sap.ui.define(["sap/m/library"],
 		var oInfoTBar = oControl.getInfoToolbar();
 
 		if (oInfoTBar) {
-			if (bIsExpandable) {
-				// use this class as marker class to ease selection later in onAfterRendering
-				oInfoTBar.addStyleClass("sapMPanelExpandablePart");
-			}
-
 			// render infoBar
 			oInfoTBar.setDesign(ToolbarDesign.Info, true);
 			oInfoTBar.addStyleClass("sapMPanelInfoTB");
-			oRm.renderControl(oInfoTBar);
+
+			if (bIsExpandable) {
+				oRm.write("<div");
+				// use this class as marker class to ease selection later in onAfterRendering
+				oRm.addClass("sapMPanelExpandablePart");
+				oRm.writeClasses();
+				oRm.write(">");
+				oRm.renderControl(oInfoTBar);
+				oRm.write("</div>");
+			} else {
+				oRm.renderControl(oInfoTBar);
+			}
 		}
 	};
 
@@ -141,7 +147,7 @@ sap.ui.define(["sap/m/library"],
 
 		oRm.writeClasses();
 
-		if (sap.ui.Device.browser.firefox) {
+		if (Device.browser.firefox) {
 			// ensure that the content is not included in the tab chain
 			// this happens in FF, when we have a scrollable content
 			oRm.writeAttribute('tabindex', '-1');

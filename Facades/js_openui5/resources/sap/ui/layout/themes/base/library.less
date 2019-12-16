@@ -61,7 +61,7 @@
 	display: none;
 }
 
-.sapUiAFLayoutOneLine > div:last-child {
+.sapUiAFLayoutOneLine > .sapUiAFLayoutSpacer:last-child {
 	flex-basis: auto !important; /* needs to override inline style */
 	flex-grow: 0;
 }
@@ -274,7 +274,7 @@ html.sap-phone .sapUiFormCL > .sapUiFormCLContent > .sapUiFormCLContainer:not(:l
 /* Label and field alignment */
 .sapUiFormCLSmallColumns .sapUiFormElementLbl:not(.sapUiFormCLCellsS12),
 .sapUiFormCLWideColumns .sapUiFormElementLbl:not(.sapUiFormCLCellsL12){
-	padding-right: 0.75rem;
+	padding-right: 1rem;
 }
 
 /* edit mode */
@@ -703,6 +703,14 @@ html.sap-desktop .sapUiFioriObjectPage > section > .sapUiForm {
 	margin-bottom: 0.5rem;
 }
 
+.sapUiFormToolbar > div:first-child >.sapMTitle.sapMTitleStyleAuto{
+	font-size: @sapMFontHeader4Size;
+}
+
+.sapUiFormContainerToolbar > div:first-child >.sapMTitle.sapMTitleStyleAuto{
+	font-size: @sapMFontHeader5Size;
+}
+
 .sapUiFormM .sapUiFormContainerTitle > .sapUiFormTitle {
 	height: 3rem;
 	line-height: 3rem;
@@ -984,10 +992,17 @@ L  0.390625% =  4px / 1024px
 }
 
 .sapUiLayoutCSSGridBoxLayoutPolyfill {
+	white-space: normal; // 1980317947
+
 	> .sapUiLayoutCSSGridItem {
 		display: inline-block;
 		vertical-align: top;
 		margin: 0 0.5rem 0.5rem 0;
+
+		.sapUiDnDGridIndicator {
+			display: inline-block;
+			margin: 0 0.5rem 0.5rem 0;
+		}
 	}
 
 	.sapMGHLI {
@@ -1051,6 +1066,30 @@ L  0.390625% =  4px / 1024px
 	// If the focus reaches the span before the blocked/busy control it is forwarded to the one after the control.
 	// These spans should not be visible.
 	position: absolute;
+}
+
+.sapUiLayoutCSSResponsiveColumnLayout.sapUiLayoutCSSResponsiveColumnLayoutS {
+	grid-template-columns: repeat(4, minmax(0px, 1fr));
+	grid-gap: 0.5rem 0.5rem;
+}
+
+.sapUiLayoutCSSResponsiveColumnLayout.sapUiLayoutCSSResponsiveColumnLayoutM {
+	grid-template-columns: repeat(8, minmax(0px, 1fr));
+	grid-gap: 1rem 1rem;
+}
+
+.sapUiLayoutCSSResponsiveColumnLayout.sapUiLayoutCSSResponsiveColumnLayoutL {
+	grid-template-columns: repeat(12, minmax(0px, 1fr));
+	grid-gap: 1rem 1rem;
+}
+
+.sapUiLayoutCSSResponsiveColumnLayout.sapUiLayoutCSSResponsiveColumnLayoutXL {
+	grid-template-columns: repeat(16, minmax(0px, 1fr));
+	grid-gap: 1rem 1rem;
+}
+
+.sapUiLayoutCSSResponsiveColumnLayoutPolyfill {
+	position: relative;
 }
 /* END "CSSGrid.less" */
 
@@ -1155,7 +1194,7 @@ html[dir=rtl][data-sap-ui-browser^=ed] .sapUiGrid td > .sapUiFormTitle {
 }
 
 .sapUiGrid > tbody > tr > td.sapUiFormElementLbl {
-	padding-right: 0.25rem;
+	padding-right: 0.75rem;
 }
 
 .sapUiGrid > tbody > tr > td.sapUiGridLabelFull {
@@ -1581,7 +1620,7 @@ html.sap-phone .sapUiFormM:not(.sapUiFormEdit) .sapUiFormResGridCont{
 .sapUiRespGridMedia-Std-Tablet.sapUiFormResGridCont > .sapUiFormElementLbl:not(.sapUiRespGridSpanM12),
 .sapUiRespGridMedia-Std-Desktop.sapUiFormResGridCont > .sapUiFormElementLbl:not(.sapUiRespGridSpanL12),
 .sapUiRespGridMedia-Std-LargeDesktop.sapUiFormResGridCont > .sapUiFormElementLbl:not(.sapUiRespGridSpanXL12){
-	padding-right: 0.75rem;
+	padding-right: 1rem;
 }
 
 .sapUiRespGridMedia-Std-Phone.sapUiFormResGridCont > .sapUiFormElementLbl.sapUiRespGridSpanS12,
@@ -1703,6 +1742,7 @@ html[data-sap-ui-browser^="ff"].sapUiSizeCompact .sapUiFormEdit.sapUiFormM .sapU
 /* make labels before fields right aligned */
 .sapUiRLElementWithLabel > .sapUiRFLRow:first-child > .sapUiRFLContainer:first-child:not(.sapUiRFLFullLength) > div{
 	text-align: end;
+	padding-right: 0.75rem;
 }
 
 html[data-sap-ui-browser^=ie] .sapUiRLElementWithLabel > .sapUiRFLRow:first-child > .sapUiRFLContainer:first-child:not(.sapUiRFLFullLength) > div,
@@ -1739,7 +1779,6 @@ html[dir=rtl][data-sap-ui-browser^=ed] .sapUiRLElementWithLabel > .sapUiRFLRow:f
 
 .sapUiFormEdit.sapUiFormM .sapUiRLElementWithLabel > .sapUiRFLRow:not(.sapUiRFLCompleteRow) > .sapUiRFLContainer:first-child > .sapUiRFLContainerContent{
 	padding-top: 1rem;
-	padding-right: 0.25rem;
 }
 
 html[data-sap-ui-browser^="ff"] .sapUiFormEdit.sapUiFormM .sapUiRLElementWithLabel > .sapUiRFLRow:not(.sapUiRFLCompleteRow) > .sapUiRFLContainer:first-child > .sapUiRFLContainerContent{

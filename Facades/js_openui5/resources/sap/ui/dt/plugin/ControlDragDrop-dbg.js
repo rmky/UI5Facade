@@ -24,7 +24,7 @@ sap.ui.define([
 	 * @class The ControlDragDrop enables D&D functionality for the overlays based on aggregation types
 	 * @extends sap.ui.dt.plugin.DragDrop
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @constructor
 	 * @private
 	 * @since 1.30
@@ -43,6 +43,10 @@ sap.ui.define([
 				},
 				elementMover : {
 					type : "any" // "sap.ui.dt.plugin.ElementMover"
+				},
+				insertAfterElement: {
+					type: "boolean",
+					defaultValue: false
 				}
 			},
 			associations : {}
@@ -146,7 +150,7 @@ sap.ui.define([
 		var oDraggedOverlay = this.getDraggedOverlay();
 		if (oTargetOverlay.getElement() !== oDraggedOverlay.getElement()
 				&& oTargetOverlay !== this._oPreviousTarget) {
-			this.getElementMover().repositionOn(oDraggedOverlay, oTargetOverlay);
+			this.getElementMover().repositionOn(oDraggedOverlay, oTargetOverlay, this.getInsertAfterElement());
 		}
 		this._oPreviousTarget = oTargetOverlay;
 	};
@@ -158,7 +162,7 @@ sap.ui.define([
 		delete this._oPreviousTarget;
 
 		var oDraggedOverlay = this.getDraggedOverlay();
-		this.getElementMover().insertInto(oDraggedOverlay, oAggregationOverlay);
+		this.getElementMover().insertInto(oDraggedOverlay, oAggregationOverlay, this.getInsertAfterElement());
 	};
 
 	return ControlDragDrop;

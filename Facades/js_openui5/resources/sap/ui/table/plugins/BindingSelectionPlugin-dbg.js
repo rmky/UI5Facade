@@ -5,9 +5,11 @@
  */
 sap.ui.define([
 	'./SelectionPlugin',
+	"../utils/TableUtils",
 	'../library'
 ], function(
 	SelectionPlugin,
+	TableUtils,
 	library
 ) {
 
@@ -20,31 +22,38 @@ sap.ui.define([
 	 *
 	 * @class Implements the selection methods for TreeTable and AnalyticalTable
 	 * @extends sap.ui.table.plugins.SelectionPlugin
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.plugins.BindingSelectionPlugin
 	 */
-	var BindingSelectionPlugin = SelectionPlugin.extend("sap.ui.table.plugins.BindingSelectionPlugin", {metadata: {
-		events: {
-			/**
-			 * This event is fired when the selection is changed.
-			 */
-			selectionChange: {
-				parameters: {
-					/**
-					 * Array of indices whose selection has been changed (either selected or deselected)
-					 */
-					indices: {type: "int[]"},
+	var BindingSelectionPlugin = SelectionPlugin.extend("sap.ui.table.plugins.BindingSelectionPlugin", {
+		metadata: {
+			library: "sap.ui.table",
+			events: {
+				/**
+				 * This event is fired when the selection is changed.
+				 */
+				selectionChange: {
+					parameters: {
+						/**
+						 * Array of indices whose selection has been changed (either selected or deselected)
+						 */
+						indices: {type: "int[]"},
 
-					/**
-					 * Indicates whether the Select All function is used to select rows.
-					 */
-					selectAll: {type: "boolean"}
+						/**
+						 * Indicates whether the Select All function is used to select rows.
+						 */
+						selectAll: {type: "boolean"}
+					}
 				}
 			}
+		},
+		constructor: function(oTable) {
+			this._oTable = oTable;
+			SelectionPlugin.call(this);
 		}
-	}});
+	});
 
 	/**
 	 * @override
@@ -53,9 +62,43 @@ sap.ui.define([
 	BindingSelectionPlugin.prototype.exit = function() {
 		var oBinding = this._getBinding();
 		if (oBinding) {
-			oBinding.detachEvent("change", this._onBindingChange);
+			oBinding.detachChange(this._onBindingChange, this);
 		}
 		SelectionPlugin.prototype.exit.call(this);
+	};
+
+	BindingSelectionPlugin.prototype.getRenderConfig = function() {
+		return {
+			headerSelector: {
+				type: "toggle",
+				visible: TableUtils.hasSelectAll(this._oTable)
+			}
+		};
+	};
+
+	/**
+	 * This hook is called by the table when the header selector is pressed.
+	 *
+	 * @private
+	 */
+	BindingSelectionPlugin.prototype.onHeaderSelectorPress = function() {
+		if (this.getRenderConfig().headerSelector.visible) {
+			this._oTable._toggleSelectAll();
+		}
+	};
+
+	/**
+	 * This hook is called by the table when the "select all" keyboard shortcut is pressed.
+	 *
+	 * @param {string} sType Type of the keyboard shortcut.
+	 * @private
+	 */
+	BindingSelectionPlugin.prototype.onKeyboardShortcut = function(sType) {
+		if (sType === "toggle") {
+			this._oTable._toggleSelectAll();
+		} else if (sType === "clear") {
+			this.clearSelection();
+		}
 	};
 
 	/**

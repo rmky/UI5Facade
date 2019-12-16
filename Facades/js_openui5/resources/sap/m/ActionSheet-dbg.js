@@ -72,7 +72,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -147,25 +147,31 @@ sap.ui.define([
 			 * This event will be fired before the ActionSheet is closed.
 			 */
 			beforeClose : {
-				/**
-				 * This indicates the trigger of closing the dialog. If dialog is closed by either leftButton or rightButton, the button that closes the dialog is set to this parameter. Otherwise this parameter is set to null. This is valid only for Phone mode of the ActionSheet
-				 *
-				 */
-				origin: {type: "sap.m.Button"}
+				parameters: {
+					/**
+					 * This indicates the trigger of closing the dialog. If dialog is closed by either leftButton or rightButton, the button that closes the dialog is set to this parameter. Otherwise this parameter is set to null. This is valid only for Phone mode of the ActionSheet
+					 *
+					 */
+					origin: {type: "sap.m.Button"}
+				}
 			},
 
 			/**
 			 * This event will be fired after the ActionSheet is closed.
 			 */
 			afterClose : {
-				/**
-				 * This indicates the trigger of closing the dialog. If dialog is closed by either leftButton or rightButton, the button that closes the dialog is set to this parameter. Otherwise this parameter is set to null. This is valid only for Phone mode of the ActionSheet
-				 */
-				origin: {type: "sap.m.Button"}
+				parameters: {
+					/**
+					 * This indicates the trigger of closing the control. If dialog is closed by either selection or closeButton (on mobile device), the button that closes the dialog is set to this parameter. Otherwise this parameter is set to null.
+					 */
+					origin: {type: "sap.m.Button"}
+				}
 			},
 
 			/**
-			 * This event is fired when the cancelButton is clicked. For iPad, this event is also fired when showCancelButton is set to true, and Popover is closed by clicking outside.
+			 * This event is fired when the cancelButton is clicked.
+			 *
+			 * <b>Note: </b> For any device other than phones, this event would be fired always when the Popover closes. To prevent this behavior, the <code>showCancelButton</code> property needs to be set to <code>false</code>.
 			 */
 			cancelButtonPress : {}
 		},
@@ -175,6 +181,8 @@ sap.ui.define([
 	ActionSheet.prototype.init = function() {
 		// this method is kept here empty in case some control inherits from it but forgets to check the existence of this function when chaining the call
 		this._fnOrientationChange = this._orientationChange.bind(this);
+		//initializing a variable to store information about the selected action when afterClose event has happened.
+		this._actionSelected = null;
 	};
 
 	ActionSheet.prototype.exit = function() {
@@ -225,6 +233,13 @@ sap.ui.define([
 				sapprevious: ["alt"]
 			});
 
+		}
+	};
+
+	ActionSheet.prototype.onmousedown = function (oEvent) {
+		//We need this to provide information on how was the Popover dismissed for the afterClose event.
+		if (oEvent.srcControl.isA("sap.m.Button") && this.getButtons().indexOf(oEvent.srcControl) !== -1) {
+			this._actionSelected = oEvent.srcControl;
 		}
 	};
 
@@ -291,7 +306,8 @@ sap.ui.define([
 							that.fireCancelButtonTap(); // (This event is deprecated, use the "cancelButtonPress" event instead)
 							that.fireCancelButtonPress();
 						}
-						that.fireAfterClose();
+						that._onAfterClose(that._actionSelected);
+						that._actionSelected = null;
 					},
 					ariaLabelledBy: this.getPopupHiddenLabelId() || undefined
 				}).addStyleClass("sapMActionSheetPopover");
@@ -333,9 +349,9 @@ sap.ui.define([
 						});
 					},
 					afterClose: function(oEvent){
-						that.fireAfterClose({
-							origin: oEvent.getParameter("origin")
-						});
+						that._actionSelected = oEvent.getParameter("origin");
+						that._onAfterClose(that._actionSelected);
+						that._actionSelected = null;
 
 						Device.resize.detachHandler(that._fnOrientationChange);
 					}
@@ -620,6 +636,17 @@ sap.ui.define([
 	 */
 	ActionSheet.prototype._applyContextualSettings = function () {
 		ManagedObject.prototype._applyContextualSettings.call(this, ManagedObject._defaultContextualSettings);
+	};
+
+	/**
+	 * Extends the afterClose event by providing context information.
+	 * @param {sap.m.Button | null} Action selected on Popover close
+	 * @private
+	 */
+	ActionSheet.prototype._onAfterClose = function (oAction) {
+		this.fireAfterClose({
+			origin: oAction
+		});
 	};
 
 	return ActionSheet;

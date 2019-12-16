@@ -93,7 +93,7 @@ function(
 		 * @implements sap.ui.core.IFormContent
 		 *
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.73.1
 		 *
 		 * @constructor
 		 * @public
@@ -667,8 +667,8 @@ function(
 		 *
 		 * @param {string} oTooltip Tooltip to be changed
 		 * @param {float} fValue New value of the Slider
-		 * @sap-restricted sap.m.SliderTooltipBase
 		 * @private
+		 * @ui5-restricted sap.m.SliderTooltipBase
 		 */
 		Slider.prototype.updateTooltipsPositionAndState = function (oTooltip, fValue) {
 			var oTooltipsContainer = this.getAggregation("_tooltipContainer");
@@ -758,6 +758,31 @@ function(
 			this._fireChangeAndLiveChange({ value: fNewValue });
 		};
 
+		/**
+		 * Register the ResizeHandler
+		 *
+		 * @private
+		 */
+		Slider.prototype._registerResizeHandler = function () {
+			if (!this._parentResizeHandler) {
+				setTimeout(function () {
+					this._parentResizeHandler = ResizeHandler.register(this, this._handleSliderResize.bind(this));
+				}.bind(this), 0);
+			}
+		};
+
+		/**
+		 * Deregister the ResizeHandler
+		 *
+		 * @private
+		 */
+		Slider.prototype._deregisterResizeHandler = function () {
+			if (this._parentResizeHandler) {
+				ResizeHandler.deregister(this._parentResizeHandler);
+				this._parentResizeHandler = null;
+			}
+		};
+
 		/* =========================================================== */
 		/* Lifecycle methods                                           */
 		/* =========================================================== */
@@ -792,10 +817,7 @@ function(
 				this._oResourceBundle = null;
 			}
 
-			if (this._parentResizeHandler) {
-				ResizeHandler.deregister(this._parentResizeHandler);
-				this._parentResizeHandler = null;
-			}
+			this._deregisterResizeHandler();
 		};
 
 		Slider.prototype.onBeforeRendering = function () {
@@ -813,6 +835,8 @@ function(
 			if (this.getShowAdvancedTooltip()) {
 				this.initAndSyncTooltips(["leftTooltip"]);
 			}
+
+			this._deregisterResizeHandler();
 
 			// set the correct scale aggregation, if needed
 			this._syncScaleUsage();
@@ -956,16 +980,8 @@ function(
 				this._recalculateStyles();
 				this._handleTooltipContainerResponsiveness();
 			}
-
-			if (!this._parentResizeHandler) {
-				setTimeout(function () {
-					this._parentResizeHandler = ResizeHandler.register(this, this._handleSliderResize.bind(this));
-				}.bind(this), 0);
-			} else {
-				setTimeout(function () {
-					this._handleSliderResize({control: this});
-				}.bind(this), 0);
-			}
+			this._handleSliderResize({control: this});
+			this._registerResizeHandler();
 		};
 
 		/* =========================================================== */
@@ -1151,7 +1167,22 @@ function(
 
 			if (this.getShowAdvancedTooltip()) {
 				this.getAggregation("_tooltipContainer").show(this);
+				this._setAriaControls();
 				this.updateAdvancedTooltipDom(this.getValue());
+			}
+		};
+
+		/**
+		 * Adds aria-controls attribute, when the tooltips are rendered.
+		 *
+		 * @private
+		 */
+		Slider.prototype._setAriaControls = function () {
+			var oTooltip = this.getUsedTooltips()[0],
+				oHandle = this.getFocusDomRef();
+
+			if (this.getInputsAsTooltips() && oTooltip && oTooltip.getDomRef()) {
+				oHandle.setAttribute("aria-controls", oTooltip.getId());
 			}
 		};
 
@@ -1184,6 +1215,7 @@ function(
 
 				oTooltipContainer = this.getAggregation("_tooltipContainer");
 				bTooltipFocused = jQuery.contains(oTooltipContainer.getDomRef(), document.activeElement);
+				this._setAriaControls();
 
 				// do not update Tooltip's value if it is already focused
 				if (bTooltipFocused) {

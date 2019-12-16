@@ -24,6 +24,7 @@ sap.ui.define([
 	'./MultiInputRenderer',
 	"sap/ui/dom/containsOrEquals",
 	"sap/ui/events/KeyCodes",
+	'sap/ui/core/InvisibleText',
 	"sap/ui/thirdparty/jquery",
 	// jQuery Plugin "cursorPos"
 	"sap/ui/dom/jquery/cursorPos",
@@ -49,6 +50,7 @@ function(
 	MultiInputRenderer,
 	containsOrEquals,
 	KeyCodes,
+	InvisibleText,
 	jQuery
 ) {
 		"use strict";
@@ -68,12 +70,14 @@ function(
 	* A multi-input field allows the user to enter multiple values, which are displayed as {@link sap.m.Token tokens}.
 	* You can enable auto-complete suggestions or value help to help the user choose the correct entry. You can define
 	* validator functions to define what token values are accepted.
+	*
 	* <b>Notes:</b>
 	* <ul>
 	* <li> New valid tokens are created, when the user presses Enter, selects a value from the suggestions drop-down, or when the focus leaves the field.</li>
 	* <li> When multiple values are copied and pasted in the field, separate tokens are created for each of them.</li>
 	* <li> When a single value is copied and pasted in the field, it is shown as a text value, as further editing might be required before it is converted into a token.</li>
 	* <li> Provide meaningful labels for all input fields. Do not use the placeholder as a replacement for the label.</li>
+	* <li> The <code>showValueHelp</code> property is overwritten and after initialization of the control, its value becomes <code>truthy</code>.</li>
 	* </ul>
 	* <h3>Usage</h3>
 	* <h4>When to use:</h4>
@@ -110,7 +114,7 @@ function(
 	* @extends sap.m.Input
 	*
 	* @author SAP SE
-	* @version 1.68.1
+	* @version 1.73.1
 	*
 	* @constructor
 	* @public
@@ -260,10 +264,7 @@ function(
 
 		this.attachLiveChange(this._onLiveChange, this);
 
-		this.attachValueHelpRequest(function () {
-			// Register the click on value help.
-			this._bValueHelpOpen = true;
-		}, this);
+		this.attachValueHelpRequest(this._onValueHelpRequested, this);
 
 		this._getValueHelpIcon().setProperty("visible", true, true);
 		this._modifySuggestionPicker();
@@ -296,6 +297,11 @@ function(
 		this._deregisterResizeHandler();
 	};
 
+	MultiInput.prototype.onBeforeRendering = function () {
+		Input.onBeforeRendering.apply(this, arguments);
+		this._tokenizer.setEnabled(this.getEnabled());
+	};
+
 	/**
 	 * Called after the control is rendered.
 	 *
@@ -305,6 +311,7 @@ function(
 		this._tokenizer.scrollToEnd();
 		this._registerResizeHandler();
 		this._tokenizer.setMaxWidth(this._calculateSpaceForTokenizer());
+		this._handleNMoreAccessibility();
 		this._handleInnerVisibility();
 		this._syncInputWidth(this._tokenizer);
 		Input.prototype.onAfterRendering.apply(this, arguments);
@@ -361,6 +368,7 @@ function(
 		this._tokenizer.setMaxWidth(this._calculateSpaceForTokenizer());
 		this._handleInnerVisibility();
 		this._syncInputWidth(this._tokenizer);
+		this._handleNMoreAccessibility();
 
 		this._registerResizeHandler();
 	};
@@ -373,7 +381,10 @@ function(
 			this._tokenizer._useCollapsedMode(false);
 		}
 
-		this._fillList();
+		if ((this._oSuggestionPopup && this._oSuggestionPopup.isOpen()) || this._bUseDialog) {
+			this._fillList();
+		}
+
 		// on mobile the list with the tokens should be updated and shown
 		if (this._bUseDialog) {
 			this._manageListsVisibility(true/*show list with tokens*/);
@@ -397,7 +408,6 @@ function(
 	MultiInput.prototype._onSuggestionItemSelected = function (eventArgs) {
 		var item = null,
 			token = null,
-			that = this,
 			iOldLength = this._tokenizer.getTokens().length; //length of tokens before validating
 
 		// Tokenizer is "full" or ValueHelp is open.
@@ -423,11 +433,7 @@ function(
 				text: text,
 				token: token,
 				suggestionObject: item,
-				validationCallback: function (validated) {
-					if (validated) {
-						that.setValue("");
-					}
-				}
+				validationCallback: this._validationCallback.bind(this, iOldLength)
 			});
 		}
 
@@ -452,6 +458,11 @@ function(
 
 			this._oSuggPopover._oPopupInput.focus();
 		}
+	};
+
+	MultiInput.prototype._onValueHelpRequested = function () {
+		// Register the click on value help.
+		this._bValueHelpOpen = true;
 	};
 
 	MultiInput.prototype._onLiveChange = function (eventArgs) {
@@ -550,8 +561,12 @@ function(
 	/**
 	 * Function adds a validation callback called before any new token gets added to the tokens aggregation
 	 *
-	 * @param {function} fValidator The validation callback
 	 * @public
+	 * @param {function} fValidator The validation callback whose parameter contains the following properties:
+	 * @param {string} fValidator.text The source text
+	 * @param {sap.m.Token} [fValidator.suggestedToken] Suggested token
+	 * @param {object} [fValidator.suggestionObject] Any object used to find the suggested token, this property is available when the multiInput has a list or tabular suggestions
+	 * @param {function} [fValidator.asyncCallback] Callback which accepts {sap.m.Token} as a parameter and gets called after validation has finished
 	 */
 	MultiInput.prototype.addValidator = function (fValidator) {
 		this._tokenizer.addValidator(fValidator);
@@ -654,6 +669,9 @@ function(
 	 * @private
 	 */
 	MultiInput.prototype.onkeydown = function (oEvent) {
+		if (!this.getEnabled()) {
+			return;
+		}
 
 		if (oEvent.which === KeyCodes.TAB) {
 			this._tokenizer._changeAllTokensSelection(false);
@@ -790,30 +808,33 @@ function(
 			});
 		}
 
-		var that = this;
-
 		result = this._tokenizer._validateToken({
 			text: text,
 			token: token,
 			suggestionObject: item,
-			validationCallback: function (validated) {
-				that._bIsValidating = false;
-				if (validated) {
-					that.setValue("");
-					if (that._bUseDialog && that._isMultiLineMode && that._oSuggestionTable.getItems().length === 0) {
-						var iNewLength = that._tokenizer.getTokens().length;
-						if (iOldLength < iNewLength) {
-							that._oSuggPopover._oPopupInput.setValue("");
-						}
-
-						that._setAllTokenVisible();
-					}
-
-				}
-			}
+			validationCallback: this._validationCallback.bind(this, iOldLength)
 		});
 
 		return result;
+	};
+
+	/**
+	 * A callback executed on _tokenizer._validateToken call
+	 *
+	 * @param {integer} iOldLength Prior validation length of the Tokens
+	 * @param {boolean} bValidated Is token/input successfully validated
+	 * @private
+	 */
+	MultiInput.prototype._validationCallback = function (iOldLength, bValidated) {
+		var iNewLength = this._tokenizer.getTokens().length;
+
+		this._bIsValidating = false;
+		if (bValidated) {
+			this.setValue("");
+			if (this._bUseDialog && this._oSuggPopover && this._oSuggPopover._oPopupInput && (iOldLength < iNewLength)) {
+				this._oSuggPopover._oPopupInput.setValue("");
+			}
+		}
 	};
 
 	/**
@@ -834,8 +855,10 @@ function(
 			}
 		}
 
-		// prevent scroll of the page
-		oEvent.preventDefault();
+		if (oEvent.keyCode === KeyCodes.ARROW_UP) {
+			// prevent scroll of the page
+			oEvent.preventDefault();
+		}
 	};
 
 	/**
@@ -901,6 +924,11 @@ function(
 			this._validateCurrentText();
 		}
 
+		// Open popover with items if in readonly mode and has Nmore indicator
+		if (!this.getEditable() && this._tokenizer._hasMoreIndicator() && oEvent.target === this.getFocusDomRef()) {
+			this._handleIndicatorPress();
+		}
+
 		this.focus();
 	};
 
@@ -927,15 +955,13 @@ function(
 			bNewFocusIsInTokenizer = false,
 			bNewFocusIsInMultiInput = this._checkFocus(),
 			oRelatedControlDomRef,
-			bFocusIsInSelectedItemPopup,
-			bNewFocusIsInReadOnlyPopover;
+			bFocusIsInSelectedItemPopup;
 
 		if (oPopup instanceof sap.m.Popover) {
 			if (oEvent.relatedControlId) {
 				oRelatedControlDomRef = sap.ui.getCore().byId(oEvent.relatedControlId).getFocusDomRef();
 				bNewFocusIsInSuggestionPopup = containsOrEquals(oPopup.getFocusDomRef(), oRelatedControlDomRef);
 				bNewFocusIsInTokenizer = containsOrEquals(this._tokenizer.getFocusDomRef(), oRelatedControlDomRef);
-				bNewFocusIsInReadOnlyPopover = containsOrEquals(this._oReadOnlyPopover && this._oReadOnlyPopover.getFocusDomRef(), oRelatedControlDomRef);
 
 				if (oSelectedItemsPopup) {
 					bFocusIsInSelectedItemPopup = containsOrEquals(oSelectedItemsPopup.getFocusDomRef(), oRelatedControlDomRef);
@@ -976,16 +1002,10 @@ function(
 			this._tokenizer._useCollapsedMode(true);
 		}
 
-		if (this._oReadOnlyPopover && this._oReadOnlyPopover.isOpen() && !bNewFocusIsInTokenizer && !bNewFocusIsInReadOnlyPopover) {
-			this._oReadOnlyPopover.close();
-		}
-
 		this._handleInnerVisibility();
 	};
 
 	MultiInput.prototype._onDialogClose = function () {
-		this._validateCurrentText();
-
 		this.setAggregation("tokenizer", this._tokenizer);
 		this._tokenizer.setReverseTokens(false);
 		this._tokenizer.invalidate();
@@ -1066,7 +1086,8 @@ function(
 	 * @private
 	 */
 	MultiInput.prototype._validateCurrentText = function (bExactMatch) {
-		var text = this.getValue();
+		var text = this.getValue(),
+			iOldLength = this._tokenizer.getTokens().length; //length of tokens before validating
 		if (!text || !this.getEditable()) {
 			return;
 		}
@@ -1098,8 +1119,6 @@ function(
 			});
 		}
 
-		var that = this;
-
 		// if maxTokens limit is not set or the added tokens are less than the limit
 		if (!this.getMaxTokens() || this.getTokens().length < this.getMaxTokens()) {
 			this._bIsValidating = true;
@@ -1107,12 +1126,7 @@ function(
 				text: text,
 				token: token,
 				suggestionObject: item,
-				validationCallback: function (validated) {
-					that._bIsValidating = false;
-					if (validated) {
-						that.setValue("");
-					}
-				}
+				validationCallback: this._validationCallback.bind(this, iOldLength)
 			});
 		}
 	};
@@ -1175,7 +1189,7 @@ function(
 			} else {
 				this._getSelectedItemsPicker().addContent(oTokensList);
 			}
-			oTokensList.setMode(ListMode.MultiSelect);
+			oTokensList.setMode(ListMode.Delete);
 		} else {
 			oTokensList.setMode(ListMode.None);
 			this._getReadOnlyPopover().addContent(oTokensList);
@@ -1258,6 +1272,32 @@ function(
 			});
 		}
 		return item;
+	};
+
+	/**
+	 * Clones the <code>sap.m.MultiInput</code> control.
+	 *
+	 * @public
+	 * @return {sap.m.MultiInput} reference to the newly created clone
+	 */
+	MultiInput.prototype.clone = function () {
+		var oClone;
+
+		this.detachSuggestionItemSelected(this._onSuggestionItemSelected, this);
+		this.detachLiveChange(this._onLiveChange, this);
+		this._tokenizer.detachTokenChange(this._onTokenChange, this);
+		this._tokenizer.detachTokenUpdate(this._onTokenUpdate, this);
+		this.detachValueHelpRequest(this._onValueHelpRequested, this);
+
+		oClone = Input.prototype.clone.apply(this, arguments);
+
+		this.attachSuggestionItemSelected(this._onSuggestionItemSelected, this);
+		this.attachLiveChange(this._onLiveChange, this);
+		this._tokenizer.attachTokenChange(this._onTokenChange, this);
+		this._tokenizer.attachTokenUpdate(this._onTokenUpdate, this);
+		this.attachValueHelpRequest(this._onValueHelpRequested, this);
+
+		return oClone;
 	};
 
 	MultiInput.getMetadata().forwardAggregation(
@@ -1396,15 +1436,15 @@ function(
 		oPopupInput.addEventDelegate({
 			oninput: that._manageListsVisibility.bind(that, false),
 			onsapenter: function (oEvent) {
+				if (oPopupInput.getValue()) {
+					that._closeSuggestionPopup();
+				}
+
 				that._validateCurrentText();
 				that._setValueInvisible();
 
 				// Fire through the MultiInput Popup's input value and save it
 				that.onChange(oEvent, null, oPopupInput.getValue());
-
-				if (oPopupInput.getValue()) {
-					that._closeSuggestionPopup();
-				}
 			}
 		});
 
@@ -1651,6 +1691,7 @@ function(
 				this._openSelectedItemsPicker();
 			} else {
 				this._fillList();
+				this._manageListsVisibility(true);
 				this._getReadOnlyPopover().openBy(this._tokenizer._oIndicator[0]);
 			}
 	};
@@ -1662,15 +1703,35 @@ function(
 	 */
 	MultiInput.prototype._handleNMoreItemDelete = function(oEvent) {
 		var oListItem = oEvent.getParameter("listItem"),
-			sSelectedId = oListItem.data("tokenId"),
+			sSelectedId = oListItem && oListItem.data("tokenId"),
 			oTokenToDelete;
 
 		oTokenToDelete = this.getTokens().filter(function(oToken){
 			return oToken.getId() === sSelectedId;
 		})[0];
 
-		this._tokenizer._onTokenDelete(oTokenToDelete);
-		this._getTokensList().removeItem(oListItem);
+		if (oTokenToDelete && oTokenToDelete.getEditable()) {
+			this._tokenizer._onTokenDelete(oTokenToDelete);
+			this._getTokensList().removeItem(oListItem);
+		}
+
+		this.focus();
+	};
+
+	/**
+	 * Adds or removes aria-labelledby attribute to indicate that you can interact with Nmore.
+	 *
+	 * @private
+	 */
+	MultiInput.prototype._handleNMoreAccessibility = function () {
+		var sInvisibleTextId = InvisibleText.getStaticId("sap.m", "MULTICOMBOBOX_OPEN_NMORE_POPOVER");
+		var bHasAriaLabelledBy = this.getAriaLabelledBy().indexOf(sInvisibleTextId) !== -1;
+
+		if (!this.getEditable() && this._tokenizer._hasMoreIndicator()) {
+			!bHasAriaLabelledBy && this.addAriaLabelledBy(sInvisibleTextId);
+		} else {
+			bHasAriaLabelledBy && this.removeAriaLabelledBy(sInvisibleTextId);
+		}
 	};
 
 	/**
@@ -1736,8 +1797,7 @@ function(
 			placement: PlacementType.Auto,
 			showHeader: false,
 			contentMinWidth: "auto"
-		}).addStyleClass("sapMMultiInputReadOnlyPopover")
-			.setInitialFocus(this);
+		}).addStyleClass("sapMMultiInputReadOnlyPopover");
 	};
 
 	/**

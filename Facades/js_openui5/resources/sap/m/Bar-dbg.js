@@ -55,7 +55,7 @@ sap.ui.define([
 	 * @implements sap.m.IBar
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -340,9 +340,10 @@ sap.ui.define([
 			iMidBarEndPoint = (iBarWidth / 2) + (iMidBarPlaceholderWidth / 2),
 			bRightContentIsOverlapping = (iBarWidth - iRightBarWidth) < iMidBarEndPoint;
 
-		if (iSpaceBetweenLeftAndRight > 0 && (bLeftContentIsOverlapping || bRightContentIsOverlapping)) {
+			if (this._$MidBarPlaceHolder.closest(".sapMBarTitleStart").length > 0 ||
+				(iSpaceBetweenLeftAndRight > 0 && (bLeftContentIsOverlapping || bRightContentIsOverlapping))) {
 
-			//Left or Right content is overlapping the Middle content
+			//Left or Right content is overlapping the Middle content or there is Title alignment class (sapMBarTitleStart) set
 
 			// place the middle positioned element directly next to the end of left content area
 			oMidBarCss.position = "absolute";
@@ -542,6 +543,24 @@ sap.ui.define([
 	 */
 	Bar.prototype._getRootAccessibilityRole = BarInAnyContentEnabler.prototype._getRootAccessibilityRole;
 
+	/**
+	 * Sets accessibility aria-level attribute of the Root HTML element.
+	 *
+	 * This is only needed if <code>sap.m.Bar</code> has role="heading"
+	 * @param {string} sLevel aria-level attribute of the root Element
+	 * @returns {sap.m.IBar} <code>this</code> to allow method chaining
+	 * @private
+	 */
+	Bar.prototype._setRootAriaLevel = BarInAnyContentEnabler.prototype._setRootAriaLevel;
+
+	/**
+	 * Gets accessibility aria-level attribute of the Root HTML element.
+	 *
+	 * This is only needed if <code>sap.m.Bar</code> has role="heading"
+	 * @returns {string} aria-level
+	 * @private
+	 */
+	Bar.prototype._getRootAriaLevel = BarInAnyContentEnabler.prototype._getRootAriaLevel;
 
 	return Bar;
 

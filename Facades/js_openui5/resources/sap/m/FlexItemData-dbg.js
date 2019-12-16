@@ -24,7 +24,7 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 	 * @class
 	 * Holds layout data for a FlexBox / HBox / VBox.
 	 * @extends sap.ui.core.LayoutData
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -271,6 +271,30 @@ sap.ui.define(['./FlexBoxStylingHelper', './library', 'sap/ui/core/LayoutData'],
 		return this;
 	};
 
-	return FlexItemData;
+	 /**
+	  * Returns the correct FlexBox item DOM reference.
+	  *
+	  * @param {string} [sSuffix] ID suffix to get the DOMRef for
+	  * @return {Element} The Element's DOM Element sub DOM Element or null
+	  * @protected
+	  */
+	 FlexItemData.prototype.getDomRef = function(sSuffix) {
+		 var oParent,
+			 oItemDomRef = LayoutData.prototype.getDomRef.call(this, sSuffix);
+
+		 if (oItemDomRef) {
+			 return oItemDomRef;
+		 }
+
+		 oParent = this.getParent();
+
+		 if (!oParent) {
+			 return null;
+		 }
+
+		 return oParent.getDomRef(sSuffix);
+	 };
+
+	 return FlexItemData;
 
 });

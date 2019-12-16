@@ -63,7 +63,7 @@ sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/library', 'sap/ui/D
 			oRm.writeStyles();
 		}
 
-		var sTooltipWithStateMessage = ValueStateSupport.enrichTooltip(oRadioButton, oRadioButton.getTooltip_AsString());
+		var sTooltipWithStateMessage = this.getTooltipText(oRadioButton);
 		if (sTooltipWithStateMessage) {
 			oRm.writeAttributeEscaped("title", sTooltipWithStateMessage);
 		}
@@ -71,11 +71,9 @@ sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/library', 'sap/ui/D
 		// ARIA
 		oRm.writeAccessibilityState(oRadioButton, {
 			role: "radio",
-			posinset: oRadioButton.getProperty("posinset"),
-			setsize: oRadioButton.getProperty("setsize"),
-			readonly: bNonEditableParent || undefined,
+			readonly: null,
 			selected: null, // Avoid output aria-selected
-			checked: oRadioButton.getSelected() === true ? true : undefined, // aria-checked=false is default value and must not be set explicitly
+			checked: oRadioButton.getSelected(), // aria-checked must be set explicitly
 			disabled: bNonEditable ? true : undefined, // Avoid output aria-disabled=false when the button is editable
 			labelledby: { value: sId + "-label", append: true },
 			describedby: { value: (sTooltipWithStateMessage ? sId + "-Descr" : undefined), append: true }
@@ -139,6 +137,7 @@ sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/library', 'sap/ui/D
 		oRm.write("<svg xmlns='http://www.w3.org/2000/svg' version='1.0'");
 		oRm.addClass('sapMRbSvg');
 		oRm.writeClasses();
+		oRm.writeAttribute("role", "presentation");
 		oRm.write(">");
 
 		oRm.write('<circle stroke="black" r="50%" stroke-width="2" fill="none"');
@@ -181,7 +180,7 @@ sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/library', 'sap/ui/D
 
 	RadioButtonRenderer.renderTooltip = function (oRm, oRadioButton) {
 		var sId = oRadioButton.getId(),
-			sTooltipWithStateMessage = ValueStateSupport.enrichTooltip(oRadioButton, oRadioButton.getTooltip_AsString());
+			sTooltipWithStateMessage = this.getTooltipText(oRadioButton);
 
 		if (sTooltipWithStateMessage && sap.ui.getCore().getConfiguration().getAccessibility()) {
 			// for ARIA, the tooltip must be in a separate SPAN and assigned via aria-describedby.
@@ -204,6 +203,23 @@ sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/library', 'sap/ui/D
 
 	RadioButtonRenderer.closeDiv = function (oRm) {
 		oRm.write("</div>");
+	};
+
+	/**
+	 * Returns the correct value of the tooltip.
+	 *
+	 * @param {sap.m.RadioButton} oRadioButton RadioButton instance.
+	 * @returns {string} The correct tooltip value.
+	 */
+	RadioButtonRenderer.getTooltipText = function (oRadioButton) {
+		var sValueStateText = oRadioButton.getProperty("valueStateText"),
+			sTooltipText = oRadioButton.getTooltip_AsString();
+
+		if (sValueStateText) {
+			return (sTooltipText ? sTooltipText + " - " : "") + sValueStateText;
+		} else {
+			return ValueStateSupport.enrichTooltip(oRadioButton, sTooltipText);
+		}
 	};
 
 	return RadioButtonRenderer;

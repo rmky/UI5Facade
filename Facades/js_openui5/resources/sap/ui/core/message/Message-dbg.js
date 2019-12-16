@@ -27,7 +27,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.Object
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @param {object} [mParameters] a map which contains the following parameter properties:
 	 * @param {string} [mParameters.id] The message id: will be generated if no id is set
@@ -146,6 +146,8 @@ sap.ui.define([
 	Message.prototype.removeControlId = function(sControlId) {
 		var iIndex = this.controlIds.indexOf(sControlId);
 		if (iIndex != -1) {
+			//clone array to get update working.
+			this.controlIds = this.controlIds.slice();
 			this.controlIds.splice(iIndex, 1);
 		}
 	};

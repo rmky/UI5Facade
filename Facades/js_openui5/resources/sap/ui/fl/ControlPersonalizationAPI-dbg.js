@@ -6,6 +6,7 @@
 
 sap.ui.define([
 	"sap/ui/fl/Utils",
+	"sap/ui/fl/LayerUtils",
 	"sap/ui/fl/registry/ChangeRegistry",
 	"sap/ui/fl/FlexControllerFactory",
 	"sap/ui/core/util/reflection/JsControlTreeModifier",
@@ -13,10 +14,14 @@ sap.ui.define([
 	"sap/ui/base/ManagedObject",
 	"sap/base/util/includes",
 	"sap/ui/fl/variants/VariantManagement",
+	"sap/ui/fl/apply/_internal/controlVariants/URLHandler",
 	"sap/ui/core/Component",
+	"sap/base/Log",
+	"sap/base/util/merge",
 	"sap/ui/thirdparty/jquery"
 ], function(
 	Utils,
+	LayerUtils,
 	ChangeRegistry,
 	FlexControllerFactory,
 	JsControlTreeModifier,
@@ -24,7 +29,10 @@ sap.ui.define([
 	ManagedObject,
 	includes,
 	VariantManagement,
+	URLHandler,
 	Component,
+	Log,
+	merge,
 	jQuery
 ) {
 	"use strict";
@@ -37,7 +45,7 @@ sap.ui.define([
 	 * @author SAP SE
 	 * @experimental Since 1.56
 	 * @since 1.56
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @private
 	 * @ui5-restricted
 	 */
@@ -54,43 +62,41 @@ sap.ui.define([
 	 * @property {string} changeSpecificData.changeType The change type for which a change handler is registered
 	 */
 
-	var VARIANT_TECHNICAL_PARAMETER_NAME = "sap-ui-fl-control-variant-id";
-
 	var ControlPersonalizationAPI = {
 
 		/**
 		 * Returns a map of parameters used in public functions.
 		 *
 		 * @param {sap.ui.core.Element} oControl - The control for which a variant management control has to be evaluated
+		 * @param {boolean} [bIgnoreVariantManagement=false] - If flag is set to true then variant management will be ignored
 		 * @returns {object} Returns a map with needed parameters
 		 * @private
 		 */
-		_determineParameters : function(oControl) {
+		_determineParameters : function(oControl, bIgnoreVariantManagement) {
 			var oAppComponent = Utils.getAppComponentForControl(oControl);
 			var oFlexController = FlexControllerFactory.createForControl(oAppComponent);
 			var oRootControl = oAppComponent.getRootControl();
-			var oView = Utils.getViewForControl(oControl);
-			var oVariantModel = oAppComponent.getModel(Utils.VARIANT_MODEL_NAME);
 
 			var mParams = {
 				rootControl : oRootControl,
-				view : oView,
-				variantModel : oVariantModel,
-				variantManagement : {},
 				flexController: oFlexController
 			};
-			var oVMControl;
-			var aForControlTypes;
 
-			jQuery.makeArray(mParams.rootControl.$().find(".sapUiFlVarMngmt")).map(function(oVariantManagementNode) {
-				oVMControl = sap.ui.getCore().byId(oVariantManagementNode.id);
-				if (oVMControl.getMetadata().getName() === "sap.ui.fl.variants.VariantManagement") {
-					aForControlTypes = oVMControl.getFor();
-					aForControlTypes.forEach(function(sControlType) {
-						mParams.variantManagement[sControlType] = mParams.variantModel.getLocalId(oVariantManagementNode.id, oAppComponent);
-					});
-				}
-			});
+			if (!bIgnoreVariantManagement) {
+				var oVMControl;
+				var aForControlTypes;
+				mParams.variantModel = oAppComponent.getModel(Utils.VARIANT_MODEL_NAME);
+				mParams.variantManagement = {};
+				jQuery.makeArray(mParams.rootControl.$().find(".sapUiFlVarMngmt")).map(function (oVariantManagementNode) {
+					oVMControl = sap.ui.getCore().byId(oVariantManagementNode.id);
+					if (oVMControl.getMetadata().getName() === "sap.ui.fl.variants.VariantManagement") {
+						aForControlTypes = oVMControl.getFor();
+						aForControlTypes.forEach(function (sControlType) {
+							mParams.variantManagement[sControlType] = mParams.variantModel.getLocalId(oVariantManagementNode.id, oAppComponent);
+						});
+					}
+				});
+			}
 
 			return mParams;
 		},
@@ -127,31 +133,31 @@ sap.ui.define([
 		 * @public
 		 */
 		clearVariantParameterInURL : function (oControl) {
-			var aUrlParameters = [];
+			var aUpdatedVariantParameters;
 			var oAppComponent = Utils.getAppComponentForControl(oControl);
 			var oVariantModel = oAppComponent instanceof Component ? oAppComponent.getModel(Utils.VARIANT_MODEL_NAME) : undefined;
 			if (!oVariantModel) {
 				//technical parameters are not updated, only URL hash is updated
-				Utils.setTechnicalURLParameterValues(undefined, VARIANT_TECHNICAL_PARAMETER_NAME, aUrlParameters);
-				return Utils.log.warning("Variant model could not be found on the provided control");
+				Log.warning("Variant model could not be found on the provided control");
 			}
 
 			//check if variant for the passed variant management control is present
 			if (oControl instanceof VariantManagement) {
 				var sVariantManagementReference = oVariantModel.getLocalId(oControl.getId(), oAppComponent);
-				var mVariantParametersInURL = oVariantModel.getVariantIndexInURL(sVariantManagementReference);
-
-				if (mVariantParametersInURL.index > -1) {
-					mVariantParametersInURL.parameters[VARIANT_TECHNICAL_PARAMETER_NAME].splice(mVariantParametersInURL.index, 1);
-					aUrlParameters = mVariantParametersInURL.parameters[VARIANT_TECHNICAL_PARAMETER_NAME].slice(0);
-				}
+				var mCleansedParametersWithIndex = URLHandler.removeURLParameterForVariantManagement({
+					model: oVariantModel,
+					vmReference: sVariantManagementReference
+				});
+				aUpdatedVariantParameters = mCleansedParametersWithIndex.parameters;
 			}
 
 			//both technical parameters and URL hash updated
-			oVariantModel.updateHasherEntry({
-				parameters: aUrlParameters,
+			URLHandler.update({
+				parameters: aUpdatedVariantParameters || [],
 				updateURL: true,
-				component: oAppComponent
+				updateHashEntry: !!oVariantModel,
+				model: oVariantModel || {},
+				silent: !oVariantModel
 			});
 		},
 
@@ -202,42 +208,32 @@ sap.ui.define([
 				return oVariantModel.updateCurrentVariant(sVariantManagementReference, sVariantReference, oAppComponent);
 			})
 			["catch"](function (oError) {
-				Utils.log.error(oError);
+				Log.error(oError);
 				return Promise.reject(oError);
 			});
 		},
 
 		_checkChangeSpecificData: function(oChange, sLayer) {
-			return Promise.resolve()
-				.then(function() {
-					if (!oChange.changeSpecificData) {
-						throw new Error("No changeSpecificData available");
-					}
-					if (!oChange.changeSpecificData.changeType) {
-						throw new Error("No valid changeType");
-					}
+			if (!oChange.changeSpecificData) {
+				return Promise.reject(new Error("No changeSpecificData available"));
+			}
+			if (!oChange.changeSpecificData.changeType) {
+				return Promise.reject(new Error("No valid changeType"));
+			}
 
-					if (!(oChange.selectorControl instanceof Element)) {
-						throw new Error("No valid selectorControl");
-					}
+			if (!(oChange.selectorControl instanceof Element)) {
+				return Promise.reject(new Error("No valid selectorControl"));
+			}
 
-					var sControlType = oChange.selectorControl.getMetadata().getName();
-					var oChangeRegistry = ChangeRegistry.getInstance();
-					return oChangeRegistry.getChangeHandler(
-						oChange.changeSpecificData.changeType,
-						sControlType,
-						oChange.selectorControl,
-						JsControlTreeModifier,
-						sLayer);
-				})
-				.then(function(oChangeHandler) {
-					if (!oChangeHandler) {
-						throw new Error("No valid ChangeHandler");
-					}
-					if (!oChangeHandler.revertChange) {
-						throw new Error("ChangeHandler has no revertChange function");
-					}
-				});
+			var sControlType = oChange.selectorControl.getMetadata().getName();
+			var oChangeRegistry = ChangeRegistry.getInstance();
+			return oChangeRegistry.getChangeHandler(
+				oChange.changeSpecificData.changeType,
+				sControlType,
+				oChange.selectorControl,
+				JsControlTreeModifier,
+				sLayer
+			);
 		},
 
 		/**
@@ -255,7 +251,7 @@ sap.ui.define([
 		 */
 		addPersonalizationChanges: function(mPropertyBag) {
 			var aSuccessfulChanges = [];
-			var sLayer = Utils.getCurrentLayer(true);
+			var sLayer = LayerUtils.getCurrentLayer(true);
 			var aPromises = [];
 
 			mPropertyBag.controlChanges.forEach(function(oChange) {
@@ -268,7 +264,7 @@ sap.ui.define([
 				function fnCheckCreateApplyChange() {
 					return this._checkChangeSpecificData(oChange, sLayer)
 						.then(function() {
-							var mParams = this._determineParameters(oChange.selectorControl);
+							var mParams = this._determineParameters(oChange.selectorControl, mPropertyBag.ignoreVariantManagement);
 							if (!mPropertyBag.ignoreVariantManagement) {
 								// check for preset variantReference
 								if (!oChange.changeSpecificData.variantReference) {
@@ -346,7 +342,7 @@ sap.ui.define([
 		},
 
 		_reject: function (sMessage) {
-			Utils.log.error(sMessage);
+			Log.error(sMessage);
 			return Promise.reject(sMessage);
 		},
 
@@ -413,7 +409,7 @@ sap.ui.define([
 		saveChanges: function(aChanges, oManagedObject) {
 			if (!(oManagedObject instanceof ManagedObject)) {
 				var sErrorMessage = "A valid sap.ui.base.ManagedObject instance is required as a parameter";
-				Utils.log.error(sErrorMessage);
+				Log.error(sErrorMessage);
 				return Promise.reject(sErrorMessage);
 			}
 			var mParameters = ControlPersonalizationAPI._determineParameters(oManagedObject);
@@ -441,7 +437,7 @@ sap.ui.define([
 			try {
 				return !!this._getVariantManagement(oControl);
 			} catch (oError) {
-				Utils.log.error(oError.message);
+				Log.error(oError.message);
 				return false;
 			}
 		}

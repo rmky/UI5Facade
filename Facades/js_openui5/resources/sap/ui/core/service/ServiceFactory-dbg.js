@@ -83,10 +83,10 @@ sap.ui.define(['sap/ui/base/Object', 'sap/ui/core/service/Service', "sap/base/as
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @alias sap.ui.core.service.ServiceFactory
 	 * @private
-	 * @sap-restricted sap.ushell
+	 * @ui5-restricted sap.ushell
 	 * @since 1.37.0
 	 */
 	var ServiceFactory = BaseObject.extend("sap.ui.core.service.ServiceFactory", /** @lends sap.ui.service.ServiceFactory.prototype */ {

@@ -110,7 +110,7 @@ sap.ui.define(["sap/m/library", "sap/ui/core/Core", "sap/ui/Device"],
 
 		// ARIA
 		rm.writeAccessibilityState(oCarousel, {
-			role: "list"
+			role: "listbox"
 		});
 
 		rm.write(">");
@@ -146,7 +146,7 @@ sap.ui.define(["sap/m/library", "sap/ui/core/Core", "sap/ui/Device"],
 
 			// ARIA
 			rm.writeAccessibilityState(oPage, {
-				role: "listitem",
+				role: "option",
 				posinset: iIndex + 1,
 				setsize: aArray.length
 			});
@@ -156,8 +156,12 @@ sap.ui.define(["sap/m/library", "sap/ui/core/Core", "sap/ui/Device"],
 			rm.write("</div>");
 		};
 
-		//Render Pages
-		aPages.forEach(fnRenderPage);
+		// Render Pages
+		if (aPages.length !== 0) {
+			aPages.forEach(fnRenderPage);
+		} else {
+			rm.renderControl(oCarousel._getErrorPage());
+		}
 
 		rm.write("</div>");
 	};
@@ -276,7 +280,7 @@ sap.ui.define(["sap/m/library", "sap/ui/core/Core", "sap/ui/Device"],
 	CarouselRenderer._renderPrevArrow = function(rm, oCarousel) {
 		var oTooltip = oResourceBundle.getText("PAGINGBUTTON_PREVIOUS");
 
-		rm.write("<a class='sapMCrslPrev' title='" + oTooltip + "' href='#' data-slide='prev' tabindex='-1'><div class='sapMCrslArrowInner'>");
+		rm.write("<a class='sapMCrslPrev' title='" + oTooltip + "' data-slide='prev' tabindex='-1'><div class='sapMCrslArrowInner'>");
 		rm.renderControl(oCarousel._getNavigationArrow('left'));
 		rm.write("</div></a>");
 	};
@@ -284,7 +288,7 @@ sap.ui.define(["sap/m/library", "sap/ui/core/Core", "sap/ui/Device"],
 	CarouselRenderer._renderNextArrow = function(rm, oCarousel) {
 		var oTooltip = oResourceBundle.getText("PAGINGBUTTON_NEXT");
 
-		rm.write("<a class='sapMCrslNext' title='" + oTooltip + "' href='#' data-slide='next' tabindex='-1'><div class='sapMCrslArrowInner'>");
+		rm.write("<a class='sapMCrslNext' title='" + oTooltip + "' data-slide='next' tabindex='-1'><div class='sapMCrslArrowInner'>");
 		rm.renderControl(oCarousel._getNavigationArrow('right'));
 		rm.write("</div></a>");
 	};

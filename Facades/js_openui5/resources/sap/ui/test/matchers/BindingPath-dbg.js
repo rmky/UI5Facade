@@ -19,6 +19,17 @@ sap.ui.define(['sap/ui/test/matchers/Matcher'], function(Matcher) {
 	 * </ul>
 	 *
 	 * <b>Note:</b> Before version 1.60, the only available criteria is binding context path.
+	 *
+	 * As of version 1.72, it is available as a declarative matcher with the following syntax:
+	 * <code><pre>{
+	 *     bindingPath: {
+	 *         path: "string",
+	 *         modelName: "string",
+	 *         propertyPath: "string"
+	 *     }
+	 * }
+	 * </code></pre>
+	 *
 	 * @extends sap.ui.test.matchers.Matcher
 	 * @param {object} [mSettings] Map/JSON-object with initial settings for the new BindingPath.
 	 * @public
@@ -46,6 +57,7 @@ sap.ui.define(['sap/ui/test/matchers/Matcher'], function(Matcher) {
 				/**
 				 * The value of the binding property path that is used for matching.
 				 * If (context) path is also set, propertyPath will be assumed to be relative to the binding context path
+				 * @since 1.60
 				 */
 				propertyPath: {
 					type: "string"

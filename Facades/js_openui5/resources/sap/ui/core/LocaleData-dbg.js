@@ -18,7 +18,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @public
 	 * @alias sap.ui.core.LocaleData
 	 */
@@ -673,13 +673,11 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 					i = 0,
 					iSkeletonLength,
 					iPatternLength,
-					iOldLength,
+					iBestLength,
 					iNewLength,
 					oSkeletonToken,
 					oBestToken,
 					oSymbol,
-					oSkeletonSymbol,
-					oBestSymbol,
 					sChar;
 
 				// Create a map of group names to token
@@ -701,32 +699,30 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 					} else {
 						oSymbol = mCLDRSymbols[sChar];
 						// If symbol is a CLDR symbol and is contained in the group, expand length
-					if (oSymbol && mGroups[oSymbol.group] && mPatternGroups[oSymbol.group]) {
+						if (oSymbol && mGroups[oSymbol.group] && mPatternGroups[oSymbol.group]) {
 							oSkeletonToken = mGroups[oSymbol.group];
 							oBestToken = mPatternGroups[oSymbol.group];
-							oSkeletonSymbol = mCLDRSymbols[oSkeletonToken.symbol];
-							oBestSymbol = mCLDRSymbols[oBestToken.symbol];
 
 							iSkeletonLength = oSkeletonToken.length;
-							iPatternLength = oBestToken.length;
+							iBestLength = oBestToken.length;
 
-							iOldLength = 1;
+							iPatternLength = 1;
 							while (sPattern.charAt(i + 1) == sChar) {
 								i++;
-								iOldLength++;
+								iPatternLength++;
 							}
 
 							// Prevent expanding the length of the field when:
-							// 1. The length in the best matching skeleton (iPatternLength) matches the length of the application provided skeleton (iSkeletonLength) or
-							// 2. The length of the provided skeleton (iSkeletonLength) and the length of the result pattern (iOldLength) are not in the same category (numeric or text)
+							// 1. The length in the best matching skeleton (iBestLength) matches the length of the application provided skeleton (iSkeletonLength) or
+							// 2. The length of the provided skeleton (iSkeletonLength) and the length of the result pattern (iPatternLength) are not in the same category (numeric or text)
 							//	because switching between numeric to text representation is wrong in all cases
-							if (iSkeletonLength === iPatternLength ||
-								((iSkeletonLength < oSkeletonSymbol.numericCeiling) ?
-									(iPatternLength >= oBestSymbol.numericCeiling) : (iPatternLength < oBestSymbol.numericCeiling)
+							if (iSkeletonLength === iBestLength ||
+								((iSkeletonLength < oSymbol.numericCeiling) ?
+									(iPatternLength >= oSymbol.numericCeiling) : (iPatternLength < oSymbol.numericCeiling)
 								)) {
-								iNewLength = iOldLength;
+								iNewLength = iPatternLength;
 							} else {
-								iNewLength = Math.max(iOldLength, iSkeletonLength);
+								iNewLength = Math.max(iPatternLength, iSkeletonLength);
 							}
 
 							for (var j = 0; j < iNewLength; j++) {
@@ -810,6 +806,18 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 		getNumberSymbol: function(sType) {
 			assert(sType == "decimal" || sType == "group" || sType == "plusSign" || sType == "minusSign" || sType == "percentSign", "sType must be decimal, group, plusSign, minusSign or percentSign");
 			return this._get("symbols-latn-" + sType);
+		},
+
+		/**
+		 * Get lenient number symbols for "plusSign" or "minusSign".
+		 *
+		 * @param {string} sType the required type of symbol
+		 * @returns {string} the selected lenient number symbols, e.g. "-‒⁻₋−➖﹣"
+		 * @public
+		 */
+		getLenientNumberSymbols: function(sType) {
+			assert(sType == "plusSign" || sType == "minusSign", "sType must be plusSign or minusSign");
+			return this._get("lenient-scope-number")[sType];
 		},
 
 		/**
@@ -939,8 +947,8 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 		 *     "EUR": "EUR",
 		 *     "GBP": "GBP",
 		 * }
-		 * @sap-restricted sap.ui.core.format.NumberFormat
 		 * @private
+		 * @ui5-restricted sap.ui.core.format.NumberFormat
 		 * @since 1.63
 		 */
 		getCustomCurrencyCodes: function () {
@@ -2430,6 +2438,11 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 			"timeData": {
 				_allowed: "H h",
 				_preferred: "H"
+			},
+			"lenient-scope-number": {
+				"minusSign": "-‐‒–⁻₋−➖﹣",
+				"commaSign": ",،٫、︐︑﹐﹑，",
+				"plusSign": "+⁺₊➕﬩﹢"
 			},
 			"plurals": {},
 			"units": {

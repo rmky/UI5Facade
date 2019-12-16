@@ -4,18 +4,16 @@
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
-	"sap/ui/fl/LrepConnector",
 	"sap/ui/rta/appVariant/AppVariantUtils",
-	"sap/ui/rta/appVariant/Feature",
 	"sap/ui/fl/registry/Settings",
-	"sap/base/i18n/ResourceBundle"
+	"sap/base/i18n/ResourceBundle",
+	"sap/ui/fl/write/api/AppVariantWriteAPI"
 ],
 function(
-	LrepConnector,
 	AppVariantUtils,
-	RtaFeature,
 	Settings,
-	ResourceBundle
+	ResourceBundle,
+	AppVariantWriteAPI
 ) {
 	"use strict";
 
@@ -25,11 +23,6 @@ function(
 	var oI18n = ResourceBundle.create({
 		url : sModulePath + "/i18n/i18n.properties"
 	});
-
-	Utils.sendRequest = function(sRoute, sOperation) {
-		var oLREPConnector = LrepConnector.createConnector();
-		return oLREPConnector.send(sRoute, sOperation);
-	};
 
 	Utils._checkNavigationSupported = function(oNavigationParams) {
 		var oNavigationService = sap.ushell.Container.getService("CrossApplicationNavigation");
@@ -59,9 +52,7 @@ function(
 			if (sAppVarStatus !== 'E') {
 				return oI18n.getText("MAA_NEW_APP_VARIANT");
 			}
-			return undefined;
 		}
-		return undefined;
 	};
 
 	Utils._checkMenuItemOptions = function(oPreparedObject, bAdaptUIButtonEnabled) {
@@ -190,7 +181,6 @@ function(
 		// Calculate current status of application required for Overview Dialog
 		oAppVariantAttributes.currentStatus = this._calculateCurrentStatus(oAppVariantInfo.appId, oAppVariantInfo.appVarStatus);
 
-
 		var bIsS4HanaCloud;
 		return Settings.getInstance().then(function(oSettings) {
 			bIsS4HanaCloud = AppVariantUtils.isS4HanaCloud(oSettings);
@@ -220,11 +210,17 @@ function(
 	};
 
 	Utils.getAppVariantOverview = function(sReferenceAppId, bKeyUser) {
-		// Customer* means the layer can be either CUSTOMER or CUSTOMER_BASE. This layer calculation will be done backendside
+		// Customer* means the layer can be either CUSTOMER or CUSTOMER_BASE. This layer determination takes place in backend.
 		var sLayer = bKeyUser ? 'CUSTOMER*' : 'VENDOR';
-		var sRoute = '/sap/bc/lrep/app_variant_overview/?sap.app/id=' + sReferenceAppId + '&layer=' + sLayer;
 
-		return this.sendRequest(sRoute, 'GET').then(function(oResult) {
+		var mPropertyBag = {
+			selector: {
+				appId: sReferenceAppId
+			},
+			layer: sLayer
+		};
+
+		return AppVariantWriteAPI.listAllAppVariants(mPropertyBag).then(function(oResult) {
 			var aAppVariantOverviewInfo = [];
 			var aAppVariantInfo;
 			if (oResult.response && oResult.response.items) {
@@ -245,8 +241,8 @@ function(
 		}.bind(this));
 	};
 
-	Utils.getDescriptor = function(sDescriptorUrl) {
-		return this.sendRequest(sDescriptorUrl, 'GET').then(function(oResult) {
+	Utils.getDescriptor = function(mPropertyBag) {
+		return AppVariantWriteAPI.getManifest(mPropertyBag).then(function(oResult) {
 			return oResult.response;
 		});
 	};

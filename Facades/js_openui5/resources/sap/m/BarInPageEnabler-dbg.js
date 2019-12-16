@@ -115,6 +115,34 @@ sap.ui.define(['sap/ui/base/Object', 'sap/m/library', "sap/base/Log"],
 			return this;
 		},
 
+
+		/**
+		 * Gets accessibility aria-level attribute of the Root HTML element.
+		 *
+		 * This is only needed if <code>sap.m.Bar</code> has role="heading"
+		 * @returns {string} aria-level attribute
+		 * @private
+		 */
+		_getRootAriaLevel: function () {
+			var sAriaLevel = this.sAriaLevel;
+
+			return sAriaLevel;
+		},
+
+		/**
+		 * Sets accessibility aria-level attribute of the Root HTML element.
+		 *
+		 * This is only needed if <code>sap.m.Bar</code> has role="heading"
+		 * @param {string} sLevel aria-level attribute of the root Element
+		 * @returns {sap.m.IBar} <code>this</code> to allow method chaining
+		 * @private
+		 */
+		_setRootAriaLevel:  function (sLevel) {
+			this.sAriaLevel = sLevel;
+
+			return this;
+		},
+
 		/**
 		 * Sets classes and HTML tag according to the context of the page.
 		 *
@@ -135,8 +163,8 @@ sap.ui.define(['sap/ui/base/Object', 'sap/m/library', "sap/base/Log"],
 		 * Possible contexts are header, footer, subheader.
 		 * @param {string} sContext allowed values are header, footer, subheader.
 		 * @returns {sap.m.IBar} <code>this</code> for chaining
-		 * @sap-restricted
 		 * @private
+		 * @ui5-restricted
 		 */
 		_applyContextClassFor : function (sContext) {
 			var oOptions = this._getContextOptions(sContext);
@@ -168,8 +196,8 @@ sap.ui.define(['sap/ui/base/Object', 'sap/m/library', "sap/base/Log"],
 		 * Possible contexts are header, footer, subheader.
 		 * @param {string} sContext allowed values are header, footer, subheader.
 		 * @returns {sap.m.IBar} <code>this</code> for chaining
-		 * @sap-restricted
 		 * @private
+		 * @ui5-restricted
 		 */
 		_applyTag : function (sContext) {
 			var oOptions = this._getContextOptions(sContext);

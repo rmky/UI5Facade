@@ -141,7 +141,7 @@ sap.ui.define([
 	function _assignCustomItemIds(sParentId, oCustomItem) {
 		oCustomItem.type = "custom";
 		if (oCustomItem.id) {
-			oCustomItem.itemId = sParentId + "--" + oCustomItem.id;
+			oCustomItem.itemId = sParentId + "-" + oCustomItem.id;
 			oCustomItem.key = oCustomItem.itemId;
 		}
 		return oCustomItem;
@@ -400,9 +400,9 @@ sap.ui.define([
 	 * @private
 	 */
 	function _checkAndEnhanceODataProperty(oInvisibleElement, aODataProperties, aNavigationProperties, aNavigationEntityNames, mBindingPaths) {
-		var aBindingPaths = mBindingPaths.bindingPaths,
-			aBindingContextPaths = mBindingPaths.bindingContextPaths,
-			mODataProperty;
+		var aBindingPaths = mBindingPaths.bindingPaths;
+		var aBindingContextPaths = mBindingPaths.bindingContextPaths;
+		var mODataProperty;
 
 		return (
 			// include it if the field has no bindings (bindings can be added in runtime)

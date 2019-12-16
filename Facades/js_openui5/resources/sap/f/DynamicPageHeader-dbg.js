@@ -53,7 +53,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.73.1
 		 *
 		 * @constructor
 		 * @public
@@ -301,7 +301,7 @@ sap.ui.define([
 		 * @private
 		 */
 		DynamicPageHeader.prototype._getShowCollapseButton = function () {
-			return this._bShowCollapseButton;
+			return this._bShowCollapseButton && !!this.getContent().length;
 		};
 
 		/**

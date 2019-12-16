@@ -44,7 +44,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @since 1.63
@@ -60,6 +60,9 @@ sap.ui.define([
 
 			},
 			aggregations: {
+				/**
+				 * Note that the content created inside ColumnPopoverCustomItem can not be used more than once.
+				 */
 				items: {type : "sap.m.ColumnPopoverItem",  multiple : true, singularName : "item", bindable: true},
 				_popover: {type : "sap.m.ResponsivePopover", multiple : false, visibility : "hidden"}
 			},
@@ -79,13 +82,17 @@ sap.ui.define([
 		this._oShownCustomContent = null;
 	};
 
+	ColumnHeaderPopover.prototype.exit = function() {
+		this._oToolbar = null;
+	};
+
 	ColumnHeaderPopover.prototype._createPopover = function() {
 		var that = this;
 		this._oShownCustomContent = null;
 		var oBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m"),
 			sCloseText = oBundle.getText("COLUMNHEADERPOPOVER_CLOSE_BUTTON");
 
-		var oPopover = new ResponsivePopover({
+		var oPopover = new ResponsivePopover(this.getId() + "-popover", {
 			showArrow: false,
 			showHeader: false,
 			placement: "Bottom",
@@ -103,11 +110,7 @@ sap.ui.define([
 
 		this.setAggregation("_popover", oPopover);
 
-		var oToolbar = new Toolbar();
-		// enable the diff calculation on the toolbar control
-		// this flag is required by the ManagedObject.prototype.updateAggregation
-		// the diff calculation is needed to avoid destroying all buttons, which causes auto close of popover
-		oToolbar.bUseExtendedChangeDetection = true;
+		var oToolbar = new Toolbar(this.getId() + "-tb");
 		oPopover.addContent(oToolbar);
 
 		var oFilter = new Filter({
@@ -178,6 +181,7 @@ sap.ui.define([
 
 		oToolbar.setModel(oModel);
 
+		this._oToolbar = oToolbar;
 	};
 
 	ColumnHeaderPopover.prototype._createActionItem = function(id, oItem) {
@@ -187,6 +191,7 @@ sap.ui.define([
 			icon: "{icon}",
 			tooltip: "{text}",
 			type: "Transparent",
+			visible: "{visible}",
 			press: function() {
 				var oPopover = that.getAggregation("_popover");
 
@@ -216,6 +221,7 @@ sap.ui.define([
 			icon: "{icon}",
 			type: "Transparent",
 			tooltip: "{text}",
+			visible: "{visible}",
 			press: function() {
 				// between two custom items
 				if (that._oShownCustomContent) {
@@ -279,6 +285,7 @@ sap.ui.define([
 				icon: "sap-icon://sort",
 				type: "Transparent",
 				tooltip: sSortText,
+				visible: "{visible}",
 				press: function() {
 					// between two custom items
 					if (that._oShownCustomContent) {
@@ -309,6 +316,7 @@ sap.ui.define([
 				icon: "sap-icon://sort",
 				type: "Transparent",
 				tooltip: sSortText,
+				visible: "{visible}",
 				press: function() {
 					var oPopover = that.getAggregation("_popover");
 
@@ -355,6 +363,8 @@ sap.ui.define([
 		if (!this._bPopoverCreated) {
 			this._createPopover();
 			this._bPopoverCreated = true;
+		} else {
+			this._oToolbar.getBinding("content").refresh(true);
 		}
 
 		var oPopover = this.getAggregation("_popover");
@@ -368,10 +378,9 @@ sap.ui.define([
 		var oOpenerDomRef = oControl.getFocusDomRef();
 		if (oOpenerDomRef) {
 			oPopover.setOffsetY(-oOpenerDomRef.clientHeight);
+			oPopover.setContentWidth(oOpenerDomRef.clientWidth > 128 ? oOpenerDomRef.clientWidth + "px" : "128px");
 		}
-		if (oControl.$().width()) {
-			oPopover.setContentWidth(oControl.$().width() + "px");
-		}
+
 		oPopover.openBy(oControl);
 	};
 

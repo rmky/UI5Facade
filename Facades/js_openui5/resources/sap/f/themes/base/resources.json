@@ -6,7 +6,7 @@
 			"theme": "base"
 		},
 		{
-			"name": "Avatar.less",
+			"name": "AvatarGroup.less",
 			"designtime": true,
 			"theme": "base"
 		},
@@ -47,6 +47,21 @@
 		},
 		{
 			"name": "GridList.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "GridListItem.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "ProductSwitch.less",
+			"designtime": true,
+			"theme": "base"
+		},
+		{
+			"name": "ProductSwitchItem.less",
 			"designtime": true,
 			"theme": "base"
 		},

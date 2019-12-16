@@ -41,14 +41,19 @@ sap.ui.define(["sap/ui/Device"], function(Device) {
 	}
 
 	/**
-	 * Creates an HTML element from the given tag name
+	 * Creates an HTML element from the given tag name and parent namespace
 	 */
-	function createElement(sTagName) {
+	function createElement(sTagName, oParent) {
 		if (sTagName == "svg") {
 			return document.createElementNS("http://www.w3.org/2000/svg", "svg");
 		}
 
-		return document.createElement(sTagName);
+		var sNamespaceURI = oParent.namespaceURI;
+		if (sNamespaceURI == "http://www.w3.org/1999/xhtml" || oParent.localName == "foreignObject") {
+			return document.createElement(sTagName);
+		}
+
+		return document.createElementNS(sNamespaceURI, sTagName);
 	}
 
 	/**
@@ -306,7 +311,7 @@ sap.ui.define(["sap/ui/Device"], function(Device) {
 			this._getAttributes();
 			this._iTagOpenState = 2; /* Existing */
 		} else {
-			this._oCurrent = createElement(sTagName);
+			this._oCurrent = createElement(sTagName, this._oParent);
 			this._setNewElement(this._oCurrent);
 			this._iTagOpenState = 1; /* Created */
 		}
@@ -518,7 +523,15 @@ sap.ui.define(["sap/ui/Device"], function(Device) {
 			if (sHtml) {
 				this._iTagOpenState = 0;
 				this._oCurrent.insertAdjacentHTML("afterbegin", sHtml);
-				this._oCurrent = oReference ? oReference.previousSibling : this._oCurrent.lastChild;
+				if (oReference) {
+					this._oCurrent = oReference.previousSibling;
+					if (!this._oCurrent) { // IE & Edge normalize text nodes
+						oReference.data = sHtml;
+						this._oCurrent = oReference;
+					}
+				} else {
+					this._oCurrent = this._oCurrent.lastChild;
+				}
 			}
 		} else {
 			oReference = this._oCurrent.nextSibling;

@@ -123,13 +123,8 @@ html.sap-desktop ::-webkit-scrollbar-thumb:hover {
 /* High Contrast Black theme         */
 /* ================================= */
 
-html:not([data-sap-ui-browser^="ie"]):not([data-sap-ui-browser^="ed"]) .sapUiIcon:focus {
+.sapUiIcon:focus {
 	outline-color: @sapHCStandardFG;
-}
-
-html[data-sap-ui-browser^="ie"] .sapUiIcon:focus::after,
-html[data-sap-ui-browser^="ed"] .sapUiIcon:focus::after {
-	border-color: @sapHCStandardFG;
 }
 
 .sapUiIconColorNeutral {
@@ -167,6 +162,7 @@ html[data-sap-ui-browser^="ed"] .sapUiIcon:focus::after {
 .sapUiIconBGColorContrast {
 	background-color: @sapUiHighlight;
 }
+
 /* END "Icon.less" */
 
 /* START "LocalBusyIndicator.less" */

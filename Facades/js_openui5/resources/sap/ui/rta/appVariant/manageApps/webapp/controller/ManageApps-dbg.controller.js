@@ -28,11 +28,17 @@ sap.ui.define([
 ) {
 	"use strict";
 
-	var _sIdRunningApp, _bKeyUser, sModulePath, oI18n;
+	var _sIdRunningApp;
+	var _bKeyUser;
+	var _sLayer;
+	var sModulePath;
+	var oI18n;
+
 	return Controller.extend("sap.ui.rta.appVariant.manageApps.webapp.controller.ManageApps", {
 		onInit: function() {
 			_sIdRunningApp = this.getOwnerComponent().getIdRunningApp();
 			_bKeyUser = this.getOwnerComponent().getIsOverviewForKeyUser();
+			_sLayer = this.getOwnerComponent().getLayer();
 
 			if (!oI18n) {
 				this._createResourceBundle();
@@ -153,8 +159,8 @@ sap.ui.define([
 		},
 
 		onMenuAction: function(oEvent) {
-			var oItem = oEvent.getParameter("item"),
-				sItemPath = "";
+			var oItem = oEvent.getParameter("item");
+			var sItemPath = "";
 
 			while (oItem instanceof sap.m.MenuItem) {
 				sItemPath = oItem.getText() + " > " + sItemPath;
@@ -194,7 +200,8 @@ sap.ui.define([
 						semanticObject : sSemanticObject,
 						action : sAction
 					},
-					params: oParams
+					params: oParams,
+					writeHistory : false
 				};
 
 				RuntimeAuthoring.enableRestart("CUSTOMER");
@@ -214,9 +221,12 @@ sap.ui.define([
 			var sDescriptorUrl = this.getModelProperty("descriptorUrl", oEvent.getSource().getBindingContext());
 
 			BusyIndicator.show();
-			return AppVariantOverviewUtils.getDescriptor(sDescriptorUrl).then(function(oAppVariantDescriptor) {
+			return AppVariantOverviewUtils.getDescriptor({
+				appVarUrl: sDescriptorUrl,
+				layer: _sLayer
+			}).then(function(oAppVariantDescriptor) {
 				BusyIndicator.hide();
-				return RtaAppVariantFeature.onSaveAsFromOverviewDialog(oAppVariantDescriptor, false);
+				return RtaAppVariantFeature.onSaveAs(false, false, _sLayer, oAppVariantDescriptor);
 			});
 		},
 
@@ -240,7 +250,7 @@ sap.ui.define([
 
 			return AppVariantUtils.showRelevantDialog(oInfo)
 				.then(function() {
-					return RtaAppVariantFeature.onDeleteFromOverviewDialog(sAppVarId, bCurrentlyAdapting);
+					return RtaAppVariantFeature.onDeleteFromOverviewDialog(sAppVarId, bCurrentlyAdapting, _sLayer);
 				}).catch(function() {
 					return true;
 				});

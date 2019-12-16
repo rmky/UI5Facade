@@ -32,7 +32,7 @@ function(
 	 * @extends sap.ui.rta.toolbar.Adaptation
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @private
@@ -65,7 +65,8 @@ function(
 		if (this._oFioriHeader.getShowLogo() && sLogoPath) {
 			// Unstable: if FLP changes ID of <img/> element, logo could be not found
 			var $logo = this._oFioriHeader.$().find('#shell-header-icon');
-			var iWidth, iHeight;
+			var iWidth;
+			var iHeight;
 
 			if ($logo.length) {
 				iWidth = $logo.width();

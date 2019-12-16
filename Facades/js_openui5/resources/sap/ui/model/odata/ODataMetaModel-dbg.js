@@ -75,7 +75,7 @@ sap.ui.define([
 			return sPath === "@sapui.name"
 				? vRef
 				: that.oModel.getProperty(sPath, that.oList[vRef]);
-		});
+		}, this.mNormalizeCache);
 		this.iLength = this.aIndices.length;
 	};
 
@@ -219,7 +219,7 @@ sap.ui.define([
 	 * {@link #loaded loaded} has been resolved!
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @alias sap.ui.model.odata.ODataMetaModel
 	 * @extends sap.ui.model.MetaModel
 	 * @public
@@ -500,21 +500,6 @@ sap.ui.define([
 	ODataMetaModel.prototype.destroy = function () {
 		MetaModel.prototype.destroy.apply(this, arguments);
 		return this.oModel && this.oModel.destroy.apply(this.oModel, arguments);
-	};
-
-	/**
-	 * Returns the module path to the model specific adapter factory.
-	 *
-	 * @returns {string}
-	 *   The module path to the model specific adapter factory
-	 *
-	 * @private
-	 * @see sap.ui.model.MetaModel#getAdapterFactoryModulePath
-	 * @since 1.55.0
-	 */
-	// @override
-	ODataMetaModel.prototype.getAdapterFactoryModulePath = function () {
-		return "sap/ui/mdc/experimental/adapter/odata/v2/ODataAdapterFactory";
 	};
 
 	/**

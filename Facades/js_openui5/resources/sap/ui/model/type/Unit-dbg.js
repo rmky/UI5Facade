@@ -13,7 +13,8 @@ sap.ui.define([
 	'sap/ui/model/ValidateException',
 	'sap/ui/core/LocaleData',
 	"sap/base/strings/hash",
-	"sap/ui/thirdparty/jquery"
+	"sap/ui/thirdparty/jquery",
+	"sap/base/util/isEmptyObject"
 ],
 	function(
 		NumberFormat,
@@ -23,7 +24,8 @@ sap.ui.define([
 		ValidateException,
 		LocaleData,
 		hash,
-		jQuery
+		jQuery,
+		isEmptyObject
 	) {
 	"use strict";
 
@@ -54,7 +56,7 @@ sap.ui.define([
 	 *
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @public
 	 * @param {object} [oFormatOptions] Formatting options. For a list of all available options, see {@link sap.ui.core.format.NumberFormat.getUnitInstance NumberFormat}.
@@ -240,6 +242,9 @@ sap.ui.define([
 			case "string":
 				this.oOutputFormat = this._getInstance(this.aDynamicValues);
 				vResult = this.oOutputFormat.parse(vValue);
+				// current default error
+				// more specific errors describing the actual issue during parse()
+				// will be introduced with later work on the NumberFormat
 				if (!Array.isArray(vResult) || isNaN(vResult[0])) {
 					oBundle = sap.ui.getCore().getLibraryResourceBundle();
 					throw new ParseException(oBundle.getText("Unit.Invalid", [vValue]));
@@ -314,7 +319,7 @@ sap.ui.define([
 	Unit.prototype._createInputFormat = function() {
 		var oSourceOptions = this.oFormatOptions.source;
 		if (oSourceOptions) {
-			if (jQuery.isEmptyObject(oSourceOptions)) {
+			if (isEmptyObject(oSourceOptions)) {
 				oSourceOptions = {
 					groupingEnabled: false,
 					groupingSeparator: ",",

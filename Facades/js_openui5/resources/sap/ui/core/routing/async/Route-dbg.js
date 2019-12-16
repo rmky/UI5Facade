@@ -31,6 +31,7 @@ sap.ui.define(['sap/ui/Device', "sap/base/Log", "sap/ui/thirdparty/jquery"], fun
 				that = this;
 
 			oRouter._matchedRoute = this;
+			oRouter._bMatchingProcessStarted = true;
 
 			if (!oSequencePromise || oSequencePromise === true) {
 				bInitial = true;
@@ -82,20 +83,6 @@ sap.ui.define(['sap/ui/Device', "sap/base/Log", "sap/ui/thirdparty/jquery"], fun
 					});
 				}
 			} else { // let targets do the placement + the events
-				if (!this._oConfig.afterCreateHook) {
-					this._oConfig.afterCreateHook = function(oTargetObject) {
-						if (oTargetObject.isA("sap.ui.core.UIComponent")) {
-							var oRouter = oTargetObject.getRouter();
-							if (oRouter) {
-								that.attachEvent("switched", function() {
-									// stop the router in nested component when the Route which loads it is navigated away
-									oRouter.stop();
-								});
-							}
-						}
-					};
-				}
-
 				if (Device.browser.msie || Device.browser.edge) {
 					oCurrentPromise = oSequencePromise;
 
@@ -107,7 +94,7 @@ sap.ui.define(['sap/ui/Device', "sap/base/Log", "sap/ui/thirdparty/jquery"], fun
 							// check whether the _oTargets still exists after the 0 timeout.
 							// It could be already cleared once the router is destroyed before the timeout.
 							if (oRouter._oTargets) {
-								var oDisplayPromise = oRouter._oTargets._display(that._oConfig.target, oTargetData, that._oConfig.titleTarget, oCurrentPromise, that._oConfig.afterCreateHook);
+								var oDisplayPromise = oRouter._oTargets._display(that._oConfig.target, oTargetData, that._oConfig.titleTarget, oCurrentPromise);
 								oDisplayPromise.then(resolve, reject);
 							} else {
 								resolve();
@@ -115,11 +102,12 @@ sap.ui.define(['sap/ui/Device', "sap/base/Log", "sap/ui/thirdparty/jquery"], fun
 						}, 0);
 					});
 				} else {
-					oSequencePromise = oRouter._oTargets._display(this._oConfig.target, oTargetData, this._oConfig.titleTarget, oSequencePromise, this._oConfig.afterCreateHook);
+					oSequencePromise = oRouter._oTargets._display(this._oConfig.target, oTargetData, this._oConfig.titleTarget, oSequencePromise);
 				}
 			}
 
 			return oSequencePromise.then(function(oResult) {
+				oRouter._bMatchingProcessStarted = false;
 				var aResult, aViews, aControls;
 
 				// The legacy config uses single target to display which makes the promise resolve with an object

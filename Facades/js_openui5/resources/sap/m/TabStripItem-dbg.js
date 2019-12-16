@@ -25,7 +25,7 @@ sap.ui.define(["./library", "sap/ui/core/Item", "sap/ui/base/ManagedObject", "sa
 		 * @extends sap.ui.core.Item
 		 *
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.73.1
 		 *
 		 * @constructor
 		 * @private
@@ -142,6 +142,13 @@ sap.ui.define(["./library", "sap/ui/core/Item", "sap/ui/base/ManagedObject", "sa
 		TabStripItem.CSS_CLASS_LABEL = "sapMTabStripItemLabel";
 
 		/**
+		 * The default CSS class name of the <code>TabStripItem</code>'s modified symbol in context of <code>TabStrip</code>.
+		 *
+		 * @type {string}
+		 */
+		TabStripItem.CSS_CLASS_MODIFIED_SYMBOL = "sapMTabStripItemModifiedSymbol";
+
+		/**
 		 * The default CSS class name of the <code>TabStripItem</code>'s additional text in context of <code>TabStrip</code>.
 		 *
 		 * @type {string}
@@ -206,6 +213,7 @@ sap.ui.define(["./library", "sap/ui/core/Item", "sap/ui/base/ManagedObject", "sa
 			var oButton = new AccButton({
 				type: ButtonType.Transparent,
 				icon: IconPool.getIconURI("decline"),
+				tooltip: sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("TABSTRIP_ITEM_CLOSE_BTN"),
 				tabIndex: "-1",
 				ariaHidden: "true"
 			}).addStyleClass(TabStripItem.CSS_CLASS_CLOSE_BUTTON);

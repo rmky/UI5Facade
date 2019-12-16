@@ -6,11 +6,6 @@
 			"theme": "sap_fiori_3"
 		},
 		{
-			"name": "Avatar.less",
-			"designtime": true,
-			"theme": "sap_fiori_3"
-		},
-		{
 			"name": "Card.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
@@ -32,6 +27,16 @@
 		},
 		{
 			"name": "FlexibleColumnLayout.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "GridListItem.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "ProductSwitchItem.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"
 		},

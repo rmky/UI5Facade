@@ -38,7 +38,7 @@ sap.ui.define([
 	 * @class Container that embeds a UIComponent in a control tree.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @public
 	 * @alias sap.ui.core.ComponentContainer
@@ -292,8 +292,12 @@ sap.ui.define([
 			mConfig = createComponentConfig(this);
 
 		// First, enhance the config object with "usage" definition from manifest
-		if (oOwnerComponent && sUsageId) {
-			mConfig = oOwnerComponent._enhanceWithUsageConfig(sUsageId, mConfig);
+		if (sUsageId) {
+			if (oOwnerComponent) {
+				mConfig = oOwnerComponent._enhanceWithUsageConfig(sUsageId, mConfig);
+			} else {
+				Log.error("ComponentContainer \"" + this.getId() + "\" does have a \"usage\", but no owner component!");
+			}
 		}
 
 		// Then, prefix component ID with the container ID, as the ID might come from

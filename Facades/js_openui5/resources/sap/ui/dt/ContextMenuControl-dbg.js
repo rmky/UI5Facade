@@ -3,8 +3,6 @@
  * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-// Provides control sap.ui.dt.ContextMenu.
-/* globals sap */
 sap.ui.define([
 	"sap/ui/thirdparty/jquery",
 	"sap/ui/base/ManagedObject",
@@ -16,8 +14,11 @@ sap.ui.define([
 	"sap/m/Button",
 	"sap/m/FlexItemData",
 	"sap/ui/dt/OverlayRegistry",
-	"sap/ui/dt/DOMUtil"
-], function (
+	"sap/ui/dt/DOMUtil",
+	"sap/ui/Device",
+	// jQuery Plugin "rect"
+	"sap/ui/dom/jquery/rect"
+], function(
 	jQuery,
 	ManagedObject,
 	DeepEqual,
@@ -28,7 +29,8 @@ sap.ui.define([
 	Button,
 	FlexItemData,
 	OverlayRegistry,
-	DOMUtil
+	DOMUtil,
+	Device
 ) {
 	"use strict";
 
@@ -42,7 +44,7 @@ sap.ui.define([
 	 * @class A simple ContextMenu.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @constructor
 	 * @private
 	 * @experimental
@@ -63,7 +65,7 @@ sap.ui.define([
 				 * Defines the buttons on the ContextMenu
 				 * The objects should have the following properties:
 				 * text - for the button text in the expanded version and the tooltip in the non-expanded version
-				 * icon - the url of the butons icon
+				 * icon - the url of the buttons icon
 				 * handler - the function to call when the button is pressed
 				 */
 				buttons: {
@@ -97,7 +99,7 @@ sap.ui.define([
 		/**
 		 * initializes the ContextMenu by creating the internal a sap.m.Popover (with a sap.m.Flexbox as a content aggregation) in internal _popovers aggregation of the ContextMenu
 		 */
-		init: function () {
+		init: function() {
 			var sPopId = this.getId() + "-popover";
 			var oPopover = new Popover(sPopId, {
 				showHeader: false,
@@ -116,8 +118,7 @@ sap.ui.define([
 				return 0;
 			};
 
-			oPopover.attachBrowserEvent("keydown", this._changeFocusOnKeyStroke, this);
-			oPopover.oPopup.attachClosed(this._popupClosed, this);
+			oPopover.attachBrowserEvent("keydown", this._onKeyDown, this);
 			this._oPopover = oPopover;
 			oPopover.addStyleClass("sapUiDtContextMenu");
 
@@ -138,8 +139,7 @@ sap.ui.define([
 				return 0;
 			};
 
-			oPopoverExpanded.attachBrowserEvent("keydown", this._changeFocusOnKeyStroke, this);
-			oPopoverExpanded.oPopup.attachClosed(this._popupClosed, this);
+			oPopoverExpanded.attachBrowserEvent("keydown", this._onKeyDown, this);
 			this._oExpandedPopover = oPopoverExpanded;
 			oPopoverExpanded.addStyleClass("sapUiDtContextMenu");
 
@@ -149,56 +149,57 @@ sap.ui.define([
 			this._oLastSourceOverlay = this._oLastSourceClientRects = this._oLastPosition = null;
 		},
 
-		exit: function () {
-			this.getPopover(true).oPopup.detachClosed(this._popupClosed, this);
-			this.getPopover(false).oPopup.detachClosed(this._popupClosed, this);
-			this.getPopover(true).detachBrowserEvent("contextmenu", this._onContextMenu, this);
-			this.getPopover(false).detachBrowserEvent("contextmenu", this._onContextMenu, this);
-			this.getPopover(true).destroy();
-			this.getPopover(false).destroy();
+		exit: function() {
+			[true, false].forEach(function(bContextMenu) {
+				this.getPopover(bContextMenu).detachBrowserEvent("contextmenu", this._onContextMenu, this);
+				this.getPopover(bContextMenu).destroy();
+			}.bind(this));
+		},
+
+		/**
+		 * Returns the value of the isOpen function of the popover
+		 *
+		 * @param {boolean} bContextMenu - true if the expanded context menu should be checked
+		 * @returns {boolean} Returns true if the popup is currently open
+		 */
+		isPopupOpen: function(bContextMenu) {
+			return this.getPopover(bContextMenu).isOpen();
 		},
 
 		/**
 		 * Opens the ContextMenu and sets the ContextMenu position by the oSource parameter.
 		 * Note: this gets called before the old Menu is closed because of asynchronus animations.
-		 * @param {sap.ui.core.Control} oSource - The control by which the Popover will be placed.
+		 * @param {sap.ui.dt.ElementOverlay} oSource - The overlay by which the Popover will be placed.
 		 * @param {boolean} bContextMenu - If the ContextMenu should appear as Context Menu
-		 * @param {Object} oContextMenuPosition - The position of the ContextMenu if it should be opened as Context Menu (only needed if bContextMenu)
+		 * @param {Object} oContextMenuPosition - The position of the ContextMenu
 		 * @public
 		 */
-		show: function (oSource, bContextMenu, oContextMenuPosition) {
-			if (this._bUseExpPop === undefined) {
-				this._bUseExpPop = !!bContextMenu;
-			}
-
+		show: function(oSource, bContextMenu, oContextMenuPosition) {
+			bContextMenu = !!bContextMenu;
 			this._bCompactMode = jQuery(oSource.getDomRef()).closest(".sapUiSizeCompact").length > 0;
-
 			this._bOpenAsContextMenu = bContextMenu;
 			this._oContextMenuPosition = oContextMenuPosition;
 			this.getPopover(true).addStyleClass(this.getStyleClass());
 			this.getPopover(false).addStyleClass(this.getStyleClass());
 
-			// creates buttons specified in objects in property buttons
-			var aButtons = this.getButtons();
-			this._oTarget = oSource;
+			// creates and shows buttons specified in objects in property buttons
+			this._showButtons(bContextMenu);
 
-			if (!this._bOpenAsContextMenu) {
-				this._setButtonsForContextMenu(aButtons, oSource);
-			} else {
-				this._makeAllButtonsVisible(aButtons);
-			}
-
-			if (this.bOnInit || !this.getPopover().isOpen()) { // if there was no other ContextMenu open before
-				this.finalizeOpening();
+			if (this.bOnInit || !this.isPopupOpen()) { // if there is no other ContextMenu open currently
+				this._finalizeOpening(oSource);
 				this.bOnInit = false;
+			} else {
+				this.getPopover().oPopup.attachEventOnce("closed", this._finalizeOpening.bind(this, oSource));
 			}
 		},
 
 		/**
-		 * Finalizes the Opening of the ContextMenu. Is called by "_popupClosed" (when the old Menu is closed) or by "show" if there was no ContextMenu opened before
-		 * Is needed to prevent flickering (wait for old ContextMenu to close)
+		 * Finalizes the Opening of the ContextMenu.
+		 *
+		 * @param {sap.ui.dt.ElementOverlay} oSource - The overlay by which the Popover will be placed.
 		 */
-		finalizeOpening: function () {
+		_finalizeOpening: function(oSource) {
+			this._bUseExpPop = this._bOpenAsContextMenu;
 			if (this._bOpenAsContextMenu && this._oContextMenuPosition.x === null && this._oContextMenuPosition.y === null) {
 				this._bOpenAsContextMenu = false;
 			}
@@ -210,19 +211,26 @@ sap.ui.define([
 			this.getPopover().attachAfterClose(this._handleAfterClose, this);
 
 			//place the Popover and get the target DIV
-			this._oTarget = this._placeContextMenu(this._oTarget, this._bOpenAsContextMenu);
+			this._oTarget = this._placeContextMenu(oSource, this._bOpenAsContextMenu);
 
 			// set the PopOver visible
 			this.getPopover().setVisible(true);
-			this.bOpen = true;
-			this.bOpenNew = false;
+		},
+
+		_showButtons: function(bContextMenu) {
+			var aButtons = this.getButtons(bContextMenu);
+			if (!this._bOpenAsContextMenu) {
+				this._setButtonsForCollapsedMenu(aButtons);
+			} else {
+				this._makeAllButtonsVisible(aButtons);
+			}
 		},
 
 		/**
 		 * Sets all parameters of the buttons in the non-expanded ContextMenu
 		 * @param {array} aButtons some buttons
 		 */
-		_setButtonsForContextMenu: function (aButtons) {
+		_setButtonsForCollapsedMenu: function(aButtons) {
 			var iButtonsEnabled = this._getNumberOfEnabledButtons(aButtons);
 			if (iButtonsEnabled !== 0) {
 				this._hideDisabledButtons(aButtons);
@@ -242,9 +250,9 @@ sap.ui.define([
 		 * Makes all buttons and their text visible
 		 * @param {array} aButtons some buttons
 		 */
-		_makeAllButtonsVisible: function (aButtons) {
+		_makeAllButtonsVisible: function(aButtons) {
 			this._iFirstVisibleButtonIndex = 0;
-			aButtons.forEach(function (oButton) {
+			aButtons.forEach(function(oButton) {
 				oButton.setVisible(true);
 				oButton._bInOverflow = true;
 			});
@@ -256,7 +264,7 @@ sap.ui.define([
 		 * @param {array} aButtons some buttons
 		 * @return {int} number of enabled buttons
 		 */
-		_getNumberOfEnabledButtons: function (aButtons) {
+		_getNumberOfEnabledButtons: function(aButtons) {
 			var iButtonsEnabled = 0;
 			for (var i = 0; i < aButtons.length; i++) {
 				if (aButtons[i].getEnabled()) {
@@ -275,9 +283,9 @@ sap.ui.define([
 		 * @param {array} aButtons some Buttons
 		 * @return {int} the number of visible buttons
 		 */
-		_hideDisabledButtons: function (aButtons) {
+		_hideDisabledButtons: function(aButtons) {
 			var iVisibleButtons = 0;
-			aButtons.forEach(function (oButton) {
+			aButtons.forEach(function(oButton) {
 				oButton.setVisible(oButton.getEnabled());
 				if (oButton.getEnabled()) {
 					iVisibleButtons++;
@@ -292,7 +300,7 @@ sap.ui.define([
 		 * @param {array} aButtons some Buttons
 		 * @return {int} the number of visible buttons
 		 */
-		_hideButtonsInOverflow: function (aButtons) {
+		_hideButtonsInOverflow: function(aButtons) {
 			var iVisibleButtons = 0;
 			for (var i = 0; i < aButtons.length; i++) {
 				if (iVisibleButtons < this.getMaxButtonsDisplayed() && aButtons[i].getVisible()) {
@@ -309,7 +317,7 @@ sap.ui.define([
 		 * Hides the last visible button and adds an OverflowButton
 		 * @param {array} aButtons some buttons
 		 */
-		_replaceLastVisibleButtonWithOverflowButton: function (aButtons) {
+		_replaceLastVisibleButtonWithOverflowButton: function(aButtons) {
 			for (var i = aButtons.length - 1; i >= 0; i--) {
 				if (aButtons[i].getVisible()) {
 					aButtons[i].setVisible(false);
@@ -323,12 +331,12 @@ sap.ui.define([
 		 * Works out how the ContextMenu shall be placed
 		 * Sets the placement property of the popover
 		 * Places a "fakeDiv" in the DOM which the popover can be opened by
-		 * @param {sap.m.Control} oSource the overlay
+		 * @param {sap.ui.dt.ElementOverlay} oSource - The overlay by which the Popover will be placed.
 		 * @param {boolean} bContextMenu whether the ContextMenu should be opened as a context menu
 		 * @return {div} the "fakeDiv"
 		 * @private
 		 */
-		_placeContextMenu: function (oSource, bContextMenu) {
+		_placeContextMenu: function(oSource, bContextMenu) {
 			var sOverlayId = (oSource.getId && oSource.getId()) || oSource.getAttribute("overlay");
 			var sFakeDivId = "contextMenuFakeDiv";
 
@@ -413,7 +421,7 @@ sap.ui.define([
 		 * @param {object} oViewport the dimensions of the viewport
 		 * @return {object} the position of the "fakeDiv"
 		 */
-		_placeAsExpandedContextMenu: function (oContPos, oPopover, oViewport) {
+		_placeAsExpandedContextMenu: function(oContPos, oPopover, oViewport) {
 			this.getPopover().setShowArrow(false);
 			var oPos = {};
 
@@ -446,7 +454,7 @@ sap.ui.define([
 		 * @param {object} oViewport the dimensions of the viewport
 		 * @return {object} the position of the "fakeDiv"
 		 */
-		_placeAsCompactContextMenu: function (oContPos, oPopover, oViewport) {
+		_placeAsCompactContextMenu: function(oContPos, oPopover, oViewport) {
 			this.getPopover().setShowArrow(true);
 			var oPos = {};
 
@@ -487,7 +495,7 @@ sap.ui.define([
 		 * @param {boolean} bWithArrow whether the arrow width should be added
 		 * @return {object} the dimensions of the ContextMenu's popover
 		 */
-		_getPopoverDimensions: function (bWithArrow) {
+		_getPopoverDimensions: function(bWithArrow) {
 			var oPopover = {};
 			var bCompact = this._bCompactMode;
 			var fArrowHeight = this._getArrowHeight(bCompact);
@@ -513,8 +521,8 @@ sap.ui.define([
 		 * @param {boolean} bCompact wheter ContextMenu is compact
 		 * @return {float} the height of a popover arrow
 		 */
-		_getArrowHeight: function (bCompact) {
-			if (sap.ui.Device.browser.msie || sap.ui.Device.browser.edge) {
+		_getArrowHeight: function(bCompact) {
+			if (Device.browser.msie || Device.browser.edge) {
 				return bCompact ? 0.5 : 0.5;
 			}
 			return bCompact ? 0.5625 : 0.5625;
@@ -524,7 +532,7 @@ sap.ui.define([
 		 * Returns the base font size in px
 		 * @return {int} the base font size in px
 		 */
-		_getBaseFontSize: function () {
+		_getBaseFontSize: function() {
 			return parseInt(jQuery(document.documentElement).css("fontSize"));
 		},
 
@@ -533,7 +541,8 @@ sap.ui.define([
 		 * @param {String} sOverlayId the overlay
 		 * @return {object} the dimensions of the overlay
 		 */
-		_getOverlayDimensions: function (sOverlayId) {
+		_getOverlayDimensions: function(sOverlayId) {
+			// jQuery Plugin "rect"
 			var oOverlayDimensions = jQuery("#" + sOverlayId).rect();
 			oOverlayDimensions.right = oOverlayDimensions.left + oOverlayDimensions.width;
 			oOverlayDimensions.bottom = oOverlayDimensions.top + oOverlayDimensions.height;
@@ -545,7 +554,7 @@ sap.ui.define([
 		 * Gets the dimensions of the viewport
 		 * @return {object} the dimensions of the viewport
 		 */
-		_getViewportDimensions: function () {
+		_getViewportDimensions: function() {
 			var oViewport = {};
 			oViewport.width = window.innerWidth;
 			oViewport.height = window.innerHeight;
@@ -571,14 +580,14 @@ sap.ui.define([
 		 * @public
 		 */
 		addOverflowButton: function() {
-			var sOverflowButtonId = "OVERFLOW_BUTTON",
-				oButtonOptions = {
-					icon: "sap-icon://overflow",
-					type: "Transparent",
-					enabled: true,
-					press: this._onOverflowPress.bind(this),
-					layoutData: new FlexItemData({})
-				};
+			var sOverflowButtonId = "OVERFLOW_BUTTON";
+			var oButtonOptions = {
+				icon: "sap-icon://overflow",
+				type: "Transparent",
+				enabled: true,
+				press: this._onOverflowPress.bind(this),
+				layoutData: new FlexItemData({})
+			};
 			return this._addButton(sOverflowButtonId, oButtonOptions);
 		},
 
@@ -592,8 +601,6 @@ sap.ui.define([
 		 */
 		addMenuButton: function(oButtonItem, fnContextMenuHandler, aElementOverlays) {
 			function handler() {
-				this.bOpen = false;
-				this.bOpenNew = false;
 				fnContextMenuHandler(this);
 			}
 
@@ -611,7 +618,7 @@ sap.ui.define([
 			return this._addButton(oButtonItem.id, oButtonOptions);
 		},
 
-		_addButton: function (sButtonItemId, oButtonOptions) {
+		_addButton: function(sButtonItemId, oButtonOptions) {
 			this.setProperty("buttons", this.getProperty("buttons").concat(oButtonOptions));
 
 			var oButtonCustomData = { id: sButtonItemId, key: sButtonItemId };
@@ -634,7 +641,7 @@ sap.ui.define([
 		 * @return {sap.m.ContextMenu} Reference to this in order to allow method chaining
 		 * @public
 		 */
-		close: function (bExplicitClose) {
+		close: function(bExplicitClose) {
 			if (this.getPopover()) {
 				if (bExplicitClose) {
 					this.getPopover(true).close();
@@ -657,7 +664,7 @@ sap.ui.define([
 		 * @return {sap.m.OverflowToolbarButton} The removed button or null
 		 * @public
 		 */
-		removeButton: function (iIndex) {
+		removeButton: function(iIndex) {
 			this.setProperty("buttons", this.getProperty("buttons").splice(iIndex, 1));
 			this.getFlexbox(true).removeItem(iIndex);
 			return this.getFlexbox(false).removeItem(iIndex);
@@ -668,7 +675,7 @@ sap.ui.define([
 		 * @return {sap.m.OverflowToolbarButton} An array of the removed buttons (might be empty)
 		 * @public
 		 */
-		removeAllButtons: function () {
+		removeAllButtons: function() {
 			this.setProperty("buttons", []);
 			this.getFlexbox(true).removeAllItems();
 			return this.getFlexbox(false).removeAllItems();
@@ -679,8 +686,8 @@ sap.ui.define([
 		 * @return {sap.m.OverflowToolbarButton[]} returns buttons
 		 * @public
 		 */
-		getButtons: function () {
-			return this.getFlexbox().getItems();
+		getButtons: function(bContextMenu) {
+			return this.getFlexbox(bContextMenu).getItems();
 		},
 
 		/**
@@ -690,7 +697,7 @@ sap.ui.define([
 		 * @return {sap.m.ContextMenu} Reference to this in order to allow method chaining
 		 * @public
 		 */
-		insertButton: function (oButton, iIndex) {
+		insertButton: function(oButton, iIndex) {
 			this.getFlexbox().insertItem(oButton, iIndex);
 			return this;
 		},
@@ -702,10 +709,10 @@ sap.ui.define([
 		 * @param {sap.ui.dt.ElementOverlay[]} aElementOverlays - Target overlays
 		 * @public
 		 */
-		setButtons: function (_aButtons, fnContextMenuHandler, aElementOverlays) {
+		setButtons: function(_aButtons, fnContextMenuHandler, aElementOverlays) {
 			this.removeAllButtons();
 
-			_aButtons.forEach(function (oButton) {
+			_aButtons.forEach(function(oButton) {
 				this.addMenuButton(oButton, fnContextMenuHandler, aElementOverlays);
 			}.bind(this));
 		},
@@ -715,7 +722,7 @@ sap.ui.define([
 		 * @param {int} iMBD the maximum amount of buttons to be displayed in the non-expanded version of the Context-Menu
 		 * @public
 		 */
-		setMaxButtonsDisplayed: function (iMBD) {
+		setMaxButtonsDisplayed: function(iMBD) {
 			if (iMBD < 2) {
 				throw Error("maxButtonsDisplayed can't be less than two!");
 			}
@@ -728,7 +735,7 @@ sap.ui.define([
 		 * @return {sap.m.Popover} one of the Popovers
 		 * @public
 		 */
-		getPopover: function (bExpanded) {
+		getPopover: function(bExpanded) {
 			if (bExpanded === undefined) {
 				if (this._bUseExpPop) {
 					return this._oExpandedPopover;
@@ -746,16 +753,8 @@ sap.ui.define([
 		 * @return {sap.m.Flexbox} the FlexBox
 		 * @public
 		 */
-		getFlexbox: function (bExpanded) {
+		getFlexbox: function(bExpanded) {
 			return this.getPopover(bExpanded).getContent()[0];
-		},
-
-		/**
-		 * Sets the openNew variable (whether a new ContextMenu is opened after closing the old one)
-		 * @param {boolean} bValue The value for openNew
-		 */
-		setOpenNew: function (bValue) {
-			this.bOpenNew = bValue;
 		},
 
 		/**
@@ -763,26 +762,8 @@ sap.ui.define([
 		 * @param {jQuery.Event} oEvent the press event
 		 * @private
 		 */
-		_onOverflowPress: function (oEvent) {
+		_onOverflowPress: function(oEvent) {
 			this.fireOverflowButtonPressed({oButton : oEvent.oSource});
-		},
-
-		/**
-		 * Triggered when ContextMenu is closed
-		 * needed to prevent flickering when opening up a new ContextMenu
-		 * (A new Menu would show before the direction was set)
-		 */
-		_popupClosed: function () {
-			if (this.getPopover()) { // in case the Menu was destroyed
-				this.fireClosed();
-				if (this.bOpenNew) {
-					this.bOpenNew = false;
-					this.finalizeOpening();
-					return;
-				}
-			}
-
-			this.bOpen = false;
 		},
 
 		/**
@@ -790,7 +771,7 @@ sap.ui.define([
 		 * @param {sap.m.Button} oButton the button on which focus should be set
 		 * @returns {boolean} true if focus was set
 		 */
-		_setFocusOnButton: function (oButton) {
+		_setFocusOnButton: function(oButton) {
 			if (oButton.getEnabled() && oButton.getVisible()) {
 				oButton.focus();
 				return true;
@@ -798,11 +779,13 @@ sap.ui.define([
 		},
 
 		/**
+		 * Handler for KeyDown Event
 		 * Changes the focus inside the ContextMenu if an Arrowkey is pressed
 		 * Allows Safari users to navigate through the ContextMenu using tab and tab+shift
+		 * Closes the MiniMenu when Escape is pressed
 		 * @param {jQuery.Event} oEvent the keyboard event
 		 */
-		_changeFocusOnKeyStroke: function (oEvent) {
+		_onKeyDown: function(oEvent) {
 			if (document.activeElement) {
 				var sId = document.activeElement.id;
 				switch (oEvent.key) {
@@ -818,6 +801,9 @@ sap.ui.define([
 					case "ArrowDown":
 						this._changeFocusOnButtons(sId);
 						break;
+					case "Escape":
+						this._rememberPosition();
+						break;
 					default:
 						break;
 				}
@@ -829,8 +815,8 @@ sap.ui.define([
 		 * @param {string} sId the ID of the currently focused buttons
 		 * @param {boolean} bPrevious if true, the previous button is selected instead of the next
 		 */
-		_changeFocusOnButtons: function (sId, bPrevious) {
-			this.getButtons().some(function (oButton, iIndex, aArray) {
+		_changeFocusOnButtons: function(sId, bPrevious) {
+			this.getButtons().some(function(oButton, iIndex, aArray) {
 				if (sId === oButton.getId()) {
 					if (bPrevious) {
 						this._setFocusOnPreviousButton(aArray, iIndex);
@@ -843,11 +829,30 @@ sap.ui.define([
 		},
 
 		/**
+		 * Stores the current Position of the Contextmenu for opening again at same position
+		 * @private
+		 */
+		_rememberPosition: function() {
+			var oNode = document.getElementById(this._oTarget.getAttribute("overlay"));
+			if (oNode) {
+				DOMUtil.focusWithoutScrolling(oNode);
+				this._oLastSourceOverlay = OverlayRegistry.getOverlay(oNode.id);
+				this._oLastSourceClientRects = this._oLastSourceOverlay.getDomRef().getClientRects();
+			} else {
+				this._oLastSourceClientRects = null;
+			}
+			this._oLastPosition = {
+				x: this._oContextMenuPosition.x,
+				y: this._oContextMenuPosition.y
+			};
+		},
+
+		/**
 		 * Sets focus on next button
 		 * @param {Array} aButtons the array of Buttons
 		 * @param {int} iIndex the index of the currently focused buttons
 		 */
-		_setFocusOnNextButton: function (aButtons, iIndex) {
+		_setFocusOnNextButton: function(aButtons, iIndex) {
 			for (var i0 = iIndex + 1; i0 < aButtons.length; i0++) {
 				if (this._setFocusOnButton(aButtons[i0])) {
 					return;
@@ -866,7 +871,7 @@ sap.ui.define([
 		 * @param {Array} aButtons the array of Buttons
 		 * @param {int} iIndex the index of the currently focused buttons
 		 */
-		_setFocusOnPreviousButton: function (aButtons, iIndex) {
+		_setFocusOnPreviousButton: function(aButtons, iIndex) {
 			for (var i0 = iIndex - 1; i0 >= 0; i0--) {
 				if (this._setFocusOnButton(aButtons[i0])) {
 					return;
@@ -885,7 +890,7 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent event object
 		 * @private
 		 */
-		_onContextMenu: function (oEvent) {
+		_onContextMenu: function(oEvent) {
 			if (oEvent.preventDefault) {
 				oEvent.preventDefault();
 			}
@@ -896,7 +901,7 @@ sap.ui.define([
 		 * Sets the Popover visible and fires Event "opened"
 		 * @private
 		 */
-		_handleAfterOpen: function () {
+		_handleAfterOpen: function() {
 			this.getPopover().detachAfterOpen(this._handleAfterOpen, this);
 			this.getPopover().addStyleClass("sapUiDtContextMenuVisible");
 			this.fireOpened();
@@ -907,44 +912,25 @@ sap.ui.define([
 		 * Sets the Popover invisible (to avoid flickering)
 		 * @private
 		 */
-		_handleBeforeClose: function () {
+		_handleBeforeClose: function() {
 			this.getPopover().detachBeforeClose(this._handleBeforeClose, this);
 			this.getPopover().removeStyleClass("sapUiDtContextMenuVisible");
-			// remove Focus from PopOver
-			document.activeElement.blur();
 		},
 
 		/**
 		 * Handle After Close
-		 * Set the focus back to the Overlay without scrolling
-		 * Remember the last Position of the Contextmenu, the last Source and its Dimensions
+		 * Fires the closed event
 		 * @private
 		 */
-		_handleAfterClose: function () {
-			// The Focus is set back to the original Overlay ONLY if it has not changed during closing
-			if (document.activeElement.localName !== "body") {
-				return;
-			}
+		_handleAfterClose: function() {
 			this.getPopover().detachAfterClose(this._handleAfterClose, this);
-			var oNode = document.getElementById(this._oTarget.getAttribute("overlay"));
-			// Set focus & remember the last Source & Position for Opening in same place
-			if (oNode) {
-				DOMUtil.focusWithoutScrolling(oNode);
-				this._oLastSourceOverlay = OverlayRegistry.getOverlay(oNode.id);
-				this._oLastSourceClientRects = this._oLastSourceOverlay.getDomRef().getClientRects();
-			} else {
-				this._oLastSourceClientRects = null;
-			}
-			this._oLastPosition = {
-				x: this._oContextMenuPosition.x,
-				y: this._oContextMenuPosition.y
-			};
+			this.fireClosed();
 		},
 
-		setStyleClass: function (sStyleClass) {
+		setStyleClass: function(sStyleClass) {
 			this.setProperty("styleClass", sStyleClass);
 		}
 	});
 
 	return ContextMenu;
-}, /* bExport= */ true);
+});

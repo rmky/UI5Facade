@@ -11,6 +11,11 @@
 			"theme": "sap_fiori_3"
 		},
 		{
+			"name": "ColumnLayout.less",
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
 			"name": "FormLayout.less",
 			"designtime": true,
 			"theme": "sap_fiori_3"

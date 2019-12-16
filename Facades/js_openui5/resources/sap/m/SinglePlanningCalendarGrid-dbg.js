@@ -24,7 +24,9 @@ sap.ui.define([
 		'sap/ui/events/KeyCodes',
 		'./SinglePlanningCalendarGridRenderer',
 		'sap/ui/Device',
-		'sap/ui/core/delegate/ItemNavigation'
+		'sap/ui/core/delegate/ItemNavigation',
+		"sap/ui/thirdparty/jquery",
+		'./PlanningCalendarLegend'
 	],
 	function (
 		SinglePlanningCalendarUtilities,
@@ -45,7 +47,9 @@ sap.ui.define([
 		KeyCodes,
 		SinglePlanningCalendarGridRenderer,
 		Device,
-		ItemNavigation
+		ItemNavigation,
+		jQuery,
+		PlanningCalendarLegend
 	) {
 		"use strict";
 
@@ -58,7 +62,9 @@ sap.ui.define([
 			MILLISECONDS_IN_A_DAY = 86400000,
 			// Day view only - indicates the special dates
 			// 3px height the marker itself + 2x2px on its top and bottom both on cozy & compact
-			DAY_MARKER_HEIGHT_PX = 7;
+			DAY_MARKER_HEIGHT_PX = 7,
+			FIRST_HOUR_OF_DAY = 0,
+			LAST_HOUR_OF_DAY = 24;
 
 		/**
 		 * Constructor for a new SinglePlanningCalendarGrid.
@@ -67,19 +73,16 @@ sap.ui.define([
 		 * @param {object} [mSettings] initial settings for the new control
 		 *
 		 * @class
-		 * Disclaimer: This control is in a beta state - incompatible API changes may be done before its official public release. Use at your own discretion.
+		 *
+		 * Displays a grid in which appointments of the {@link sap.m.SinglePlanningCalendar} are rendered.
 		 *
 		 * <h3>Overview</h3>
-		 *
-		 * Displays a grid in which appointments are rendered.
 		 *
 		 * <b>Note:</b> The <code>PlanningCalendarGrid</code> uses parts of the <code>sap.ui.unified</code> library.
 		 * This library will be loaded after the <code>PlanningCalendarGrid</code>, if it wasn't previously loaded.
 		 * This could lead to a waiting time when a <code>PlanningCalendarGrid</code> is used for the first time.
 		 * To prevent this, apps using the <code>PlanningCalendarGrid</code> must also load the
 		 * <code>sap.ui.unified</code> library.
-		 *
-		 * <h3>Usage</h3>
 		 *
 		 * The <code>PlanningCalendarGrid</code> has the following structure:
 		 *
@@ -94,7 +97,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.73.1
 		 *
 		 * @constructor
 		 * @private
@@ -114,6 +117,26 @@ sap.ui.define([
 					 * The time part will be ignored. The current date is used as default.
 					 */
 					startDate: {type: "object", group: "Data"},
+
+					/**
+					 * Determines the start hour of the grid to be shown if the <code>fullDay</code> property is set to
+					 * <code>false</code>. Otherwise the previous hours are displayed as non-working. The passed hour is
+					 * considered as 24-hour based.
+					 */
+					startHour: {type: "int", group: "Data", defaultValue: 0},
+
+					/**
+					 * Determines the end hour of the grid to be shown if the <code>fullDay</code> property is set to
+					 * <code>false</code>. Otherwise the next hours are displayed as non-working. The passed hour is
+					 * considered as 24-hour based.
+					 */
+					endHour: {type: "int", group: "Data", defaultValue: 24},
+
+					/**
+					 * Determines if all of the hours in a day are displayed. If set to <code>false</code>, the hours shown are
+					 * between the <code>startHour</code> and <code>endHour</code>.
+					 */
+					fullDay: {type: "boolean", group: "Data", defaultValue: true},
 
 					/**
 					 * Determines whether the appointments in the grid are draggable.
@@ -313,7 +336,8 @@ sap.ui.define([
 					showWeekNumbers: false,
 					startDate: oStartDate
 				}).addStyleClass("sapMSinglePCColumnHeader"),
-				iDelay = (60 - oStartDate.getSeconds()) * 1000;
+				iDelay = (60 - oStartDate.getSeconds()) * 1000,
+				sTimePattern = this._getCoreLocaleData().getTimePattern("medium");
 
 			this.setAggregation("_columnHeaders", oDatesRow);
 			this.setStartDate(oStartDate);
@@ -324,14 +348,11 @@ sap.ui.define([
 			this._configureAppointmentsCreate();
 
 			this._oUnifiedRB = sap.ui.getCore().getLibraryResourceBundle("sap.ui.unified");
-			this._oFormatAriaApp = DateFormat.getDateTimeInstance({
-				pattern: "EEEE dd/MM/YYYY 'at' HH:mm:ss a"
+			this._oFormatStartEndInfoAria = DateFormat.getDateTimeInstance({
+				pattern: "EEEE dd/MM/YYYY 'at' " + sTimePattern
 			});
 			this._oFormatAriaFullDayCell = DateFormat.getDateTimeInstance({
 				pattern: "EEEE dd/MM/YYYY"
-			});
-			this._oFormatAriaCell = DateFormat.getDateTimeInstance({
-				pattern: "EEEE dd/MM/YYYY 'at' HH"
 			});
 
 			//the id of the SPC's legend if any
@@ -885,37 +906,6 @@ sap.ui.define([
 		};
 
 		/**
-		 * Handles the <code>keydown</code> event when any key is pressed.
-		 *
-		 * @param {jQuery.Event} oEvent The event object.
-		 */
-		SinglePlanningCalendarGrid.prototype.onkeydown = function (oEvent) {
-			var oAppointment = oEvent.srcControl,
-				bRemoveOldSelection = !(oEvent.ctrlKey || oEvent.metaKey),
-				oGridCell;
-
-			if (oEvent.which === KeyCodes.SPACE || oEvent.which === KeyCodes.ENTER) {
-				if (oAppointment && oAppointment.isA("sap.ui.unified.CalendarAppointment")) {
-					this.fireAppointmentSelect({
-						appointment: oAppointment,
-						appointments: this._toggleAppointmentSelection(oAppointment, bRemoveOldSelection)
-					});
-				} else if (oEvent.target.classList.contains("sapMSinglePCRow") ||
-					oEvent.target.classList.contains("sapMSinglePCBlockersColumn")) {
-
-					oGridCell = oEvent.target;
-					this.fireEvent("cellPress", {
-						startDate: this._getDateFormatter().parse(oGridCell.getAttribute("data-sap-start-date")),
-						endDate: this._getDateFormatter().parse(oGridCell.getAttribute("data-sap-end-date"))
-					});
-				}
-
-				// Prevent scrolling
-				oEvent.preventDefault();
-			}
-		};
-
-		/**
 		 * Ensures that the focus is moved from an appointment to the correct cell from the visible grid area or
 		 * borderReached event is fired when the correct cell to focus is outside of the visible grid area
 		 * and removes the appointments selection.
@@ -925,15 +915,14 @@ sap.ui.define([
 		 * @private
 		 */
 		SinglePlanningCalendarGrid.prototype._appFocusHandler = function(oEvent, iDirection) {
-			var oAppointment = sap.ui.getCore().byId(oEvent.target.id),
-				bIsAppointment = oAppointment && oAppointment.isA("sap.ui.unified.CalendarAppointment");
+			var oTarget = sap.ui.getCore().byId(oEvent.target.id);
 
-			if (bIsAppointment) {
+			if (oTarget && oTarget.isA("sap.ui.unified.CalendarAppointment")) {
 				this.fireAppointmentSelect({
 					appointment: undefined,
 					appointments: this._toggleAppointmentSelection(undefined, true)
 				});
-				this._focusCellWithKeyboard(oAppointment, iDirection);
+				this._focusCellWithKeyboard(oTarget, iDirection);
 
 				// Prevent scrolling
 				oEvent.preventDefault();
@@ -1167,21 +1156,48 @@ sap.ui.define([
 		 * @param {jQuery.Event} oEvent The event object
 		 */
 		SinglePlanningCalendarGrid.prototype.ontap = function (oEvent) {
+			this._fireSelectionEvent(oEvent);
+		};
+
+		/**
+		 * Handles the <code>keydown</code> event when any key is pressed.
+		 *
+		 * @param {jQuery.Event} oEvent The event object.
+		 */
+		SinglePlanningCalendarGrid.prototype.onkeydown = function (oEvent) {
+			if (oEvent.which === KeyCodes.SPACE || oEvent.which === KeyCodes.ENTER) {
+				this._fireSelectionEvent(oEvent);
+
+				// Prevent scrolling
+				oEvent.preventDefault();
+			}
+		};
+
+		/**
+		 * Helper function handling <code>keydown</code> or <code>tap</code> event on the grid.
+		 *
+		 * @param {jQuery.Event} oEvent The event object.
+		 */
+		SinglePlanningCalendarGrid.prototype._fireSelectionEvent = function (oEvent) {
 			var oAppointment = oEvent.srcControl,
-				bRemoveOldSelection = !(oEvent.ctrlKey || oEvent.metaKey);
+				oGridCell = oEvent.target;
 
-			if (oAppointment && oAppointment.isA("sap.ui.unified.CalendarAppointment")) {
-
-				this.fireAppointmentSelect({
-					appointment: oAppointment,
-					appointments: this._toggleAppointmentSelection(oAppointment, bRemoveOldSelection)
-				});
-			} else if (oEvent.target.classList.contains("sapMSinglePCRow") ||
+			if (oEvent.target.classList.contains("sapMSinglePCRow") ||
 				oEvent.target.classList.contains("sapMSinglePCBlockersColumn")) {
+
+				this.fireEvent("cellPress", {
+					startDate: this._getDateFormatter().parse(oGridCell.getAttribute("data-sap-start-date")),
+					endDate: this._getDateFormatter().parse(oGridCell.getAttribute("data-sap-end-date"))
+				});
 
 				this.fireAppointmentSelect({
 					appointment: undefined,
 					appointments: this._toggleAppointmentSelection(undefined, true)
+				});
+			} else if (oAppointment && oAppointment.isA("sap.ui.unified.CalendarAppointment")) {
+				this.fireAppointmentSelect({
+					appointment: oAppointment,
+					appointments: this._toggleAppointmentSelection(oAppointment, !(oEvent.ctrlKey || oEvent.metaKey))
 				});
 			}
 		};
@@ -1193,10 +1209,7 @@ sap.ui.define([
 		 * @private
 		 */
 		SinglePlanningCalendarGrid.prototype._getVisibleStartHour = function () {
-			// inject here the logic about the visibility of the fisrt visible hour, when the startHour property exist
-			// example:
-			// return this.getShowFullDay() ? 0 : this._getStartHour();
-			return 0;
+			return (this.getFullDay() || !this.getStartHour()) ? FIRST_HOUR_OF_DAY : this.getStartHour();
 		};
 
 		/**
@@ -1206,41 +1219,29 @@ sap.ui.define([
 		 * @private
 		 */
 		SinglePlanningCalendarGrid.prototype._getVisibleEndHour = function () {
-			// inject here the logic about the visibility of the last visible hour, when the endHour property exist
-			// example:
-			// return (this.getShowFullDay() ? 24 : this._getEndHour()) - 1;
-			return 23;
+			return ((this.getFullDay() || !this.getEndHour()) ? LAST_HOUR_OF_DAY : this.getEndHour()) - 1;
 		};
 
 		/**
 		 * Determines if a given hour is between the first and the last visible hour in the grid.
 		 *
+		 * @param {int} iHour the hour to be checked
 		 * @returns {boolean} true if the iHour is in the visible hour range
 		 * @private
 		 */
-		SinglePlanningCalendarGrid.prototype._isVisibleHour = function () {
-			// inject here the logic about the visibility of the working time range, when the startHour and endHour
-			// properties exist
-			// example:
-			// return this._getStartHour() <= iHour && iHour <= this._getEndHour();
-			return true;
-		};
+		SinglePlanningCalendarGrid.prototype._isVisibleHour = function (iHour) {
+			var iStartHour = this.getStartHour(),
+				iEndHour = this.getEndHour();
 
-		/**
-		 * Determines whether the given hour is outside the visible hours of the grid.
-		 *
-		 * @returns {boolean} true if the iHour is outside the visible hour range
-		 * @private
-		 */
-		SinglePlanningCalendarGrid.prototype._isOutsideVisibleHours = function () {
-			// inject here the logic about the visibility of the working time range, when the startHour and endHour
-			// properties exist
-			// example:
-			// var iVisibleStartHour = this._getVisibleStartHour(),
-			// 	   iVisibleEndHour = this._getVisibleEndHour();
-			// 	   return iHour < iVisibleStartHour || iHour > iVisibleEndHour;
+			if (!this.getStartHour()) {
+				iStartHour = FIRST_HOUR_OF_DAY;
+			}
 
-			return false;
+			if (!this.getEndHour()) {
+				iEndHour = LAST_HOUR_OF_DAY;
+			}
+
+			return iStartHour <= iHour && iHour < iEndHour;
 		};
 
 		/**
@@ -1365,7 +1366,7 @@ sap.ui.define([
 			var $nowMarker = this.$("nowMarker"),
 				$nowMarkerText = this.$("nowMarkerText"),
 				$nowMarkerAMPM = this.$("nowMarkerAMPM"),
-				bCurrentHourNotVisible = this._isOutsideVisibleHours(oDate.getHours());
+				bCurrentHourNotVisible = !this._isVisibleHour(oDate.getHours());
 
 			$nowMarker.toggleClass("sapMSinglePCNowMarkerHidden", bCurrentHourNotVisible);
 			$nowMarker.css("top", this._calculateTopPosition(oDate) + "px");
@@ -1912,11 +1913,11 @@ sap.ui.define([
 		SinglePlanningCalendarGrid.prototype._getAppointmentAnnouncementInfo = function (oAppointment) {
 			var sStartTime = this._oUnifiedRB.getText("CALENDAR_START_TIME"),
 				sEndTime = this._oUnifiedRB.getText("CALENDAR_END_TIME"),
-				sFormattedStartDate = this._oFormatAriaApp.format(oAppointment.getStartDate()),
-				sFormattedEndDate = this._oFormatAriaApp.format(oAppointment.getEndDate()),
+				sFormattedStartDate = this._oFormatStartEndInfoAria.format(oAppointment.getStartDate()),
+				sFormattedEndDate = this._oFormatStartEndInfoAria.format(oAppointment.getEndDate()),
 				sAppInfo = sStartTime + ": " + sFormattedStartDate + "; " + sEndTime + ": " + sFormattedEndDate;
 
-			return sAppInfo + "; " + this._findCorrespondingLegendItem(this, oAppointment);
+			return sAppInfo + "; " + PlanningCalendarLegend.findLegendItemForItem(sap.ui.getCore().byId(this._sLegendId), oAppointment);
 		};
 
 		/**
@@ -1951,7 +1952,7 @@ sap.ui.define([
 			if (bFullDay) {
 				return sStartTime + ": " + this._oFormatAriaFullDayCell.format(oStartDate) + "; ";
 			}
-			return sStartTime + ": " + this._oFormatAriaCell.format(oStartDate) + "; " + sEndTime + ": " + this._oFormatAriaCell.format(oEndDate) + "; ";
+			return sStartTime + ": " + this._oFormatStartEndInfoAria.format(oStartDate) + "; " + sEndTime + ": " + this._oFormatStartEndInfoAria.format(oEndDate);
 		};
 
 		/**
@@ -2060,42 +2061,6 @@ sap.ui.define([
 				oRm.write("></div>");
 			}
 		});
-
-		/*
-		 * Finds the corresponding legend item to a given appointment.
-		 * @param {oControl}
-		 * @param {oSpecialItem} An appointment or a legend type
-		 * @returns {string} The matching legend item's default text.
-		 * @private
-		 */
-		SinglePlanningCalendarGrid.prototype._findCorrespondingLegendItem = function(oControl, oSpecialItem) {
-			var sLegendId = oControl._sLegendId,
-				oLegend = sap.ui.getCore().byId(sLegendId),
-				aLegendAppointments = oLegend ? oLegend.getAppointmentItems() : null,
-				aLegendItems = oLegend ? oLegend.getItems() : null,
-				bAppointmentItem = oSpecialItem instanceof CalendarAppointment,
-				aItems = bAppointmentItem ? aLegendAppointments : aLegendItems,
-				oItemType = bAppointmentItem ? oSpecialItem.getType() : oSpecialItem.type,
-				oItem,
-				sLegendItemText;
-
-			if (aItems && aItems.length) {
-				for (var i = 0; i < aItems.length; i++) {
-					oItem = aItems[i];
-					if (oItem.getType() === oItemType) {
-						sLegendItemText = oItem.getText();
-						break;
-					}
-				}
-			}
-
-			//if the special item's type is not present in the legend's items,
-			// the screen reader has to read it's type
-			if (!sLegendItemText) {
-				sLegendItemText = oItemType;
-			}
-			return sLegendItemText;
-		};
 
 		function _initItemNavigation(){
 			// Collect the dom references of the items

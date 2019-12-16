@@ -5,23 +5,30 @@
  */
 sap.ui.define([
 	"sap/ui/core/Control",
+	"sap/ui/core/Core",
 	"sap/ui/base/ManagedObjectObserver",
 	'sap/ui/core/ResizeHandler',
 	"sap/ui/core/delegate/ItemNavigation",
 	"sap/f/GridContainerRenderer",
 	"sap/ui/Device",
 	"sap/ui/layout/cssgrid/VirtualGrid",
-	"sap/f/GridContainerSettings"
-
+	"sap/f/GridContainerSettings",
+	"sap/base/strings/capitalize",
+	"sap/ui/core/InvisibleRenderer"
 ], function (Control,
-             ManagedObjectObserver,
-             ResizeHandler,
-             ItemNavigation,
-             GridContainerRenderer,
-             Device,
-			 VirtualGrid,
-			 GridContainerSettings) {
+			Core,
+			ManagedObjectObserver,
+			ResizeHandler,
+			ItemNavigation,
+			GridContainerRenderer,
+			Device,
+			VirtualGrid,
+			GridContainerSettings,
+			capitalize,
+			InvisibleRenderer) {
 	"use strict";
+
+	var isRtl = Core.getConfiguration().getRTL();
 
 	/**
 	 * Indicates the version of Microsoft Edge browser that has support for the display grid.
@@ -132,21 +139,23 @@ sap.ui.define([
 	 * </pre>
 	 *
 	 * <h3>Drag and drop:</h3>
-	 * The <code>items</code> aggregation of <code>sap.f.GridContainer</code> is valid drag and drop target.
-	 * This can be configured with either the default <code>{@link sap.ui.core.dnd.DropInfo}</code>, or with an extended version of it - <code>{@link sap.f.dnd.GridDropInfo}</code>.
-	 * <code>GridDropInfo</code> will provide a different visualization more suitable for grids during drag over.
+	 * Drag and drop is enabled for the <code>GridContainer</code> with enhanced visualization and interaction, better suited for grid items. This is configured by using the <code>{@link sap.f.dnd.GridDropInfo}</code>.
 	 *
-	 * @see {@link topic:cca5ee5d63ca44c89318f8496a58f9f2 Grid Container (Experimental)}
+	 * Similar to the <code>{@link sap.ui.core.dnd.DropInfo}</code>, <code>{@link sap.f.dnd.GridDropInfo}</code> has to be added to the <code>dragDropConfig</code> aggregation, by using <code>{@link sap.ui.core.Element#addDragDropConfig}</code>.
+	 *
+	 * Both <code>{@link sap.ui.core.dnd.DropInfo}</code> and <code>{@link sap.f.dnd.GridDropInfo}</code> can be used to configure drag and drop.
+	 * The difference is that the <code>{@link sap.f.dnd.GridDropInfo}</code> will provide a drop indicator, which mimics the size of the dragged item and shows the potential drop position inside the grid.
+	 *
+	 * @see {@link topic:cca5ee5d63ca44c89318f8496a58f9f2 Grid Container}
 	 * @see {@link topic:32d4b9c2b981425dbc374d3e9d5d0c2e Grid Controls}
 	 * @see {@link topic:5b46b03f024542ba802d99d67bc1a3f4 Cards}
 	 * @see {@link sap.f.dnd.GridDropInfo}
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @extends sap.ui.core.Control
 	 *
-	 * @experimental Since 1.65 This class is experimental. The API may change.
 	 * @since 1.65
 	 * @public
 	 * @constructor
@@ -185,7 +194,7 @@ sap.ui.define([
 				 *
 				 * <b>Note:</b> The order of the items is ignored. An item which is normally at the bottom, can appear on top.
 				 *
-				 * @experimental As of version 1.66
+				 * @experimental As of version 1.66 Disclaimer: this property is in a beta state - incompatible API changes may be done before its official public release. Use at your own discretion.
 				 */
 				allowDenseFill: {type: "boolean", group: "Appearance", defaultValue: false},
 
@@ -196,7 +205,7 @@ sap.ui.define([
 				 *
 				 * <b>Note:</b> Not supported in IE11, Edge 15.
 				 *
-				 * @experimental As of version 1.66
+				 * @experimental As of version 1.66 Disclaimer: this property is in a beta state - incompatible API changes may be done before its official public release. Use at your own discretion.
 				 */
 				inlineBlockLayout: {type: "boolean", group: "Appearance", defaultValue: false}
 			},
@@ -211,26 +220,34 @@ sap.ui.define([
 				 * The sap.f.GridContainerSettings applied if no settings are provided for a specific size.
 				 *
 				 * If no layout is given, a default layout will be used. See the default values for <code>sap.f.GridContainerSettings</code>.
+				 *
+				 * <b>Note:</b> It is not possible to reuse the same instance of <code>GridContainerSettings</code> for several layouts. New instance has to be created for each of them. This is caused by the fact that one object can exist in only a single aggregation.
 				 */
 				layout: { type: "sap.f.GridContainerSettings", multiple: false },
 
 				/**
-				 * The sap.f.GridContainerSettings applied for size "S"
+				 * The sap.f.GridContainerSettings applied for size "XS". Range: up to 374px.
+                 * @experimental As of version 1.71 Disclaimer: this property is in a beta state - incompatible API changes may be done before its official public release. Use at your own discretion.
+				 */
+				layoutXS: { type: "sap.f.GridContainerSettings", multiple: false },
+
+				/**
+				 * The sap.f.GridContainerSettings applied for size "S". Range: 375px - 599px.
 				 */
 				layoutS: { type: "sap.f.GridContainerSettings", multiple: false },
 
 				/**
-				 * The sap.f.GridContainerSettings applied for size "M"
+				 * The sap.f.GridContainerSettings applied for size "M". Range: 600px - 1023px.
 				 */
 				layoutM: { type: "sap.f.GridContainerSettings", multiple: false },
 
 				/**
-				 * The sap.f.GridContainerSettings applied for size "L"
+				 * The sap.f.GridContainerSettings applied for size "L". Range: 1023px - 1439px.
 				 */
 				layoutL: { type: "sap.f.GridContainerSettings", multiple: false },
 
 				/**
-				 * The sap.f.GridContainerSettings applied for size "XL"
+				 * The sap.f.GridContainerSettings applied for size "XL". Range: from 1440px.
 				 */
 				layoutXL: { type: "sap.f.GridContainerSettings", multiple: false },
 
@@ -259,39 +276,59 @@ sap.ui.define([
 	});
 
 	/**
+	 * Allow detection of changes in items, in order to optimize (avoid re-rendering) when items are rearranged.
+	 * @see {@link topic:7cdff73f308b4b10bdf7d83b7aba72e7 Extended Change Detection}
+	 * @type {boolean}
+	 * @private
+	 */
+	GridContainer.prototype.bUseExtendedChangeDetection = true;
+
+	/**
 	 * Gets the <code>GridContainerSettings</code> for the current layout breakpoint.
 	 * @public
 	 * @returns {sap.f.GridContainerSettings} The settings for the current layout
 	 */
 	GridContainer.prototype.getActiveLayoutSettings = function () {
-		return this.getAggregation(this._sActiveLayout)
-			|| this.getAggregation("layout")
-			|| this.getAggregation("_defaultLayout");
+		var oSettings = this.getAggregation(this._sActiveLayout);
+
+		if (!oSettings && this._sActiveLayout === "layoutXS") {
+			// if XS is not define, apply the S settings to stay backward compatible
+			oSettings = this.getAggregation("layoutS");
+		}
+
+		if (!oSettings) {
+			oSettings = this.getAggregation("layout")
+				|| this.getAggregation("_defaultLayout");
+		}
+
+		return oSettings;
 	};
 
 	/**
 	 * Handler for onBeforeRendering for each item.
-	 * @protected
+	 * @private
 	 */
 	GridContainer.prototype._onBeforeItemRendering = function () {
-		var container = this.getParent(),
-			resizeListenerId = container._resizeListeners[this.getId()];
+		var oContainer = this.getParent();
 
-		if (resizeListenerId) {
-			ResizeHandler.deregister(resizeListenerId);
+		// The item just became invisible. In such cases there won't be _onAfterItemRendering,
+		// so we have to to schedule the polyfill here.
+		if (oContainer._reflectItemVisibilityToWrapper(this) && !isGridSupportedByBrowser()) {
+			oContainer._scheduleIEPolyfill();
 		}
-
-		delete container._resizeListeners[this.getId()];
 	};
 
 	/**
 	 * Handler for onAfterRendering for each item.
-	 * @protected
+	 * @private
 	 */
 	GridContainer.prototype._onAfterItemRendering = function () {
 		var container = this.getParent();
 
-		container._resizeListeners[this.getId()] = ResizeHandler.register(this, container._resizeItemHandler);
+		// register resize listener for that item only once
+		if (!container._resizeListeners[this.getId()]) {
+			container._resizeListeners[this.getId()] = ResizeHandler.register(this, container._resizeItemHandler);
+		}
 
 		container._setItemNavigationItems();
 
@@ -303,9 +340,42 @@ sap.ui.define([
 		container._applyItemAutoRows(this);
 	};
 
+
+	/**
+	 * Reflects "visible" behavior of the control to the wrapper element - sapFGridContainerItemWrapper.
+	 *
+	 * @private
+	 * @param {sap.ui.core.Control} oItem The control of which we will check "visible" property.
+	 * @returns {boolean} Whether the wrapper turned to invisible. Needed to judge whether to trigger IE polyfill.
+	 */
+	GridContainer.prototype._reflectItemVisibilityToWrapper = function (oItem) {
+
+		var oItemDomRef = oItem.getDomRef(),
+			oInvisibleSpan = document.getElementById(InvisibleRenderer.createInvisiblePlaceholderId(oItem)),
+			oItemWrapper,
+			$oItemWrapper;
+
+		if (!oItemDomRef && !oInvisibleSpan) {
+			return false;
+		}
+
+		oItemWrapper = (oItemDomRef ? oItemDomRef : oInvisibleSpan).parentElement;
+		$oItemWrapper = jQuery(oItemWrapper);
+
+		// check if we actually change something. Needed to judge whether to trigger IE polyfill.
+		if (oItem.getVisible() && $oItemWrapper.hasClass("sapFGridContainerInvisiblePlaceholder")) {
+			$oItemWrapper.removeClass("sapFGridContainerInvisiblePlaceholder");
+		} else if (!oItem.getVisible() && !$oItemWrapper.hasClass("sapFGridContainerInvisiblePlaceholder")) {
+			$oItemWrapper.addClass("sapFGridContainerInvisiblePlaceholder");
+			return true;
+		}
+
+		return false;
+	};
+
 	/**
 	 * Handler for any change in the items aggregation.
-	 * @protected
+	 * @private
 	 * @param {object} changes What was changed
 	 */
 	GridContainer.prototype._onItemChange = function (changes) {
@@ -322,7 +392,7 @@ sap.ui.define([
 
 	/**
 	 * Removes any resize listeners. Both for the grid and for all items.
-	 * @protected
+	 * @private
 	 */
 	GridContainer.prototype._deregisterResizeListeners = function () {
 		var key,
@@ -334,11 +404,15 @@ sap.ui.define([
 		}
 
 		delete this._resizeListeners;
+
+		if (!this.getContainerQuery()) {
+			Device.resize.detachHandler(this._resizeHandler);
+		}
 	};
 
 	/**
 	 * Sets the DOM references for the items navigation.
-	 * @protected
+	 * @private
 	 */
 	GridContainer.prototype._setItemNavigationItems = function () {
 		if (!this._isRenderingFinished) {
@@ -353,19 +427,33 @@ sap.ui.define([
 
 	/**
 	 * Detects what is the current layout breakpoint.
-	 * @protected
+	 * @private
 	 * @returns {boolean} True if the layout settings were changed.
 	 */
 	GridContainer.prototype._detectActiveLayout = function () {
-		var iWidth = (this.getContainerQuery() && this.getDomRef()) ? this.$().outerWidth() : window.innerWidth,
-			oRange = Device.media.getCurrentRange("StdExt", iWidth),
-			sLayout = oRange ? GridContainer.mSizeLayouts[oRange.name] : "layout",
+		var iWidth = (this.getContainerQuery() && this.getDomRef()) ? this._getComputedWidth() : Device.resize.width,
+			oRange = Device.media.getCurrentRange("GridContainerRangeSet", iWidth),
+			sLayout = "layout" + oRange.name,
 			oOldSettings = this.getActiveLayoutSettings(),
 			bSettingsAreChanged = false;
 
+		if (!iWidth) {
+			// width is 0 or unknown - can not detect the layout
+			return false;
+		}
+
 		if (this._sActiveLayout !== sLayout) {
+			this.addStyleClass("sapFGridContainer" + capitalize(sLayout));
+			if (this._sActiveLayout) { // remove old layout class if any
+				this.removeStyleClass("sapFGridContainer" + capitalize(this._sActiveLayout));
+			}
+
 			this._sActiveLayout = sLayout;
 			bSettingsAreChanged = oOldSettings !== this.getActiveLayoutSettings();
+
+			this.fireLayoutChange({
+				layout: this._sActiveLayout
+			});
 		}
 
 		return bSettingsAreChanged;
@@ -373,16 +461,24 @@ sap.ui.define([
 
 	/**
 	 * Gets a map of the CSS styles that should be applied to the grid, based on the current layout.
-	 * @protected
+	 * @private
 	 * @returns {object} The current CSS styles
 	 */
 	GridContainer.prototype._getActiveGridStyles = function () {
 		var oSettings = this.getActiveLayoutSettings(),
 			sColumns = oSettings.getColumns() || "auto-fill",
+			sColumnSize = oSettings.getColumnSize(),
+			sMinColumnSize = oSettings.getMinColumnSize(),
+			sMaxColumnSize = oSettings.getMaxColumnSize(),
 			mStyles = {
-				"grid-template-columns": "repeat(" + sColumns + ", " + oSettings.getColumnSize() + ")",
 				"grid-gap": oSettings.getGap()
 			};
+
+		if (sMinColumnSize && sMaxColumnSize) {
+			mStyles["grid-template-columns"] = "repeat(" + sColumns + ", minmax(" + sMinColumnSize + ", " + sMaxColumnSize + "))";
+		} else {
+			mStyles["grid-template-columns"] = "repeat(" + sColumns + ", " + sColumnSize + ")";
+		}
 
 		if (this.getInlineBlockLayout()) {
 			mStyles["grid-auto-rows"] = "min-content";
@@ -395,10 +491,12 @@ sap.ui.define([
 
 	/**
 	 * Initialization hook.
-	 * @protected
+	 * @private
 	 */
 	GridContainer.prototype.init = function () {
 		this.setAggregation("_defaultLayout", new GridContainerSettings());
+
+		this._initRangeSet();
 
 		this._resizeListeners = {};
 
@@ -411,6 +509,11 @@ sap.ui.define([
 		this._itemsObserver.observe(this, {aggregations: ["items"]});
 
 		this._resizeHandler = this._resize.bind(this);
+
+		if (!this.getContainerQuery()) {
+			Device.resize.attachHandler(this._resizeHandler);
+		}
+
 		this._resizeItemHandler = this._resizeItem.bind(this);
 
 		this._itemNavigation = new ItemNavigation().setCycling(false);
@@ -419,11 +522,73 @@ sap.ui.define([
 			sapprevious: ["alt", "meta"]
 		});
 		this.addDelegate(this._itemNavigation);
+
+		if (!isGridSupportedByBrowser()) {
+			this._attachDndPolyfill();
+		}
+	};
+
+	/**
+	 * Inserts an item into the aggregation named <code>items</code>.
+	 *
+	 * @param {sap.ui.core.Item} oItem The item to be inserted; if empty, nothing is inserted.
+	 * @param {int} iIndex The <code>0</code>-based index the item should be inserted at; for
+	 *             a negative value of <code>iIndex</code>, the item is inserted at position 0; for a value
+	 *             greater than the current size of the aggregation, the item is inserted at the last position.
+	 * @returns {sap.f.GridContainer} <code>this</code> to allow method chaining.
+	 * @public
+	 */
+	GridContainer.prototype.insertItem = function (oItem, iIndex) {
+		if (!this.getDomRef() || !isGridSupportedByBrowser()) {
+			// if not rendered or not supported - insert aggregation and invalidate
+			return this.insertAggregation("items", oItem, iIndex);
+		}
+
+		var oRm = Core.createRenderManager(),
+			oWrapper = this._createItemWrapper(oItem),
+			oTarget = this._getItemAt(iIndex),
+			oGridRef = this.getDomRef();
+
+		if (oTarget) {
+			oGridRef.insertBefore(oWrapper, oTarget.getDomRef().parentElement);
+		} else {
+			oGridRef.appendChild(oWrapper);
+		}
+
+		this.insertAggregation("items", oItem, iIndex, true);
+
+		oRm.render(oItem, oWrapper);
+		oRm.destroy();
+
+		return this;
+	};
+
+	/**
+	 * Removes an item from the aggregation named <code>items</code>.
+	 *
+	 * @param {int | string | sap.ui.core.Item} vItem The item to remove or its index or ID.
+	 * @returns {sap.ui.core.Control} The removed item or null.
+	 * @public
+	 */
+	GridContainer.prototype.removeItem = function (vItem) {
+		var oRemovedItem = this.removeAggregation("items", vItem, true),
+			oGridRef = this.getDomRef(),
+			oItemRef = oRemovedItem.getDomRef();
+
+		if (!oGridRef || !oItemRef || !isGridSupportedByBrowser()) {
+			this.invalidate();
+			return oRemovedItem;
+		}
+
+		// remove the item's wrapper from DOM
+		oGridRef.removeChild(oItemRef.parentElement);
+
+		return oRemovedItem;
 	};
 
 	/**
 	 * Before rendering hook.
-	 * @protected
+	 * @private
 	 */
 	GridContainer.prototype.onBeforeRendering = function () {
 		this._detectActiveLayout();
@@ -438,7 +603,7 @@ sap.ui.define([
 
 	/**
 	 * After rendering hook.
-	 * @protected
+	 * @private
 	 */
 	GridContainer.prototype.onAfterRendering = function () {
 		this._resizeListeners[this.getId()] = ResizeHandler.register(this.getDomRef(), this._resizeHandler);
@@ -451,7 +616,7 @@ sap.ui.define([
 
 	/**
 	 * Destroy hook.
-	 * @protected
+	 * @private
 	 */
 	GridContainer.prototype.exit = function () {
 		this._deregisterResizeListeners();
@@ -466,27 +631,69 @@ sap.ui.define([
 			this._itemNavigation.destroy();
 			delete this._itemNavigation;
 		}
-	};
 
-	/**
-	 * Handler for resize of the grid.
-	 * @protected
-	 */
-	GridContainer.prototype._resize = function () {
-		var bSettingsAreChanged = this._detectActiveLayout();
-
-		this._applyLayout(bSettingsAreChanged);
-
-		if (bSettingsAreChanged) {
-			this.fireLayoutChange({
-				layout: this._sActiveLayout
-			});
+		if (!isGridSupportedByBrowser()) {
+			this._detachDndPolyfill();
 		}
 	};
 
 	/**
+	 * Initializes the specific Device.media range set for <code>GridContainer</code>.
+	 */
+	GridContainer.prototype._initRangeSet = function () {
+		if (!Device.media.hasRangeSet("GridContainerRangeSet")) {
+			Device.media.initRangeSet("GridContainerRangeSet", [375, 600, 1024, 1440], "px", ["XS", "S", "M", "L", "XL"]);
+		}
+	};
+
+	/**
+	 * Handler for resize of the grid or the viewport
+	 * @private
+	 */
+	GridContainer.prototype._resize = function () {
+		if (!this._isWidthChanged()) {
+			return;
+		}
+
+		var bSettingsAreChanged = this._detectActiveLayout();
+		this._applyLayout(bSettingsAreChanged);
+	};
+
+	/**
+	 * Checks if the width of the grid or the viewport is different from the last time when it was checked.
+	 * Use to avoid resize handling when not needed.
+	 * @private
+	 * @returns {boolean} True if the width of the grid or of the viewport is changed since last check.
+	 */
+	GridContainer.prototype._isWidthChanged = function () {
+		var iGridWidth = this._getComputedWidth(),
+			iViewportWidth = Device.resize.width;
+
+		if (this._lastGridWidth === iGridWidth && this._lastViewportWidth === iViewportWidth) {
+			return false;
+		}
+
+		this._lastGridWidth = iGridWidth;
+		this._lastViewportWidth = iViewportWidth;
+		return true;
+	};
+
+	/**
+	 * Gets the current computed width of the grid.
+	 * @private
+	 * @returns {int|null} The width in px. Null if the grid is not yet rendered.
+	 */
+	GridContainer.prototype._getComputedWidth = function () {
+		if (!this.getDomRef()) {
+			return null;
+		}
+
+		return this.getDomRef().getBoundingClientRect().width;
+	};
+
+	/**
 	 * Handler for resize of a grid's item.
-	 * @protected
+	 * @private
 	 * @param {Object} oEvent ResizeHandler resize event
 	 */
 	GridContainer.prototype._resizeItem = function (oEvent) {
@@ -500,7 +707,7 @@ sap.ui.define([
 
 	/**
 	 * Applies the current layout to the grid DOM element.
-	 * @protected
+	 * @private
 	 * @param {boolean} bSettingsAreChanged Are the grid settings changed after passing a breakpoint.
 	 */
 	GridContainer.prototype._applyLayout = function (bSettingsAreChanged) {
@@ -523,7 +730,7 @@ sap.ui.define([
 
 	/**
 	 * Increase rows span for item if it needs more space, based on it's height.
-	 * @protected
+	 * @private
 	 * @param {sap.ui.core.Control} oItem The item for which to calculate
 	 */
 	GridContainer.prototype._applyItemAutoRows = function (oItem) {
@@ -538,7 +745,7 @@ sap.ui.define([
 		if (hasItemAutoHeight(oItem)) {
 			var $item = oItem.$(),
 				oSettings = this.getActiveLayoutSettings(),
-				iRows = oSettings.calculateRowsForItem($item.height());
+				iRows = oSettings.calculateRowsForItem($item.outerHeight());
 
 			if (!iRows) {
 				// if the rows can not be calculated correctly, don't do anything
@@ -554,7 +761,7 @@ sap.ui.define([
 	/**
 	 * If one item has more columns than the total columns in the grid, it brakes the whole layout.
 	 * Prevent this by reducing this item's column span.
-	 * @protected
+	 * @private
 	 */
 	GridContainer.prototype._enforceMaxColumns = function () {
 		var oSettings = this.getActiveLayoutSettings(),
@@ -572,12 +779,54 @@ sap.ui.define([
 	};
 
 	/**
+	 * Gets the item at specified index.
+	 * @param {int} iIndex Which item to get
+	 * @return {sap.ui.core.Control|null} The item at the specified index. <code>null</code> if index is out of range.
+	 */
+	GridContainer.prototype._getItemAt = function (iIndex) {
+		var aItems = this.getItems(),
+			oTarget;
+
+		if (iIndex < 0) {
+			iIndex = 0;
+		}
+
+		if (aItems.length && aItems[iIndex]) {
+			oTarget = aItems[iIndex];
+		}
+
+		return oTarget;
+	};
+
+	/**
+	 * Creates a wrapper div for the given item.
+	 * @param {sap.ui.core.Control} oItem The item
+	 * @return {HTMLElement} The created wrapper
+	 */
+	GridContainer.prototype._createItemWrapper = function (oItem) {
+		var mStylesInfo = GridContainerRenderer.getStylesForItemWrapper(oItem, this),
+			mStyles = mStylesInfo.styles,
+			aClasses = mStylesInfo.classes,
+			oWrapper = document.createElement("div");
+
+		mStyles.forEach(function (sValue, sKey) {
+			oWrapper.style.setProperty(sKey, sValue);
+		});
+
+		aClasses.forEach(function (sValue) {
+			oWrapper.classList.add(sValue);
+		});
+
+		return oWrapper;
+	};
+
+	/**
 	 * ===================== IE11 Polyfill =====================
 	 */
 
 	/**
 	 * Schedules the application of the IE polyfill for the next tick.
-	 * @protected
+	 * @private
 	 * @param {boolean} bImmediately If set to true - apply the polyfill immediately.
 	 */
 	GridContainer.prototype._scheduleIEPolyfill = function (bImmediately) {
@@ -595,22 +844,31 @@ sap.ui.define([
 
 	/**
 	 * Calculates absolute positions for items, so it mimics a css grid.
-	 * @protected
+	 * @private
 	 */
 	GridContainer.prototype._applyIEPolyfillLayout = function () {
 		if (!this._isRenderingFinished) {
 			return;
 		}
 
+		if (this.bIsDestroyed) {
+			return;
+		}
+
 		var $that = this.$(),
+			innerWidth = $that.innerWidth(),
 			oSettings = this.getActiveLayoutSettings(),
-			columnSize = oSettings.getColumnSizeInPx(),
+			columnSize = oSettings.getMinColumnSizeInPx() || oSettings.getColumnSizeInPx(),
 			rowSize = oSettings.getRowSizeInPx(),
 			gapSize = oSettings.getGapInPx(),
-			columnsCount = oSettings.getComputedColumnsCount($that.innerWidth()),
+			columnsCount = oSettings.getComputedColumnsCount(innerWidth),
 			topOffset = parseInt($that.css("padding-top").replace("px", "")),
 			leftOffset = parseInt($that.css("padding-left").replace("px", "")),
 			items = this.getItems();
+
+		if (!columnSize || !rowSize) {
+			return;
+		}
 
 		if (!items.length) {
 			return;
@@ -625,55 +883,163 @@ sap.ui.define([
 			gapSize: gapSize,
 			topOffset: topOffset ? topOffset : 0,
 			leftOffset: leftOffset ? leftOffset : 0,
-			allowDenseFill: this.getAllowDenseFill()
+			allowDenseFill: this.getAllowDenseFill(),
+			rtl: isRtl,
+			width: innerWidth
 		});
 
 		var i,
+			k,
 			item,
-			virtualGridItem,
+			$item,
 			columns,
-			rows;
+			rows,
+			aFittedElements = [];
 
-		for (i = 0; i < items.length; i++) {
+		var fnInsertPolyfillDropIndicator = function (iKId) {
+			virtualGrid.fitElement(
+				iKId + '',
+				this._polyfillDropIndicator.columns || oSettings.calculateColumnsForItem(Math.round(this._polyfillDropIndicator.width)),
+				this._polyfillDropIndicator.rows || oSettings.calculateRowsForItem(Math.round(this._polyfillDropIndicator.height))
+
+			);
+			aFittedElements.push({
+				id: iKId + '',
+				domRef: this._polyfillDropIndicator.domRef
+			});
+		}.bind(this);
+
+		for (i = 0, k = 0; i < items.length; i++) {
+
+			if (this._polyfillDropIndicator && this._polyfillDropIndicator.insertAt === i) {
+				fnInsertPolyfillDropIndicator(k);
+				k++;
+			}
+
 			item = items[i];
+			$item = item.$();
+
+			if (!$item.is(":visible")) {
+				continue;
+			}
+
 			columns = getItemColumnCount(item);
 
 			if (hasItemAutoHeight(item)) {
-				rows = oSettings.calculateRowsForItem(item.$().height());
+				rows = this._calcAutoRowsForPolyfill(item, oSettings);
 			} else {
 				rows = getItemRowCount(item);
 			}
 
-			virtualGrid.fitElement(i + '', columns, rows);
+			virtualGrid.fitElement(k + '', columns, rows);
+			aFittedElements.push({
+				id: k + '',
+				domRef: $item.parent()
+			});
+			k++;
+		}
+
+		if (this._polyfillDropIndicator && this._polyfillDropIndicator.insertAt >= items.length) {
+			fnInsertPolyfillDropIndicator(items.length);
 		}
 
 		virtualGrid.calculatePositions();
 
-		for (i = 0; i < items.length; i++) {
-			item = items[i];
-			virtualGridItem = virtualGrid.getItems()[i];
+		aFittedElements.forEach(function (oFittedElement) {
 
-			item.$().parent().css({
+			var virtualGridItem = virtualGrid.getItems()[oFittedElement.id];
+
+			oFittedElement.domRef.css({
 				position: 'absolute',
 				top: virtualGridItem.top,
 				left: virtualGridItem.left,
 				width: virtualGridItem.width,
 				height: virtualGridItem.height
 			});
-		}
+		});
 
+		// width and height has to be set for the grid because the items inside are absolute positioned and the grid will not have dimensions
 		$that.css("height", virtualGrid.getHeight() + "px");
+
+		if (!this.getWidth() && oSettings.getColumns()) {
+			// use virtual grid width only if grid width is not specified and we know the columns count
+			$that.css("width", virtualGrid.getWidth() + "px");
+		}
 	};
 
 	/**
-	 * A map from Std-ext size to layout aggregation name
+	 * Calculates rows count for item depending on its height.
+	 * @param {sap.ui.core.Control} oItem The item to calculate for
+	 * @param {sap.f.GridContainerSettings} oGridSettings The current grid settings
+	 * @returns {int} The number of rows which the item should have
 	 * @private
 	 */
-	GridContainer.mSizeLayouts = {
-		"Phone": "layoutS",
-		"Tablet": "layoutM",
-		"Desktop": "layoutL",
-		"LargeDesktop": "layoutXL"
+	GridContainer.prototype._calcAutoRowsForPolyfill = function (oItem, oGridSettings) {
+		var $item = oItem.$(),
+			iItemHeight,
+			iRows;
+
+		// height is explicitly set to 100% for analytical card
+		// so we need to use the scrollHeight for it
+		if ($item.hasClass("sapFCardAnalytical")) {
+			iItemHeight = $item[0].scrollHeight;
+		} else {
+			iItemHeight = $item.outerHeight();
+		}
+
+		iRows = Math.max(
+			oGridSettings.calculateRowsForItem(iItemHeight),
+			getItemRowCount(oItem)
+		);
+
+		return iRows;
+	};
+
+	/**
+	 * Implements polyfill for IE after drag over.
+	 * @param {Object} oEvent After drag over event
+	 * @private
+	 */
+	GridContainer.prototype._polyfillAfterDragOver = function (oEvent) {
+		var $indicator = oEvent.getParameter("indicator");
+
+		this._polyfillDropIndicator = {
+			rows: oEvent.getParameter("rows"),
+			columns: oEvent.getParameter("columns"),
+			width: oEvent.getParameter("width"),
+			height: oEvent.getParameter("height"),
+			domRef: $indicator,
+			insertAt: $indicator.index()
+		};
+
+		this._scheduleIEPolyfill();
+	};
+
+	/**
+	 * Implements polyfill for IE after drag end.
+	 * @param {Object} oEvent After drag end event
+	 * @private
+	 */
+	GridContainer.prototype._polyfillAfterDragEnd = function (oEvent) {
+		this._polyfillDropIndicator = null;
+	};
+
+	/**
+	 * Attaches polyfill methods for drag and drop for IE.
+	 * @private
+	 */
+	GridContainer.prototype._attachDndPolyfill = function () {
+		this.attachEvent("_gridPolyfillAfterDragOver", this._polyfillAfterDragOver, this);
+		this.attachEvent("_gridPolyfillAfterDragEnd", this._polyfillAfterDragEnd, this);
+	};
+
+	/**
+	 * Detaches polyfill methods for drag and drop for IE.
+	 * @private
+	 */
+	GridContainer.prototype._detachDndPolyfill = function () {
+		this.detachEvent("_gridPolyfillAfterDragOver", this._polyfillAfterDragOver, this);
+		this.detachEvent("_gridPolyfillAfterDragEnd", this._polyfillAfterDragEnd, this);
 	};
 
 	return GridContainer;

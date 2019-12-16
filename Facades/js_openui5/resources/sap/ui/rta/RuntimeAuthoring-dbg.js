@@ -38,7 +38,9 @@ sap.ui.define([
 	"sap/ui/dt/Util",
 	"sap/ui/dt/ElementUtil",
 	"sap/ui/fl/Utils",
-	"sap/ui/fl/registry/Settings",
+	"sap/ui/fl/LayerUtils",
+	"sap/ui/fl/write/api/FeaturesAPI",
+	"sap/ui/fl/write/api/PersistenceWriteAPI",
 	"sap/m/MessageBox",
 	"sap/m/MessageToast",
 	"sap/ui/rta/util/PopupManager",
@@ -55,7 +57,7 @@ sap.ui.define([
 	"sap/ui/performance/Measurement",
 	"sap/base/Log",
 	"sap/ui/events/KeyCodes",
-	"sap/ui/fl/write/api/PersistenceWriteAPI"
+	"sap/ui/rta/util/validateFlexEnabled"
 ],
 function(
 	jQuery,
@@ -90,7 +92,9 @@ function(
 	DtUtil,
 	ElementUtil,
 	FlexUtils,
-	FlexSettings,
+	LayerUtils,
+	FeaturesAPI,
+	PersistenceWriteAPI,
 	MessageBox,
 	MessageToast,
 	PopupManager,
@@ -107,11 +111,10 @@ function(
 	Measurement,
 	Log,
 	KeyCodes,
-	PersistenceWriteAPI
+	validateFlexEnabled
 ) {
 	"use strict";
 
-	var FL_MAX_LAYER_PARAM = "sap-ui-fl-max-layer";
 	var STARTING = "STARTING";
 	var STARTED = "STARTED";
 	var STOPPED = "STOPPED";
@@ -126,7 +129,7 @@ function(
 	 * @class The runtime authoring allows to adapt the fields of a running application.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @constructor
 	 * @private
 	 * @since 1.30
@@ -270,6 +273,10 @@ function(
 			if (window.parent !== window) {
 				this.startService('receiver');
 			}
+
+			if (this._shouldValidateFlexEnabled()) {
+				this.attachEvent("start", validateFlexEnabled.bind(null, this));
+			}
 		},
 		_RESTART : {
 			NOT_NEEDED : "no restart",
@@ -277,6 +284,10 @@ function(
 			RELOAD_PAGE : "reload"
 		}
 	});
+
+	RuntimeAuthoring.prototype._shouldValidateFlexEnabled = function () {
+		return document.location.hostname.endsWith(".sap" + ".corp");
+	};
 
 	/**
 	 * Returns (and creates) the default plugins of RuntimeAuthoring
@@ -441,9 +452,10 @@ function(
 	};
 
 	RuntimeAuthoring.prototype.onPopupOpen = function(oEvent) {
+		var oOpenedPopup = oEvent.getParameters().getSource();
 		if (
-			oEvent.getParameters() instanceof sap.m.Dialog
-			&& this.getToolbar() instanceof FioriToolbar
+			oOpenedPopup.isA("sap.m.Dialog")
+			&& this.getToolbar().isA("sap.ui.rta.toolbar.Fiori")
 		) {
 			this.getToolbar().setColor("contrast");
 		}
@@ -476,7 +488,7 @@ function(
 	 */
 	RuntimeAuthoring.prototype.setFlexSettings = function(mFlexSettings) {
 		// Check URI-parameters for sap-ui-layer
-		var oUriParams = new UriParameters(window.location.href);
+		var oUriParams = UriParameters.fromQuery(window.location.search);
 		var sUriLayer = oUriParams.get("sap-ui-layer");
 
 		mFlexSettings = jQuery.extend({}, this.getFlexSettings(), mFlexSettings);
@@ -530,7 +542,7 @@ function(
 		if (!this._oDesignTime) {
 			if (!oRootControl) {
 				vError = new Error("Root control not found");
-				FlexUtils.log.error(vError);
+				Log.error(vError);
 				return Promise.reject(vError);
 			}
 
@@ -540,7 +552,7 @@ function(
 				&& !FlexUtils.isCorrectAppVersionFormat(FlexUtils.getAppVersionFromManifest(FlexUtils.getAppComponentForControl(oRootControl).getManifest()))
 			) {
 				vError = this._getTextResources().getText("MSG_INCORRECT_APP_VERSION_ERROR");
-				FlexUtils.log.error(vError);
+				Log.error(vError);
 				return Promise.reject(vError);
 			}
 
@@ -614,6 +626,17 @@ function(
 				window.onbeforeunload = this._onUnload.bind(this);
 			}.bind(this))
 			.then(function () {
+				var mPropertyBag = {
+					selector: this.getRootControlInstance(),
+					layer: this.getLayer()
+				};
+				return PersistenceWriteAPI.getResetAndPublishInfo(mPropertyBag)
+				.then(function(oPublishAndResetInfo) {
+					this.bInitialResetEnabled = oPublishAndResetInfo.isResetEnabled;
+					this.bInitialPublishEnabled = oPublishAndResetInfo.isPublishEnabled;
+				}.bind(this));
+			}.bind(this))
+			.then(function () {
 				if (this.getShowToolbars()) {
 					// Create ToolsMenu
 					return this._getPublishAndAppVariantSupportVisibility()
@@ -679,6 +702,8 @@ function(
 					this.fireFailed(vError);
 				}
 				if (vError) {
+					// destroy rta when reload is triggered
+					this.destroy();
 					return Promise.reject(vError);
 				}
 			}.bind(this));
@@ -692,19 +717,16 @@ function(
 	/**
 	 * Checks the Publish button and app variant support (i.e. Save As and Overview of App Variants) availability
 	 * @private
-	 * @returns {boolean[]} Returns an array of boolean values [bPublishAvailable, bAppVariantSupportAvailable]
+	 * @returns {Promise<boolean[]>} Returns a Promise with an array of boolean values [bPublishAvailable, bAppVariantSupportAvailable]
 	 * @description The publish button shall not be available if the system is productive and if a merge error occurred during merging changes into the view on startup
 	 * The app variant support shall not be available if the system is productive and if the platform is not enabled (See Feature.js) to show the app variant tooling
 	 * isProductiveSystem should only return true if it is a test or development system with the provision of custom catalog extensions
 	 */
 	RuntimeAuthoring.prototype._getPublishAndAppVariantSupportVisibility = function() {
-		return FlexSettings.getInstance().then(function(oSettings) {
+		return FeaturesAPI.isPublishAvailable().then(function(bIsPublishAvailabe) {
 			var bIsAppVariantSupported = RtaAppVariantFeature.isPlatFormEnabled(this.getRootControlInstance(), this.getLayer(), this._oSerializer);
-			return [!oSettings.isProductiveSystem() && !oSettings.hasMergeErrorOccured(), !oSettings.isProductiveSystem() && bIsAppVariantSupported];
-		}.bind(this))
-		.catch(function () {
-			return false;
-		});
+			return [bIsPublishAvailabe, bIsPublishAvailabe && bIsAppVariantSupported];
+		}.bind(this));
 	};
 
 	var fnShowTechnicalError = function(vError) {
@@ -786,8 +808,8 @@ function(
 
 		if (this.getShowToolbars()) {
 			this.getToolbar().setUndoRedoEnabled(bCanUndo, bCanRedo);
-			this.getToolbar().setPublishEnabled(this._bChangesExist || bCanUndo);
-			this.getToolbar().setRestoreEnabled(this._bChangesExist || bCanUndo);
+			this.getToolbar().setPublishEnabled(this.bInitialPublishEnabled || bCanUndo);
+			this.getToolbar().setRestoreEnabled(this.bInitialResetEnabled || bCanUndo);
 		}
 		this.fireUndoRedoStackModified();
 	};
@@ -892,11 +914,11 @@ function(
 			) {
 				this._onUndo().then(oEvent.stopPropagation.bind(oEvent));
 			} else if (
-				(( // OSX: CMD+SHIFT+Z
+				((// OSX: CMD+SHIFT+Z
 					bMacintosh
 					&& oEvent.keyCode === KeyCodes.Z
 					&& oEvent.shiftKey === true
-				) || ( // Others: CTRL+Y
+				) || (// Others: CTRL+Y
 					!bMacintosh
 					&& oEvent.keyCode === KeyCodes.Y
 					&& oEvent.shiftKey === false
@@ -926,15 +948,13 @@ function(
 	};
 
 	RuntimeAuthoring.prototype._serializeToLrep = function() {
-		return this._oSerializer.saveCommands()
-		.then(this._invalidateCache.bind(this));
-	};
-
-	RuntimeAuthoring.prototype._invalidateCache = function() {
-		return PersistenceWriteAPI.getUIChanges({
-			invalidateCache: true,
-			managedObject: this.getRootControlInstance()
-		});
+		if (!this._bReloadNeeded) {
+			return this._oSerializer.needsReload().then(function(bReloadNeeded) {
+				this._bReloadNeeded = bReloadNeeded;
+				return this._oSerializer.saveCommands();
+			}.bind(this));
+		}
+		return this._oSerializer.saveCommands();
 	};
 
 	RuntimeAuthoring.prototype._onUndo = function() {
@@ -978,11 +998,14 @@ function(
 					undo: this._onUndo.bind(this),
 					redo: this._onRedo.bind(this),
 					modeChange: this._onModeChange.bind(this),
-					manageApps: RtaAppVariantFeature.onGetOverview.bind(null, true),
+					manageApps: RtaAppVariantFeature.onGetOverview.bind(null, true, this.getLayer()),
 					appVariantOverview: this._onGetAppVariantOverview.bind(this),
-					saveAs: RtaAppVariantFeature.onSaveAsFromRtaToolbar.bind(null, true, true)
+					saveAs: RtaAppVariantFeature.onSaveAs.bind(null, true, true, this.getLayer(), null)
 				}), 'toolbar');
 			}
+
+			this.getToolbar().setPublishEnabled(this.bInitialPublishEnabled);
+			this.getToolbar().setRestoreEnabled(this.bInitialResetEnabled);
 
 			var bExtendedOverview;
 
@@ -1009,15 +1032,6 @@ function(
 					this.getToolbar().getControl('saveAs').setEnabled(bResult);
 				}.bind(this));
 			}
-
-			this._checkChangesExist().then(function(bResult) {
-				// FIXME: remove this condition when start() is refactored properly
-				if (!this.bIsDestroyed) {
-					this._bChangesExist = bResult;
-					this.getToolbar().setPublishEnabled(bResult);
-					this.getToolbar().setRestoreEnabled(bResult);
-				}
-			}.bind(this));
 		}
 	};
 
@@ -1025,7 +1039,7 @@ function(
 		var oItem = oEvent.getParameter("item");
 
 		var bTriggeredForKeyUser = oItem.getId() === 'keyUser';
-		return RtaAppVariantFeature.onGetOverview(bTriggeredForKeyUser);
+		return RtaAppVariantFeature.onGetOverview(bTriggeredForKeyUser, this.getLayer());
 	};
 
 	/**
@@ -1089,16 +1103,33 @@ function(
 		return this._serializeToLrep().then(function () {
 			BusyIndicator.hide();
 			var bAppVariantRunning = FlexUtils.isApplicationVariant(this._oRootControl) && !FlexUtils.isVariantByStartupParameter(this._oRootControl);
-			return ((bAppVariantRunning) ? RtaAppVariantFeature.getAppVariantDescriptor(this._oRootControl) : Promise.resolve())
+			return ((bAppVariantRunning) ? RtaAppVariantFeature.getAppVariantDescriptor(this._oRootControl, this.getLayer()) : Promise.resolve())
 				.then(function(oAppVariantDescriptor) {
 					var aAppVariantDescriptor = [];
 					if (oAppVariantDescriptor) {
 						aAppVariantDescriptor.push(oAppVariantDescriptor);
 					}
-					return PersistenceWriteAPI._transportChanges(this._oRootControl, Utils.getRtaStyleClassName(), this.getLayer(), aAppVariantDescriptor)
+					return PersistenceWriteAPI.publish({
+						selector: this.getRootControlInstance(),
+						styleClass: Utils.getRtaStyleClassName(),
+						layer: this.getLayer(),
+						appVariantDescriptors: aAppVariantDescriptor
+					})
 						.then(function(sResponse) {
 							if (sResponse !== "Error" && sResponse !== "Cancel") {
 								this._showMessageToast("MSG_TRANSPORT_SUCCESS");
+
+								if (this.getShowToolbars()) {
+									var mPropertyBag = {
+										selector: this.getRootControlInstance(),
+										layer: this.getLayer()
+									};
+									PersistenceWriteAPI.getResetAndPublishInfo(mPropertyBag)
+									.then(function(oPublishAndResetInfo) {
+										this.getToolbar().setPublishEnabled(oPublishAndResetInfo.isPublishEnabled);
+										this.getToolbar().setRestoreEnabled(oPublishAndResetInfo.isResetEnabled);
+									}.bind(this));
+								}
 							}
 						}.bind(this));
 				}.bind(this));
@@ -1108,7 +1139,7 @@ function(
 	/**
 	 * Delete all changes for current layer and root control's component.
 	 * In case of Base Applications (no App Variants) the App Descriptor Changes and UI Changes are saved in different Flex Persistence instances,
-	 * so we have to call reset twice. For App Variants all the changes are saved in one place.
+	 * the changes for both places will be deleted. For App Variants all the changes are saved in one place.
 	 *
 	 * @private
 	 */
@@ -1116,13 +1147,19 @@ function(
 		var oRootControl = this.getRootControlInstance();
 		var oAppComponent = FlexUtils.getAppComponentForControl(oRootControl);
 
-		return PersistenceWriteAPI.resetChanges(this.getLayer(), "Change.createInitialFileContent", oAppComponent)
-		.then(function() {
-			this._reloadPage();
-		}.bind(this))
-		.catch(function(oError) {
-			return Utils._showMessageBox(MessageBox.Icon.ERROR, "HEADER_RESTORE_FAILED", "MSG_RESTORE_FAILED", oError);
-		});
+		return PersistenceWriteAPI.reset({
+			selector: oAppComponent,
+			layer: this.getLayer(),
+			generator: "Change.createInitialFileContent"
+		})
+			.then(function () {
+				this._reloadPage();
+			}.bind(this))
+			.catch(function (oError) {
+				if (oError !== "cancel") {
+					Utils._showMessageBox(MessageBox.Icon.ERROR, "HEADER_RESTORE_FAILED", "MSG_RESTORE_FAILED", oError);
+				}
+			});
 	};
 
 	/**
@@ -1287,7 +1324,7 @@ function(
 				if (oError && oError.message && oError.message.indexOf("The following Change cannot be applied because of a dependency") > -1) {
 					Utils._showMessageBox(MessageBox.Icon.ERROR, "HEADER_DEPENDENCY_ERROR", "MSG_DEPENDENCY_ERROR", oError);
 				}
-				FlexUtils.log.error("sap.ui.rta: " + oError.message);
+				Log.error("sap.ui.rta: " + oError.message);
 			});
 		}
 		return Promise.resolve();
@@ -1319,28 +1356,6 @@ function(
 	};
 
 	/**
-	 * Check if Changes exist
-	 * @private
-	 * @returns {Promise} Resolving to false means that no change check is required
-	 */
-	RuntimeAuthoring.prototype._checkChangesExist = function() {
-		var oRootControl = this.getRootControlInstance();
-		var oAppComponent = FlexUtils.getAppComponentForControl(oRootControl);
-		if (FlexUtils.getComponentName(oAppComponent).length > 0) {
-			return PersistenceWriteAPI.getUIChanges({
-				currentLayer: this.getLayer(),
-				includeCtrlVariants: true,
-				invalidateCache: false,
-				managedObject: oAppComponent
-			})
-				.then(function (aAllLocalChanges) {
-					return aAllLocalChanges.length > 0;
-				});
-		}
-		return Promise.resolve(false);
-	};
-
-	/**
 	 * Build the navigation arguments object required to trigger the navigation
 	 * using the CrossApplicationNavigation ushell service.
 	 * @param  {Object} mParsedHash Parsed URL hash
@@ -1369,8 +1384,8 @@ function(
 	RuntimeAuthoring.prototype._hasMaxLayerParameter = function(mParsedHash) {
 		var sCurrentLayer = this.getLayer();
 		return mParsedHash.params &&
-			mParsedHash.params[FL_MAX_LAYER_PARAM] &&
-			mParsedHash.params[FL_MAX_LAYER_PARAM][0] === sCurrentLayer;
+			mParsedHash.params[LayerUtils.FL_MAX_LAYER_PARAM] &&
+			mParsedHash.params[LayerUtils.FL_MAX_LAYER_PARAM][0] === sCurrentLayer;
 	};
 
 	/**
@@ -1385,7 +1400,7 @@ function(
 			if (!mParsedHash.params) {
 				mParsedHash.params = {};
 			}
-			mParsedHash.params[FL_MAX_LAYER_PARAM] = [sCurrentLayer];
+			mParsedHash.params[LayerUtils.FL_MAX_LAYER_PARAM] = [sCurrentLayer];
 			RuntimeAuthoring.enableRestart(sCurrentLayer);
 			// triggers the navigation without leaving FLP
 			oCrossAppNav.toExternal(this._buildNavigationArguments(mParsedHash));
@@ -1403,7 +1418,7 @@ function(
 			var mParsedHash = FlexUtils.getParsedURLHash();
 			if (oCrossAppNav.toExternal && mParsedHash) {
 				if (this._hasMaxLayerParameter(mParsedHash)) {
-					delete mParsedHash.params[FL_MAX_LAYER_PARAM];
+					delete mParsedHash.params[LayerUtils.FL_MAX_LAYER_PARAM];
 					// triggers the navigation without leaving FLP
 					oCrossAppNav.toExternal(this._buildNavigationArguments(mParsedHash));
 				}
@@ -1451,7 +1466,9 @@ function(
 		var oUshellContainer = FlexUtils.getUshellContainer();
 		if (oUshellContainer && this.getLayer() !== "USER") {
 			var mParsedHash = FlexUtils.getParsedURLHash();
-			return PersistenceWriteAPI.hasHigherLayerChanges(this.getRootControlInstance(), {ignoreMaxLayerParameter: false})
+			return PersistenceWriteAPI.hasHigherLayerChanges({
+				selector: this.getRootControlInstance(),
+				ignoreMaxLayerParameter: false})
 				.then(function (bHasHigherLayerChanges) {
 					if (bHasHigherLayerChanges) {
 						return this._handleReloadWithoutHigherLayerChangesMessageBoxOnStart().then(function () {
@@ -1473,16 +1490,19 @@ function(
 	 */
 	RuntimeAuthoring.prototype._handleReloadOnExit = function() {
 		return Promise.all([
-			this._oSerializer.needsReload(),
+			(!this._bReloadNeeded) ?
+				this._oSerializer.needsReload() :
+				Promise.resolve(this._bReloadNeeded),
 			// When working with RTA, the MaxLayer parameter will be present in the URL and must
 			// be ignored in the decision to bring up the pop-up (ignoreMaxLayerParameter = true)
-			PersistenceWriteAPI.hasHigherLayerChanges(this.getRootControlInstance(), {ignoreMaxLayerParameter: true})
+			PersistenceWriteAPI.hasHigherLayerChanges({selector: this.getRootControlInstance(), ignoreMaxLayerParameter: true})
 		]).then(function (aArgs) {
-			var bChangesNeedRestart = aArgs[0],
-				bHasHigherLayerChanges = aArgs[1];
+			var bChangesNeedRestart = aArgs[0];
+			var bHasHigherLayerChanges = aArgs[1];
 			if (bChangesNeedRestart || bHasHigherLayerChanges) {
 				var sRestart = this._RESTART.RELOAD_PAGE;
-				var sRestartReason, oUshellContainer;
+				var sRestartReason;
+				var oUshellContainer;
 				if (bHasHigherLayerChanges) {
 					//Loading the app with personalization means the visualization might change,
 					//therefore this message takes precedence

@@ -19,7 +19,7 @@ sap.ui.define(['sap/ui/base/Metadata', "sap/base/Log"], function(Metadata, Log) 
 	 * Constructor for an sap.m.semantic.Segment.
 	 *
 	 * @class Abstraction for a segment in a SegmentedContainer
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @private
 	 * @since 1.30.0
 	 * @alias sap.m.semantic.Segment

@@ -63,7 +63,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -216,6 +216,21 @@ sap.ui.define([
 
 		Control.prototype.setAggregation.call(this, sName, oControl, bSupressInvalidate);
 		return this;
+	};
+
+	/**
+	 * Retrieves the accessibility state of the control.
+	 *
+	 * @returns {object} The accessibility state of the control
+	 */
+	MessageStripRenderer.getAccessibilityState = function () {
+		var mAccessibilityState = MSUtils.getAccessibilityState.call(this),
+			oLink = this.getLink();
+
+		if (!oLink) {
+			mAccessibilityState.labelledby = this.getId();
+		}
+		return mAccessibilityState;
 	};
 
 	/**

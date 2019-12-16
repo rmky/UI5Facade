@@ -17,11 +17,11 @@ sap.ui.define([
 		"sap/m/ObjectIdentifier",
 		"sap/m/ObjectStatus",
 		"sap/f/Avatar",
-		"sap/f/cards/ActionEnablement",
-		"sap/ui/core/VerticalAlign",
-		"sap/m/ListSeparators",
-		"sap/m/ListType",
-		"sap/f/cards/BindingResolver"
+		"sap/ui/core/library",
+		"sap/m/library",
+		"sap/f/cards/BindingResolver",
+		"sap/f/cards/BindingHelper",
+		"sap/f/cards/IconFormatter"
 	], function (
 		library,
 		ManagedObject,
@@ -35,16 +35,25 @@ sap.ui.define([
 		ObjectIdentifier,
 		ObjectStatus,
 		Avatar,
-		ActionEnablement,
-		VerticalAlign,
-		ListSeparators,
-		ListType,
-		BindingResolver
+		coreLibrary,
+		mobileLibrary,
+		BindingResolver,
+		BindingHelper,
+		IconFormatter
 	) {
 		"use strict";
 
 		// shortcut for sap.f.AvatarSize
 		var AvatarSize = library.AvatarSize;
+
+		// shortcut for sap.ui.core.VerticalAlign
+		var VerticalAlign = coreLibrary.VerticalAlign;
+
+		// shortcuts for sap.m.* types
+		var ListSeparators = mobileLibrary.ListSeparators;
+		var ListType = mobileLibrary.ListType;
+
+		var AreaType = library.cards.AreaType;
 
 		/**
 		 * Constructor for a new <code>TableContent</code>.
@@ -64,7 +73,7 @@ sap.ui.define([
 		 * @extends sap.f.cards.BaseContent
 		 *
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.73.1
 		 *
 		 * @constructor
 		 * @private
@@ -129,13 +138,20 @@ sap.ui.define([
 			return this;
 		};
 
+		/**
+		 * Binds/Sets properties to the inner item template based on the configuration object row template which is already parsed.
+		 * Attaches all required actions.
+		 *
+		 * @private
+		 * @param {Object} oRow The item template of the configuration object.
+		 */
 		TableContent.prototype._setColumns = function (oRow) {
 			var aCells = [],
 				oTable = this._getTable(),
 				aColumns = oRow.columns;
 
 			aColumns.forEach(function (oColumn) {
-				this._getTable().addColumn(new Column({
+				oTable.addColumn(new Column({
 					header: new Text({ text: oColumn.title }),
 					width: oColumn.width
 				}));
@@ -147,7 +163,8 @@ sap.ui.define([
 				vAlign: VerticalAlign.Middle
 			});
 
-			this._attachActions(oRow, this._oItemTemplate);
+			this._oActions.setAreaType(AreaType.ContentItem);
+			this._oActions.attach(oRow, this);
 
 			var oBindingInfo = {
 				template: this._oItemTemplate
@@ -177,7 +194,7 @@ sap.ui.define([
 					}
 				}
 
-				// TO DO: move this part to ActionEnablement
+				// TO DO: move this part to CardActions
 				if (oRow.actions && Array.isArray(oRow.actions)) {
 					// for now allow only 1 action of type navigation
 					var oAction = oRow.actions[0];
@@ -217,27 +234,25 @@ sap.ui.define([
 			}
 
 			if (oColumn.identifier) {
+
+				var vTitleActive;
+
+				if (oColumn.identifier.url) {
+					vTitleActive = BindingHelper.formattedProperty(oColumn.identifier.url, function (sValue) {
+						if (typeof sValue === "string") {
+							return true;
+						}
+						return false;
+					});
+				}
+
 				var oIdentifier = new ObjectIdentifier({
-					title: oColumn.value
+					title: oColumn.value,
+					titleActive: vTitleActive
 				});
 
 				if (oColumn.identifier.url) {
-					var oBindingInfo = ManagedObject.bindingParser(oColumn.identifier.url);
-
-					if (oBindingInfo) {
-						oBindingInfo.formatter = function (vValue) {
-							if (typeof vValue === "string") {
-								return true;
-							}
-
-							return false;
-						};
-						oIdentifier.bindProperty("titleActive", oBindingInfo);
-					} else {
-						oIdentifier.setTitleActive(!!oColumn.identifier.url);
-					}
-
-					// TO DO: move this part to ActionEnablement
+					// TO DO: move this part to CardActions
 					oIdentifier.attachTitlePress(function (oEvent) {
 
 						var oSource = oEvent.getSource(),
@@ -277,8 +292,11 @@ sap.ui.define([
 			}
 
 			if (oColumn.icon) {
+				var vSrc = BindingHelper.formattedProperty(oColumn.icon.src, function (sValue) {
+					return IconFormatter.formatSrc(sValue, this._sAppId);
+				}.bind(this));
 				return new Avatar({
-					src: oColumn.icon.src,
+					src: vSrc,
 					displayShape: oColumn.icon.shape,
 					displaySize: AvatarSize.XS
 				});
@@ -300,8 +318,6 @@ sap.ui.define([
 		TableContent.prototype.getInnerList = function () {
 			return this._getTable();
 		};
-
-		ActionEnablement.enrich(TableContent);
 
 		return TableContent;
 });

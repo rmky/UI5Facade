@@ -11,6 +11,7 @@ sap.ui.define([
 	'./SearchField',
 	'./Table',
 	'./library',
+	'./TitleAlignmentMixin',
 	'sap/ui/core/Control',
 	'sap/ui/Device',
 	'sap/ui/base/ManagedObject',
@@ -20,7 +21,8 @@ sap.ui.define([
 	'sap/m/Bar',
 	'sap/ui/core/theming/Parameters',
 	'sap/m/Title',
-	'./TableSelectDialogRenderer'
+	'./TableSelectDialogRenderer',
+	'sap/base/Log'
 ],
 	function(
 		Button,
@@ -28,6 +30,7 @@ sap.ui.define([
 		SearchField,
 		Table,
 		library,
+		TitleAlignmentMixin,
 		Control,
 		Device,
 		ManagedObject,
@@ -37,7 +40,8 @@ sap.ui.define([
 		Bar,
 		Parameters,
 		Title,
-		TableSelectDialogRenderer
+		TableSelectDialogRenderer,
+		Log
 	) {
 	"use strict";
 
@@ -46,7 +50,11 @@ sap.ui.define([
 	// shortcut for sap.m.ListMode
 	var ListMode = library.ListMode;
 
+	// shortcut for sap.m.ButtonType
+	var ButtonType = library.ButtonType;
 
+	// shortcut for sap.m.TitleAlignment
+	var TitleAlignment = library.TitleAlignment;
 
 	/**
 	 * Constructor for a new TableSelectDialog.
@@ -88,6 +96,8 @@ sap.ui.define([
 	 * <li>When the property <code>growing</code> is set to <code>true</code> (default value), the features <code>selected count</code> in info bar, <code>search</code> and <code>select/deselect all</code>, if present, work only for the currently loaded items.
 	 * To make sure that all items in the table are loaded at once and the above features work properly, set the property to <code>false</code>.
 	 * <li>Since version 1.58, the columns headers and the info toolbar are sticky (remain fixed on top when scrolling). This feature is not supported in all browsers.
+	 * <li>The TableSelectDialog is usually displayed at the center of the screen. Its size and position can be changed by the user.
+	 * To enable this you need to set the <code>resizable</code> and <code>draggable</code> properties. Both properties are available only in desktop mode.</li>
 	 * For more information on browser support limitations, you can refer to the {@link sap.m.ListBase sap.m.ListBase} <code>sticky</code> property.
 	 * </ul>
 	 * <h3>Responsive Behavior</h3>
@@ -96,7 +106,7 @@ sap.ui.define([
 	 * </ul>
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -169,7 +179,7 @@ sap.ui.define([
 			 * Optional:
 			 * In case <code>multiSelect</code> is set to <code>true</code>, the selection can be easily cleared with one click.
 			 *
-			 * <b>Note:</b> When used with oData, only the loaded selections will be cleared.
+			 * <b>Note:</b> When used with OData, only the loaded selections will be cleared.
 			 * @since 1.58
 			 */
 			showClearButton : {type : "boolean", group : "Behavior", defaultValue : false},
@@ -177,8 +187,26 @@ sap.ui.define([
 			 * Overwrites the default text for the confirmation button.
 			 * @since 1.68
 			 */
-			confirmButtonText: {type : "string", group : "Appearance"}
+			confirmButtonText: {type : "string", group : "Appearance"},
+						/**
+			 * When set to <code>true</code>, the TableSelectDialog is draggable by its header. The default value is <code>false</code>. <b>Note</b>: The SelectDialog can be draggable only in desktop mode.
+			 * @since 1.71
+			 */
+			draggable: {type: "boolean", group: "Behavior", defaultValue: false},
+			/**
+			 * When set to <code>true</code>, the TableSelectDialog will have a resize handler in its bottom right corner. The default value is <code>false</code>. <b>Note</b>: The SelectDialog can be resizable only in desktop mode.
+			 * @since 1.71
+			 */
+			resizable: {type: "boolean", group: "Behavior", defaultValue: false},
 
+			/**
+			 * Specifies the Title alignment (theme specific).
+			 * If set to <code>TitleAlignment.Auto</code>, the Title will be aligned as it is set in the theme (if not set, the default value is <code>center</code>);
+			 * Other possible values are <code>TitleAlignment.Start</code> (left or right depending on LTR/RTL), and <code>TitleAlignment.Center</code> (centered)
+			 * @since 1.72
+			 * @public
+			 */
+			titleAlignment : {type : "sap.m.TitleAlignment", group : "Misc", defaultValue : TitleAlignment.Auto}
 		},
 		defaultAggregation : "items",
 		aggregations : {
@@ -239,7 +267,13 @@ sap.ui.define([
 					/**
 					 * Determines the Items binding of the Table Select Dialog. Only available if the items aggregation is bound to a model.
 					 */
-					itemsBinding : {type : "any"}
+					itemsBinding : {type : "any"},
+
+					/**
+					 * Returns if the Clear button is pressed.
+					 * @since 1.70
+					 */
+					clearButtonPressed: {type: "boolean"}
 				}
 			},
 
@@ -349,14 +383,17 @@ sap.ui.define([
 				clearTimeout(iLiveChangeTimer);
 				if (iDelay) {
 					iLiveChangeTimer = setTimeout(function () {
-						that._executeSearch(sValue, "liveChange");
+						that._executeSearch(sValue, false, "liveChange");
 					}, iDelay);
 				} else {
-					that._executeSearch(sValue, "liveChange");
+					that._executeSearch(sValue, false, "liveChange");
 				}
 			},
 			search: function (oEvent) {
-				that._executeSearch(oEvent.getSource().getValue(), "search");
+				var sValue = oEvent.getSource().getValue(),
+					bClearButtonPressed = oEvent.getParameter("clearButtonPressed");
+
+				that._executeSearch(sValue, bClearButtonPressed, "search");
 			}
 		});
 		this._searchField = this._oSearchField; // for downward compatibility
@@ -376,6 +413,9 @@ sap.ui.define([
 			]
 		});
 
+		// call the method that registers this Bar for alignment
+		this._setupBarTitleAlignment(oCustomHeader, this.getId() + "_customHeader");
+
 		// store a reference to the internal dialog
 		this._oDialog = new Dialog(this.getId() + "-dialog", {
 			customHeader: oCustomHeader,
@@ -384,7 +424,9 @@ sap.ui.define([
 			subHeader: this._oSubHeader,
 			content: [this._oBusyIndicator, this._oTable],
 			endButton: this._getCancelButton(),
-			initialFocus: ((Device.system.desktop && this._oSearchField) ? this._oSearchField : null)
+			initialFocus: ((Device.system.desktop && this._oSearchField) ? this._oSearchField : null),
+			draggable: this.getDraggable() && Device.system.desktop,
+			resizable: this.getResizable() && Device.system.desktop
 		});
 		this._dialog = this._oDialog; // for downward compatibility
 		this.setAggregation("_dialog", this._oDialog);
@@ -571,6 +613,49 @@ sap.ui.define([
 	};
 
 	/**
+	 * Sets the draggable property.
+	 * @public
+	 * @param {boolean} bValue Value for the draggable property
+	 * @returns {sap.m.SelectDialog} <code>this</code> pointer for chaining
+	 */
+	TableSelectDialog.prototype.setDraggable = function (bValue) {
+		this._setInteractionProperty(bValue, "draggable", this._oDialog.setDraggable);
+
+		return this;
+	};
+
+	/**
+	 * Sets the resizable property.
+	 * @public
+	 * @param {boolean} bValue Value for the resizable property
+	 * @returns {sap.m.SelectDialog} <code>this</code> pointer for chaining
+	 */
+	TableSelectDialog.prototype.setResizable = function (bValue) {
+		this._setInteractionProperty(bValue, "resizable", this._oDialog.setResizable);
+
+		return this;
+	};
+
+	/**
+	 * @private
+	 * @param {boolean} bValue Value for the property
+	 * @param {string} sPropertyType Property type
+	 * @param {function} fnCallback Callback function
+	 */
+	TableSelectDialog.prototype._setInteractionProperty = function(bValue, sPropertyType, fnCallback) {
+		this.setProperty(sPropertyType, bValue, true);
+
+		if (!Device.system.desktop && bValue) {
+			Log.warning(sPropertyType + " property works only on desktop devices!");
+			return;
+		}
+
+		if (Device.system.desktop && this._oDialog) {
+			fnCallback.call(this._oDialog, bValue);
+		}
+	};
+
+	/**
 	 * Enables/Disables busy state.
 	 * @overwrite
 	 * @public
@@ -630,6 +715,7 @@ sap.ui.define([
 			this._oTable.setMode(ListMode.SingleSelectMaster);
 			this._oDialog.setEndButton(this._getCancelButton());
 			this._oDialog.destroyBeginButton();
+			delete this._oOkButton;
 		}
 
 		return this;
@@ -879,10 +965,11 @@ sap.ui.define([
 	 * This function is also called whenever a search event on the "search field" is triggered
 	 * @private
 	 * @param {string} sValue The new Search value or undefined if called by management functions
+	 * @param {boolean} bClearButtonPressed Indicates if the clear button is pressed
 	 * @param {string} sEventType The search field event type that has been called (liveChange / search)
 	 * @returns {sap.m.TableSelectDialog} this pointer for chaining
 	 */
-	TableSelectDialog.prototype._executeSearch = function (sValue, sEventType) {
+	TableSelectDialog.prototype._executeSearch = function (sValue, bClearButtonPressed, sEventType) {
 		var oTable = this._oTable,
 			oBinding = (oTable ? oTable.getBinding("items") : undefined),
 			bSearchValueDifferent = (this._sSearchFieldValue !== sValue); // to prevent unwanted duplicate requests
@@ -901,7 +988,11 @@ sap.ui.define([
 				if (sEventType === "search") {
 
 					// fire the search so the data can be updated externally
-					this.fireSearch({value: sValue, itemsBinding: oBinding});
+					this.fireSearch({
+						value: sValue,
+						itemsBinding: oBinding,
+						clearButtonPressed: bClearButtonPressed
+					});
 				} else if (sEventType === "liveChange") {
 					// fire the liveChange so the data can be updated externally
 					this.fireLiveChange({value: sValue, itemsBinding: oBinding});
@@ -910,7 +1001,10 @@ sap.ui.define([
 				// no binding, just fire the event for manual filtering
 				if (sEventType === "search") {
 					// fire the search so the data can be updated externally
-					this.fireSearch({value: sValue});
+					this.fireSearch({
+						value: sValue,
+						clearButtonPressed: bClearButtonPressed
+					});
 				} else if (sEventType === "liveChange") {
 					// fire the liveChange so the data can be updated externally
 					this.fireLiveChange({value: sValue});
@@ -1017,6 +1111,7 @@ sap.ui.define([
 
 		if (!this._oOkButton) {
 			this._oOkButton = new Button(this.getId() + "-ok", {
+				type: ButtonType.Emphasized,
 				text: this.getConfirmButtonText() || this._oRb.getText("SELECT_CONFIRM_BUTTON"),
 				press: function () {
 					// attach the reset function to afterClose to hide the dialog changes from the end user
@@ -1167,7 +1262,7 @@ sap.ui.define([
 		// due to the delayed call (dialog onAfterClose) the control could be already destroyed
 		if (!this.bIsDestroyed) {
 			var oBindings = this._oTable.getBinding("items");
-			if (oBindings) {
+			if (oBindings && oBindings.aFilters && oBindings.aFilters.length) {
 				oBindings.filter([]);
 			}
 			this._oTable.removeSelections();
@@ -1181,6 +1276,8 @@ sap.ui.define([
 	/*           end: internal methods                             */
 	/* =========================================================== */
 
+	// enrich the control functionality with TitleAlignmentMixin
+	TitleAlignmentMixin.mixInto(TableSelectDialog.prototype);
 
 	return TableSelectDialog;
 

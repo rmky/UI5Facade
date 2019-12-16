@@ -5,7 +5,6 @@
  */
 
 sap.ui.define([
-	'./InputBase',
 	'./ComboBoxTextField',
 	'./ComboBoxBase',
 	'./List',
@@ -20,10 +19,10 @@ sap.ui.define([
 	"./Toolbar",
 	"sap/base/assert",
 	"sap/base/security/encodeXML",
-	"sap/ui/core/Core"
+	"sap/ui/core/Core",
+	"sap/ui/dom/jquery/control" // jQuery Plugin "control"
 ],
 	function(
-		InputBase,
 		ComboBoxTextField,
 		ComboBoxBase,
 		List,
@@ -38,7 +37,8 @@ sap.ui.define([
 		Toolbar,
 		assert,
 		encodeXML,
-		core
+		core,
+		jQuery
 	) {
 		"use strict";
 
@@ -85,7 +85,7 @@ sap.ui.define([
 		 * </ul>
 		 *
 		 * @author SAP SE
-		 * @version 1.68.1
+		 * @version 1.73.1
 		 *
 		 * @constructor
 		 * @extends sap.m.ComboBoxBase
@@ -151,9 +151,9 @@ sap.ui.define([
 					 * <ul>
 					 * 	<li>The focus leaves the text input field</li>
 					 * 	<li>The <i>Enter</i> key is pressed</li>
+					 * 	<li>An item in the list is selected</li>
 					 * </ul>
 					 *
-					 * In addition, this event is also fired when an item in the list is selected.
 					 */
 					change: {
 						parameters: {
@@ -248,10 +248,10 @@ sap.ui.define([
 			oControl.handleListItemsVisualFocus(oListItem);
 
 			if (oControl.isOpen()) {
-				oControl.$().removeClass("sapMFocus");
+				oControl.removeStyleClass("sapMFocus");
 				oControl._getList().addStyleClass("sapMListFocus");
 			} else {
-				oControl.$().addClass("sapMFocus");
+				oControl.addStyleClass("sapMFocus");
 			}
 
 			oControl.scrollToItem(oItem);
@@ -263,12 +263,12 @@ sap.ui.define([
 		 * @private
 		 */
 		ComboBox.prototype.scrollToItem = function(oItem) {
-			var oPicker = this.getPicker(),
-				oPickerDomRef = oPicker.getDomRef("cont"),
+			var oSuggestionsPopover = this._getSuggestionsPopover(),
+				oPickerDomRef = oSuggestionsPopover && oSuggestionsPopover._getScrollableContent(),
 				oListItem = this.getListItem(oItem),
 				oItemDomRef = oItem && oListItem && oListItem.getDomRef();
 
-			if (!oPicker || !oPickerDomRef || !oItemDomRef) {
+			if (!oSuggestionsPopover || !oPickerDomRef || !oItemDomRef) {
 				return;
 			}
 
@@ -302,8 +302,8 @@ sap.ui.define([
 				oItemDomRef = oItem && oListItem && oListItem.getDomRef(),
 				oItemOffsetTop = oItemDomRef && oItemDomRef.offsetTop,
 				oItemOffsetHeight = oItemDomRef && oItemDomRef.offsetHeight,
-				oPicker = this.getPicker(),
-				oPickerDomRef = oPicker.getDomRef("cont"),
+				oSuggestionsPopover = this._getSuggestionsPopover(),
+				oPickerDomRef = oSuggestionsPopover && oSuggestionsPopover._getScrollableContent(),
 				oPickerClientHeight = oPickerDomRef.clientHeight;
 
 			//check if the selected item is on the viewport
@@ -547,7 +547,7 @@ sap.ui.define([
 		ComboBox.prototype.getNextFocusableItem = function (bDirectionDown) {
 			var aAllSelectableItems = this.getSelectableItems(),
 				aSelectableNotSeparatorItems = this.getNonSeparatorSelectableItems(aAllSelectableItems),
-				bFocusInInput = this.$().hasClass("sapMFocus"),
+				bFocusInInput = this.hasStyleClass("sapMFocus"),
 				oItemToUse = this.getSelectedItem() || this._getItemByListItem(this._oLastFocusedListItem),
 				oNextSelectableItem;
 
@@ -902,8 +902,13 @@ sap.ui.define([
 			}
 
 			// always focus input field when typing in it
-			this.$().addClass("sapMFocus");
+			this.addStyleClass("sapMFocus");
 			this._getList().removeStyleClass("sapMListFocus");
+
+			// if recommendations were shown - add the icon pressed style
+			if (this._getItemsShownWithFilter()) {
+				this.toggleIconPressedStyle(true);
+			}
 		};
 
 		/**
@@ -1021,7 +1026,7 @@ sap.ui.define([
 			}
 
 			// always focus input field when typing in it
-			this.$().addClass("sapMFocus");
+			this.addStyleClass("sapMFocus");
 			this._getList().removeStyleClass("sapMListFocus");
 		};
 
@@ -1077,11 +1082,11 @@ sap.ui.define([
 			this.setProperty("value", sText, true);
 
 			// deselect the text and move the text cursor at the endmost position
-			if (this.getPickerType() === "Dropdown") {
-				setTimeout(this.selectText.bind(this, this.getValue().length, this.getValue().length), 0);
+			if (this.getPickerType() === "Dropdown" && !this.isPlatformTablet()) {
+				this.selectText.bind(this, this.getValue().length, this.getValue().length);
 			}
 
-			setTimeout(this.close.bind(this));
+			this.close();
 		};
 
 		/**
@@ -1090,6 +1095,7 @@ sap.ui.define([
 		 * @protected
 		 */
 		ComboBox.prototype.onBeforeOpen = function() {
+			ComboBoxBase.prototype.onBeforeOpen.apply(this, arguments);
 			var fnPickerTypeBeforeOpen = this["onBeforeOpen" + this.getPickerType()],
 				oDomRef = this.getFocusDomRef();
 
@@ -1100,8 +1106,6 @@ sap.ui.define([
 				this.loadItems();
 			}
 
-			// add the active state to the control field
-			this.addStyleClass(InputBase.ICON_PRESSED_CSS_CLASS);
 			if (oDomRef) {
 
 				// expose a parent/child contextual relationship to assistive technologies,
@@ -1147,6 +1151,8 @@ sap.ui.define([
 				oListItem = this.getListItem(oItem),
 				oSelectionRange = this._getSelectionRange();
 
+			this.closeValueStateMessage();
+
 			if (oDomRef) {
 				this.getRoleComboNodeDomRef().setAttribute("aria-expanded", "true");
 
@@ -1158,7 +1164,7 @@ sap.ui.define([
 			// if there is a selected item, scroll and show the list
 			fnSelectedItemOnViewPort.call(this, true);
 
-			if (oItem && oSelectionRange.start === oSelectionRange.end) {
+			if (oItem && oSelectionRange.start === oSelectionRange.end && oSelectionRange.start > 1) {
 				setTimeout(function() {
 					this.selectText(0, oSelectionRange.end);
 				}.bind(this), 0);
@@ -1183,7 +1189,7 @@ sap.ui.define([
 			}
 
 			// remove the active state of the control's field
-			this.removeStyleClass(InputBase.ICON_PRESSED_CSS_CLASS);
+			this.toggleIconPressedStyle(false);
 		};
 
 		/**
@@ -1246,20 +1252,6 @@ sap.ui.define([
 
 					// no default
 				}
-			}
-		};
-
-		/**
-		 * Handles the <code>tap</code> event on the list's items.
-		 *
-		 * @param {sap.ui.base.Event} oControlEvent The control event
-		 * @private
-		 */
-		ComboBox.prototype._handleItemTap = function(oControlEvent) {
-			var oTappedControl = jQuery(oControlEvent.target).control(0);
-
-			if (!oTappedControl.isA("sap.m.GroupHeaderListItem")) {
-				this.close();
 			}
 		};
 
@@ -1513,7 +1505,8 @@ sap.ui.define([
 		 */
 		ComboBox.prototype.onsapshow = function(oEvent) {
 			var aSelectableItems, oItem,
-				bEditable = this.getEditable();
+				bEditable = this.getEditable(),
+				oListItem;
 			ComboBoxBase.prototype.onsapshow.apply(this, arguments);
 
 			this.syncPickerContent();
@@ -1523,6 +1516,7 @@ sap.ui.define([
 				oItem = this.getNonSeparatorSelectableItems(aSelectableItems)[0];
 
 				if (oItem) {
+					oListItem = this.getListItem(oItem);
 					this.setSelection(oItem);
 					this.updateDomValue(oItem.getText());
 
@@ -1533,6 +1527,14 @@ sap.ui.define([
 					setTimeout(function() {
 						this.selectText(0, oItem.getText().length);
 					}.bind(this), 0);
+
+					if (this.isOpen()) {
+						this.removeStyleClass("sapMFocus");
+						this._getList().addStyleClass("sapMListFocus");
+						this.handleListItemsVisualFocus(oListItem);
+					} else {
+						this.addStyleClass("sapMFocus");
+					}
 				}
 			}
 		};
@@ -1604,8 +1606,9 @@ sap.ui.define([
 			}
 
 			if (this.getEnabled() && (!this.isOpen() || !this.getSelectedItem() || !this._getList().hasStyleClass("sapMListFocus"))) {
-				this.$().addClass("sapMFocus");
+				this.addStyleClass("sapMFocus");
 			}
+
 		};
 
 		/**
@@ -1786,12 +1789,16 @@ sap.ui.define([
 		 * @protected
 		 */
 		ComboBox.prototype._configureList = function (oList) {
+			var oRenderer = this.getRenderer();
+
 			if (!oList) {
 				return;
 			}
 
 			// configure the list
-			oList.setMode(ListMode.SingleSelectMaster);
+			oList.setMode(ListMode.SingleSelectMaster)
+				.addStyleClass(oRenderer.CSS_CLASS_COMBOBOXBASE + "List")
+				.addStyleClass(oRenderer.CSS_CLASS_COMBOBOX + "List");
 
 			// attach event handlers
 			oList
@@ -1800,7 +1807,6 @@ sap.ui.define([
 
 			// attach event delegates
 			oList.addEventDelegate({
-				ontap: this._handleItemTap,
 				onBeforeRendering: this.onBeforeRenderingList,
 				onAfterRendering: this.onAfterRenderingList
 			}, this);
@@ -2009,7 +2015,7 @@ sap.ui.define([
 		 *
 		 * @param {string} sIdSuffix Suffix to be added to the ids of the new control and its internal objects.
 		 * @returns {sap.m.ComboBox} The cloned <code>sap.m.ComboBox</code> control.
-		 * @private
+		 * @public
 		 * @since 1.22.1
 		 */
 		ComboBox.prototype.clone = function(sIdSuffix) {
@@ -2042,7 +2048,7 @@ sap.ui.define([
 
 			if (this.getSelectedItem()) {
 				oList.addStyleClass("sapMListFocus");
-				this.$().removeClass("sapMFocus");
+				this.removeStyleClass("sapMFocus");
 			}
 
 			return this;
@@ -2096,7 +2102,7 @@ sap.ui.define([
 			var oList = this._getList();
 			ComboBoxBase.prototype.close.call(this);
 
-			this.$().addClass("sapMFocus");
+			this.addStyleClass("sapMFocus");
 			//Remove focusing class from the list
 			oList && oList.removeStyleClass("sapMListFocus");
 
@@ -2355,8 +2361,8 @@ sap.ui.define([
 		 *
 		 * @since 1.64
 		 * @experimental Since 1.64
-		 * @protected
-		 * @sap-restricted
+		 * @private
+		 * @ui5-restricted
 		 */
 		ComboBox.prototype.applyShowItemsFilters = function () {
 			var oPicker, fnPickerOpenListener;

@@ -53,7 +53,7 @@ function(
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -333,6 +333,9 @@ function(
 		}
 		this._sFullText = oFormattedText._getDisplayHtml().replace(/\n/g, "<br>");
 		this._sShortText = this._getCollapsedText();
+		if (this._sShortText) {
+			this._sShortText = this._sShortText.replace(/<br>/g, " ");
+		}
 		this._bEmptyTagsInShortTextCleared = false;
 	};
 

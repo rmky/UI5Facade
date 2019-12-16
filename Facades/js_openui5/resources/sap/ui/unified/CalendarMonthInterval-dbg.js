@@ -23,7 +23,8 @@ sap.ui.define([
 	"sap/base/util/deepEqual",
 	"sap/ui/core/Popup",
 	"sap/base/Log",
-	"sap/ui/thirdparty/jquery"
+	"sap/ui/thirdparty/jquery",
+	"sap/ui/unified/DateRange"
 ], function(
 	Device,
 	Control,
@@ -42,7 +43,8 @@ sap.ui.define([
 	deepEqual,
 	Popup,
 	Log,
-	jQuery
+	jQuery,
+	DateRange
 ) {
 		"use strict";
 
@@ -63,7 +65,7 @@ sap.ui.define([
 	 * <b>Note:</b> JavaScript Date objects are used to set and return the months, mark them as selected or as a special type.
 	 * But the date part of the Date object is not used. If a Date object is returned the date will be set to the 1st of the corresponding month.
 	 * @extends sap.ui.core.Control
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -307,7 +309,7 @@ sap.ui.define([
 					oDomRefB2.focus();
 				}
 			}, this);
-			this.setAggregation("calendarPicker", oCalPicker);
+			this.setAggregation("calendarPicker", oCalPicker, true);
 		}
 		return oCalPicker;
 	};
@@ -351,7 +353,7 @@ sap.ui.define([
 	// overwrite invalidate to recognize changes on selectedDates
 	CalendarMonthInterval.prototype.invalidate = function(oOrigin) {
 
-		if (!this._bDateRangeChanged && (!oOrigin || !(oOrigin instanceof sap.ui.unified.DateRange))) {
+		if (!this._bDateRangeChanged && (!oOrigin || !(oOrigin instanceof DateRange))) {
 			Control.prototype.invalidate.apply(this, arguments);
 		} else if (this.getDomRef() && this._iMode == 0 && !this._sInvalidateContent) {
 			// DateRange changed -> only rerender days
@@ -1277,7 +1279,7 @@ sap.ui.define([
 	CalendarMonthInterval.prototype._showCalendarPicker = function() {
 		var oDate = this._getFocusedDate(true).toLocalJSDate();
 		var oCalPicker = this._getCalendarPicker();
-		var oSelectedDate = new sap.ui.unified.DateRange({ startDate: oDate });
+		var oSelectedDate = new DateRange({ startDate: oDate });
 
 		oCalPicker.displayDate(oDate, false);
 		oCalPicker.removeAllSelectedDates();

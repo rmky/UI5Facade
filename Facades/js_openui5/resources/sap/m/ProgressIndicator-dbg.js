@@ -48,7 +48,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -111,7 +111,26 @@ sap.ui.define([
 			 * Determines whether the control is in display-only state where the control has different visualization and cannot be focused.
 			 * @since 1.50
 			 */
-			displayOnly : {type : "boolean", group : "Behavior", defaultValue : false}
+			displayOnly : {type : "boolean", group : "Behavior", defaultValue : false},
+
+			/**
+			 * Determines whether a percentage change is displayed with animation.
+			 * @since 1.73
+			 */
+			displayAnimation : {type : "boolean", group : "Behavior", defaultValue : true}
+		},
+		associations : {
+			/**
+			 * Association to controls / IDs which describe this control (see WAI-ARIA attribute aria-describedby).
+			 * @since 1.69
+			 */
+			ariaDescribedBy : {type : "sap.ui.core.Control", multiple : true, singularName : "ariaDescribedBy"},
+
+			/**
+			 * Association to controls / IDs which label this control (see WAI-ARIA attribute aria-labelledBy).
+			 * @since 1.69
+			 */
+			ariaLabelledBy: {type : "sap.ui.core.Control", multiple : true, singularName : "ariaLabelledBy"}
 		},
 		designtime: "sap/m/designtime/ProgressIndicator.designtime"
 	}});
@@ -157,7 +176,7 @@ sap.ui.define([
 				.attr("aria-valuenow", fPercentValue)
 				.attr("aria-valuetext", this._getAriaValueText({fPercent: fPercentValue}));
 
-			fAnimationDuration = bUseAnimations ? Math.abs(fPercentDiff) * 20 : 0;
+			fAnimationDuration = bUseAnimations && this.getDisplayAnimation() ? Math.abs(fPercentDiff) * 20 : 0;
 			$progressBar = this.$("bar");
 			// Stop currently running animation and start new one.
 			// In case of multiple setPercentValue calls all animations will run and it will take some time until the last value is animated,

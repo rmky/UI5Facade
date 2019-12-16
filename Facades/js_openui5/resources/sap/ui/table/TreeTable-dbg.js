@@ -12,7 +12,7 @@ sap.ui.define([
 	'sap/ui/model/TreeBindingCompatibilityAdapter',
 	'./library',
 	'sap/ui/core/Element',
-	'./TableUtils',
+	'./utils/TableUtils',
 	"./plugins/BindingSelectionPlugin",
 	"sap/base/Log",
 	"sap/base/assert"
@@ -40,7 +40,7 @@ sap.ui.define([
 	 * @class
 	 * The TreeTable control provides a comprehensive set of features to display hierarchical data.
 	 * @extends sap.ui.table.Table
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @public
@@ -136,7 +136,6 @@ sap.ui.define([
 	 * @private
 	 */
 	TreeTable.prototype.init = function() {
-		this._SelectionAdapterClass = BindingSelectionPlugin;
 		Table.prototype.init.apply(this, arguments);
 		TableUtils.Grouping.setTreeMode(this);
 	};
@@ -154,7 +153,9 @@ sap.ui.define([
 
 			// If the number of expanded levels is not specified in the binding parameters, we use the corresponding table property
 			// to determine the value.
-			oBindingInfo.parameters.numberOfExpandedLevels = oBindingInfo.parameters.numberOfExpandedLevels || (this.getExpandFirstLevel() ? 1 : 0);
+			if (!("numberOfExpandedLevels" in oBindingInfo.parameters)) {
+				oBindingInfo.parameters.numberOfExpandedLevels = this.getExpandFirstLevel() ? 1 : 0;
+			}
 		}
 
 		return Table.prototype.bindRows.call(this, oBindingInfo);
@@ -514,6 +515,10 @@ sap.ui.define([
 			}
 		}
 		return this;
+	};
+
+	TreeTable.prototype._createLegacySelectionPlugin = function() {
+		return new BindingSelectionPlugin(this);
 	};
 
 	return TreeTable;

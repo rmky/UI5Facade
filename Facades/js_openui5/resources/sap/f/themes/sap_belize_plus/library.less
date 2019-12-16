@@ -11,15 +11,6 @@
 
 @import "../../../../sap/ui/core/themes/sap_belize_plus/global.less";
 
-/* START "Avatar.less" */
-/* ============================= */
-/* CSS for control sap.f/Avatar  */
-/* Belize Plus theme             */
-/* ============================= */
-
-@_sap_f_Avatar_Color: lighten(@sapUiBaseText, 2);
-/* END "Avatar.less" */
-
 /* START "Card.less" */
 /* ============================= */
 /* CSS for control sap.f/Card  */
@@ -171,8 +162,22 @@ html.sap-desktop .sapUshellShell {
 /* Belize Plus theme                           */
 /* =========================================== */
 
-@_sap_f_FlexibleColumnLayout_ButtonBackground: lighten(@sapUiObjectHeaderBackground, 3);
-@_sap_f_FlexibleColumnLayout_ButtonHoverBackground: lighten(@sapUiObjectHeaderBackground, 8);
+.sapContrastPlus {
+	.sapFFCLNavigationButton {
+		.sapMBtnInner {
+			text-shadow: none;
+		}
+	}
+}
+
+.sapFFCLBackgroundDesignSolid .sapFFCLArrow {
+	background: fade(@sapUiObjectHeaderBackground, 60%);
+}
+
+.sapFFCLBackgroundDesignTranslucent .sapFFCLArrow {
+	background: @sapUiShellBackgroundGradient;
+}
+
 /* END "FlexibleColumnLayout.less" */
 
 /* START "ShellBar.less" */

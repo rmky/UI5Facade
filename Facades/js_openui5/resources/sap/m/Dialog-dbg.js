@@ -6,24 +6,26 @@
 
 // Provides control sap.m.Dialog.
 sap.ui.define([
-	'./Bar',
-	'./InstanceManager',
-	'./AssociativeOverflowToolbar',
-	'./ToolbarSpacer',
-	'./Title',
-	'./library',
-	'sap/ui/core/Control',
-	'sap/ui/core/IconPool',
-	'sap/ui/core/Popup',
-	'sap/ui/core/delegate/ScrollEnablement',
-	'sap/ui/core/RenderManager',
-	'sap/ui/core/InvisibleText',
-	'sap/ui/core/ResizeHandler',
-	'sap/ui/Device',
-	'sap/ui/base/ManagedObject',
-	'sap/ui/core/library',
-	'./TitlePropagationSupport',
-	'./DialogRenderer',
+	"./Bar",
+	"./InstanceManager",
+	"./AssociativeOverflowToolbar",
+	"./ToolbarSpacer",
+	"./Title",
+	"./library",
+	"./TitleAlignmentMixin",
+	"sap/ui/core/Control",
+	"sap/ui/core/IconPool",
+	"sap/ui/core/Popup",
+	"sap/ui/core/delegate/ScrollEnablement",
+	"sap/ui/core/RenderManager",
+	"sap/ui/core/InvisibleText",
+	"sap/ui/core/ResizeHandler",
+	"sap/ui/core/util/ResponsivePaddingsEnablement",
+	"sap/ui/Device",
+	"sap/ui/base/ManagedObject",
+	"sap/ui/core/library",
+	"./TitlePropagationSupport",
+	"./DialogRenderer",
 	"sap/base/Log",
 	"sap/ui/thirdparty/jquery",
 	"sap/ui/core/Core",
@@ -40,6 +42,7 @@ function(
 	ToolbarSpacer,
 	Title,
 	library,
+	TitleAlignmentMixin,
 	Control,
 	IconPool,
 	Popup,
@@ -47,6 +50,7 @@ function(
 	RenderManager,
 	InvisibleText,
 	ResizeHandler,
+	ResponsivePaddingsEnablement,
 	Device,
 	ManagedObject,
 	coreLibrary,
@@ -71,6 +75,8 @@ function(
 		// shortcut for sap.ui.core.ValueState
 		var ValueState = coreLibrary.ValueState;
 
+		// shortcut for sap.m.TitleAlignment
+		var TitleAlignment = library.TitleAlignment;
 
 		var sAnimationMode = Core.getConfiguration().getAnimationMode();
 		var bUseAnimations = sAnimationMode !== Configuration.AnimationMode.none && sAnimationMode !== Configuration.AnimationMode.minimal;
@@ -125,6 +131,7 @@ function(
 		* <li>If the <code>contentWidth</code> and/or <code>contentHeight</code> properties are set, the Dialog will try to fill those sizes.</li>
 		* <li>If there is no specific sizing, the Dialog will try to adjust its size to its content.</li>
 		* </ul>
+		* When using the <code>sap.m.Dialog</code> in SAP Quartz themes, the breakpoints and layout paddings could be determined by the Dialog's width. To enable this concept and add responsive paddings to an element of the Dialog control, you have to add the following classes depending on your use case: <code>sapUiResponsivePadding--header</code>, <code>sapUiResponsivePadding--subHeader</code>, <code>sapUiResponsivePadding--content</code>, <code>sapUiResponsivePadding--footer</code>.
 		* <h4>Smartphones</h4>
 		* If the Dialog has one or two actions, they will cover the entire footer. If there are more actions, they will overflow.
 		* <h4>Tablets</h4>
@@ -135,7 +142,7 @@ function(
 		*
 		* @implements sap.ui.core.PopupInterface
 		* @author SAP SE
-		* @version 1.68.1
+		* @version 1.73.1
 		*
 		* @constructor
 		* @public
@@ -242,7 +249,22 @@ function(
 					 * @since 1.65
 					 * @private
 					 */
-					role: {type: "sap.m.DialogRoleType", group: "Data", defaultValue: DialogRoleType.Dialog, visibility: "hidden"}
+					role: {type: "sap.m.DialogRoleType", group: "Data", defaultValue: DialogRoleType.Dialog, visibility: "hidden"},
+
+					/**
+					 * Indicates whether the Dialog will be closed automatically when a routing navigation occurs.
+					 * @since 1.72
+					 */
+					closeOnNavigation: {type: "boolean", group: "Behavior", defaultValue: true},
+
+					/**
+					 * Specifies the Title alignment (theme specific).
+					 * If set to <code>TitleAlignment.Auto</code>, the Title will be aligned as it is set in the theme (if not set, the default value is <code>center</code>);
+					 * Other possible values are <code>TitleAlignment.Start</code> (left or right depending on LTR/RTL), and <code>TitleAlignment.Center</code> (centered)
+					 * @since 1.72
+					 * @public
+					 */
+					titleAlignment : {type : "sap.m.TitleAlignment", group : "Misc", defaultValue : TitleAlignment.Auto}
 				},
 				defaultAggregation: "content",
 				aggregations: {
@@ -385,6 +407,13 @@ function(
 			}
 		});
 
+		ResponsivePaddingsEnablement.call(Dialog.prototype, {
+			header: {suffix: "header"},
+			subHeader: {selector: ".sapMDialogSubHeader .sapMIBar"},
+			content: {selector: ".sapMDialogScrollCont"},
+			footer: {suffix: "footer"}
+		});
+
 		// Add title propagation support
 		TitlePropagationSupport.call(Dialog.prototype, "content", function () {
 			return this._headerTitle ? this._headerTitle.getId() : false;
@@ -486,6 +515,8 @@ function(
 			}
 
 			this._initTitlePropagationSupport();
+
+			this._initResponsivePaddingsEnablement();
 		};
 
 		Dialog.prototype.onBeforeRendering = function () {
@@ -957,14 +988,13 @@ function(
 			// Browsers except chrome do not increase the width of the container to include scrollbar (when width is auto). So we need to compensate
 			if (Device.system.desktop && !oBrowser.chrome) {
 
-				var bHasVerticalScrollbar = $dialogContent[0].clientHeight < $dialogContent[0].scrollHeight,
-					iCurrentWidthAndHeight = $dialogContent.width() + "x" + $dialogContent.height(),
+				var iCurrentWidthAndHeight = $dialogContent.width() + "x" + $dialogContent.height(),
 					bMinWidth = $dialog.css("min-width") !== $dialog.css("width");
 
 				// Apply the fix only if width or height did actually change.
 				// And when the width is not equal to the min-width.
 				if (iCurrentWidthAndHeight !== this._iLastWidthAndHeightWithScroll && bMinWidth) {
-					if (bHasVerticalScrollbar &&						// - there is a vertical scroll
+					if (this._hasVerticalScrollbar() &&					// - there is a vertical scroll
 						(!sContentWidth || sContentWidth == 'auto') &&	// - when the developer hasn't set it explicitly
 						!this.getStretch() && 							// - when the dialog is not stretched
 						$dialogContent.width() < maxDialogWidth) {		// - if the dialog can't grow anymore
@@ -983,6 +1013,23 @@ function(
 			if (!this.getStretch() && !this._oManuallySetSize && !this._bDisableRepositioning) {
 				this._applyCustomTranslate();
 			}
+		};
+
+		/**
+		 * Checks if the dialog has a vertical scrollbar.
+		 * @private
+		 * @return {boolean} True if there is a vertical scrollbar, false otherwise
+		 */
+		Dialog.prototype._hasVerticalScrollbar = function() {
+			var $dialogContent = this.$('cont');
+
+			if (Device.browser.msie) {
+				// The scrollHeight property may return incorrect value in IE
+				// so we do the check based on the width of the vertical scrollbar
+				return $dialogContent[0].clientWidth < $dialogContent.outerWidth();
+			}
+
+			return $dialogContent[0].clientHeight < $dialogContent[0].scrollHeight;
 		};
 
 		/**
@@ -1030,12 +1077,17 @@ function(
 				// set parent of header to detect changes on title
 				this._header = new Bar(this.getId() + "-header");
 				this._header._setRootAccessibilityRole("heading");
+				this._header._setRootAriaLevel("2");
+
+				// call the method that registers this Bar for alignment
+				this._setupBarTitleAlignment(this._header, this.getId() + "_header");
+
 				this.setAggregation("_header", this._header, false);
 			}
 		};
 
 		/**
-		 * If a scrollable control (<code>sap.m.NavContainer</code>, <code>sap.m.ScrollContainer</code>, <code>sap.m.Page</code>, <code>sap.m.SplitContainer</code>) is added to the Dialog content aggregation as a single child or through one or more <code>sap.ui.mvc.View<c/ode> instances,
+		 * If a scrollable control (<code>sap.m.NavContainer</code>, <code>sap.m.ScrollContainer</code>, <code>sap.m.Page</code>, <code>sap.m.SplitContainer</code>) is added to the Dialog content aggregation as a single child or through one or more <code>sap.ui.mvc.View</code> instances,
 		 * the scrolling inside the Dialog will be disabled in order to avoid wrapped scrolling areas.
 		 *
 		 * If more than one scrollable control is added to the Dialog, the scrolling needs to be disabled manually.
@@ -1313,6 +1365,7 @@ function(
 			var oCustomHeader = this.getCustomHeader();
 
 			if (oCustomHeader) {
+				oCustomHeader._setRootAriaLevel("2");
 				return oCustomHeader._setRootAccessibilityRole("heading");
 			} else {
 				var bShowHeader = this.getShowHeader();
@@ -1548,10 +1601,8 @@ function(
 		};
 
 		Dialog.prototype.setBeginButton = function (oButton) {
-			var sTheme = Core.getConfiguration().getTheme();
 
-			if (oButton && oButton.isA("sap.m.Button") && sTheme.startsWith("sap_fiori_")) {
-				oButton.setType("Emphasized");
+			if (oButton && oButton.isA("sap.m.Button")) {
 				oButton.addStyleClass("sapMDialogBeginButton");
 			}
 
@@ -1559,10 +1610,8 @@ function(
 		};
 
 		Dialog.prototype.setEndButton = function (oButton) {
-			var sTheme = Core.getConfiguration().getTheme();
 
-			if (oButton && oButton.isA("sap.m.Button") && sTheme.startsWith("sap_fiori_")) {
-				oButton.setType("Transparent");
+			if (oButton && oButton.isA("sap.m.Button")) {
 				oButton.addStyleClass("sapMDialogEndButton");
 			}
 
@@ -1905,7 +1954,6 @@ function(
 						left: Math.min(Math.max(0, that._oManuallySetPosition.x), windowWidth - initial.width),
 						top: Math.min(Math.max(0, that._oManuallySetPosition.y), windowHeight - initial.height),
 						width: initial.width,
-						height: initial.height,
 						transform: ""
 					});
 				}
@@ -1994,6 +2042,9 @@ function(
 		Dialog.prototype._applyContextualSettings = function () {
 			ManagedObject.prototype._applyContextualSettings.call(this, ManagedObject._defaultContextualSettings);
 		};
+
+		// enrich the control functionality with TitleAlignmentMixin
+		TitleAlignmentMixin.mixInto(Dialog.prototype);
 
 		return Dialog;
 	});

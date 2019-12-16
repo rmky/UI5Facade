@@ -24,7 +24,7 @@ sap.ui.define([
 	 * @extends sap.f.cards.DataProvider
 	 *
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @constructor
 	 * @private
@@ -79,7 +79,10 @@ sap.ui.define([
 				"method": (oRequestConfig.method && oRequestConfig.method.toUpperCase()) || "GET",
 				"data": oRequestConfig.parameters,
 				"headers": oRequestConfig.headers,
-				"timeout": 15000
+				"timeout": 15000,
+				"xhrFields": {
+					"withCredentials": !!oRequestConfig.withCredentials
+				}
 			};
 
 			if (oRequest.method === "GET") {

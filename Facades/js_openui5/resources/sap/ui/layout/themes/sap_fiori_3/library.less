@@ -17,6 +17,8 @@
 /* Fiori 3 theme                             */
 /* ========================================= */
 
+@_sap_ui_layout_FormLayout_FormSubTitleSize: ~"H6";
+
 .sapUiFormLayout {
 	font-family: @sapUiDesktopFontFamily;
 }
@@ -33,12 +35,53 @@
 	border-width: 1px;
 	border-color: @sapUiGroupTitleBorderColor;
 	font-family: @sapUiFontHeaderFamily;
+	height: 2.75rem;
+	line-height: 2.75rem;
+}
+
+.sapUiFormM .sapUiFormContainerTitle > .sapUiFormTitle {
+	height: 2.75rem;
+	line-height: 2.75rem;
+	font-weight: bold;
+}
+
+.sapUiSizeCompact .sapUiFormContainerTitle > .sapUiFormTitle {
+	height: 2rem;
+	line-height: 2rem;
 }
 
 .sapUiFormTitle > .sapUiBtn {
 	bottom: 0.25rem;
 }
+
+/* Toolbar */
+.sapUiFormContainerToolbar > div:first-child > .sapMTitle{
+	font-weight: bold;
+}
+
+.sapUiFormContainerToolbar > div:first-child >.sapMTitle.sapMTitleStyleAuto{
+	font-size: @sapMFontHeader6Size;
+}
+
+.sapUiFormContainerToolbar > .sapMTB-Transparent-CTX.sapMTB{
+	padding: 0 0.25rem;
+}
+
 /* END "FormLayout.less" */
+
+/* START "ColumnLayout.less" */
+/* ================================================ */
+/* CSS for control sap.ui.layout/form/ColumnLayout  */
+/* Fiori 3 theme                                    */
+/* ================================================ */
+
+/* Toolbar */
+.sapUiFormCL.sapUiFormToolbar > div:first-child {
+	height: 2.75rem; /* to have always 3rem on Form header */
+	line-height: 2.75rem;
+	padding: 0 1rem;
+}
+/* END "ColumnLayout.less" */
 
 /* START "GridLayout.less" */
 /* ========================================= */
@@ -66,6 +109,16 @@
 .sapUiGridHeader > .sapUiFormTitle > .sapUiBtnS.sapUiBtnLite {
 	bottom: 0.3125rem;
 }
+
+/* Toolbar */
+.sapUiGrid.sapUiFormToolbar th > div {
+	height: 2.75rem;
+	line-height: 2.75rem;
+}
+
+.sapUiGridHeader.sapUiFormContainerToolbar > .sapMTB {
+	padding: 0;
+}
 /* END "GridLayout.less" */
 
 /* START "ResponsiveGridLayout.less" */
@@ -77,6 +130,9 @@
 /* Toolbar */
 .sapUiFormResGrid.sapUiFormToolbar > div:first-child {
 	background-color: transparent;
+	height: 2.75rem;
+	line-height: 2.75rem;
+	padding: 0 1rem;
 }
 
 /* Grid */
@@ -110,6 +166,12 @@
 /* Toolbar */
 .sapUiFormResLayout.sapUiFormToolbar > div:first-child {
 	background-color: transparent;
+	height: 2.75rem;
+	line-height: 2.75rem;
+}
+
+.sapUiRLContainer.sapUiFormContainerToolbar > .sapMTB {
+	padding: 0;
 }
 /* END "ResponsiveLayout.less" */
 

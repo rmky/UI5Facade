@@ -56,7 +56,7 @@ sap.ui.define([
 	 * Also see {@link topic:91f28be26f4d1014b6dd926db0e91070 "Support for Unique IDs"} in the documentation.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 *
 	 * @public
 	 * @alias sap.ui.core.mvc.View
@@ -644,15 +644,18 @@ sap.ui.define([
 	};
 
 	/**
-	 * Override clone method to avoid conflict between generic cloning of content
+	 * Creates a clone of this view.
+	 *
+	 * Overrides the clone method to avoid conflicts between generic cloning of the content aggregation
 	 * and content creation as defined by the UI5 Model View Controller lifecycle.
 	 *
-	 * For more details see the development guide section about Model View Controller in UI5.
+	 * For more details see the {@link topic:a575619e25c2487f904bae71764e2350 View Cloning} section in
+	 * the documentation.
 	 *
-	 * @param {string} [sIdSuffix] a suffix to be appended to the cloned element id
-	 * @param {string[]} [aLocalIds] an array of local IDs within the cloned hierarchy (internally used)
-	 * @return {sap.ui.core.Element} reference to the newly created clone
-	 * @protected
+	 * @param {string} [sIdSuffix] Suffix to be appended to the cloned element IDs
+	 * @param {string[]} [aLocalIds] Array of local IDs within the cloned hierarchy (internally used)
+	 * @returns {sap.ui.core.mvc.View} Reference to the newly created clone
+	 * @public
 	 */
 	View.prototype.clone = function(sIdSuffix, aLocalIds) {
 		var mSettings = {}, sKey, oClone;
@@ -959,8 +962,8 @@ sap.ui.define([
 	 * Some internal use-cases need the View instance synchronously instead of the wrapping Promises
 	 * of the [...]View.create() factories: e.g. root-view creation in sap/ui/core/UIComponent
 	 * Internally, the views might still be loaded and processed asynchronously.
-	 * @sap-restricted sap.ui.core
 	 * @private
+	 * @ui5-restricted sap.ui.core
 	 * @see {sap.ui.view}
 	 */
 	View._legacyCreate = viewFactory;

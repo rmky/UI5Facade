@@ -49,7 +49,7 @@ sap.ui.define([
          * @extends sap.m.Slider
          *
          * @author SAP SE
-         * @version 1.68.1
+         * @version 1.73.1
          *
          * @constructor
          * @public
@@ -89,8 +89,6 @@ sap.ui.define([
             // As max, min, range, value and value2 are dependent on each other,
             // we should be sure that at the first run they are set  properly and then to be validated.
             this._bInitialRangeChecks = true;
-
-            this._bRTL = sap.ui.getCore().getConfiguration().getRTL();
 
             // the initial focus range which should be used
             this._aInitialFocusRange = this.getRange();
@@ -145,6 +143,8 @@ sap.ui.define([
         };
 
         RangeSlider.prototype.onBeforeRendering = function () {
+            this._bRTL = sap.ui.getCore().getConfiguration().getRTL();
+
             var aRange = this.getRange();
 
             if (this.getShowAdvancedTooltip()) {
@@ -264,9 +264,9 @@ sap.ui.define([
         /**
          * Gets a handle corresponding to a tooltip
          * @param {sap.m.SliderTooltipBase} oTooltip Slider/Range slider tooltip
-         * @sap-restricted sap.m.SliderTooltipContainer.js
          * @returns {HTMLElement} The handle, from which the tooltip is responsible.
          * @private
+         * @ui5-restricted sap.m.SliderTooltipContainer.js
          */
         RangeSlider.prototype._getHandleForTooltip = function (oTooltip) {
             var oHandle = oTooltip === this._mHandleTooltip.start.tooltip ?
@@ -345,7 +345,6 @@ sap.ui.define([
             this._updateHandleAriaAttributeValues(oHandle, sValue, sScaleLabel);
 
             if (oProgressHandle) {
-                oProgressHandle.setAttribute("aria-valuenow", aRange.join("-"));
                 oProgressHandle.setAttribute("aria-valuetext",
                     this._oResourceBundle.getText('RANGE_SLIDER_RANGE_ANNOUNCEMENT', aRange.map(this._formatValueByCustomElement, this)));
             }
@@ -374,6 +373,25 @@ sap.ui.define([
                 }
 
                 this._mHandleTooltip.bAriaHandlesSwapped = !this._mHandleTooltip.bAriaHandlesSwapped;
+            }
+        };
+
+        /**
+         * Adds aria-controls attribute, when the tooltips are rendered.
+         *
+         * @private
+         */
+        RangeSlider.prototype._setAriaControls = function () {
+            if (!this.getShowAdvancedTooltip()) {
+                return;
+            }
+
+            if (!this._mHandleTooltip.start.handle.getAttribute('aria-controls') && this._mHandleTooltip.start.tooltip) {
+                this._mHandleTooltip.start.handle.setAttribute('aria-controls', this._mHandleTooltip.start.tooltip.getId());
+            }
+
+            if (!this._mHandleTooltip.end.handle.getAttribute('aria-controls') && this._mHandleTooltip.end.tooltip) {
+                this._mHandleTooltip.end.handle.setAttribute('aria-controls', this._mHandleTooltip.end.tooltip.getId());
             }
         };
 
@@ -452,8 +470,8 @@ sap.ui.define([
          *
          * @param {string} oTooltip Tooltip to be changed
          * @param {float} fValue New value of the RangeSlider
-         * @sap-restricted sap.m.SliderTooltipBase
          * @private
+         * @ui5-restricted sap.m.SliderTooltipBase
          */
         RangeSlider.prototype.updateTooltipsPositionAndState = function (oTooltip, fValue) {
             var oHandle, oActiveTooltip,
@@ -882,6 +900,7 @@ sap.ui.define([
             if (this.getShowAdvancedTooltip()) {
                 oTooltipsContainer.show(this);
                 this._adjustTooltipsContainer();
+                this._setAriaControls();
             }
 
             // remember the initial focus range so when esc key is pressed we can return to it

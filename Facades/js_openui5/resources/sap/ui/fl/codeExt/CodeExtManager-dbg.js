@@ -6,9 +6,11 @@
 
 sap.ui.define([
 	"sap/ui/fl/LrepConnector",
+	"sap/ui/fl/write/_internal/CompatibilityConnector",
 	"sap/ui/fl/Change"
 ], function(
 	LrepConnector,
+	CompatibilityConnector,
 	Change
 ) {
 	"use strict";
@@ -20,7 +22,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.codeExt.CodeExtManager
 	 * @since 1.40.0
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 */
 	var CodeExtManager;
 
@@ -87,7 +89,7 @@ sap.ui.define([
 				aPreparedChanges.push(Change.createInitialFileContent(oChange));
 			});
 
-			return this._oLrepConnector.create(aPreparedChanges, mOptions.transportId);
+			return CompatibilityConnector.create(aPreparedChanges, mOptions.transportId);
 		},
 
 		/**

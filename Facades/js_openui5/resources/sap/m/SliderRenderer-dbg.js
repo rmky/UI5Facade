@@ -73,10 +73,9 @@ sap.ui.define(['./SliderUtilities', "sap/ui/core/InvisibleText"],
 
 			if (oSlider.getEnableTickmarks()) {
 				this.renderTickmarks(oRm, oSlider);
-			} else {
-				// Keep the "old" labels for backwards compatibility
-				this.renderLabels(oRm, oSlider);
 			}
+
+			this.renderLabels(oRm, oSlider);
 
 			if (oSlider.getName()) {
 				this.renderInput(oRm, oSlider);
@@ -108,8 +107,7 @@ sap.ui.define(['./SliderUtilities', "sap/ui/core/InvisibleText"],
 		};
 
 		SliderRenderer.renderHandle = function(oRm, oSlider, mOptions) {
-			var bEnabled = oSlider.getEnabled(),
-				oFirstTooltip = oSlider.getUsedTooltips()[0];
+			var bEnabled = oSlider.getEnabled();
 
 			oRm.write("<span");
 
@@ -121,8 +119,7 @@ sap.ui.define(['./SliderUtilities', "sap/ui/core/InvisibleText"],
 				this.writeHandleTooltip(oRm, oSlider);
 			}
 
-			if (oSlider.getInputsAsTooltips() && oFirstTooltip) {
-				oRm.writeAttribute("aria-controls", oFirstTooltip.getId());
+			if (oSlider.getInputsAsTooltips()) {
 				oRm.writeAttribute("aria-describedby", InvisibleText.getStaticId("sap.m", "SLIDER_INPUT_TOOLTIP"));
 			}
 
@@ -203,7 +200,7 @@ sap.ui.define(['./SliderUtilities', "sap/ui/core/InvisibleText"],
 		};
 
 		SliderRenderer.renderTickmarks = function (oRm, oSlider) {
-			var i, iTickmarksToRender, fTickmarksDistance, iLabelsCount, fStep, fSliderSize,fSliderStep,
+			var i, iTickmarksToRender, fTickmarksDistance, iLabelsCount, fStep, fSliderSize, fSliderStep, bTickHasLabel,
 				oScale = oSlider._getUsedScale();
 
 			if (!oSlider.getEnableTickmarks() || !oScale) {
@@ -224,12 +221,18 @@ sap.ui.define(['./SliderUtilities', "sap/ui/core/InvisibleText"],
 			oRm.write("<li class=\"" + SliderRenderer.CSS_CLASS + "Tick\" style=\"width: " + fTickmarksDistance + "%;\"></li>");
 
 			for (i = 1; i < iTickmarksToRender - 1; i++) {
+				bTickHasLabel = false;
 				if (iLabelsCount && (i % iLabelsCount === 0)) {
+					bTickHasLabel = true;
 					fStep = i * fTickmarksDistance;
 					this.renderTickmarksLabel(oRm, oSlider, oSlider._getValueOfPercent(fStep));
 				}
 
-				oRm.write("<li class=\"" + SliderRenderer.CSS_CLASS + "Tick\" style=\"width: " + fTickmarksDistance + "%;\"></li>");
+				oRm.write(
+					"<li class=\"" + SliderRenderer.CSS_CLASS + "Tick\" " +
+					"style=\"width: " + fTickmarksDistance + "%;" + (bTickHasLabel ? " opacity: 0;" : "") + "\">" +
+					"</li>"
+				);
 			}
 
 			this.renderTickmarksLabel(oRm, oSlider, oSlider.getMax());

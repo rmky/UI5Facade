@@ -16,6 +16,11 @@
 			"theme": "sap_belize_hcb"
 		},
 		{
+			"name": "Avatar.less",
+			"designtime": true,
+			"theme": "sap_belize_hcb"
+		},
+		{
 			"name": "Breadcrumbs.less",
 			"designtime": true,
 			"theme": "sap_belize_hcb"
@@ -181,7 +186,7 @@
 			"theme": "sap_belize_hcb"
 		},
 		{
-			"name": "NotificationListItem.less",
+			"name": "NotificationListGroup.less",
 			"designtime": true,
 			"theme": "sap_belize_hcb"
 		},
@@ -302,6 +307,11 @@
 		},
 		{
 			"name": "SinglePlanningCalendarGrid.less",
+			"designtime": true,
+			"theme": "sap_belize_hcb"
+		},
+		{
+			"name": "SinglePlanningCalendarMonthGrid.less",
 			"designtime": true,
 			"theme": "sap_belize_hcb"
 		},
@@ -432,6 +442,11 @@
 		},
 		{
 			"name": "ViewSettingsDialog.less",
+			"designtime": true,
+			"theme": "sap_belize_hcb"
+		},
+		{
+			"name": "WheelSlider.less",
 			"designtime": true,
 			"theme": "sap_belize_hcb"
 		},

@@ -6,7 +6,7 @@
 
 // Provides helper sap.ui.table.TableDragAndDropExtension.
 sap.ui.define([
-	"./TableExtension", "sap/ui/table/TableUtils", "sap/ui/core/library"
+	"./TableExtension", "sap/ui/table/utils/TableUtils", "sap/ui/core/library"
 ], function(TableExtension, TableUtils, CoreLibrary) {
 	"use strict";
 
@@ -257,7 +257,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.table.TableExtension
 	 * @author SAP SE
-	 * @version 1.68.1
+	 * @version 1.73.1
 	 * @constructor
 	 * @private
 	 * @alias sap.ui.table.TableDragAndDropExtension
@@ -272,7 +272,7 @@ sap.ui.define([
 		_init: function(oTable, sTableType, mSettings) {
 			this._oDelegate = ExtensionDelegate;
 
-			oTable.addEventDelegate(this._oDelegate, oTable);
+			TableUtils.addDelegate(oTable, this._oDelegate, oTable);
 
 			return "DragAndDropExtension";
 		},

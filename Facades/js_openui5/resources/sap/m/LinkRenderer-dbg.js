@@ -32,11 +32,11 @@
 		var sTextDir = oControl.getTextDirection(),
 			sTextAlign = Renderer.getTextAlign(oControl.getTextAlign(), sTextDir),
 			bShouldHaveOwnLabelledBy = oControl._determineSelfReferencePresence(),
+			sHref = oControl.getHref(),
 			oAccAttributes =  {
-				role: 'link',
+				role: sHref ? "" : "button",
 				labelledby: bShouldHaveOwnLabelledBy ? {value: oControl.getId(), append: true } : undefined
 			},
-			sHref = oControl.getHref(),
 			bIsValid = sHref && oControl._isHrefValid(sHref),
 			bEnabled = oControl.getEnabled();
 
@@ -69,6 +69,8 @@
 		if (!bEnabled) {
 			oRm.class("sapMLnkDsbl");
 			oRm.attr("disabled", "true");
+			// no need for aria-disabled if a "disabled" attribute is in the DOM
+			oAccAttributes.disabled = null;
 		} else {
 			oRm.attr("tabindex", oControl._getTabindex());
 		}

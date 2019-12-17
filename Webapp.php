@@ -26,6 +26,8 @@ use exface\Core\Exceptions\Facades\FacadeLogicError;
 use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
 use exface\Core\Interfaces\Exceptions\ExceptionInterface;
 use exface\Core\Exceptions\Facades\FacadeRoutingError;
+use exface\Core\Interfaces\DataSheets\DataSheetInterface;
+use exface\Core\Events\DataSheet\OnBeforeReadDataEvent;
 
 class Webapp implements WorkbenchDependantInterface
 {
@@ -96,10 +98,7 @@ class Webapp implements WorkbenchDependantInterface
                 if (! $task->hasInputData() && $action->getPrefillWithInputData()) {
                     try {
                         $inputData = $button->getInputWidget()->prepareDataSheetToRead();
-                        if ($inputData->getMetaObject()->isReadable() === true && $inputData->getColumns()->isEmpty() === false) {
-                            $inputData->setRowsLimit(1);
-                            $inputData->dataRead();
-                        }
+                        $inputData = $this->handlePrefillGenerateDummyData($inputData);
                         $task->setInputData($inputData);
                     } catch (\Throwable $e) {
                         throw new FacadeLogicError('Cannot load prefill data for UI5 view. ' . $e->getMessage(), null, $e);
@@ -108,10 +107,7 @@ class Webapp implements WorkbenchDependantInterface
                 if (! $task->hasPrefillData() && $action->getPrefillWithInputData() === false && $action->getPrefillWithPrefillData()) {
                     try {
                         $prefillData = $button->getInputWidget()->prepareDataSheetToRead();
-                        if ($prefillData->getMetaObject()->isReadable() === true && $prefillData->getColumns()->isEmpty() === false) {
-                            $prefillData->setRowsLimit(1);
-                            $prefillData->dataRead();
-                        }
+                        $prefillData = $this->handlePrefillGenerateDummyData($prefillData);
                         $task->setPrefillData($prefillData);
                     } catch (\Throwable $e) {
                         throw new FacadeLogicError('Cannot load prefill data for UI5 view. ' . $e->getMessage(), null, $e);
@@ -141,6 +137,58 @@ class Webapp implements WorkbenchDependantInterface
         }
         
         return $widget;
+    }
+    
+    /**
+     * Adds a dummy-row to the prefill data and makes sure it triggers the prefill logic.
+     * 
+     * @param DataSheetInterface $dataSheet
+     * @return DataSheetInterface
+     */
+    protected function handlePrefillGenerateDummyData(DataSheetInterface $dataSheet) : DataSheetInterface
+    {
+        $row = [];
+        
+        // Make sure, there is a UID column - otherwise no prefill will take place!
+        if ($dataSheet->hasUidColumn() === false && $dataSheet->getMetaObject()->hasUidAttribute() === true) {
+            $dataSheet->getColumns()->addFromUidAttribute();
+        }
+        
+        // Create a row with empty values for every column
+        foreach ($dataSheet->getColumns() as $col) {
+            $row[$col->getName()] = '';
+        }
+        $dataSheet->addRow($row);
+        
+        // If the resulting sheet has a UID column, make sure it has a value - otherwise
+        // the prefill logic will not attempt to ask the target widget for more columns
+        // via prepareDataSheetToPrefill() because there would not be a way to read missing
+        // values.
+        if ($dataSheet->hasUidColumn(false) === true) {
+            $dataSheet->getUidColumn()->setValue(0, 1);
+        }
+        
+        // Make sure, that if a read operation is attempted for our dummy data, that will
+        // not really take place! Otherwise our data will be removed if there are no rows
+        // matching our dummy-UID.
+        $this->getWorkbench()->eventManager()->addListener(OnBeforeReadDataEvent::getEventName(), function(OnBeforeReadDataEvent $event) use ($dataSheet, $row) {
+            $eventSheet = $event->getDataSheet();
+            // Prevent read operations on our dummy-sheet as they will change or even remove our data!
+            // If the prefill will cause a read operation, the prefill-sheet will be
+            // a copy of our sheet, so we cant simply check if they are equal. However,
+            // the prefill sheet will have our values and may have other columns with NULL
+            // values.
+            if ($eventSheet->getMetaObject()->isExactly($dataSheet->getMetaObject()) === true && $eventSheet->countRows() === 1) {
+                foreach ($eventSheet->getRow(0) as $fld => $val) {
+                    if ($val !== null && $val !== $row[$fld]) {
+                        return;
+                    }
+                }
+                $event->preventRead();
+            }
+        });
+        
+        return $dataSheet;
     }
     
     public function get(string $route, HttpTaskInterface $task = null) : string

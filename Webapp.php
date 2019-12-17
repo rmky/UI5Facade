@@ -171,7 +171,7 @@ class Webapp implements WorkbenchDependantInterface
         // Make sure, that if a read operation is attempted for our dummy data, that will
         // not really take place! Otherwise our data will be removed if there are no rows
         // matching our dummy-UID.
-        $this->getWorkbench()->eventManager()->addListener(OnBeforeReadDataEvent::getEventName(), function(OnBeforeReadDataEvent $event) use ($dataSheet, $row) {
+        $this->getWorkbench()->eventManager()->addListener(OnBeforeReadDataEvent::getEventName(), function(OnBeforeReadDataEvent $event) use ($dataSheet) {
             $eventSheet = $event->getDataSheet();
             // Prevent read operations on our dummy-sheet as they will change or even remove our data!
             // If the prefill will cause a read operation, the prefill-sheet will be
@@ -179,6 +179,7 @@ class Webapp implements WorkbenchDependantInterface
             // the prefill sheet will have our values and may have other columns with NULL
             // values.
             if ($eventSheet->getMetaObject()->isExactly($dataSheet->getMetaObject()) === true && $eventSheet->countRows() === 1) {
+                $row = $dataSheet->getRow(0);
                 foreach ($eventSheet->getRow(0) as $fld => $val) {
                     if ($val !== null && $val !== $row[$fld]) {
                         return;

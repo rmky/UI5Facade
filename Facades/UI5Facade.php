@@ -35,7 +35,10 @@ use exface\UI5Facade\Facades\Formatters\UI5EnumFormatter;
 use exface\Core\Interfaces\DataSheets\DataSheetInterface;
 use exface\UI5Facade\Facades\Formatters\UI5TimeFormatter;
 use exface\Core\DataTypes\DateTimeDataType;
+use exface\Core\Facades\AbstractFacade\AbstractFacade;
+
 /**
+ * Renders SAP Fiori apps using OpenUI5 or SAP UI5.
  * 
  * @method ui5AbstractElement getElement()
  * 
@@ -44,7 +47,6 @@ use exface\Core\DataTypes\DateTimeDataType;
  */
 class UI5Facade extends AbstractAjaxFacade
 {
-
     private $requestPageAlias = null;
     
     private $rootView = null;
@@ -52,6 +54,10 @@ class UI5Facade extends AbstractAjaxFacade
     private $rootController = null;
     
     private $webapp = null;
+    
+    private $contentDensity = null;
+    
+    private $theme = null;
     
     /**
      * Cache for config key WIDGET.DIALOG.MAXIMIZE_BY_DEFAULT_IN_ACTIONS:
@@ -417,5 +423,70 @@ JS;
     protected function isShowingErrorDetails() : bool
     {
         return false;
+    }
+    
+    /**
+     *
+     * @return string
+     */
+    public function getContentDensity() : string
+    {
+        return $this->contentDensity ?? 'compact';
+    }
+    
+    /**
+     * Controls the size of widgets: cozy (large, touch-friendly) or compact (desktop).
+     * 
+     * @uxon-property content_density
+     * @uxon-type [cozy,compact]
+     * @uxon-default compact
+     * 
+     * @param string $value
+     * @return UI5Facade
+     */
+    public function setContentDensity(string $value) : UI5Facade
+    {
+        $this->contentDensity = $value;
+        return $this;
+    }
+    
+    /**
+     *
+     * @return string
+     */
+    public function getTheme() : string
+    {
+        return $this->theme ?? 'sap_belize';
+    }
+    
+    /**
+     * 
+     * @uxon-property theme
+     * @uxon-type [sap_belize,sap_fiori_3]
+     * @uxon-default sap_belize
+     * 
+     * @param string $value
+     * @return UI5Facade
+     */
+    public function setTheme(string $value) : UI5Facade
+    {
+        $this->theme = $value;
+        return $this;
+    }
+    
+    /**
+     * {@inheritdoc}
+     * @see AbstractFacade::exportUxonObject()
+     */
+    public function exportUxonObject()
+    {
+        $uxon = parent::exportUxonObject();
+        if ($this->contentDensity !== null) {
+            $uxon->setProperty('content_density', $this->getContentDensity());
+        }
+        if ($this->theme !== null) {
+            $uxon->setProperty('theme', $this->getTheme());
+        }
+        return $uxon;
     }
 }

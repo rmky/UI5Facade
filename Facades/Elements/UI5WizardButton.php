@@ -36,7 +36,9 @@ class UI5WizardButton extends UI5Button
         $validateJs = '';
         if (($nextStep = $widget->getGoToStepIndex()) !== null) {
             $stepElement = $this->getFacade()->getElement($widget->getWizardStep());
-            $validateJs = <<<JS
+            
+            if ($widget->getValidateCurrentStep() === true) {
+                $validateJs = <<<JS
             
                     if({$stepElement->buildJsValidator()} === false) {
                         {$stepElement->buildJsValidationError()}
@@ -44,6 +46,7 @@ class UI5WizardButton extends UI5Button
                     }
                     
 JS;
+            }
                         $goToStepJs = <<<JS
                     var wizard = sap.ui.getCore().byId('{$tabsElement->getId()}');
 

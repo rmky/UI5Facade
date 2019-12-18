@@ -48,6 +48,9 @@ body:not(.sapUiSizeCompact) .sapFDynamicPageTitleMainHeadingInner .sapMTitle > s
 /* Forms */
 .sapUiFormTitle:empty {display: none;}
 
+/* Wizard */
+/*.exf-wizard-toolbar {transition: 0.4s linear;}*/
+
 /* HTML widgets */
 .exf-html {font-size: 0.875rem;}
 .sapUiSimpleForm .exf-html h1 {font-size: 1.275rem; font-weight: normal;}

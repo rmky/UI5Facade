@@ -6,6 +6,8 @@ use exface\Core\Factories\WidgetFactory;
 use exface\Core\Widgets\Toolbar;
 
 /**
+ * Creates an UI5Wizard for step-by-step input of data. 
+ * 
  * @method Wizard getWidget()
  * @author tmc
  *

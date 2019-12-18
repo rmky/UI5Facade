@@ -4,6 +4,7 @@ namespace exface\UI5Facade\Facades\Elements;
 use exface\Core\Widgets\WizardStep;
 
 /**
+ * A special form to be used within `UI5Wizard` widgets.
  * 
  * method WizardStep getWidget()
  * @author tmc

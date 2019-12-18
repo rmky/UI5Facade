@@ -30,8 +30,6 @@ class UI5WizardButton extends UI5Button
         $widget = $this->getWidget();
         $tabsElement = $this->getFacade()->getElement($widget->getWizardStep()->getParent());
         
-        $actionJs = parent::buildJsClickFunction();
-        
         $goToStepJs = '';
         $validateJs = '';
         if (($nextStep = $widget->getGoToStepIndex()) !== null) {
@@ -61,6 +59,14 @@ JS;
                     
 JS;
                         
+        }
+        
+        // If the button has an action, the step navigation should only happen once
+        // the action is complete!
+        if ($this->getWidget()->hasAction() === true) {
+            $this->addOnSuccessScript($goToStepJs);
+            $actionJs = parent::buildJsClickFunction();
+            $goToStepJs = '';
         }
         
         return <<<JS

@@ -15,21 +15,16 @@ class UI5Toolbar extends UI5AbstractElement
 {
     use JqueryToolbarTrait;
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsConstructor()
+     */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         $widget = $this->getWidget();
-        $left_buttons = '';
-        $right_buttons = '';
-        foreach ($widget->getButtons() as $btn) {
-            switch ($btn->getAlign()) {
-                case EXF_ALIGN_OPPOSITE:
-                case EXF_ALIGN_RIGHT:
-                    $right_buttons = $this->getFacade()->getElement($btn)->buildJsConstructor() . ",\n" . $right_buttons;
-                    break;
-                default:
-                    $left_buttons .= $this->getFacade()->getElement($btn)->buildJsConstructor() . ",\n";
-            }
-        }
+        $left_buttons = $this->buildJsConstructorsForLeftButtons();
+        $right_buttons = $this->buildJsConstructorsForRightButtons();
         
         $toolbar = <<<JS
 			new sap.m.OverflowToolbar({
@@ -39,12 +34,55 @@ class UI5Toolbar extends UI5AbstractElement
                     new sap.m.ToolbarSpacer(),
                     {$right_buttons}
 				]
-			})
+			}).addStyleClass("{$this->buildCssElementClass()}")
 JS;
         return $toolbar;
         
     }
     
+    /**
+     * Function for building the JS-Code of buttons, aligned left in an instance of a Toolbox.
+     * 
+     * @return string
+     */
+    public function buildJsConstructorsForLeftButtons() : string
+    {
+        $left_buttons = '';
+        foreach ($this->getWidget()->getButtons() as $btn) {
+            switch ($btn->getAlign()) {
+                case EXF_ALIGN_OPPOSITE:
+                case EXF_ALIGN_RIGHT:
+                    break;
+                default:
+                    $left_buttons .= $this->getFacade()->getElement($btn)->buildJsConstructor() . ",\n";
+            }
+        }
+        return $left_buttons;
+    }
+    
+    /**
+     * Function for building the JS-Code of buttons, aligned right in an instance of a Toolbox.
+     *  
+     * @return string
+     */
+    public function buildJsConstructorsForRightButtons() : string
+    {
+        $right_buttons = '';
+        foreach ($this->getWidget()->getButtons() as $btn) {
+            switch ($btn->getAlign()) {
+                case EXF_ALIGN_OPPOSITE:
+                case EXF_ALIGN_RIGHT:
+                    $right_buttons .= $this->getFacade()->getElement($btn)->buildJsConstructor() . ",\n";
+                    break;
+            }
+        }
+        return $right_buttons;
+    }
+    
+    /**
+     * 
+     * @see JqueryToolbarTrait::buildJsButtons()
+     */
     protected function buildJsButtons()
     {
         $widget = $this->getWidget();

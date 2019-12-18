@@ -61,9 +61,11 @@ class UI5Button extends UI5AbstractElement
         $this->getController()->addOnInitScript($this->buildJsDisableConditionInitializer());
         
         return <<<JS
+
 new sap.m.Button("{$this->getId()}", { 
     {$this->buildJsProperties()}
-})
+}).addStyleClass("{$this->buildCssElementClass()}")
+
 JS;
     }
     

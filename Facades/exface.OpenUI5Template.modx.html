@@ -141,11 +141,6 @@
 							home_url: '[(site_url)]',
 							app_url: '[~[*id*]~]'
 						});
-						oShell.getModel().setProperty('/_user', {
-							avatar: '[!UserManagerInfo? &field=`photo`!]',
-							name: '[!UserManagerInfo? &field=`fullname`!]',
-							username: '[!UserManagerInfo? &field=`username`!]'
-						});
 						
 						oShell.placeAt("[*id*]");
 					}, 1000);

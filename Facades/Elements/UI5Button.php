@@ -439,7 +439,7 @@ JS;
                 
 				if ({$input_element->buildJsValidator()}) {
 					{$this->buildJsBusyIconShow()}
-                    var oModel = new sap.ui.model.json.JSONModel();
+                    var oResultModel = new sap.ui.model.json.JSONModel();
                     var params = {
 							action: "{$widget->getActionAlias()}",
 							resource: "{$widget->getPage()->getAliasWithNamespace()}",
@@ -447,7 +447,7 @@ JS;
 							object: "{$widget->getMetaObject()->getId()}",
 							data: requestData
 					}
-                    {$this->getServerAdapter()->buildJsServerRequest($action, 'oModel', 'params', $onModelLoadedJs, $this->buildJsBusyIconHide())}	    
+                    {$this->getServerAdapter()->buildJsServerRequest($action, 'oResultModel', 'params', $onModelLoadedJs, $this->buildJsBusyIconHide())}	    
 				} else {
 					{$input_element->buildJsValidationError()}
 				}

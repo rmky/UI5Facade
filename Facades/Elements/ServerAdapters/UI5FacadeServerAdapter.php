@@ -6,6 +6,7 @@ use exface\UI5Facade\Facades\Interfaces\UI5ServerAdapterInterface;
 use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\Core\Actions\ReadData;
 use exface\Core\Actions\ReadPrefill;
+use exface\UrlDataConnector\Actions\CallOData2Operation;
 
 class UI5FacadeServerAdapter implements UI5ServerAdapterInterface
 {
@@ -66,6 +67,7 @@ class UI5FacadeServerAdapter implements UI5ServerAdapterInterface
     									}
                                     }
 				                   	if (response.success){
+                                        $oModelJs.setData(response);
 										{$onModelLoadedJs}
 				                    } else {
 										{$this->getElement()->buildJsShowMessageError('response.error', '"Server error"')}

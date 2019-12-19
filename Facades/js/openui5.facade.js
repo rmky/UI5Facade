@@ -234,61 +234,7 @@ const exfLauncher = {};
 									oPopover.openBy(oButton);
 								});
 							}
-		                }),
-		                new sap.m.OverflowToolbarButton("exf-user-icon", {
-		                	text: "{i18n>WEBAPP.SHELL.USER.TITLE}",
-		                    icon: "sap-icon://customer",
-		                    press: function(oEvent){
-								var oButton = oEvent.getSource();
-								var oPopover = sap.ui.getCore().byId('exf-user-menu');
-								if (oPopover === undefined) {
-									oPopover = new sap.m.Popover("exf-user-menu", {
-										title: "{i18n>WEBAPP.SHELL.USER.TITLE}",
-										placement: "Bottom",
-										content: [
-											new sap.m.HBox({
-												items: [
-									                new sap.f.Avatar({
-									                	src: "{/_user/avatar}",
-														displaySize: "M"
-									                }),
-									                new sap.m.VBox({
-														items: [
-											                new sap.m.Text({
-											                	text: "{/_user/name}"
-											                }),
-											                new sap.m.Text({
-											                	text: "({/_user/username})"
-											                }),
-										                ]
-													}).addStyleClass('sapUiContentPadding')
-								                ]
-											})
-						                ],
-						                footer: [
-											new sap.m.Toolbar({
-												content: [
-													new sap.m.ToolbarSpacer(),
-													new sap.m.Button({
-														icon: "sap-icon://log",
-														press: function(){
-															window.location.href = 'login.html';
-														}
-													})
-												]
-											})
-										]
-									})
-									.setModel(oButton.getModel())
-									.setModel(oButton.getModel('i18n'), 'i18n')
-									.addStyleClass('sapUiContentPadding');
-								}
-								
-								jQuery.sap.delayedCall(0, this, function () {
-									oPopover.openBy(oButton);
-								});
-		                    }
-		                }),
+		                }),		                
 					]
 				})
 			],
@@ -434,6 +380,7 @@ const exfLauncher = {};
 							})
 						]
 					}).setBusyIndicatorDelay(0);
+					oPopover.addStyleClass('exf-context-popup');
 					
 					jQuery.sap.delayedCall(0, this, function () {
 						oPopover.openBy(oButton);

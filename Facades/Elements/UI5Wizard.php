@@ -2,11 +2,9 @@
 namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Widgets\Wizard;
-use exface\Core\Factories\WidgetFactory;
-use exface\Core\Widgets\Toolbar;
 
 /**
- * Creates an UI5Wizard for step-by-step input of data. 
+ * Creates a sap.m.Wizard for a Wizard widget. 
  * 
  * @method Wizard getWidget()
  * @author tmc
@@ -44,36 +42,18 @@ class UI5Wizard extends UI5Container
     {           
         $this->checkWizardStepIconAttributes();
         
-        $leftButtons = '';
-        $rightButtons = '';
         $wizardTbEl = $this->getFacade()->getElement($this->getWidget()->getToolbarMain());
-        $leftButtons .= $wizardTbEl->buildJsConstructorsForLeftButtons();
-        $rightButtons .= $wizardTbEl->buildJsConstructorsForRightButtons();
-        
-
-                 
-        $toolbar = <<<JS
-			new sap.m.OverflowToolbar({
-				content: [
-                    {$leftButtons}
-                    new sap.m.ToolbarSpacer(),
-                    {$rightButtons}
-				]
-			})
-JS;
         $toolbar = $wizardTbEl->buildJsConstructor();
         
         $title = $this->getCaption() ? "title: '{$this->getCaption()}'," : 'showHeader: false,';
         
         return <<<JS
-    new sap.m.Page({
+
+        new sap.m.Page({
             {$title}
             content: [
                 new sap.m.Wizard("{$this->getId()}", {
-                    
                     showNextButton: false,
-                    //stepActivate: ".wizardStepChangeHandler"
-                    
                     steps: [
                         {$this->buildJsChildrenConstructors()}
                     ]
@@ -83,17 +63,8 @@ JS;
                 {$toolbar}
             ]
         })
+
 JS;
-    }
-    
-    /**
-     *
-     * @param Toolbar $tb
-     * @return string
-     */
-    protected function buildCssStepToolbarClass(Toolbar $tb) : string
-    {
-        return 'exf-step-toolbar-' . $tb->getId();
     }
  
     /**
@@ -116,13 +87,9 @@ JS;
         }
         //throw exception if there are not enough icons
         if ($iconCounter != sizeof($wizardSteps) && $iconCounter != 0){
-            $this->getWorkbench()->getLogger()->logException($e = new \InvalidArgumentException('Exception: Some, but not every instance of `WizardStep` has an `icon` parameter!'));
-            throw ($e);
+            $this->getWorkbench()->getLogger()->logException(new \InvalidArgumentException('Cannot render icons for wizard steps: UI5 requires, that ALL steps have icons - this is not the case!'));
         }
         
         return $this;
     }
-    
 }
-
-?>

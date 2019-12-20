@@ -22,7 +22,6 @@ class UI5Toolbar extends UI5AbstractElement
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
-        $widget = $this->getWidget();
         $left_buttons = $this->buildJsConstructorsForLeftButtons();
         $right_buttons = $this->buildJsConstructorsForRightButtons();
         
@@ -63,16 +62,26 @@ JS;
     /**
      * Function for building the JS-Code of buttons, aligned right in an instance of a Toolbox.
      *  
+     * Normally the first right-aligned button is positioned right-most - this means, the
+     * rendering order is reversed for right-aligned buttons. This can be explicitly disabled
+     * by setting $reverseOrder = false.
+     * 
+     *  
+     * @param bool $reverseOrder
      * @return string
      */
-    public function buildJsConstructorsForRightButtons() : string
+    public function buildJsConstructorsForRightButtons(bool $reverseOrder = true) : string
     {
         $right_buttons = '';
         foreach ($this->getWidget()->getButtons() as $btn) {
             switch ($btn->getAlign()) {
                 case EXF_ALIGN_OPPOSITE:
                 case EXF_ALIGN_RIGHT:
-                    $right_buttons .= $this->getFacade()->getElement($btn)->buildJsConstructor() . ",\n";
+                    if ($reverseOrder === true) {
+                        $this->getFacade()->getElement($btn)->buildJsConstructor() . ",\n" . $right_buttons;
+                    } else {
+                        $right_buttons .= $this->getFacade()->getElement($btn)->buildJsConstructor() . ",\n";
+                    }
                     break;
             }
         }

@@ -1,6 +1,8 @@
 <?php
 namespace exface\UI5Facade\Facades\Elements;
 
+use exface\Core\Widgets\DataTable;
+
 /**
  * Generates a sap.m.Dialog for a Value-Help-Dialog.
  * 
@@ -22,6 +24,8 @@ namespace exface\UI5Facade\Facades\Elements;
  * JS;
  * 
  * ```
+ * 
+ * @method DataTable getWidget()
  *
  * @author Andrej Kabachnik
  *        

@@ -81,3 +81,6 @@ table.jexcel {width: 100%}
 .jexcel>thead.footer>tr>td {background-color: white; font-weight: bold; border-top: 1px solid #666;}
 .jexcel td {overflow: hidden; text-overflow: ellipsis;}
 .jdropdown-container.slide-bottom-in {bottom: initial !important;}
+
+/* UI5DashBoard Widget GridContainer layout for columns*/
+.dashboard_gridcontainer_layout {grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important; grid-auto-rows: auto !important;}

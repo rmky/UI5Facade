@@ -1,14 +1,21 @@
 <?php
 namespace exface\UI5FAcade\Facades\Elements;
 
+use exface\Core\Widgets\Dashboard;
+
 /**
  * 
  * @author tmc
  *
+ * @method Dashboard getWidget()
  */
 class UI5Dashboard extends UI5Panel
 {
-
+    /**
+     * 
+     * @param string $oControllerJs
+     * @return string
+     */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {   
         $dashboard = $this->buildJsConstructorForDashboard();
@@ -16,6 +23,10 @@ class UI5Dashboard extends UI5Panel
         return $dashboard;
     }
     
+    /**
+     * 
+     * @return string
+     */
     protected function buildJsConstructorForDashboard() : string
     {
         
@@ -28,19 +39,23 @@ class UI5Dashboard extends UI5Panel
             {$width}
             layout: [
                 {
-                    rowSize: "10%",
-                    columnSize:"10%",
-                    gap: "6px"
+                  //  minColumnSize: "300px",
+                  //  columnSize: "calc((100% - 2 * 5px) / 3)",
+                    gap: "5px"
                 }
             ],
             items: [
                 {$this->buildDashboardContentWrapper()}
             ]
-        })
+        }).addStyleClass("dashboard_gridcontainer_layout")
         
 JS;
     }
     
+    /**
+     * 
+     * @return string
+     */
     protected function buildDashboardContentWrapper() : string
     {
         $js = '';
@@ -49,15 +64,19 @@ JS;
             
             $widthUnits = $this->getChildrenElementWidthUnitCount($widget);
             $heightUnits = $this->getChildrenElementHeightUnitCount($widget);
+           
+            $height = ($widget->getHeight()->isMax() || $widget->getHeight()->isUndefined()) ? "height : \"100%\"," : "height : \"{$widget->getHeight()->getValue()}\",";
+
+            $widget->setHeight("100%");
             
             $js .= <<<JS
                     new sap.f.Card({
+                        {$height}
                         content: [
                             {$this->getFacade()->getElement($widget)->buildJsConstructor()}
                         ] 
                     }).setLayoutData(new sap.f.GridContainerItemLayoutData({
-                                columns: {$widthUnits},
-                                minRows: {$heightUnits}
+                                columns: {$widthUnits}
                             })),
 
 JS;
@@ -66,19 +85,37 @@ JS;
         return $js;
     }
     
+    /**
+     * 
+     * @param unknown $widget
+     * @return int
+     */
     protected function getChildrenElementWidthUnitCount($widget) : int
     {
         $width = $widget->getWidth()->getValue();
         
-        if (strpos($width, '%') !== false){
-            $widthUnits = round((str_replace('%', '', $width) / 10));   
-        } else {
-            $widthUnits = round(10 / $this->getWidget()->countWidgetsVisible());
+        switch (true){
+            case (strpos($width, '%') !== false):
+                $widthUnits = round((str_replace('%', '', $width) / 10));
+                break;
+            
+            case (is_numeric($width)):
+                $widthUnits = $width;
+                break;
+                
+            default:
+                $widthUnits = round(10 / $this->getWidget()->countWidgetsVisible());
+                break;
         }
-        
+                
         return $widthUnits;
     }
     
+    /**
+     * 
+     * @param unknown $widget
+     * @return int
+     */
     protected function getChildrenElementHeightUnitCount($widget) : int
     {
         $height = $widget->getHeight()->getValue();

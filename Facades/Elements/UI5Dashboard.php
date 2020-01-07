@@ -30,13 +30,14 @@ class UI5Dashboard extends UI5Panel
     protected function buildJsConstructorForDashboard() : string
     {
         
-        $height = ($this->getWidget()->getHeight()->getValue()) ? "height : \"{$this->getWidget()->getHeight()->getValue()}\"," : 'height : "100%",';
+       // $height = ($this->getWidget()->getHeight()->getValue()) ? "height : \"{$this->getWidget()->getHeight()->getValue()}\"," : 'height : "100%",';
         $width = ($this->getWidget()->getWidth()->getValue()) ? "width : \"{$this->getWidget()->getWidth()->getValue()}\"," : 'width : "100%",';
         
         return <<<JS
         new sap.f.GridContainer({
-            {$height}
             {$width}
+            allowDenseFill: true,
+            snapToRow: true,
             layout: [
                 {
                   //  minColumnSize: "300px",
@@ -66,17 +67,26 @@ JS;
             $heightUnits = $this->getChildrenElementHeightUnitCount($widget);
            
             $height = ($widget->getHeight()->isMax() || $widget->getHeight()->isUndefined()) ? "height : \"100%\"," : "height : \"{$widget->getHeight()->getValue()}\",";
-
+            
+            if ($widthUnits == ''){
+                $width = ($widget->getWidth()->isMax() || $widget->getWidth()->isUndefined()) ? "width : \"100%\"," : "width : \"{$widget->getWidth()->getValue()}\",";
+            } else {
+                $width = '';
+            }
+            
+            
             $widget->setHeight("100%");
+            $widget->setWidth("100%");
             
             $js .= <<<JS
                     new sap.f.Card({
                         {$height}
+                        {$width}
                         content: [
                             {$this->getFacade()->getElement($widget)->buildJsConstructor()}
                         ] 
                     }).setLayoutData(new sap.f.GridContainerItemLayoutData({
-                                columns: {$widthUnits}
+                                {$widthUnits}
                             })),
 
 JS;
@@ -88,24 +98,19 @@ JS;
     /**
      * 
      * @param unknown $widget
-     * @return int
+     * @return string
      */
-    protected function getChildrenElementWidthUnitCount($widget) : int
+    protected function getChildrenElementWidthUnitCount($widget) : string
     {
         $width = $widget->getWidth()->getValue();
         
         switch (true){
-            case (strpos($width, '%') !== false):
-                $widthUnits = round((str_replace('%', '', $width) / 10));
-                break;
-            
             case (is_numeric($width)):
-                $widthUnits = $width;
+                $widthUnits = "columns: {$width}";
                 break;
                 
             default:
-                $widthUnits = round(10 / $this->getWidget()->countWidgetsVisible());
-                break;
+                $widthUnits = '';
         }
                 
         return $widthUnits;

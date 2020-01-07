@@ -86,7 +86,8 @@ class UI5DataTable extends UI5AbstractElement
         
         return <<<JS
         new sap.m.VBox({
-            items: [
+            width: "{$this->getWidth()}",
+    		items: [
                 new sap.m.Table("{$this->getId()}", {
             		fixedLayout: false,
                     sticky: [sap.m.Sticky.ColumnHeaders, sap.m.Sticky.HeaderToolbar],
@@ -178,6 +179,7 @@ JS;
         
         $js = <<<JS
             new sap.ui.table.Table("{$this->getId()}", {
+                width: "{$this->getWidth()}",
         		visibleRowCountMode: sap.ui.table.VisibleRowCountMode.Auto,
                 selectionMode: {$selection_mode},
         		selectionBehavior: {$selection_behavior},

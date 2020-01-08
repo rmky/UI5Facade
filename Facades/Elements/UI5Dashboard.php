@@ -24,36 +24,56 @@ class UI5Dashboard extends UI5Panel
     }
     
     /**
+     * This function returns the JS-code for the `Dashboard`. 
+     * A `Dashboard` in UI5 consists of a `sap.f.GridContainer`, which aligns the child widgets 
+     * in a grid. 
+     * The children Widgets itself are wrapped in instances of `sap.f.Card`, whose code is getting
+     * created by call of the function `buildDashboardContentWrapper()`.
+     * The `GridContainer` always has the parameters `allowDenseFill` and `snapToRow` set to `true`
+     * to automatically optimize the alignment of the Cards. Furthermore the `GridContainer` uses 
+     * the css-class `dashboard_gridcontainer_layout`, which sets the minimum and maximum width
+     * of its child elements. 
      * 
      * @return string
      */
     protected function buildJsConstructorForDashboard() : string
     {
         
-       // $height = ($this->getWidget()->getHeight()->getValue()) ? "height : \"{$this->getWidget()->getHeight()->getValue()}\"," : 'height : "100%",';
-        $width = ($this->getWidget()->getWidth()->getValue()) ? "width : \"{$this->getWidget()->getWidth()->getValue()}\"," : 'width : "100%",';
+        $height = ($this->getWidget()->getHeight()->getValue()) ? "{$this->getWidget()->getHeight()->getValue()}" : "100%";
+        $width = ($this->getWidget()->getWidth()->getValue()) ? "{$this->getWidget()->getWidth()->getValue()}": "100%";
+        
         
         return <<<JS
-        new sap.f.GridContainer({
-            {$width}
-            allowDenseFill: true,
-            snapToRow: true,
-            layout: [
-                {
-                  //  minColumnSize: "300px",
-                  //  columnSize: "calc((100% - 2 * 5px) / 3)",
-                    gap: "5px"
-                }
-            ],
-            items: [
-                {$this->buildDashboardContentWrapper()}
+        new sap.m.ScrollContainer({
+            vertical: true,
+            width: "{$width}",
+            height: "{$height}",
+            content: [
+                new sap.f.GridContainer({
+                    width: "auto",
+                    allowDenseFill: true,
+                    snapToRow: true,
+                    layout: [
+                        {
+                          //  minColumnSize: "300px",
+                          //  columnSize: "calc((100% - 2 * 5px) / 3)",
+                            gap: "5px"
+                        }
+                    ],
+                    items: [
+                        {$this->buildDashboardContentWrapper()}
+                    ]
+                }).addStyleClass("dashboard_gridcontainer_layout sapUiTinyMargin")
             ]
-        }).addStyleClass("dashboard_gridcontainer_layout")
-        
+        })
 JS;
     }
     
     /**
+     * This function generates the JS-code for the `sap.f.Card`'s which wrap the content declared
+     * in the UXON of the `Dashbord`. For each widget in the `Dashboard`, a `Card` gets created. 
+     * The `Card` gets its layoutdata (e.g. width and height) assigned from the data given in the   
+     * widgets UXON and the widget itseif is then ebing inserted in the `Card`'s content.
      * 
      * @return string
      */

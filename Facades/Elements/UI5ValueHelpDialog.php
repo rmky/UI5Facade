@@ -34,34 +34,45 @@ class UI5ValueHelpDialog extends UI5DataTable
 {
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
-        $this->getPaginatorElement()->registerControllerMethods();
-        $this->initConfiguratorControl($this->getController());
+        $tableConstructorJs = parent::buildJsConstructor($oControllerJs);
         
         $body = <<<JS
         sap.ui.getCore().byId("{$this->getId()}__ValueHelpDialog").destroy();
 JS;
         $this->getController()->addMethod("handleCancelVHelp", $this, "oEvent", $body);
         
-        return $this->buildJsValueHelpDialogConstructor($oControllerJs);
+        $body = <<<JS
+        alert("OK Pressed!");
+JS;
+        $this->getController()->addMethod("handleOkayVHelp", $this, "oEvent", $body);
+        
+        return $this->buildJsValueHelpDialogConstructor($tableConstructorJs, $oControllerJs);
     }   
                     
-    protected function buildJsValueHelpDialogConstructor(string $oControllerJs) : string
+    protected function buildJsValueHelpDialogConstructor(string $tableConstructorJs, string $oControllerJs) : string
     {
+        $functionNameExtension = str_replace('_', '', $this->getId());
+        $functionNameExtension = ucfirst($functionNameExtension);
+        
         return <<<JS
-            new sap.m.Dialog( "{$this->getId()}__ValueHelpDialog" ,{
+            new sap.m.Dialog( "{$this->getId()}_ValueHelpDialog" ,{
                 content: [
                     //todo: "Title, etc.",
-                    {$this->buildJsValueHelpTableWrapper($oControllerJs, $this->buildJsConstructorForControl($oControllerJs))},
+                    {$this->buildJsValueHelpTableWrapper($oControllerJs, $tableConstructorJs)},
                 ],
                 //todo: "toolbar",
                 buttons: [
                     new sap.m.Button({
                         text: "OK",
-                        press: "handleOkayVHelp{$this->getId()}"
+                        press: function () {
+                            oController.handleOkayVHelp{$functionNameExtension}();
+                        }
                     }),
                     new sap.m.Button({
                         text: "Cancel",
-                        press: "handleCancelVHelp{$this->getId()}"
+                        press: function () {
+                            oController.handleCancelVHelp{$functionNameExtension}();
+                        }
                     }),
                 ],
                 afterClose: {$this->getController()->buildJsEventHandler($this, 'close', true)}
@@ -73,7 +84,7 @@ JS;
     protected function buildJsValueHelpTableWrapper(string $oControllerJs, string $tableConstructorJs) : string
     {
         // TODO add a special table wrapper instead of UI5DataElementTrait::buildJsPage().
-        return $this->changeDataTableIds($tableConstructorJs);
+        return $tableConstructorJs;
         
 //         return <<<JS
 //         new sap.m.Text({text: "insert datatable here!"}),
@@ -95,23 +106,23 @@ JS;
         $this->getController()->addOnEventScript($this, 'close', $js);
         return $this;
     }
-    
+    /*
     public function addOnLoadDataScript(string $js) : UI5ValueHelpDialog
     {
         $this->getController()->addOnEventScript($this, 'LoadData', $js);
         return $this;
-    }
+    }*/
     
     /**
      *
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsValueGetter()
      */
-    public function buildJsValueGetter($dataColumnName = null, $rowNr = null)
+    /*public function buildJsValueGetter($dataColumnName = null, $rowNr = null)
     {
         $row = $this->buildJsGetSelectedRows('oTable');
         $col = $dataColumnName !== null ? '["' . $dataColumnName . '"]' : '';
-        $id = $this->changeDataTableIds($this->getId());
+        $id = $this->getId();
         
         return <<<JS
         
@@ -121,5 +132,10 @@ function(){
 }()
 
 JS;
+}*/
+    
+    protected function getLoadDataOnShowView() : bool
+    {
+        return false;
     }
 }

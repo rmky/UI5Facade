@@ -294,19 +294,23 @@ JS;
 
 JS;
 */
+        $btn = $this->getWidget()->getLookupButton();
+        /* @var $btnEl \exface\UI5Facade\Facades\Elements\UI5Button */
+        $btnEl = $this->getFacade()->getElement($btn);
         
-         $vhpd = new UI5ValueHelpDialog($this->getWidget()->getTable(), $this->getFacade());
-         $vhpd->addOnLoadDataScript('alert("asdf")');
-         $vhpd->addOnCloseScript('alert("You have selected: "' . "+" . $vhpd->buildJsValueGetter() . ')');
-         
-         $vhpdConstrJs = $vhpd->buildJsConstructor($oControllerJs);
-         $resultingJS = <<<JS
-        function(oEvent){
-            var oDialog = {$vhpdConstrJs};
-            oDialog.open();
-        },
+        return <<<JS
+
+            function(oEvent) {
+                if (sap.ui.getCore().byId('{$btnEl->getId()}') === undefined) {
+                    var oLookupButton = {$btnEl->buildJsConstructor()};
+                    {$this->getController()->getView()->buildJsViewGetter($this)}.addDependent(oLookupButton);
+                }
+                {$btnEl->buildJsClickEventHandlerCall()}
+            },
+
 JS;
-         return $resultingJS;
+        
+        return $btnEl->buildJsClickViewEventHandlerCall() . ',';
     }
      
     /**

@@ -9,6 +9,7 @@ use exface\Core\Factories\DataSheetFactory;
 use exface\Core\DataTypes\UrlDataType;
 use exface\Core\Interfaces\DataTypes\DataTypeInterface;
 use exface\Core\Exceptions\Facades\FacadeLogicError;
+use exface\UI5Facade\Facades\Elements\UI5ValueHelpDialog;
 
 /**
  * Generates OpenUI5 selects
@@ -263,14 +264,14 @@ JS;
      * 
      * @return string
      */
-    protected function buildJsPropertyValueHelpRequest() : string
+    protected function buildJsPropertyValueHelpRequest($oControllerJs = 'oController') : string
     {
         // Currently, the value-help-button will simply trigger the autosuggest by firing the suggest
         // event with a special callback, that forces the input to show suggestions. This callback
         // is needed because just firing the suggest event will only show the suggestions if the
         // current text differs from the previous suggestion - don't know if this is a feature or
         // a bug. But with an explicit .showItems() it works well.
-        return <<<JS
+/*        return <<<JS
             function(oEvent) {
                 var oInput = oEvent.getSource();
                 {$this->buildJsBusyIconShow()};
@@ -292,6 +293,20 @@ JS;
             },
 
 JS;
+*/
+        
+         $vhpd = new UI5ValueHelpDialog($this->getWidget()->getTable(), $this->getFacade());
+         $vhpd->addOnLoadDataScript('alert("asdf")');
+         $vhpd->addOnCloseScript('alert("You have selected: "' . "+" . $vhpd->buildJsValueGetter() . ')');
+         
+         $vhpdConstrJs = $vhpd->buildJsConstructor($oControllerJs);
+         $resultingJS = <<<JS
+        function(oEvent){
+            var oDialog = {$vhpdConstrJs};
+            oDialog.open();
+        },
+JS;
+         return $resultingJS;
     }
      
     /**

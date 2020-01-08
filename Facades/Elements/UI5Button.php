@@ -227,10 +227,18 @@ JS;
                                         id: sViewId,
                                         viewName: "{$this->getFacade()->getViewName($targetWidget, $this->getController()->getWebapp()->getRootPage())}"
                                     }).then(function(oView){
+                                        var oParentView = {$this->getController()->getView()->buildJsViewGetter($this)};
+                                        if (oParentView !== undefined) {
+                                            oParentView.addDependent(oView);
+                                        }
+                                        
                                         if (oView.getModel('view') === undefined) {
                                             oView.setModel(new sap.ui.model.json.JSONModel(), 'view');    
                                         }
                                         oView.getModel('view').setProperty("/_route", {params: xhrSettings.data});
+                                        
+                                        {$this->buildJsOpenDialogFixMissingEvents('oView', 'oParentView')};
+                                        
                                         setTimeout(function() {
                                             var oDialog = oView.getContent()[0];
                                             if (oDialog instanceof sap.m.Dialog) {
@@ -244,7 +252,7 @@ JS;
                                                 }
                                                 {$this->buildJsOpenDialogForUnexpectedView('oDialog')};
                                             }
-                                        });
+                                        }, 0);
                                     });
                                 });
                             } else {
@@ -262,6 +270,54 @@ JS;
         }
         
         return $output;
+    }
+    
+    /**
+     * Views that are never explicitly navigated to are also never rendered/shown by UI5 - this method generates
+     * JS code to fire corresponding events manually.
+     * 
+     * If not used, tables and other data controls are rendered empty in sap.m.Dialog. Strangely they are
+     * filled when opening the dialog the second time. Don't know why.
+     * 
+     * @link https://stackoverflow.com/questions/36792358/access-model-in-js-view-to-render-programmatically
+     * 
+     * @param string $oViewJs
+     * @param string $oParentViewJs
+     * @return string
+     */
+    protected function buildJsOpenDialogFixMissingEvents(string $oViewJs, string $oParentViewJs) : string
+    {
+        return <<<JS
+
+                                        $oViewJs.fireBeforeRendering();
+                                        $oViewJs.fireAfterRendering();
+
+                                        var oNavInfo = {
+                            				from: $oParentViewJs || null,
+                            				fromId: ($oParentViewJs !== undefined ? $oParentViewJs.getId() : null),
+                            				to: $oViewJs,
+                            				toId: $oViewJs.getId(),
+                            				firstTime: true,
+                            				isTo: false,
+                            				isBack: false,
+                            				isBackToTop: false,
+                            				isBackToPage: false,
+                            				direction: "initial"
+                            			};
+                            
+                            			oEvent = jQuery.Event("BeforeShow", oNavInfo);
+                            			oEvent.srcControl = this;
+                            			oEvent.data = {};
+                            			oEvent.backData = {};
+                            			$oViewJs._handleEvent(oEvent);
+
+                                        oEvent = jQuery.Event("AfterShow", oNavInfo);
+                            			oEvent.srcControl = this;
+                            			oEvent.data = {};
+                            			oEvent.backData = {};
+                            			$oViewJs._handleEvent(oEvent);
+
+JS;
     }
     
     protected function buildJsOpenDialogForUnexpectedView(string $oViewContent) : string

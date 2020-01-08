@@ -206,6 +206,7 @@ JS;
                 rows: "{/rows}"
         	})
             {$this->buildJsClickListeners('oController')}
+            {$this->buildJsPseudoEventHandlers()}
 JS;
             
             return $js;

@@ -11,6 +11,8 @@ use exface\Core\Widgets\Dashboard;
  */
 class UI5Dashboard extends UI5Panel
 {
+    private $widgetsAssignedToContainers = [];
+    
     /**
      * 
      * @param string $oControllerJs
@@ -49,21 +51,7 @@ class UI5Dashboard extends UI5Panel
             width: "{$width}",
             height: "{$height}",
             content: [
-                new sap.f.GridContainer({
-                    width: "auto",
-                    allowDenseFill: true,
-                    snapToRow: true,
-                    layout: [
-                        {
-                          //  minColumnSize: "300px",
-                          //  columnSize: "calc((100% - 2 * 5px) / 3)",
-                            gap: "5px"
-                        }
-                    ],
-                    items: [
-                        {$this->buildDashboardContentWrapper()}
-                    ]
-                }).addStyleClass("dashboard_gridcontainer_layout sapUiTinyMargin")
+                {$this->getScrollContainerContent()}
             ]
         })
 JS;
@@ -73,30 +61,33 @@ JS;
      * This function generates the JS-code for the `sap.f.Card`'s which wrap the content declared
      * in the UXON of the `Dashbord`. For each widget in the `Dashboard`, a `Card` gets created. 
      * The `Card` gets its layoutdata (e.g. width and height) assigned from the data given in the   
-     * widgets UXON and the widget itseif is then ebing inserted in the `Card`'s content.
+     * widgets UXON and the widget itself is then being inserted in the `Card`'s content.
      * 
      * @return string
      */
-    protected function buildDashboardContentWrapper() : string
+    protected function buildDashboardContentWrapper(int $no) : string
     {
         $js = '';
+        $containerWidthIsInUnits = $this->isWidgetContainerWidthInUnits($no);
         
-        foreach ($this->getWidget()->getChildren() as $widget){
+        foreach ($this->widgetsAssignedToContainers[$no] as $widget){
             
-            $widthUnits = $this->getChildrenElementWidthUnitCount($widget);
-            $heightUnits = $this->getChildrenElementHeightUnitCount($widget);
-           
-            $height = ($widget->getHeight()->isMax() || $widget->getHeight()->isUndefined()) ? "height : \"100%\"," : "height : \"{$widget->getHeight()->getValue()}\",";
-            
-            if ($widthUnits == ''){
-                $width = ($widget->getWidth()->isMax() || $widget->getWidth()->isUndefined()) ? "width : \"100%\"," : "width : \"{$widget->getWidth()->getValue()}\",";
+            if ($containerWidthIsInUnits === false){
+                $widthUnits = $this->getChildrenElementWidthUnitCount($widget);
+                $width = "width: '{$widget->getWidth()->getValue()}',";
             } else {
-                $width = '';
+                $widthUnits = $widget->getWidth()->getValue();
+                $widget->setWidth("100%");
+                $width = 'width: "100%",';
+               
             }
             
             
-            $widget->setHeight("100%");
-            $widget->setWidth("100%");
+            $height = ($widget->getHeight()->isMax() || $widget->getHeight()->isUndefined()) ? "height : \"100%\"," : "height : \"{$widget->getHeight()->getValue()}\",";
+            
+            
+           // $widget->setHeight("100%");
+           // $widget->setWidth("100%");
             
             $js .= <<<JS
                     new sap.f.Card({
@@ -106,7 +97,7 @@ JS;
                             {$this->getFacade()->getElement($widget)->buildJsConstructor()}
                         ] 
                     }).setLayoutData(new sap.f.GridContainerItemLayoutData({
-                                {$widthUnits}
+                                columns: {$widthUnits}
                             })),
 
 JS;
@@ -122,15 +113,13 @@ JS;
      */
     protected function getChildrenElementWidthUnitCount($widget) : string
     {
-        $width = $widget->getWidth()->getValue();
-        
-        switch (true){
-            case (is_numeric($width)):
-                $widthUnits = "columns: {$width}";
-                break;
-                
-            default:
-                $widthUnits = '';
+
+        $width = ($widget->getWidth()->isMax() || $widget->getWidth()->isUndefined()) ? "100%" : $widget->getWidth()->getValue();
+        if (strpos($width, '%') != false) {
+            $widthUnits = round((str_replace('%', '', $width) / 10));
+            $widget->setWidth("100%");
+        } else {
+            $widthUnits = 1;
         }
                 
         return $widthUnits;
@@ -153,5 +142,131 @@ JS;
         }
         
         return $heightUnits;
+    }
+    
+    /**
+     * This Function gets all childwidgets of the Dashboard.
+     * 
+     * @return UI5Dashboard
+     */
+    protected function getChildWidgets() : array
+    {
+        $childWidgets = [];
+        foreach ($this->getWidget()->getChildren() as $widget){
+            $childWidgets[] = $widget; 
+        }
+        return $childWidgets;
+    }
+    
+    /**
+     * 
+     * @param unknown $widget
+     * @param int $no
+     * @return UI5Dashboard
+     */
+    protected function assignWidgetToContainerNo($widget, int $no) : UI5Dashboard
+    {
+        $this->widgetsAssignedToContainers[$no][] = $widget;
+        return $this;
+    }
+    
+    /**
+     * 
+     * @return UI5Dashboard
+     */
+    protected function assignWidgetsToContainers() : UI5Dashboard
+    {
+        $childWidgets = $this->getChildWidgets();
+        $counter = 0;
+        $modeOfCurrentContainerIsInUnits = null;
+        
+        foreach ($childWidgets as $widget){
+            
+            $widthIsInUnits = is_numeric($widget->getWidth()->getValue());
+            
+            if ($modeOfCurrentContainerIsInUnits !== $widthIsInUnits
+                && $modeOfCurrentContainerIsInUnits !== null){
+                $counter++;
+            }
+            
+            $modeOfCurrentContainerIsInUnits = $widthIsInUnits;
+            $this->assignWidgetToContainerNo($widget, $counter);
+        }
+        return $this;
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    protected function getScrollContainerContent() : string
+    {
+        $this->assignWidgetsToContainers();
+        $js = '';
+        
+        foreach ($this->widgetsAssignedToContainers as $no => $containerWithWidgets){
+            //is true if the width of the widget in this container is given in container units, false if in %, px, etc...
+            $containerWidthIsInUnits = $this->isWidgetContainerWidthInUnits($no);
+            $containerStyleClass = '';
+            
+            if ($containerWidthIsInUnits === true) {
+                $containerStyleClass .= "dashboard_gridcontainer_layout ";
+            }
+            
+            if ($no == 0){
+                $containerStyleClass .= "sapUiTinyMarginTop ";
+            }
+            
+            if ($this->isLastContainerWithWidgets($no) === false){
+                $containerStyleClass .= "dashboard_gridcontainer_gap_margin_bottom ";
+            } else {
+                $containerStyleClass .= "sapUiTinyMarginBottom ";
+            }
+            
+            $js .= <<<JS
+            new sap.f.GridContainer({
+                    width: "auto",
+                    allowDenseFill: true,
+                    snapToRow: true,
+                    layout: [
+                        {
+                            columnSize: "calc((100% - 9 * 10px) / 10)",
+                            gap: "10px"
+                        }
+                    ],
+                    items: [
+                        {$this->buildDashboardContentWrapper($no)}
+                    ]
+                }).addStyleClass("{$containerStyleClass} sapUiTinyMarginBeginEnd"),
+
+JS;
+            
+        }
+        
+        return $js;
+    }
+    
+    /**
+     * 
+     * @param int $index
+     * @return bool
+     */
+    protected function isWidgetContainerWidthInUnits(int $index) : bool
+    {
+        return is_numeric($this->widgetsAssignedToContainers[$index][0]->getWidth()->getValue());
+    }
+        
+    /**
+     * 
+     * @param int $index
+     * @return bool
+     */
+    protected function isLastContainerWithWidgets(int $index) : bool
+    {
+        if ($this->widgetsAssignedToContainers[$index + 1] == null){
+            return true;
+        } else {
+            return false;
+        }
     }
 }

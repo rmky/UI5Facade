@@ -85,3 +85,4 @@ table.jexcel {width: 100%}
 /* UI5DashBoard Widget GridContainer layout for columns*/
 .dashboard_gridcontainer_layout {grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important; grid-auto-rows: auto !important;}
 .sapFCardContent > .sapMPanel > .sapMPanelContent {border-bottom: 0 !important}
+.dashboard_gridcontainer_gap_margin_bottom {margin-bottom: 10px !important}

@@ -543,7 +543,11 @@ JS;
      */
     protected function isWrappedInDynamicPage()
     {
-        return $this->getWidget()->hasParent() || $this->getWidget()->getHideHeader() ? false : true;
+        if ($this->getWidget()->getHideHeader() === null) {
+            return $this->getWidget()->hasParent() === false;
+        } else {
+            return $this->getWidget()->getHideHeader() === false;
+        }
     }
     
     /**
@@ -604,6 +608,7 @@ JS;
         
         new sap.f.DynamicPage("{$this->getIdOfDynamicPage()}", {
             fitContent: true,
+            height: "100%",
             preserveHeaderStateOnScroll: true,
             headerExpanded: true,
             title: new sap.f.DynamicPageTitle({

@@ -541,6 +541,7 @@ JS;
     public function setLayoutData(string $layoutDataConstructorJs) : UI5AbstractElement
     {
         $this->layoutData = $layoutDataConstructorJs;
+        return $this;
     }
     
     /**

@@ -75,6 +75,17 @@ JS;
      */
     protected function buildJsPropertyWidth() : string
     {
-        return 'width: "100%",';
+        $js = 'width: ';
+        $widget = $this->getWidget();
+        if ($widget->hasParent() === false){
+            return $js . '"100%",';
+        }
+        
+        $dim = $widget->getWidth();
+        if ($dim->isMax()){
+            return $js . '"100%",';
+        } else {
+            return $js . '"' . $dim->getValue() . '",';
+        }
     }
 }

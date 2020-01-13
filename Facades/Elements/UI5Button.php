@@ -24,7 +24,6 @@ use exface\Core\Exceptions\Facades\FacadeUnsupportedWidgetPropertyWarning;
  */
 class UI5Button extends UI5AbstractElement
 {
-    use JqueryDisableConditionTrait;
     use JqueryButtonTrait {
         buildJsInputRefresh as buildJsInputRefreshViaTrait;
         buildJsNavigateToPage as buildJsNavigateToPageViaTrait;

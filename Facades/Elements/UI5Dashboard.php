@@ -175,11 +175,11 @@ JS;
     
     /**
      * 
-     * @param unknown $widget
+     * @param WidgetInterface $widget
      * @param int $no
      * @return UI5Dashboard
      */
-    protected function assignWidgetToContainerNo($widget, int $no) : UI5Dashboard
+    protected function assignWidgetToContainerNo(WidgetInterface $widget, int $no) : UI5Dashboard
     {
         $this->widgetsAssignedToContainers[$no][] = $widget;
         return $this;
@@ -287,7 +287,7 @@ JS;
      */
     protected function isWidgetContainerWidthInUnits(int $index) : bool
     {
-        return is_numeric($this->widgetsAssignedToContainers[$index][0]->getWidth()->getValue());
+        return $this->widgetsAssignedToContainers[$index][0]->getWidth()->isRelative();
     }
         
     /**

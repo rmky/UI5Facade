@@ -92,4 +92,21 @@ JS;
         
         return $this;
     }
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Interfaces\AjaxFacadeElementInterface::buildJsResetter()
+     */
+    public function buildJsResetter() : string
+    {
+        return parent::buildJsResetter() . <<<JS
+
+        (function(){
+            var oWizard = sap.ui.getCore().byId('{$this->getId()}');
+            oWizard.discardProgress(oWizard.getSteps()[0]);
+        }());
+
+JS;
+    }
 }

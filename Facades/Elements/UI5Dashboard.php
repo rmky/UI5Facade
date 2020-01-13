@@ -13,12 +13,12 @@ use exface\Core\Interfaces\WidgetInterface;
  * not only the use of units like '%' or 'px' as width parameters, but also the use of an `integer` to define the
  * number of columns one Widget uses.
  * 
- * The children Widgets itself are wrapped in instances of `sap.f.Card`.
+ * The children Widgets itself are wrapped in instances of `UI5Box`es.
  * 
  * The `GridContainer` always has the parameters `allowDenseFill` and `snapToRow` set to `true`
  * to automatically optimize the alignment of the Cards. Furthermore the `GridContainer` may use 
  * the css-class `dashboard_gridcontainer_layout`, which sets the minimum and maximum width
- * of its child elements, if the size of those elements is only given by column-count.
+ * of its child elements, if the size of those elements is only given in non-percent-values.
  * 
  * @author tmc
  *
@@ -40,7 +40,7 @@ class UI5Dashboard extends UI5Panel
     
     /**
      * This function returns the JS-code for the `Dashboard`. 
-     * A Dashboard is getting wrapped in a `sap.m.ScrollContainer` to allow scrolling through the elements of
+     * A dashboard is getting wrapped in a `sap.m.ScrollContainer` to allow scrolling through the elements of
      * a dashboard.
      * 
      * @see UI5Panel::buildJsLayoutConstructor()
@@ -48,8 +48,17 @@ class UI5Dashboard extends UI5Panel
     public function buildJsLayoutConstructor(string $content = null, bool $useFormLayout = true) : string
     {
         
-        $height = ($this->getWidget()->getHeight()->getValue()) ? "{$this->getWidget()->getHeight()->getValue()}" : "100%";
-        $width = ($this->getWidget()->getWidth()->getValue()) ? "{$this->getWidget()->getWidth()->getValue()}": "100%";
+        if ($this->getWidget()->getHeight()->isUndefined() === false){
+            $height = "{$this->getWidget()->getHeight()->getValue()}";
+        } else {
+            $height = "100%";
+        }
+        
+        if ($this->getWidget()->getWidth()->isUndefined() === false){
+            $width = "{$this->getWidget()->getWidth()->getValue()}";
+        } else {
+            $width = "100%";
+        }
         
         
         return <<<JS
@@ -65,22 +74,22 @@ JS;
     }
     
     /**
-     * This function generates the JS-code for the `sap.f.Card`'s which wrap the content declared
-     * in the UXON of the `Dashbord`. For each widget in the `Dashboard`, a `Card` gets created. 
-     * The `Card` gets its layoutdata (e.g. width and height) assigned from the data given in the   
-     * widgets UXON and the widget itself is then being inserted in the `Card`'s content.
-     * The parameter of this function is the number of the Gridcontainer for which the cards shall be generated.
+     * This function generates the JS-code for the `UI5Box`es, which are inserted into the grids.
+     * This function only generates the widgets for the grid with the number passed in the parameter `$no`.
      * 
      * Generating the correct width values for the cards is a bit tricky, because this process needs to be adapted
-     * to the unit the width of the element is given. 
+     * to the unit the width of the element is given in. 
      *     
      *      If the width is given as an integer, this number is set directly into the card's 
      *      `GridContainerItemLayoutData`'s `columns` property. The width of the widget in the card itself
-     *      is set to 100%.
+     *      is set to 100%. 
      * 
      *      If the width is given as an percentage, the `columns` of the `GridContainerItemLayoutData` are getting
      *      calulated with the function `getChildrenElementWidthUnitCount()`. The width of the widget in the card
      *      is then set to 100%.
+     *      
+     *      If the width is given as a different value, like `px`, it gets an 1 for the `column` property, while
+     *      the width of the box itself is set to the given value.
      *      
      * @return string
      */
@@ -91,20 +100,28 @@ JS;
         
         foreach ($this->widgetsAssignedToContainers[$no] as $widget){
             
+            // check whether the whith of the current set of widgets is given as destinct integer or with an unit
             if ($containerWidthIsInUnits === false){
+                // calculate the count columns the box will occupy
                 $widthUnits = $this->getChildrenElementWidthUnitCount($widget);
             } else {
-                $widthUnits = $widget->getWidth()->getValue();
-                $widget->setWidth("100%");
-
-               
+                // check if there is an facade specific value given, like 'px'
+                if ($widget->getWidth()->isFacadeSpecific()){
+                    $widthUnits = 1;
+                } else {
+                    // take the number of columns straight from the widgets width
+                    $widthUnits = $widget->getWidth()->getValue();
+                    $widget->setWidth("100%");
+                }
             }
             
+            // set the height and width of the boxes child elements to 100%, so that they fill out the whole box
             $this->setWidthOfBoxElementChildren($widget, "100%");
             $this->setHeightOfBoxElementChildren($widget, "100%");
             
             $element = $this->getFacade()->getElement($widget);
             $element->setLayoutData("new sap.f.GridContainerItemLayoutData({columns: {$widthUnits}})");
+            
             $js .= ($js ? ', ' : '') . $element->buildJsConstructor($oControllerJs);
         }
         
@@ -112,6 +129,7 @@ JS;
     }
     
     /**
+     * Function for setting the width value of all the boxes childwidgets.
      * 
      * @param WidgetInterface $widget
      * @param string $width
@@ -125,6 +143,13 @@ JS;
         return $this;
     }
     
+    /**
+     * Function for setting the height value of all the boxes childwidgets.
+     * 
+     * @param WidgetInterface $widget
+     * @param string $height
+     * @return UI5Dashboard
+     */
     protected function setHeightOfBoxElementChildren(WidgetInterface $widget, string $height) : UI5Dashboard
     {
         foreach ($widget->getWidgets() as $child) {
@@ -133,8 +158,10 @@ JS;
         return $this;
     }
     
-    
     /**
+     * This function is calculating the amount of columns, the box will need to approximately match the width
+     * given in its uxon. There are only 10 columns in the grid for percentage-based items, therefore the 
+     * actual percantage of the width the widget will occupy on-screen will be rounded to the closest full 10%.
      * 
      * @param WidgetInterface $widget
      * @return string
@@ -142,38 +169,20 @@ JS;
     protected function getChildrenElementWidthUnitCount(WidgetInterface $widget) : string
     {
 
-        $width = ($widget->getWidth()->isMax() || $widget->getWidth()->isUndefined()) ? "100%" : $widget->getWidth()->getValue();
-        if (strpos($width, '%') != false) {
-            $widthUnits = round((str_replace('%', '', $width) / 10));
-            $widget->setWidth("100%");
-            
+        if ($widget->getWidth()->isMax() || $widget->getWidth()->isUndefined()){
+            $width = "100%"; 
         } else {
-            $widthUnits = 1;
+            $width = $widget->getWidth()->getValue();
         }
+
+        $widget->setWidth("100%");
                 
-        return $widthUnits;
+        return round((str_replace('%', '', $width) / 10));
     }
-    
-    /**
-     * 
-     * @param unknown $widget
-     * @return int
-     */
-    protected function getChildrenElementHeightUnitCount($widget) : int
-    {
-        $height = $widget->getHeight()->getValue();
         
-        if (strpos($height, '%') !== false){
-            $heightUnits = round((str_replace('%', '', $height) / 10));
-            
-        } else {
-            $heightUnits = 6;
-        }
-        
-        return $heightUnits;
-    }
-    
     /**
+     * Function for adding an widget to an specific container. This information is stored in the local varialble
+     * `$widgetsAssignedToContainers`.
      * 
      * @param WidgetInterface $widget
      * @param int $no
@@ -186,6 +195,21 @@ JS;
     }
     
     /**
+     * This Function decides which widget will get into which container and therefore into which grid.
+     * There will be separate grids for widgets, whose width is given as a percantage, and anotherone for those,
+     * which are given with an unit or only with an integer. The widgets are being stored in an two-dimensional 
+     * array in the class variable `$widgetsAssignedToContainers`.
+     * 
+     * The Function will go through all widgets, putting the widgets that belong into the same grid, in one array
+     * coherently. If a following item belongs into the other table form, it is stored in the next element of the
+     * array. 
+     * 
+     * This needs to be done to support percentage based inputs, while also supporting independently growing and 
+     * aligning elements. 
+     * 
+     * If there is an row of elements, whose with is given as percentages, and the following widgets width is
+     * not declared as an percantage, the algorythm tries to put this next widget in that previous container, provided
+     * that the previous row's width has not been fully utilized.
      * 
      * @return UI5Dashboard
      */
@@ -198,38 +222,59 @@ JS;
         foreach ($childWidgets as $widget){
             
             $widthDim = $widget->getWidth();
-            $widthIsInUnits = $widthDim->isRelative();
+            // is the width of that widget NOT percentage based?
+            $widthIsInUnits = $widthDim->isRelative() || $widthDim->isFacadeSpecific();
             
+            // if no width has been defined for that widget it gets the value 1
             if ($widthDim->isUndefined()){
                 $widget->setWidth(1);
                 $widthIsInUnits = true;    
             }
             
+            // check if the newfound widget does not belong into the current grid
             if ($modeOfCurrentContainerIsInUnits !== $widthIsInUnits
                 && $modeOfCurrentContainerIsInUnits !== null){ 
                 
+                    // if the current grid is for precantage-based width items, check if the widget is eligible for 
+                    // being added to this row too, to make the row fill out the whole width of the dashboard
                     if ($modeOfCurrentContainerIsInUnits === false){
                         $remainingWidthInRow = $this->getRemainingWidthInContainerNo($counter);
                         if ($remainingWidthInRow !== ''){
+                        // if there was space left in the current row: 
+                            // set the width of the item
                             $widget->setWidth($remainingWidthInRow);   
+                            // set the mode of the next container / grid
                             $modeOfCurrentContainerIsInUnits = $widthIsInUnits;
+                            // add the item to the current list, THEN switch to next array
                             $this->assignWidgetToContainerNo($widget, $counter);
                             $counter++;
                             continue;
                         }
                     }
                     
+                    //increase the counter to the next array / container for widgets
                     $counter++;
                                   
             }
-            
+            // set the mode of the current container to the one of the current widget
             $modeOfCurrentContainerIsInUnits = $widthIsInUnits;
+            // add the widget to the container
             $this->assignWidgetToContainerNo($widget, $counter);
         }
         return $this;
     }
     
     /**
+     * This function is responible for generating the right `sap.f.GridContainers`, depending on which form of 
+     * width-unit was assigned to the widgets.
+     * 
+     * The grid for values given with an non-percantage-width have a CSS-class ("dashboard_gridcontainer_layout")
+     * assigned, that enables easy, automatic alignment of the elements in the grid.
+     * 
+     * If the widths are given as an percentage, a grid with 10 equal columns is generated. 
+     * 
+     * There are other CSS classes assigned to the grids too, to visually hide the fact that there may be more
+     * than one grid involved in the dashboard.
      * 
      * @return string
      */
@@ -239,7 +284,7 @@ JS;
         $js = '';
         
         foreach ($this->widgetsAssignedToContainers as $no => $containerWithWidgets){
-            //is true if the width of the widget in this container is given in container units, false if in %, px, etc...
+            //is true if the width of the widget in this container is given in container units, px, etc. -  false if in %
             $containerWidthIsInUnits = $this->isWidgetContainerWidthInUnits($no);
             $containerStyleClass = '';
             
@@ -281,16 +326,20 @@ JS;
     }
     
     /**
+     * returns true, if the container (with the number passed py the attribute) contains widgets,
+     * whose width is given non-percentual
      * 
      * @param int $index
      * @return bool
      */
     protected function isWidgetContainerWidthInUnits(int $index) : bool
     {
-        return $this->widgetsAssignedToContainers[$index][0]->getWidth()->isRelative();
+        return $this->widgetsAssignedToContainers[$index][0]->getWidth()->isRelative()
+            || $this->widgetsAssignedToContainers[$index][0]->getWidth()->isFacadeSpecific();
     }
         
     /**
+     * returns true, if the container (with the number passed py the attribute) is the last one
      * 
      * @param int $index
      * @return bool
@@ -305,6 +354,8 @@ JS;
     }
     
     /**
+     * This Function returns the remaining percentual width, there is left in the last row of a container. 
+     * If there is no space left, the function just returns an empty string ('').
      * 
      * @param int $no
      * @return string
@@ -316,12 +367,17 @@ JS;
         foreach ($this->widgetsAssignedToContainers[$no] as $widget){
             $width = $widget->getWidth()->getValue();
             $widthVal = str_replace('%', '', $width);
+            
+            // add percentages
             $widthSum += $widthVal;
             
             switch ($widthSum){
+                // if the sum reaches 100, the row is full, therefore no space is left for any other widgets
                 case $widthSum == 100:
                     $widthSum = 0;
                     break;
+                // if the sum reaches a value over 100, the last widget would already have been on the next row,
+                // therefore the following calculations need to be based on it's width
                 case $widthSum > 100:
                     $widthSum = $widthVal;
             }

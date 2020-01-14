@@ -803,10 +803,28 @@ JS;
             $heightFix = 'oTable.setVisibleRowCountMode("Fixed").setVisibleRowCountMode("Auto");';
         }
         
+        foreach ($this->getWidget()->getColumns() as $col) {
+            if ($conditionalProperty = $col->getCellWidget()->getDisabledIf()) {
+                foreach ($conditionalProperty->getConditions() as $condition) {
+                    if ($condition->getValueLeftExpression()->isReference() === true) {
+                        $link = $condition->getValueLeftExpression()->getWidgetLink($condition->getWidget());
+                        if ($linked_element = $this->getFacade()->getElement($link->getTargetWidget())) {
+                            if ($linked_element === $this) {
+                                $conditionalPropertiesJs .= 'console.log("found conditional props!");';
+                            }
+                            //$linked_element->addOnChangeScript($this->buildJsConditionalProperty($conditionalProperty, $ifJs, $elseJs));
+                        }
+                    }
+                }
+            }
+        }
+        
         return $this->buildJsDataLoaderOnLoadedViaTrait($oModelJs) . <<<JS
 
 			var footerRows = {$oModelJs}.getProperty("/footerRows");
             {$setFooterRows}
+
+            {$conditionalPropertiesJs}
 
             {$paginator->buildJsSetTotal($oModelJs . '.getProperty("/recordsFiltered")', 'oController')};
             {$paginator->buildJsRefresh('oController')};  

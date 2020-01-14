@@ -86,7 +86,8 @@ class UI5DataTable extends UI5AbstractElement
         
         return <<<JS
         new sap.m.VBox({
-            items: [
+            width: "{$this->getWidth()}",
+    		items: [
                 new sap.m.Table("{$this->getId()}", {
             		fixedLayout: false,
                     sticky: [sap.m.Sticky.ColumnHeaders, sap.m.Sticky.HeaderToolbar],
@@ -178,6 +179,7 @@ JS;
         
         $js = <<<JS
             new sap.ui.table.Table("{$this->getId()}", {
+                width: "{$this->getWidth()}",
         		visibleRowCountMode: sap.ui.table.VisibleRowCountMode.Auto,
                 selectionMode: {$selection_mode},
         		selectionBehavior: {$selection_behavior},
@@ -795,6 +797,10 @@ JS;
 			}
 
 JS;
+            
+            // Weird code to make the table fill it's container. If not done, tables within
+            // sap.f.Card will not be high enough. 
+            $heightFix = 'oTable.setVisibleRowCountMode("Fixed").setVisibleRowCountMode("Auto");';
         }
         
         return $this->buildJsDataLoaderOnLoadedViaTrait($oModelJs) . <<<JS
@@ -806,7 +812,8 @@ JS;
             {$paginator->buildJsRefresh('oController')};  
             {$this->buildJsOnChangeTrigger(false)}
             {$singleResultJs} 
-            {$sortOrderFix}         
+            {$sortOrderFix}   
+            {$heightFix}      
             
 JS;
     }

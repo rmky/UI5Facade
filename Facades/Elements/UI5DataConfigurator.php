@@ -19,10 +19,12 @@ class UI5DataConfigurator extends UI5Tabs
 {
     use JqueryDataConfiguratorTrait {
         buildJsDataGetter as buildJsDataGetterViaTrait;
+        buildJsResetter as buildJsResetterViaTrait;
     }
     
     const EVENT_BUTTON_OK = 'ok';
     const EVENT_BUTTON_CANCEL = 'cancel';
+    const EVENT_BUTTON_RESET = 'reset';
         
     
     private $include_filter_tab = true;
@@ -78,7 +80,8 @@ class UI5DataConfigurator extends UI5Tabs
 
 JS;
         $controller->addOnEventScript($this, self::EVENT_BUTTON_OK, $okScript);
-        $controller->addOnEventScript($this, self::EVENT_BUTTON_CANCEL, 'oEvent.getSource().close();');           
+        $controller->addOnEventScript($this, self::EVENT_BUTTON_CANCEL, 'oEvent.getSource().close();');
+        $controller->addOnEventScript($this, self::EVENT_BUTTON_RESET, $this->buildJsResetter() . '; oEvent.getSource().setShowResetEnabled(true).close()');
         
         return <<<JS
 
@@ -86,14 +89,16 @@ JS;
             ok: {$controller->buildJsEventHandler($this, self::EVENT_BUTTON_OK, true)},
             cancel: {$controller->buildJsEventHandler($this, self::EVENT_BUTTON_CANCEL, true)},
             showReset: true,
-            /*reset: "handleReset",*/
+            showResetEnabled: true,
+            reset: {$controller->buildJsEventHandler($this, self::EVENT_BUTTON_RESET, true)},
             panels: [
                 {$this->buildJsTabFilters()}
                 {$this->buildJsTabSorters()}
                 {$this->buildJsTabSearch()}
                 {$this->buildJsTabColumns()}
             ]
-        }).setModel(function(){
+        })
+        .setModel(function(){
             var oModel = new sap.ui.model.json.JSONModel();
             var columns = {$this->buildJsonColumnData()};
             var sortables = {$this->buildJsonSorterData()};
@@ -104,7 +109,18 @@ JS;
             }
             oModel.setData(data);
             return oModel;        
-        }(), "{$this->getModelNameForConfig()}")
+        }(), "{$this->getModelNameForConfig()}").setModel(function(){
+            var oModel = new sap.ui.model.json.JSONModel();
+            var columns = {$this->buildJsonColumnData()};
+            var sortables = {$this->buildJsonSorterData()};
+            var data = {
+                "columns": columns,
+                "sortables": sortables,
+                "sorters": [{$this->buildJsInitialSortItems()}]
+            }
+            oModel.setData(data);
+            return oModel;          
+        }(), "{$this->getModelNameForConfig()}_initial")
 
 JS;
     }
@@ -217,43 +233,9 @@ JS;
             return '';
         }
         
-        /* This script sorts the columns in the panel's list to be sorted exactly the way, they
-         * are positioned in the table - regardless of their visibility. By default, unchecked
-         * columns are placed at the end of the the list. This forces the user to move them
-         * after enabling. This fix makes sure, the position of the column is kept when enabling/disabling
-         * and allows table designers to position optional columns meaningfully.
-         */
-        $fixColumnSorting = <<<JS
-                        try {
-                            var oPanel = oEvent.getSource();                        
-                            var oTable = oPanel.getAggregation('content')[1].getAggregation('content')[0];
-                            var oTableModel = oTable.getModel();
-                            var oConfigModel = oPanel.getModel('{$this->getModelNameForConfig()}');
-                            if (oTableModel === undefined || oConfigModel === undefined) return;
-                            setTimeout(function(){
-                                var aColsConfig = oConfigModel.getProperty('/columns');
-                                var aItems = oTableModel.getProperty('/items');
-                                var aItemsNew = [];
-                                aColsConfig.forEach(oColConfig => {
-                                    aItems.forEach(oItem => {
-                                        if (oItem.columnKey === oColConfig.column_id) {
-                                            aItemsNew.push(oItem);
-                                            return;
-                                        }
-                                    })
-                                });
-        
-                                oTableModel.setProperty('/items', aItemsNew);
-                            });
-                        } catch (e) {
-                            console.warn('Cannot properly sort columns for personalization - using default sorting: ', e);
-                        }
-
-JS;
-        
         return <<<JS
 
-                new sap.m.P13nColumnsPanel({
+                new sap.m.P13nColumnsPanel('{$this->getId()}_ColumnsPanel', {
                     title: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.COLUMNS')}",
                     visible: true,
                     changeColumnsItems: function(oEvent){
@@ -281,9 +263,52 @@ JS;
                         })
                     },
                     beforeNavigationTo: function(oEvent) {
-                        {$fixColumnSorting}                        
+                        {$this->buildJsTabColumnsUpdate('oEvent.getSource()')}                        
                     }
                 }),
+JS;
+    }
+    
+    protected function buildJsTabColumnsUpdate(string $oPanelJs, bool $resetSelection = false) : string
+    {
+        /* This script sorts the columns in the panel's list to be sorted exactly the way, they
+         * are positioned in the table - regardless of their visibility. By default, unchecked
+         * columns are placed at the end of the the list. This forces the user to move them
+         * after enabling. This fix makes sure, the position of the column is kept when enabling/disabling
+         * and allows table designers to position optional columns meaningfully.
+         */
+        if ($resetSelection === true) {
+            $resetSelection = "oItem.persistentSelected = oItem.persistentSelected = oColConfig.visible = oColConfig.visible; ";
+        } else {
+            $resetSelection = '';
+        }
+        return <<<JS
+                        try {
+                            var oPanel = $oPanelJs;
+                            var oTable = oPanel.getAggregation('content')[1].getAggregation('content')[0];
+                            var oTableModel = oTable.getModel();
+                            var oConfigModel = oPanel.getModel('{$this->getModelNameForConfig()}');
+                            if (oTableModel === undefined || oConfigModel === undefined) return;
+                            setTimeout(function(){
+                                var aColsConfig = oConfigModel.getProperty('/columns');
+                                var aItems = oTableModel.getProperty('/items');
+                                var aItemsNew = [];
+                                aColsConfig.forEach(oColConfig => {
+                                    aItems.forEach(oItem => {
+                                        if (oItem.columnKey === oColConfig.column_id) {
+                                            $resetSelection;
+                                            aItemsNew.push(oItem);
+                                            return;
+                                        }
+                                    })
+                                });
+                                
+                                oTableModel.setProperty('/items', aItemsNew);
+                            });
+                        } catch (e) {
+                            console.warn('Cannot properly sort columns for personalization - using default sorting: ', e);
+                        }
+                        
 JS;
     }
         
@@ -530,5 +555,54 @@ JS;
     public function buildJsP13nColumnConfig() : string
     {
         return "sap.ui.getCore().byId('{$this->getId()}').getModel('{$this->getModelNameForConfig()}').getData()['columns']";
+    }
+    
+    /**
+     *
+     * {@inheritdoc}
+     * @see JqueryContainerTrait::buildJsResetter()
+     */
+    public function buildJsResetter() : string
+    {
+        return $this->buildJsResetModel() . $this->buildJsResetterViaTrait();
+    }
+    
+    protected function buildJsResetModel() : string
+    {
+        $initialModelName = $this->getModelNameForConfig() . '_initial';
+        
+        if ($this->hasTabColumns() === true) {
+            $dataElement = $this->getDataElement();
+            if ($dataElement instanceof UI5DataTable) {
+                $refreshP13n = $dataElement->buildJsRefreshPersonalization();
+            }
+            
+            $resetColumns = <<<JS
+// reset columns
+                oCurrentModel.setProperty('/columns', oInitModel.getProperty('/columns'));
+                {$this->buildJsTabColumnsUpdate("sap.ui.getCore().byId('{$this->getId()}_ColumnsPanel')", true)}
+                {$refreshP13n}
+JS;
+        } else {
+            $resetColumns = '';
+        }
+        
+        return <<<JS
+
+            (function(){
+                var oDialog = sap.ui.getCore().byId('{$this->getId()}');
+                var oInitModel = oDialog.getModel('$initialModelName');
+                var oCurrentModel = oDialog.getModel('{$this->getModelNameForConfig()}');
+                
+                // reset advanced search filters
+                sap.ui.getCore().byId('{$this->getId()}_AdvancedSearchPanel').removeAllFilterItems();
+                
+                // reset sorters
+                oCurrentModel.setProperty('/sorters', oInitModel.getProperty('/sorters'));
+                
+                {$resetColumns}
+            }());
+
+JS;
     }
 }

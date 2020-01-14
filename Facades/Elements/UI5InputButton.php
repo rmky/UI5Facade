@@ -14,9 +14,7 @@ use exface\Core\CommonLogic\DataSheets\DataColumn;
  *        
  */
 class UI5InputButton extends UI5Input
-{
-    use JqueryDisableConditionTrait;
-    
+{    
     /**
      * 
      * {@inheritDoc}

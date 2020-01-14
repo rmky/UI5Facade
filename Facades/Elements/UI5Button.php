@@ -25,7 +25,6 @@ use exface\Core\Actions\SendToWidget;
  */
 class UI5Button extends UI5AbstractElement
 {
-    use JqueryDisableConditionTrait;
     use JqueryButtonTrait {
         buildJsInputRefresh as buildJsInputRefreshViaTrait;
         buildJsNavigateToPage as buildJsNavigateToPageViaTrait;

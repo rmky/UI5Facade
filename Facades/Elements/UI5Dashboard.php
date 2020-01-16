@@ -15,7 +15,7 @@ use exface\Core\Widgets\Card;
  * not only the use of units like '%' or 'px' as width parameters, but also the use of an `integer` to define the
  * number of columns one Widget uses.
  * 
- * The children Widgets itself are wrapped in instances of `UI5Box`es.
+ * The children Widgets itself are wrapped in instances of `UI5Card`es.
  * 
  * The `GridContainer` always has the parameters `allowDenseFill` and `snapToRow` set to `true`
  * to automatically optimize the alignment of the Cards. Furthermore the `GridContainer` may use 
@@ -80,7 +80,7 @@ JS;
     }
     
     /**
-     * This function generates the JS-code for the `UI5Box`es, which are inserted into the grids.
+     * This function generates the JS-code for the child widgets, which are inserted into the grids.
      * This function only generates the widgets for the grid with the number passed in the parameter `$no`.
      * 
      * Generating the correct width values for the cards is a bit tricky, because this process needs to be adapted
@@ -104,7 +104,7 @@ JS;
         $js = '';
         foreach ($widgets as $widget){
             if (! ($widget instanceof Box)) {
-                $box = WidgetFactory::create($this->getWidget()->getPage(), 'Box', $this->getWidget());
+                $box = WidgetFactory::create($this->getWidget()->getPage(), 'Card', $this->getWidget());
                 $box->addWidget($widget);
                 if ($widget->getHeight()->isUndefined() === false && $widget->getHeight()->isMax() === false) {
                     $box->setHeight($widget->getHeight()->getValue());

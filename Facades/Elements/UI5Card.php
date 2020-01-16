@@ -1,9 +1,7 @@
 <?php
 namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Interfaces\Widgets\iFillEntireContainer;
 use exface\UI5Facade\Facades\Interfaces\UI5ControlWithToolbarInterface;
-use exface\Core\Widgets\Panel;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryLayoutTrait;
 use exface\UI5Facade\Facades\Elements\Traits\UI5HelpButtonTrait;
 use exface\Core\Widgets\Card;

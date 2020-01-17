@@ -12,6 +12,7 @@ use exface\Core\Widgets\MenuButton;
 use exface\UI5Facade\Facades\Elements\Traits\UI5DataElementTrait;
 use exface\Core\Widgets\DataColumn;
 use exface\Core\Widgets\DataButton;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JsConditionalPropertyTrait;
 
 /**
  *
@@ -23,6 +24,8 @@ use exface\Core\Widgets\DataButton;
 class UI5DataTable extends UI5AbstractElement
 {
     use JqueryDataTableTrait;
+    
+    use JsConditionalPropertyTrait;
     
     use UI5DataElementTrait {
        buildJsDataLoaderOnLoaded as buildJsDataLoaderOnLoadedViaTrait;
@@ -188,6 +191,7 @@ JS;
         		filter: {$controller->buildJsMethodCallFromView('onLoadData', $this)},
         		sort: {$controller->buildJsMethodCallFromView('onLoadData', $this)},
                 rowSelectionChange: {$this->buildJsOnChangeTrigger(true)},
+                firstVisibleRowChanged: {$controller->buildJsEventHandler($this, 'firstVisibleRowChanged', true)},
         		toolbar: [
         			{$this->buildJsToolbar($oControllerJs, $this->getPaginatorElement()->buildJsConstructor($oControllerJs))}
         		],
@@ -485,10 +489,10 @@ JS;
         
         return <<<JS
         
-function(){
+(function(){
     var oTable = sap.ui.getCore().byId('{$this->getId()}');
     return {$row}{$col};
-}()
+}() || '')
 
 JS;
     }
@@ -810,7 +814,90 @@ JS;
                         $link = $condition->getValueLeftExpression()->getWidgetLink($condition->getWidget());
                         if ($linked_element = $this->getFacade()->getElement($link->getTargetWidget())) {
                             if ($linked_element === $this) {
-                                $conditionalPropertiesJs .= 'console.log("found conditional props!");';
+                                $colName = $col->getDataColumnName();
+                                $DisableWidget = 'oCellCtrl';                                
+                                $cellElement =  $this->getFacade()->getElement($col->getCellWidget());
+                                $disablerJS = $cellElement->buildJsDisabler();
+                                $disablerJS = str_replace("sap.ui.getCore().byId('{$cellElement->getId()}')", $DisableWidget, $disablerJS);
+                                $enablerJS = $cellElement->buildJsEnabler();
+                                $enablerJS = str_replace("sap.ui.getCore().byId('{$cellElement->getId()}')", $DisableWidget, $enablerJS);
+                                $conditionalPropertyJs = $this->buildJsConditionalProperty($conditionalProperty, $disablerJS, $enablerJS);
+                                $conditionalPropertiesJs = '';
+                                
+                                if ($this->isUiTable() === true) {                                    
+                                    $conditionalPropertiesJs .= <<<JS
+                                    
+(function() {
+    var tbl = sap.ui.getCore().byId('{$this->getId()}');
+    var oldSelection = tbl.getSelectedIndices().slice();
+    tbl.clearSelection();
+    var iColIdx = 0;
+    tbl.getColumns().forEach(function(oColumn, i){
+        if (oColumn.data('_exfDataColumnName') === '$colName') {
+            return;
+        }
+        if (oColumn.getVisible() === true) {
+        iColIdx++;
+        }
+    });
+    tbl.getRows().forEach(function(r) {
+        var cb = r.$().find('.sapUiTableCellInner').eq(iColIdx).children().first();
+        var {$DisableWidget} = sap.ui.getCore().byId(cb.attr('id'));
+        if ({$DisableWidget} != undefined) {
+            tbl.addSelectionInterval(r.getIndex(), r.getIndex());
+            {$conditionalPropertyJs}
+        }
+        tbl.clearSelection();
+    });
+    if (Array.isArray(oldSelection) && oldSelection.length > 0) {
+        for (var i = 0; i < oldSelection.length; i++) {
+            tbl.addSelectionInterval(oldSelection[i], oldSelection[i]);
+        }
+    }
+})();
+
+JS;
+    
+                                    $this->getController()->addOnEventScript($this, 'firstVisibleRowChanged', $conditionalPropertiesJs);
+                                    
+                                } elseif ($this->isMTable() === true) {
+                                    $conditionalPropertiesJs .= <<<JS
+                                    
+setTimeout(function(){
+    var tbl = sap.ui.getCore().byId('{$this->getId()}');
+    var oldSelection = tbl.getSelectedItems();
+    tbl.removeSelections();
+    var iColIdx = 1;
+    if (tbl.getMode() == sap.m.ListMode.MultiSelect) {
+        iColIdx++;
+    }
+    tbl.getColumns().forEach(function(oColumn, i){
+        if (oColumn.data('_exfDataColumnName') === '$colName') {
+            return;
+        }
+        if (oColumn.getVisible() === true) {
+        iColIdx++;
+        }
+    });
+    
+    tbl.getItems().forEach(function(r) {
+        var cb = r.$().children('td').eq(iColIdx).children().first();
+        var {$DisableWidget} = sap.ui.getCore().byId(cb.attr('id'));
+        if ({$DisableWidget} != undefined) {
+            tbl.setSelectedItem(r);
+            {$conditionalPropertyJs}
+            tbl.setSelectedItem(r, false);
+        }
+    });
+    if (Array.isArray(oldSelection) && oldSelection.length > 0) {
+        for (var i = 0; i < oldSelection.length; i++) {
+            tbl.setSelectedItem(oldSelection[i]);
+        }
+    }
+},0);
+
+JS;
+                                }
                             }
                             //$linked_element->addOnChangeScript($this->buildJsConditionalProperty($conditionalProperty, $ifJs, $elseJs));
                         }
@@ -831,7 +918,8 @@ JS;
             {$this->buildJsOnChangeTrigger(false)}
             {$singleResultJs} 
             {$sortOrderFix}   
-            {$heightFix}      
+            {$heightFix} 
+                 
             
 JS;
     }

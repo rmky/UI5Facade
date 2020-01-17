@@ -20,6 +20,10 @@ class UI5SearchField extends UI5Value
     
     private $searchCallbackJs = '';
     
+    private $widthCollapsed = '0px';
+    
+    private $widthExpanded = '200px';
+  
     /**
      * 
      * {@inheritDoc}
@@ -51,12 +55,12 @@ JS;
         
     protected function buildJsPropertyWidthCollapsed() : string
     {
-        return '"0px"';
+        return "'{$this->getWidthCollapsed()}'";
     }
     
     protected function buildJsPropertyWidthExpanded() : string
     {
-        return '"200px"';
+        return "'{$this->getWidthExpanded()}'";
     }
         
     public function setPlaceholder(string $string) : UI5SearchField
@@ -89,5 +93,27 @@ JS;
     protected function getSearchCallbackJs() : string
     {
         return $this->searchCallbackJs;
+    }
+    
+    public function setWidthCollapsed(string $value) : UI5SearchField
+    {
+        $this->widthCollapsed = $value;
+        return $this;
+    }
+    
+    protected function getWidthCollapsed() : string
+    {
+        return $this->widthCollapsed;
+    }
+    
+    public function setWidthExpanded(string $value) : UI5SearchField
+    {
+        $this->widthExpanded = $value;
+        return $this;
+    }
+    
+    protected function getWidthExpanded() : string
+    {
+        return $this->widthExpanded;
     }
 }

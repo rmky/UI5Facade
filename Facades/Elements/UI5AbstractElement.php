@@ -175,30 +175,6 @@ JS;
     {
         return htmlentities($string, ENT_QUOTES);
     }
-
-    /**
-     * Returns the css classes, that define the grid width for the element (e.g.
-     * col-xs-12, etc.)
-     *
-     * @return string
-     */
-    public function getWidthClasses()
-    {
-        if ($this->getWidget()->getWidth()->isRelative()) {
-            switch ($this->getWidget()->getWidth()->getValue()) {
-                case 1:
-                    $width = 'col-xs-12 col-md-4';
-                    break;
-                case 2:
-                    $width = 'col-xs-12 col-md-8';
-                    break;
-                case 3:
-                case 'max':
-                    $width = 'col-xs-12';
-            }
-        }
-        return $width;
-    }
     
     /**
      * Returns the SAP icon URI (e.g. "sap-icon://edit") for the given icon name
@@ -541,6 +517,7 @@ JS;
     public function setLayoutData(string $layoutDataConstructorJs) : UI5AbstractElement
     {
         $this->layoutData = $layoutDataConstructorJs;
+        return $this;
     }
     
     /**

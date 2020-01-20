@@ -69,6 +69,14 @@ class UI5Controller implements UI5ControllerInterface
      */
     public function buildJsMethodName(string $methodName, UI5AbstractElement $ownerElement) : string
     {
+        if ($ownerElement->getUseWidgetId() === true) {
+            $elementSuffix = $ownerElement->getId();
+        } else {
+            $elementSuffix = $ownerElement->getWidget()->getId();
+        }
+        if ($elementSuffix === null || $elementSuffix === '') {
+            throw new FacadeLogicError('Cannot create controller method "' . $methodName . '" for widget "' . $ownerElement->getWidget()->getId() . '": the facade element does not have a unique id!');
+        }
         return $methodName . StringDataType::convertCaseUnderscoreToPascal($ownerElement->getId());
     }
     
@@ -748,7 +756,7 @@ JS;
             $this->onEventScripts[$controllerMethodName]['__element'] = $triggerElement;
             $this->onEventScripts[$controllerMethodName]['__eventName'] = $eventName;
         } elseif($this->onEventScripts[$controllerMethodName]['__element'] !== $triggerElement) {
-            throw new FacadeRuntimeError('Cannot add event handler for ' . $triggerElement->getWidget()->getWidgetType() . ' "' . $triggerElement->getId() . '": element class changed in the mean time!');
+            throw new FacadeRuntimeError('Cannot add event handler for ' . $triggerElement->getWidget()->getWidgetType() . ' "' . $triggerElement->getWidget()->getId() . '": element class changed in the mean time!');
         }
         $this->onEventScripts[$controllerMethodName][] = $js;
         return $this;

@@ -269,7 +269,7 @@ JS;
         }
     }
     
-    protected function buildCssWidthDefaultValue()
+    protected function buildCssWidthDefaultValue() : string
     {
         return '100%';
     }

@@ -36,6 +36,7 @@ class UI5InlineGroup extends UI5Value
     {
         return <<<JS
         new sap.m.HBox("{$this->getId()}", {
+            alignItems: "Center",
             items: [
                 {$this->buildJsChildrenConstructors()}
             ]

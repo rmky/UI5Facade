@@ -7,6 +7,7 @@ use exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface;
 use exface\UI5Facade\Facades\Interfaces\UI5CompoundControlInterface;
 use exface\Core\DataTypes\WidgetVisibilityDataType;
 use exface\Core\Widgets\DataTable;
+use exface\Core\Interfaces\DataTypes\EnumDataTypeInterface;
 
 /**
  *
@@ -34,8 +35,6 @@ class UI5DataColumn extends UI5AbstractElement
     public function buildJsConstructorForUiColumn()
     {
         $col = $this->getWidget();
-        $filterable = $col->isFilterable() === true ? 'true' : 'false';
-        $sortable = $col->isSortable() === true ? 'true' : 'false';
         
         return <<<JS
 	 new sap.ui.table.Column('{$this->getId()}', {
@@ -44,10 +43,8 @@ class UI5DataColumn extends UI5AbstractElement
         }),
         autoResizable: true,
         template: {$this->buildJsConstructorForCell()},
-	    showSortMenuEntry: $sortable,
-        sortProperty: "{$col->getAttributeAlias()}",
-        showFilterMenuEntry: $filterable,
-	    filterProperty: "{$col->getAttributeAlias()}",
+	    {$this->buildJsPropertyShowSortMenuEntry()}
+        {$this->buildJsPropertyShowFilterMenuEntry()}
         {$this->buildJsPropertyTooltip()}
 	    {$this->buildJsPropertyVisibile()}
 	    {$this->buildJsPropertyWidth()}
@@ -55,6 +52,37 @@ class UI5DataColumn extends UI5AbstractElement
 	.data('_exfAttributeAlias', '{$col->getAttributeAlias()}')
 	.data('_exfDataColumnName', '{$col->getDataColumnName()}')
 JS;
+    }
+    
+    /**
+     * Returns constructor properties showFilterMenuEntry and filterProperty
+     * 
+     * @return string
+     */
+    protected function buildJsPropertyShowFilterMenuEntry() : string
+    {
+        $col = $this->getWidget();
+        $filterable = $col->isFilterable() === true ? 'true' : 'false';
+        if ($col->getCellWidget()->getValueDataType() instanceof EnumDataTypeInterface) {
+            $filterable = 'false';
+        }
+        
+        return "showFilterMenuEntry: $filterable,
+        filterProperty: '{$col->getAttributeAlias()}',";
+    }
+    
+    /**
+     * Returns constructor properties showSortMenuEntry and sortProperty.
+     * 
+     * @return string
+     */
+    protected function buildJsPropertyShowSortMenuEntry() : string
+    {
+        $col = $this->getWidget();
+        $sortable = $col->isSortable() === true ? 'true' : 'false';
+        
+        return "showSortMenuEntry: $sortable,
+        sortProperty: '{$col->getAttributeAlias()}',";
     }
 	
     /**

@@ -58,7 +58,7 @@ class ExportFioriWebapp extends AbstractActionDeferred implements iModifyData, i
     {
         if ($task instanceof CliTaskInterface) {
             $input = DataSheetFactory::createFromObject($this->getInputObjectExpected());
-            $input->addFilterFromString('app_id', $task->getCliArgument('app_id'), ComparatorDataType::EQUALS);
+            $input->getFilters()->addConditionFromString('app_id', $task->getCliArgument('app_id'), ComparatorDataType::EQUALS);
         } else {
             $input = $this->getInputDataSheet($task);
         }
@@ -80,7 +80,7 @@ class ExportFioriWebapp extends AbstractActionDeferred implements iModifyData, i
         
         if (! $input->isFresh()) {
             if ($input->hasUidColumn(true) === true) {
-                $input->addFilterFromColumnValues($input->getUidColumn());
+                $input->getFilters()->addConditionFromColumnValues($input->getUidColumn());
             }
             $input->dataRead();
         }

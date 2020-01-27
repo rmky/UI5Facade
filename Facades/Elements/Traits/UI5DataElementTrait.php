@@ -630,9 +630,8 @@ JS;
         $titleAreaShrinkRatio = '';
         
         if ($this->getDynamicPageShowToolbar() === true) {
-            
+            $this->getQuickSearchElement()->setWidthCollapsed('200px');
             $titleCollapsed  = $this->buildJsQuickSearchConstructor($oControllerJs);
-            
             $toolbar = $this->buildJsToolbar($oControllerJs, $titleCollapsed, $top_buttons);
 
             // due to the SearchField being right aligned, set the shrinkfactor so that the right side shrink the least
@@ -735,7 +734,6 @@ JS;
         $qsElement = $this->getQuickSearchElement();
         if ($qsElement instanceof UI5SearchField) {
             $qsElement->setSearchCallbackJs($this->getController()->buildJsMethodCallFromView('onLoadData', $this));
-            $qsElement->setWidthCollapsed('200px');
         }
         return $qsElement->buildJsConstructorForMainControl($oControllerJs);
     }

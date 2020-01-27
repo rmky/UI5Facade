@@ -32,6 +32,11 @@ use exface\Core\Widgets\DataTable;
  */
 class UI5ValueHelpDialog extends UI5DataTable
 {
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5DataTable::buildJsConstructor()
+     */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         $tableConstructorJs = parent::buildJsConstructor($oControllerJs);
@@ -48,7 +53,13 @@ JS;
         
         return $this->buildJsValueHelpDialogConstructor($tableConstructorJs, $oControllerJs);
     }   
-                    
+    
+    /**
+     * 
+     * @param string $tableConstructorJs
+     * @param string $oControllerJs
+     * @return string
+     */
     protected function buildJsValueHelpDialogConstructor(string $tableConstructorJs, string $oControllerJs) : string
     {
         $functionNameExtension = str_replace('_', '', $this->getId());
@@ -57,10 +68,8 @@ JS;
         return <<<JS
             new sap.m.Dialog( "{$this->getId()}_ValueHelpDialog" ,{
                 content: [
-                    //todo: "Title, etc.",
                     {$this->buildJsValueHelpTableWrapper($oControllerJs, $tableConstructorJs)},
                 ],
-                //todo: "toolbar",
                 buttons: [
                     new sap.m.Button({
                         text: "OK",
@@ -81,16 +90,22 @@ JS;
 JS;
     }
     
+    /**
+     * 
+     * @param string $oControllerJs
+     * @param string $tableConstructorJs
+     * @return string
+     */
     protected function buildJsValueHelpTableWrapper(string $oControllerJs, string $tableConstructorJs) : string
     {
-        // TODO add a special table wrapper instead of UI5DataElementTrait::buildJsPage().
         return $tableConstructorJs;
-        
-//         return <<<JS
-//         new sap.m.Text({text: "insert datatable here!"}),
-// JS;
     }
     
+    /**
+     * 
+     * @param string $tableConstructorJs
+     * @return mixed
+     */
     protected function changeDataTableIds(string $tableConstructorJs)
     {
         return str_replace("__DataTable", "__ValueHelpDialog__DataTable", $tableConstructorJs);
@@ -106,34 +121,11 @@ JS;
         $this->getController()->addOnEventScript($this, 'close', $js);
         return $this;
     }
-    /*
-    public function addOnLoadDataScript(string $js) : UI5ValueHelpDialog
-    {
-        $this->getController()->addOnEventScript($this, 'LoadData', $js);
-        return $this;
-    }*/
     
     /**
-     *
-     * {@inheritDoc}
-     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsValueGetter()
+     * 
+     * @return bool
      */
-    /*public function buildJsValueGetter($dataColumnName = null, $rowNr = null)
-    {
-        $row = $this->buildJsGetSelectedRows('oTable');
-        $col = $dataColumnName !== null ? '["' . $dataColumnName . '"]' : '';
-        $id = $this->getId();
-        
-        return <<<JS
-        
-function(){
-    var oTable = sap.ui.getCore().byId('{$id}');
-    return {$row}{$col};
-}()
-
-JS;
-}*/
-    
     protected function getLoadDataOnShowView() : bool
     {
         return false;

@@ -814,28 +814,55 @@ JS;
         return $this->getController()->buildJsEventHandler($this, self::EVENT_NAME_CHANGE, $buildForView);
     }
     
+    /**
+     * Returns whether the dynamic page header should be collapsed or not, or if this has not been defined for this object.
+     * 
+     * @return bool|NULL
+     */
     protected function getDynamicPageHeaderCollapsed() : ?bool
     {
         return $this->dynamicPageHeaderCollapsed;
     }
     
+    /**
+     * Set whether the dynamic page header of this widget should be collapsed or not.
+     * 
+     * @param bool $value
+     * @return self
+     */
     public function setDynamicPageHeaderCollapsed(bool $value) : self
     {
         $this->dynamicPageHeaderCollapsed = $value;
         return $this;
     }
     
+    /**
+     * Getter for whether the back button of this page should be instanciated or not, or if this has not been defined.
+     * 
+     * @return bool
+     */
     protected function getDynamicPageShowBackButton() : bool
     {
         return $this->dynamicPageShowBackButton ?? $this->getView()->isWebAppRoot() === false;
     }
     
+    /**
+     * Setter for whether the toolbar for this page should be displayed or not.
+     * 
+     * @param bool $trueOrFalse
+     * @return self
+     */
     public function setDynamicPageShowToolbar(bool $trueOrFalse) : self
     {
         $this->dynamicPageShowToolbar = $trueOrFalse;
         return $this;
     }
     
+    /**
+     * Getter for whether the toolbar for this page should be displayed or not.
+     * 
+     * @return bool
+     */
     protected function getDynamicPageShowToolbar() : bool
     {
         return $this->dynamicPageShowToolbar;

@@ -278,7 +278,7 @@ JS;
             }
         }
         
-        if (! $promotedFound) {
+        if (! $promotedFound && $first_col !== null) {
             $first_col->setVisibility(EXF_WIDGET_VISIBILITY_PROMOTED);
         }
         

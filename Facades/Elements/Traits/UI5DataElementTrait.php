@@ -198,11 +198,17 @@ JS;
     protected function buildJsToolbar($oControllerJsVar = 'oController', string $leftExtras = null, string $rightExtras = null)
     {
         $visible = $this->getWidget()->getHideHeader() === true && $this->getWidget()->getHideCaption() ? 'false' : 'true';
+        
+        // Remove bottom line of the toolbar if it is to be integrated into the dynamic page header
+        if ($this->getDynamicPageShowToolbar() === true) {
+            $style = 'style: "Clear",';
+        }
+        
         return <<<JS
 
 			new sap.m.OverflowToolbar({
                 design: "Transparent",
-                style: "Clear",
+                {$style}
                 visible: {$visible},
 				content: [
 					{$this->buildJsToolbarContent($oControllerJsVar, $leftExtras, $rightExtras)}

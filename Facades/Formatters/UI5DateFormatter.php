@@ -25,21 +25,14 @@ class UI5DateFormatter extends AbstractUI5BindingFormatter
 
                 type: '{$this->getSapDataType()}',
                 formatOptions: {
-                    source: {
-                        pattern: '{$this->buildPatternSource()}'
-                    }
+                    dateFormat: '{$this->getJsFormatter()->getFormat()}'
                 },
 
 JS;
     }
-        
-    protected function buildPatternSource()
-    {
-        return 'yyyy-MM-dd HH:mm:ss';
-    }
     
     protected function getSapDataType()
     {
-        return 'sap.ui.model.type.Date';
+        return 'exface.ui5Custom.dataTypes.MomentDateType';
     }
 }

@@ -9,8 +9,6 @@ use exface\Core\Facades\AbstractAjaxFacade\Formatters\JsDateFormatter;
 use exface\Core\Facades\AbstractAjaxFacade\Formatters\JsTimeFormatter;
 use exface\UI5Facade\Facades\Formatters\UI5DateFormatter;
 use exface\UI5Facade\Facades\Formatters\UI5DefaultFormatter;
-use exface\Core\DataTypes\TimestampDataType;
-use exface\UI5Facade\Facades\Formatters\UI5DateTimeFormatter;
 use exface\Core\Facades\AbstractAjaxFacade\Formatters\JsBooleanFormatter;
 use exface\UI5Facade\Facades\Formatters\UI5BooleanFormatter;
 use exface\Core\Facades\AbstractAjaxFacade\Formatters\JsNumberFormatter;
@@ -34,7 +32,6 @@ use exface\Core\Facades\AbstractAjaxFacade\Formatters\JsEnumFormatter;
 use exface\UI5Facade\Facades\Formatters\UI5EnumFormatter;
 use exface\Core\Interfaces\DataSheets\DataSheetInterface;
 use exface\UI5Facade\Facades\Formatters\UI5TimeFormatter;
-use exface\Core\DataTypes\DateTimeDataType;
 use exface\Core\Facades\AbstractFacade\AbstractFacade;
 
 /**
@@ -195,20 +192,12 @@ JS;
         switch (true) {
             case $formatter instanceof JsBooleanFormatter:
                 return new UI5BooleanFormatter($formatter);
-                break;
             case ($formatter instanceof JsNumberFormatter) && $formatter->getDataType()->getBase() === 10:
                 return new UI5NumberFormatter($formatter);
-                break;
             case ($formatter instanceof JsTimeFormatter):
                 return new UI5TimeFormatter($formatter);
-                break;
             case $formatter instanceof JsDateFormatter:
-                if ($formatter->getDataType() instanceof DateTimeDataType || $formatter->getDataType() instanceof TimestampDataType) {
-                    return new UI5DateTimeFormatter($formatter);
-                } else {
-                    return new UI5DateFormatter($formatter);
-                }
-                break;
+                return new UI5DateFormatter($formatter);
             case $formatter instanceof JsEnumFormatter:
                 return new UI5EnumFormatter($formatter);
         }

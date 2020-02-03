@@ -233,7 +233,7 @@ JS;
         $rightExtras = $rightExtras === null ? '' : rtrim($rightExtras, ", ") . ',';
         
         if ($this->getDynamicPageShowToolbar() === false) {
-            $quickSearch = $this->buildJsQuickSearchConstructor();
+            $quickSearch = $this->buildJsQuickSearchConstructor() . ',';
         } else {
             $quickSearch = '';
         }
@@ -734,7 +734,14 @@ JS;
     protected function buildJsQuickSearchConstructor($oControllerJs = 'oController') : string
     {
         if ($this->hasQuickSearch() === false) {
-            return '';
+            return <<<JS
+
+                    new sap.m.OverflowToolbarButton({
+                        icon: "sap-icon://refresh",
+                        press: {$this->getController()->buildJsMethodCallFromView('onLoadData', $this)}
+                    })
+
+JS;
         }
         
         $qsElement = $this->getQuickSearchElement();

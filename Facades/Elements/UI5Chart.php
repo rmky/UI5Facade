@@ -314,24 +314,6 @@ JS;
     {
         return $this->buildJsDataLoaderOnLoadedViaTrait($oModelJs) . $this->buildJsRedraw($oModelJs . '.getData().rows');
     }
-
-    /**
-     * 
-     * @param string $oControllerJs
-     * @return string
-     */
-    protected function buildJsConfiguratorButtonConstructor(string $oControllerJs = 'oController') : string
-    {
-        return <<<JS
-        
-                    new sap.m.OverflowToolbarButton({
-                        icon: "sap-icon://refresh",
-                        press: {$this->getController()->buildJsMethodCallFromView('onLoadData', $this)}
-                    }),
-                    {$this->buildJsConfiguratorButtonConstructorViaTrait($oControllerJs)}
-                        
-JS;
-    }
     
     /**
      * 
@@ -339,7 +321,14 @@ JS;
      */
     protected function buildJsQuickSearchConstructor() : string
     {
-        return '';
+        return <<<JS
+
+                    new sap.m.OverflowToolbarButton({
+                        icon: "sap-icon://refresh",
+                        press: {$this->getController()->buildJsMethodCallFromView('onLoadData', $this)}
+                    })
+
+JS;
     }
     
     /**

@@ -48,7 +48,7 @@ class UI5SearchField extends UI5Value
                     oEvent.srcControl.setWidth({$this->buildJsPropertyWidthCollapsed()});
                 }
             }
-        }),
+        })
         
 JS;
     }

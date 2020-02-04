@@ -104,7 +104,7 @@ JS;
         $controller->addExternalModule('libs.exface.charts.Theme', $f->buildUrlToSource('LIBS.ECHARTS.THEME_JS'), null);        
         
         foreach ($this->getWidget()->getData()->getColumns() as $col) {
-            $f->getElement($col->getCellWidget())->registerExternalModules($controller);
+            $f->getElement($col)->registerExternalModules($controller);
         }
         return $this;
     }

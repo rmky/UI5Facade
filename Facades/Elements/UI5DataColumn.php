@@ -8,6 +8,7 @@ use exface\UI5Facade\Facades\Interfaces\UI5CompoundControlInterface;
 use exface\Core\DataTypes\WidgetVisibilityDataType;
 use exface\Core\Widgets\DataTable;
 use exface\Core\Interfaces\DataTypes\EnumDataTypeInterface;
+use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
 
 /**
  *
@@ -18,6 +19,11 @@ use exface\Core\Interfaces\DataTypes\EnumDataTypeInterface;
  */
 class UI5DataColumn extends UI5AbstractElement
 {
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsConstructor()
+     */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         $parentElement = $this->getFacade()->getElement($this->getWidget()->getParent());
@@ -34,6 +40,8 @@ class UI5DataColumn extends UI5AbstractElement
      */
     public function buildJsConstructorForUiColumn()
     {
+        $this->registerExternalModules($this->getController());
+        
         $col = $this->getWidget();
         
         return <<<JS
@@ -121,6 +129,8 @@ JS;
      */
     public function buildJsConstructorForMColumn()
     {
+        $this->registerExternalModules($this->getController());
+        
         $col = $this->getWidget();
         $alignment = 'hAlign: ' . $this->buildJsAlignment() . ',';
         $popinDisplay = $col->getHideCaption() || $col->getCellWidget()->getHideCaption() ? 'sap.m.PopinDisplay.WithoutHeader' : 'sap.m.PopinDisplay.Inline';
@@ -229,6 +239,17 @@ JS;
         }   
         
         return '';
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::registerExternalModules()
+     */
+    public function registerExternalModules(UI5ControllerInterface $controller) : UI5AbstractElement
+    {
+        $this->getFacade()->getElement($this->getWidget()->getCellWidget())->registerExternalModules($controller);
+        return $this;
     }
 }
 ?>

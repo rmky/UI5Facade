@@ -178,7 +178,7 @@ class Webapp implements WorkbenchDependantInterface
             // a copy of our sheet, so we cant simply check if they are equal. However,
             // the prefill sheet will have our values and may have other columns with NULL
             // values.
-            if ($eventSheet->getMetaObject()->isExactly($dataSheet->getMetaObject()) === true && $eventSheet->countRows() === 1) {
+            if ($eventSheet->getMetaObject()->isExactly($dataSheet->getMetaObject()) === true) {
                 $row = $dataSheet->getRow(0);
                 foreach ($eventSheet->getRow(0) as $fld => $val) {
                     if ($val !== null && $val !== $row[$fld]) {

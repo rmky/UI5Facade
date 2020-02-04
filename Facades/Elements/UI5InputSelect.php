@@ -135,7 +135,7 @@ JS;
     } else {
         return [val]
     }
-}).fireSelectionChange()";
+}()).fireSelectionChange()";
         } else {
             return "setSelectedKey({$value}).fireChange({value: {$value}})";
         }
@@ -173,5 +173,11 @@ if ($valueJs !== undefined) {
 JS;
         }
     }
+    
+    
+    protected function buildJsPropertyChange()
+    {
+        $eventName = $this->getWidget()->getMultiSelect() === true ? 'selectionChange' : 'change';
+        return $eventName . ': ' . $this->getController()->buildJsEventHandler($this, self::EVENT_NAME_CHANGE, true) . ',';
+    }
 }
-?>

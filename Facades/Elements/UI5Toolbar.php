@@ -78,7 +78,7 @@ JS;
                 case EXF_ALIGN_OPPOSITE:
                 case EXF_ALIGN_RIGHT:
                     if ($reverseOrder === true) {
-                        $this->getFacade()->getElement($btn)->buildJsConstructor() . ",\n" . $right_buttons;
+                        $right_buttons = $this->getFacade()->getElement($btn)->buildJsConstructor() . ",\n" . $right_buttons;
                     } else {
                         $right_buttons .= $this->getFacade()->getElement($btn)->buildJsConstructor() . ",\n";
                     }

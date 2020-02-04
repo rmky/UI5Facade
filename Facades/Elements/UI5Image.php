@@ -85,7 +85,7 @@ JS;
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Elements\UI5Value::buildCssWidthDefaultValue()
      */
-    protected function buildCssWidthDefaultValue()
+    protected function buildCssWidthDefaultValue() : string
     {
         return '';
     }

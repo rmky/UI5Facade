@@ -13,6 +13,8 @@ use exface\UI5Facade\Facades\Elements\Traits\UI5DataElementTrait;
 use exface\Core\Widgets\DataColumn;
 use exface\Core\Widgets\DataButton;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JsConditionalPropertyTrait;
+use exface\Core\Exceptions\Facades\FacadeRuntimeError;
+use exface\Core\Exceptions\Widgets\WidgetConfigurationError;
 
 /**
  *
@@ -87,6 +89,12 @@ class UI5DataTable extends UI5AbstractElement
         $mode = $this->getWidget()->getMultiSelect() ? 'sap.m.ListMode.MultiSelect' : 'sap.m.ListMode.SingleSelectMaster';
         $striped = $this->getWidget()->getStriped() ? 'true' : 'false';
         
+        if ($this->getDynamicPageShowToolbar() === false) {
+            $toolbar = $this->buildJsToolbar($oControllerJs);
+        } else {
+            $toolbar = '';
+        }
+        
         return <<<JS
         new sap.m.VBox({
             width: "{$this->getWidth()}",
@@ -97,9 +105,10 @@ class UI5DataTable extends UI5AbstractElement
                     alternateRowColors: {$striped},
                     noDataText: "{$this->getWidget()->getEmptyText()}",
             		itemPress: {$this->buildJsOnChangeTrigger(true)},
+                    selectionChange: {$this->buildJsOnChangeTrigger(true)},
                     mode: {$mode},
                     headerToolbar: [
-                        {$this->buildJsToolbar($oControllerJs)}
+                        {$toolbar}
             		],
             		columns: [
                         {$this->buildJsColumnsForMTable()}
@@ -180,6 +189,12 @@ JS;
         $selection_mode = $widget->getMultiSelect() ? 'sap.ui.table.SelectionMode.MultiToggle' : 'sap.ui.table.SelectionMode.Single';
         $selection_behavior = $widget->getMultiSelect() ? 'sap.ui.table.SelectionBehavior.Row' : 'sap.ui.table.SelectionBehavior.RowOnly';
         
+        if ($this->getDynamicPageShowToolbar() === false) {
+            $toolbar = $this->buildJsToolbar($oControllerJs, $this->getPaginatorElement()->buildJsConstructor($oControllerJs));
+        } else {
+            $toolbar = '';
+        }
+        
         $js = <<<JS
             new sap.ui.table.Table("{$this->getId()}", {
                 width: "{$this->getWidth()}",
@@ -193,7 +208,7 @@ JS;
                 rowSelectionChange: {$this->buildJsOnChangeTrigger(true)},
                 firstVisibleRowChanged: {$controller->buildJsEventHandler($this, 'firstVisibleRowChanged', true)},
         		toolbar: [
-        			{$this->buildJsToolbar($oControllerJs, $this->getPaginatorElement()->buildJsConstructor($oControllerJs))}
+        			{$toolbar}
         		],
         		columns: [
         			{$this->buildJsColumnsForUiTable()}
@@ -267,7 +282,7 @@ JS;
             }
         }
         
-        if (! $promotedFound) {
+        if (! $promotedFound && $first_col !== null) {
             $first_col->setVisibility(EXF_WIDGET_VISIBILITY_PROMOTED);
         }
         
@@ -484,14 +499,29 @@ JS;
      */
     public function buildJsValueGetter($dataColumnName = null, $rowNr = null)
     {
-        $row = $this->buildJsGetSelectedRows('oTable');
-        $col = $dataColumnName !== null ? '["' . $dataColumnName . '"]' : '';
+        $widget = $this->getWidget();
+        $rows = $this->buildJsGetSelectedRows('oTable');
+        if ($dataColumnName !== null) {
+            /* @var $col \exface\Core\Widgets\DataColumn */
+            if (! $col = $widget->getColumnByDataColumnName($dataColumnName)) {
+                if ($col = $widget->getColumnByAttributeAlias($dataColumnName)) {
+                    $dataColumnName = $col->getDataColumnName();
+                }
+            }
+            if (! $col && ! ($widget->getMetaObject()->getUidAttributeAlias() === $dataColumnName)) {
+                throw new WidgetConfigurationError($this->getWidget(), 'Cannot build live value getter for ' . $this->getWidget()->getWidgetType() . ': column "' . $dataColumnName . '" not found!');
+            }
+            $delim = $col && $col->isBoundToAttribute() ? $col->getAttribute()->getValueListDelimiter() : EXF_LIST_SEPARATOR;
+            $colMapper = '.map(function(value,index) { return value["' . $dataColumnName . '"];}).join("' . $delim . '")';
+        } else {
+            $colMapper = '';
+        }
         
         return <<<JS
         
 (function(){
     var oTable = sap.ui.getCore().byId('{$this->getId()}');
-    return {$row}{$col};
+    return {$rows}{$colMapper};
 }() || '')
 
 JS;
@@ -500,9 +530,17 @@ JS;
     protected function buildJsGetSelectedRows(string $oTableJs) : string
     {
         if ($this->isUiTable()) {
-            $row = "($oTableJs.getModel().getData().rows[$oTableJs.getSelectedIndex()] || [])";
+            if($this->getWidget()->getMultiSelect() === false) {
+                $row = "($oTableJs.getSelectedIndex() !== -1 ? [$oTableJs.getModel().getData().rows[$oTableJs.getSelectedIndex()]] : [])";
+            } else {
+                $row = "[($oTableJs.getModel().getData().rows[$oTableJs.getSelectedIndex()] || [])]";
+            }
         } else {
-            $row = "($oTableJs.getSelectedItem() ? $oTableJs.getSelectedItem().getBindingContext().getObject() : [])";
+            if($this->getWidget()->getMultiSelect() === false) {
+                $row = "($oTableJs.getSelectedItem() ? [$oTableJs.getSelectedItem().getBindingContext().getObject()] : [])";
+            } else {
+                $row = "$oTableJs.getSelectedContexts().reduce(function(aRows, oCtxt) {aRows.push(oCtxt.getObject()); return aRows;},[])";
+            }
         }
         return $row;
     }
@@ -984,18 +1022,22 @@ JS;
      * 
      * @param string $oTableJs
      * @param string $iRowIdxJs
+     * @param bool $deSelect
      * @return string
      */
-    protected function buildJsSelectRowByIndex(string $oTableJs = 'oTable', string $iRowIdxJs = 'iRowIdx') : string
+    protected function buildJsSelectRowByIndex(string $oTableJs = 'oTable', string $iRowIdxJs = 'iRowIdx', bool $deSelect = false) : string
     {
         if ($this->isMList() === true) {
-            return <<<JS
+                $deSelectJs = ($deSelect === true) ? ', false' : '';
+                return <<<JS
 
-                var oItem = {$oTableJs}.getItems()[{$iRowIdxJs}];
-                {$oTableJs}.setSelectedItem(oItem);
-                oItem.focus();
+                    var oItem = {$oTableJs}.getItems()[{$iRowIdxJs}];
+                    {$oTableJs}.setSelectedItem(oItem {$deSelectJs});
+                    oItem.focus();
 
 JS;
+
+                
         } else {
             return <<<JS
 
@@ -1008,6 +1050,7 @@ JS;
     
     /**
      * Returns JS code to select the first row in a table, that has the given value in the specified column.
+     * If the parameter '$deSelect' is true, it will deselect the row instead.
      *
      * The generated code will search the current values of the $column for an exact match
      * for the value of $valueJs JS variable, mark the first matching row as selected and
@@ -1022,9 +1065,10 @@ JS;
      * @param string $valueJs
      * @param string $onNotFoundJs
      * @param string $rowIdxJs
+     * @param bool $deSelect
      * @return string
      */
-    public function buildJsSelectRowByValue(DataColumn $column, string $valueJs, string $onNotFoundJs = '', string $rowIdxJs = 'rowIdx') : string
+    public function buildJsSelectRowByValue(DataColumn $column, string $valueJs, string $onNotFoundJs = '', string $rowIdxJs = 'rowIdx', bool $deSelect = false) : string
     {
         return <<<JS
         
@@ -1041,7 +1085,7 @@ var {$rowIdxJs} = function() {
     if (iRowIdx == -1){
 		{$onNotFoundJs};
 	} else {
-        {$this->buildJsSelectRowByIndex('oTable', 'iRowIdx')}
+        {$this->buildJsSelectRowByIndex('oTable', 'iRowIdx', $deSelect)}
 	}
 
     return iRowIdx;

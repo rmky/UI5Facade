@@ -57,6 +57,12 @@ trait UI5DataElementTrait {
     
     private $quickSearchElement = null;
     
+    private $dynamicPageHeaderCollapsed = null;
+    
+    private $dynamicPageShowBackButton = false;
+    
+    private $dynamicPageShowToolbar = false;
+    
     /**
      *
      * {@inheritDoc}
@@ -130,7 +136,7 @@ trait UI5DataElementTrait {
         $initModels = ".setModel(new sap.ui.model.json.JSONModel()).setModel(new sap.ui.model.json.JSONModel(), '{$this->getModelNameForConfigurator()}')";
         
         if ($this->isWrappedInDynamicPage()){
-            return $this->buildJsPage($js) . $initModels;
+            return $this->buildJsPage($js, $oControllerJs) . $initModels;
         } else {
             return $js . $initModels;
         }
@@ -192,10 +198,17 @@ JS;
     protected function buildJsToolbar($oControllerJsVar = 'oController', string $leftExtras = null, string $rightExtras = null)
     {
         $visible = $this->getWidget()->getHideHeader() === true && $this->getWidget()->getHideCaption() ? 'false' : 'true';
+        
+        // Remove bottom line of the toolbar if it is to be integrated into the dynamic page header
+        if ($this->getDynamicPageShowToolbar() === true) {
+            $style = 'style: "Clear",';
+        }
+        
         return <<<JS
 
 			new sap.m.OverflowToolbar({
                 design: "Transparent",
+                {$style}
                 visible: {$visible},
 				content: [
 					{$this->buildJsToolbarContent($oControllerJsVar, $leftExtras, $rightExtras)}
@@ -217,7 +230,13 @@ JS;
         $heading = $this->isWrappedInDynamicPage() ? '' : 'new sap.m.Label({text: ' . json_encode($this->getCaption()) . '}),';
         
         $leftExtras = $leftExtras === null ? '' : rtrim($leftExtras, ", ") . ',';
-        $rightExtras = $rightExtras === null ? '' : rtrim($leftExtras, ", ") . ',';
+        $rightExtras = $rightExtras === null ? '' : rtrim($rightExtras, ", ") . ',';
+        
+        if ($this->getDynamicPageShowToolbar() === false) {
+            $quickSearch = $this->buildJsQuickSearchConstructor() . ',';
+        } else {
+            $quickSearch = '';
+        }
         
         return <<<JS
 
@@ -226,7 +245,7 @@ JS;
 			        new sap.m.ToolbarSpacer(),
                     {$this->buildJsButtonsConstructors()}
                     {$rightExtras}
-                    {$this->buildJsQuickSearchConstructor()}
+                    {$quickSearch}
 					{$this->buildJsConfiguratorButtonConstructor()}
                     {$this->buildJsHelpButtonConstructor()}
 
@@ -488,14 +507,22 @@ JS;
     protected function buildJsDataLoaderOnLoaded(string $oModelJs = 'oModel') : string
     {
         if ($this->isWrappedInDynamicPage()) {
-            $dynamicPageFixes = <<<JS
-            
-                        if (sap.ui.Device.system.phone) {
-                            sap.ui.getCore().byId('{$this->getIdOfDynamicPage()}').setHeaderExpanded(false);
-                        }
-                        // Redraw the table to make it fit the page height agian. Otherwise it would be
-                        // of default height after dialogs close, etc.
-                        sap.ui.getCore().byId('{$this->getId()}').invalidate();
+            if ($this->getDynamicPageHeaderCollapsed() === null) {
+                $dynamicPageFixes = <<<JS
+                
+                            if (sap.ui.Device.system.phone) {
+                                sap.ui.getCore().byId('{$this->getIdOfDynamicPage()}').setHeaderExpanded(false);
+                            }
+JS;
+            } else {
+               $dynamicPageFixes = $this->getDynamicPageHeaderCollapsed() === true ? "sap.ui.getCore().byId('{$this->getIdOfDynamicPage()}').setHeaderExpanded(false);" : '';
+            }
+            $dynamicPageFixes .= <<<JS
+
+                            // Redraw the table to make it fit the page height agian. Otherwise it would be
+                            // of default height after dialogs close, etc.
+                            sap.ui.getCore().byId('{$this->getId()}').invalidate();
+
 JS;
         }
         
@@ -543,7 +570,11 @@ JS;
      */
     protected function isWrappedInDynamicPage()
     {
-        return $this->getWidget()->hasParent() || $this->getWidget()->getHideHeader() ? false : true;
+        if ($this->getWidget()->getHideHeader() === null) {
+            return $this->getWidget()->hasParent() === false;
+        } else {
+            return $this->getWidget()->getHideHeader() === false;
+        }
     }
     
     /**
@@ -562,7 +593,7 @@ JS;
      * @param string $content
      * @return string
      */
-    protected function buildJsPage(string $content) : string
+    protected function buildJsPage(string $content, string $oControllerJs) : string
     {
         foreach ($this->getWidget()->getToolbarMain()->getButtonGroupForSearchActions()->getButtons() as $btn) {
             if ($btn->getAction()->isExactly('exface.Core.RefreshWidget')){
@@ -573,14 +604,18 @@ JS;
             $top_buttons .= $this->getFacade()->getElement($btn)->buildJsConstructor() . ',';
         }
         
-        if ($this->getView()->isWebAppRoot() === true) {
-            $title = <<<JS
-            
+        $title = <<<JS
+        
                             new sap.m.Title({
                                 text: "{$this->getCaption()}"
                             })
                             
 JS;
+        
+        if ($this->getDynamicPageShowBackButton() === false) {
+            if ($this->getWidget()->getHideCaption() === true) {
+                $title = '';
+            }
         } else {
             $title = <<<JS
             
@@ -591,29 +626,42 @@ JS;
                                         press: [oController.onNavBack, oController],
                                         type: sap.m.ButtonType.Transparent
                                     }).addStyleClass('exf-page-heading-btn'),
-                                    new sap.m.Title({
-                                        text: "{$this->getCaption()}"
-                                    })
+                                    {$title}
                                 ]
                             })
                             
 JS;
         }
         
+        $titleAreaShrinkRatio = '';
+        
+        if ($this->getDynamicPageShowToolbar() === true) {
+            $this->getQuickSearchElement()->setWidthCollapsed('200px');
+            $titleCollapsed  = $this->buildJsQuickSearchConstructor($oControllerJs);
+            $toolbar = $this->buildJsToolbar($oControllerJs, $titleCollapsed, $top_buttons);
+
+            // due to the SearchField being right aligned, set the shrinkfactor so that the right side shrink the least
+            $titleAreaShrinkRatio = 'areaShrinkRatio: "1.6:1.6:1"';
+        } else {
+            $toolbar = $top_buttons;
+            $titleCollapsed = $title;
+            $titleExpanded = $title;
+        }
+        
         return <<<JS
         
         new sap.f.DynamicPage("{$this->getIdOfDynamicPage()}", {
             fitContent: true,
+            height: "100%",
             preserveHeaderStateOnScroll: true,
-            headerExpanded: true,
+            headerExpanded: (sap.ui.Device.system.phone === false),
             title: new sap.f.DynamicPageTitle({
 				expandedHeading: [
-                    {$title}
+                    {$titleExpanded}
 				],
                 snappedHeading: [
                     new sap.m.VBox({
                         items: [
-        					{$title},
                             new sap.m.Text({
                                 text: "{{$this->getModelNameForConfigurator()}>/filterDescription}"
                             })
@@ -621,8 +669,9 @@ JS;
                     })
 				],
 				actions: [
-				    {$top_buttons}
-				]
+				    {$toolbar}
+				],
+                {$titleAreaShrinkRatio}
             }),
             
 			header: new sap.f.DynamicPageHeader({
@@ -685,7 +734,14 @@ JS;
     protected function buildJsQuickSearchConstructor($oControllerJs = 'oController') : string
     {
         if ($this->hasQuickSearch() === false) {
-            return '';
+            return <<<JS
+
+                    new sap.m.OverflowToolbarButton({
+                        icon: "sap-icon://refresh",
+                        press: {$this->getController()->buildJsMethodCallFromView('onLoadData', $this)}
+                    })
+
+JS;
         }
         
         $qsElement = $this->getQuickSearchElement();
@@ -767,5 +823,59 @@ JS;
     {
         // TODO check if the selected row and it's data really changed - like in jEasyUI
         return $this->getController()->buildJsEventHandler($this, self::EVENT_NAME_CHANGE, $buildForView);
+    }
+    
+    /**
+     * Returns whether the dynamic page header should be collapsed or not, or if this has not been defined for this object.
+     * 
+     * @return bool|NULL
+     */
+    protected function getDynamicPageHeaderCollapsed() : ?bool
+    {
+        return $this->dynamicPageHeaderCollapsed;
+    }
+    
+    /**
+     * Set whether the dynamic page header of this widget should be collapsed or not.
+     * 
+     * @param bool $value
+     * @return self
+     */
+    public function setDynamicPageHeaderCollapsed(bool $value) : self
+    {
+        $this->dynamicPageHeaderCollapsed = $value;
+        return $this;
+    }
+    
+    /**
+     * Getter for whether the back button of this page should be instanciated or not, or if this has not been defined.
+     * 
+     * @return bool
+     */
+    protected function getDynamicPageShowBackButton() : bool
+    {
+        return $this->dynamicPageShowBackButton ?? $this->getView()->isWebAppRoot() === false;
+    }
+    
+    /**
+     * Setter for whether the toolbar for this page should be displayed or not.
+     * 
+     * @param bool $trueOrFalse
+     * @return self
+     */
+    public function setDynamicPageShowToolbar(bool $trueOrFalse) : self
+    {
+        $this->dynamicPageShowToolbar = $trueOrFalse;
+        return $this;
+    }
+    
+    /**
+     * Getter for whether the toolbar for this page should be displayed or not.
+     * 
+     * @return bool
+     */
+    protected function getDynamicPageShowToolbar() : bool
+    {
+        return $this->dynamicPageShowToolbar;
     }
 }

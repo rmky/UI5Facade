@@ -4,7 +4,6 @@ namespace exface\UI5Facade\Facades\Elements;
 use exface\Core\Widgets\Display;
 use exface\UI5Facade\Facades\Interfaces\UI5BindingFormatterInterface;
 use exface\Core\DataTypes\BooleanDataType;
-use exface\Core\Widgets\DataColumn;
 use exface\Core\CommonLogic\Constants\Colors;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JsValueScaleTrait;
 use exface\Core\Interfaces\Widgets\iHaveColorScale;
@@ -48,7 +47,7 @@ class UI5Display extends UI5Value
     {
         $widget = $this->getWidget();
         if ($widget->getValueDataType() instanceof BooleanDataType) {
-            if ($this->getWidget()->getParent() instanceof DataColumn) {
+            if ($this->getWidget()->isInTable() === true) {
                 $icon_yes = 'sap-icon://accept';
                 $icon_no = '';
                 $icon_width = '"100%"';
@@ -172,7 +171,7 @@ JS;
      */
     protected function buildJsPropertyTooltip()
     {
-        if ($this->getWidget()->getParent() instanceof DataColumn) {
+        if ($this->getWidget()->isInTable() === true) {
             if ($this->isValueBoundToModel()) {
                 $value = $this->buildJsValueBinding('formatter: function(value){return (value === null || value === undefined) ? value : value.toString();},');
             } else {

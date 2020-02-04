@@ -1,12 +1,10 @@
 <?php
 namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Interfaces\Widgets\iFillEntireContainer;
 use exface\UI5Facade\Facades\Interfaces\UI5ControlWithToolbarInterface;
-use exface\Core\Widgets\Panel;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryLayoutTrait;
 use exface\UI5Facade\Facades\Elements\Traits\UI5HelpButtonTrait;
-use exface\Core\Widgets\Box;
+use exface\Core\Widgets\Card;
 
 /**
  * Generates a sap.f.Card for a Box widget.
@@ -16,7 +14,7 @@ use exface\Core\Widgets\Box;
  * @method Box getWidget()
  *
  */
-class UI5Box extends UI5Panel
+class UI5Card extends UI5Panel
 {
     use JqueryLayoutTrait;
     use UI5HelpButtonTrait;

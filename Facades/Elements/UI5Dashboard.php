@@ -3,6 +3,8 @@ namespace exface\UI5FAcade\Facades\Elements;
 
 use exface\Core\Widgets\Dashboard;
 use exface\Core\Interfaces\WidgetInterface;
+use exface\Core\Factories\WidgetFactory;
+use exface\Core\Widgets\Card;
 
 /**
  * A `Dashboard` is a Widget to display multiple Widgets in an grid-like layout, to let the user have an
@@ -13,7 +15,7 @@ use exface\Core\Interfaces\WidgetInterface;
  * not only the use of units like '%' or 'px' as width parameters, but also the use of an `integer` to define the
  * number of columns one Widget uses.
  * 
- * The children Widgets itself are wrapped in instances of `UI5Box`es.
+ * The children Widgets itself are wrapped in instances of `UI5Card`es.
  * 
  * The `GridContainer` always has the parameters `allowDenseFill` and `snapToRow` set to `true`
  * to automatically optimize the alignment of the Cards. Furthermore the `GridContainer` may use 
@@ -26,6 +28,10 @@ use exface\Core\Interfaces\WidgetInterface;
  */
 class UI5Dashboard extends UI5Panel
 {
+    /**
+     * 
+     * @var WidgetInterface[][]
+     */
     private $widgetsAssignedToContainers = [];
     
     /**
@@ -35,7 +41,7 @@ class UI5Dashboard extends UI5Panel
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {   
-        return $this->buildJsLayoutConstructor($this->buildJsLayoutGridContainer($oControllerJs));
+        return $this->buildJsLayoutConstructor($this->buildJsLayoutGridContainers($oControllerJs));
     }
     
     /**
@@ -74,7 +80,7 @@ JS;
     }
     
     /**
-     * This function generates the JS-code for the `UI5Box`es, which are inserted into the grids.
+     * This function generates the JS-code for the child widgets, which are inserted into the grids.
      * This function only generates the widgets for the grid with the number passed in the parameter `$no`.
      * 
      * Generating the correct width values for the cards is a bit tricky, because this process needs to be adapted
@@ -93,69 +99,47 @@ JS;
      *      
      * @return string
      */
-    protected function buildDashboardContentWrapper(string $oControllerJs, int $no) : string
+    protected function buildJsLayoutGridContainerItems(string $oControllerJs, array $widgets, bool $containerWidthIsInUnits) : string
     {
         $js = '';
-        $containerWidthIsInUnits = $this->isWidgetContainerWidthInUnits($no);
-        
-        foreach ($this->widgetsAssignedToContainers[$no] as $widget){
+        foreach ($widgets as $widget){
+            if (! ($widget instanceof Box)) {
+                $box = WidgetFactory::create($this->getWidget()->getPage(), 'Card', $this->getWidget());
+                $box->addWidget($widget);
+                if ($widget->getHeight()->isUndefined() === false && $widget->getHeight()->isMax() === false) {
+                    $box->setHeight($widget->getHeight()->getValue());
+                    $widget->setHeight("100%");
+                }
+                if ($widget->getWidth()->isUndefined() === false && $widget->getWidth()->isMax() === false) {
+                    $box->setWidth($widget->getWidth()->getValue());
+                    $widget->setWidth("100%");
+                }
+            } else {
+                $box = $widget;
+            }
             
             // check whether the whith of the current set of widgets is given as destinct integer or with an unit
             if ($containerWidthIsInUnits === false){
                 // calculate the count columns the box will occupy
-                $widthUnits = $this->getChildrenElementWidthUnitCount($widget);
+                $widthUnits = $this->getChildrenElementWidthUnitCount($box);
             } else {
                 // check if there is an facade specific value given, like 'px'
-                if ($widget->getWidth()->isFacadeSpecific()){
+                if ($box->getWidth()->isFacadeSpecific()){
                     $widthUnits = 1;
                 } else {
                     // take the number of columns straight from the widgets width
-                    $widthUnits = $widget->getWidth()->getValue();
-                    $widget->setWidth("100%");
+                    $widthUnits = $box->getWidth()->getValue();
+                    $box->setWidth("100%");
                 }
             }
             
-            // set the height and width of the boxes child elements to 100%, so that they fill out the whole box
-            $this->setWidthOfBoxElementChildren($widget, "100%");
-            $this->setHeightOfBoxElementChildren($widget, "100%");
-            
-            $element = $this->getFacade()->getElement($widget);
+            $element = $this->getFacade()->getElement($box);
             $element->setLayoutData("new sap.f.GridContainerItemLayoutData({columns: {$widthUnits}})");
             
             $js .= ($js ? ', ' : '') . $element->buildJsConstructor($oControllerJs);
         }
         
         return $js;
-    }
-    
-    /**
-     * Function for setting the width value of all the boxes childwidgets.
-     * 
-     * @param WidgetInterface $widget
-     * @param string $width
-     * @return UI5Dashboard
-     */
-    protected function setWidthOfBoxElementChildren(WidgetInterface $widget, string $width) : UI5Dashboard
-    {
-        foreach ($widget->getWidgets() as $child) {
-            $child->setWidth($width);
-        }
-        return $this;
-    }
-    
-    /**
-     * Function for setting the height value of all the boxes childwidgets.
-     * 
-     * @param WidgetInterface $widget
-     * @param string $height
-     * @return UI5Dashboard
-     */
-    protected function setHeightOfBoxElementChildren(WidgetInterface $widget, string $height) : UI5Dashboard
-    {
-        foreach ($widget->getWidgets() as $child) {
-            $child->setHeight($height);
-        }
-        return $this;
     }
     
     /**
@@ -278,14 +262,14 @@ JS;
      * 
      * @return string
      */
-    protected function buildJsLayoutGridContainer(string $oControllerJs) : string
+    protected function buildJsLayoutGridContainers(string $oControllerJs) : string
     {
         $this->assignWidgetsToContainers();
         $js = '';
         
-        foreach ($this->widgetsAssignedToContainers as $no => $containerWithWidgets){
+        foreach ($this->widgetsAssignedToContainers as $no => $widgetsArray){
             //is true if the width of the widget in this container is given in container units, px, etc. -  false if in %
-            $containerWidthIsInUnits = $this->isWidgetContainerWidthInUnits($no);
+            $containerWidthIsInUnits = $this->isWidgetContainerWidthInUnits($widgetsArray);
             $containerStyleClass = '';
             
             if ($containerWidthIsInUnits === true) {
@@ -296,7 +280,7 @@ JS;
                 $containerStyleClass .= "sapUiTinyMarginTop ";
             }
             
-            if ($this->isLastContainerWithWidgets($no) === false){
+            if ($this->widgetsAssignedToContainers[$no + 1] !== null){
                 $containerStyleClass .= "dashboard_gridcontainer_gap_margin_bottom ";
             } else {
                 $containerStyleClass .= "sapUiTinyMarginBottom ";
@@ -314,7 +298,7 @@ JS;
                         }
                     ],
                     items: [
-                        {$this->buildDashboardContentWrapper($oControllerJs, $no)}
+                        {$this->buildJsLayoutGridContainerItems($oControllerJs, $widgetsArray, $containerWidthIsInUnits)}
                     ]
                 }).addStyleClass("{$containerStyleClass} sapUiTinyMarginBeginEnd"),
 
@@ -329,28 +313,12 @@ JS;
      * returns true, if the container (with the number passed py the attribute) contains widgets,
      * whose width is given non-percentual
      * 
-     * @param int $index
+     * @param WidgetInterface[] $widgets
      * @return bool
      */
-    protected function isWidgetContainerWidthInUnits(int $index) : bool
+    protected function isWidgetContainerWidthInUnits(array $widgets) : bool
     {
-        return $this->widgetsAssignedToContainers[$index][0]->getWidth()->isRelative()
-            || $this->widgetsAssignedToContainers[$index][0]->getWidth()->isFacadeSpecific();
-    }
-        
-    /**
-     * returns true, if the container (with the number passed py the attribute) is the last one
-     * 
-     * @param int $index
-     * @return bool
-     */
-    protected function isLastContainerWithWidgets(int $index) : bool
-    {
-        if ($this->widgetsAssignedToContainers[$index + 1] == null){
-            return true;
-        } else {
-            return false;
-        }
+        return $widgets[0]->getWidth()->isRelative() || $widgets[0]->getWidth()->isFacadeSpecific();
     }
     
     /**

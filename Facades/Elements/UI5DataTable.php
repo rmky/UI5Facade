@@ -514,7 +514,7 @@ JS;
                 throw new WidgetConfigurationError($this->getWidget(), 'Cannot build live value getter for ' . $this->getWidget()->getWidgetType() . ': column "' . $dataColumnName . '" not found!');
             }
             $delim = $col && $col->isBoundToAttribute() ? $col->getAttribute()->getValueListDelimiter() : EXF_LIST_SEPARATOR;
-            $colMapper = '.map(function(value,index) { return value["' . $dataColumnName . '"];}).join("' . $delim . '")';
+            $colMapper = '.map(function(value,index) { return value === undefined ? "" : value["' . $dataColumnName . '"];}).join("' . $delim . '")';
         } else {
             $colMapper = '';
         }

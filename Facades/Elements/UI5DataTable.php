@@ -1224,9 +1224,9 @@ setTimeout(function(){
     if (tbl.getMode() == sap.m.ListMode.MultiSelect) {
         iColIdx++;
     }
-    tbl.getColumns().forEach(function(oColumn, i){
+    tbl.getColumns().some(function(oColumn){
         if (oColumn.data('_exfDataColumnName') === '$colName') {
-            return;
+            return true; // stop iterating! .some() stops if a callback returns TRUE.
         }
         if (oColumn.getVisible() === true) {
             iColIdx++;
@@ -1288,9 +1288,9 @@ JS;
     var tbl = sap.ui.getCore().byId('{$this->getId()}');
     {$saveSelectionJs}
     var iColIdx = 0;
-    tbl.getColumns().forEach(function(oColumn, i){
+    tbl.getColumns().some(function(oColumn){
         if (oColumn.data('_exfDataColumnName') === '$colName') {
-            return;
+            return true;
         }
         if (oColumn.getVisible() === true) {
             iColIdx++;

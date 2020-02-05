@@ -526,12 +526,67 @@ JS;
 JS;
         }
         
+        
+        
         return <<<JS
         
             oTable.getModel("{$this->getModelNameForConfigurator()}").setProperty('/filterDescription', {$this->getController()->buildJsMethodCallFromController('onUpdateFilterSummary', $this, '', 'oController')});
             {$dynamicPageFixes}
+            {$this->buildJsDataLoaderOnLoadedHandleWidgetLinks($oModelJs)}
 			
 JS;
+    }
+    
+    /**
+     * Returns the JS code to add values from static expressions and widget links to the given UI5 model.
+     * 
+     * @param string $oModelJs
+     * @return string
+     */
+    protected function buildJsDataLoaderOnLoadedHandleWidgetLinks(string $oModelJs) : string
+    {
+        $addLocalValuesJs = '';
+        $linkedEls = [];
+        foreach ($this->getDataWidget()->getColumns() as $col) {
+            $cellWidget = $col->getCellWidget();
+            if ($cellWidget->hasValue() === false) {
+                continue;
+            }
+            $valueExpr = $cellWidget->getValueExpression();
+            switch (true) {
+                case $valueExpr->isReference() === true:
+                    $linkedEl = $this->getFacade()->getElement($valueExpr->getWidgetLink($cellWidget)->getTargetWidget());
+                    $linkedEls[] = $linkedEl;
+                    $val = $linkedEl->buildJsValueGetter();
+                    break;
+                case $valueExpr->isConstant() === true:
+                    $val = json_encode($valueExpr->toString());
+                    break;
+            }
+            $addLocalValuesJs = <<<JS
+            
+                                oRow["{$col->getDataColumnName()}"] = {$val};
+JS;
+        }
+        if ($addLocalValuesJs) {
+            $addLocalValuesJs = <<<JS
+            
+                            // Add static values
+                            ($oModelJs.getData().rows || []).forEach(function(oRow){
+                                {$addLocalValuesJs}
+                            });
+                            $oModelJs.updateBindings();
+JS;
+                            $addLocalValuesOnChange = <<<JS
+                            
+                            var $oModelJs = sap.ui.getCore().byId("{$this->getId()}").getModel();
+                            {$addLocalValuesJs}
+JS;
+                            foreach ($linkedEls as $linkedEl) {
+                                $linkedEl->addOnChangeScript($addLocalValuesOnChange);
+                            }
+        }
+        return $addLocalValuesJs;
     }
             
     protected function getModelNameForConfigurator() : string

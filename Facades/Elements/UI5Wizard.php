@@ -42,8 +42,10 @@ class UI5Wizard extends UI5Container
     {           
         $this->checkWizardStepIconAttributes();
         
-        $wizardTbEl = $this->getFacade()->getElement($this->getWidget()->getToolbarMain());
-        $toolbar = $wizardTbEl->buildJsConstructor();
+        if ($this->getWidget()->hasButtons() === true) {
+            $wizardTbEl = $this->getFacade()->getElement($this->getWidget()->getToolbarMain());
+            $toolbar = $wizardTbEl->buildJsConstructor();
+        }
         
         $title = $this->getCaption() ? "title: '{$this->getCaption()}'," : 'showHeader: false,';
         

@@ -240,7 +240,11 @@ JS;
      */
     public function buildJsValidationError()
     {
-        return "sap.ui.getCore().byId('{$this->getId()}').setValueState('Error')";
+        if ($this->getWidget()->isHidden() === true) {
+            return $this->buildJsShowError(json_encode('Error in hidden field "' . $this->getCaption() . '": ' . $this->getValidationErrorText()));
+        } else {
+            return "sap.ui.getCore().byId('{$this->getId()}').setValueState('Error')";
+        }
     }
     
     protected function registerOnChangeValidation()

@@ -563,7 +563,7 @@ JS;
                     $val = json_encode($valueExpr->toString());
                     break;
             }
-            $addLocalValuesJs = <<<JS
+            $addLocalValuesJs .= <<<JS
             
                                 oRow["{$col->getDataColumnName()}"] = {$val};
 JS;

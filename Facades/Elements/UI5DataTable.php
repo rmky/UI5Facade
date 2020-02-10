@@ -1052,8 +1052,9 @@ JS;
                                 if (oColumn.getId() === oColConfig.column_id) {
                                     if (oColumn.getVisible() !== oColConfig.visible) {
                                         oColumn.setVisible(oColConfig.visible);
-                                    } else {
-                                        if (iColIdx !== iConfIdx) bOrderChanged = true;
+                                    }
+                                    if (oColumn.getVisible() && iColIdx !== iConfIdx) {
+                                        bOrderChanged = true;
                                     }                                    
                                     return;
                                 }

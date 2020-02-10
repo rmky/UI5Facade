@@ -292,11 +292,15 @@ JS;
                             setTimeout(function(){
                                 var aColsConfig = oConfigModel.getProperty('/columns');
                                 var aItems = oTableModel.getProperty('/items');
+                                var aListItems = oTable.getItems();
                                 var aItemsNew = [];
-                                aColsConfig.forEach(oColConfig => {
-                                    aItems.forEach(oItem => {
+                                aColsConfig.forEach(function(oColConfig){
+                                    aItems.forEach(function(oItem, iItemIdx){
                                         if (oItem.columnKey === oColConfig.column_id) {
                                             $resetSelection;
+                                            if (oColConfig.toggleable === false && aListItems[iItemIdx] !== undefined) {
+                                                aListItems[iItemIdx].setVisible(false);
+                                            }
                                             aItemsNew.push(oItem);
                                             return;
                                         }
@@ -365,18 +369,13 @@ JS;
         $data = [];
         if ($this->hasTabColumns() === true) {
             foreach ($this->getWidget()->getDataWidget()->getColumns() as $col) {
-                if ($col->isBoundToAttribute() === false) {
-                    continue;
-                }
-                if ($col->isHidden() === true) {
-                    continue;
-                }
                 $data[] = [
                     "attribute_alias" => $col->getAttributeAlias(),
                     "column_id" => $this->getFacade()->getElement($col)->getId(),
                     "column_name" => $col->getDataColumnName(),
                     "caption" => $col->getCaption(),
-                    "visible" => $col->isHidden() || $col->getVisibility() === EXF_WIDGET_VISIBILITY_OPTIONAL ? false : true
+                    "visible" => $col->isHidden() || $col->getVisibility() === EXF_WIDGET_VISIBILITY_OPTIONAL ? false : true,
+                    "toggleable" => $col->isHidden() ? false : true
                 ];
             }
         }

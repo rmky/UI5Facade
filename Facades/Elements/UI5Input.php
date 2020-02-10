@@ -266,5 +266,32 @@ JS;
             
         }
     }
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsResetter()
+     */
+    public function buildJsResetter() : string
+    {
+        $widget = $this->getWidget();
+        
+        if ($widget->getValueWidgetLink() !== null) {
+            return '';
+        }
+        
+        // TODO reset properly if value is bound to model
+        $staticDefault = $widget->getValueWithDefaults();
+        $initialValueJs = json_encode($staticDefault);
+        $js = $this->buildJsValueSetter($initialValueJs);
+        
+        // The value-setter automatically performs validation. We don't need this unless the new value
+        // is actually not empty.
+        if ($staticDefault === null || $staticDefault === '') {
+            $js .= ".setValueState('None')";
+        }
+        
+        return $js;
+    }
 }
 ?>

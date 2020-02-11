@@ -38,6 +38,24 @@ class UI5WizardStep extends UI5Form
         $icon = $widget->getIcon() && $widget->getShowIcon(true) ? $this->getIconSrc($widget->getIcon()) : '';
         $optional = $widget->isOptional() === true ? "optional: true," : '';
         
+        if ($widget->getAutofocusFirstInput() === false) {
+            $focusFirstInputJs = 'document.activeElement.blur()';
+        } else {
+            $firstVisibleInput = null;
+            foreach ($widget->getInputWidgets() as $input) {
+                if ($input->isHidden() === false) {
+                    $firstVisibleInput = $input;
+                    break;
+                }
+            }
+            if ($firstVisibleInput !== null) {
+                $firstVisibleInputEl = $this->getFacade()->getElement($firstVisibleInput);
+                if ($firstVisibleInputEl instanceof UI5Input) {
+                    $focusFirstInputJs = $firstVisibleInputEl->buildJsSetFocus() . ';';
+                }
+            }
+        }
+        
         $introText = str_replace("\n", '', nl2br($widget->getIntro()));
         
         if ($introText !== null){
@@ -53,7 +71,11 @@ JS;
         title: "{$caption}",
         icon: "{$icon}",
         {$optional}
-        
+        activate: function(oEvent) {
+            setTimeout(function(){
+                $focusFirstInputJs
+            }, 500);
+        },
         content: [
             {$introText}
             {$this->buildJsLayoutConstructor()},

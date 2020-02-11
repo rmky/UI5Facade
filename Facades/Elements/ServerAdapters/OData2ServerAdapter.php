@@ -30,6 +30,8 @@ use exface\Core\CommonLogic\UxonObject;
 use exface\Core\Actions\Autosuggest;
 use exface\Core\Interfaces\Widgets\iHaveColumns;
 use exface\Core\DataTypes\DateTimeDataType;
+use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
+use exface\Core\Factories\DataTypeFactory;
 
 /**
  * 
@@ -104,6 +106,20 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
         }
         
         $this->checkWidgetExportable($element->getWidget());
+        $this->registerExternalModules($element);
+    }
+    
+    /**
+     * 
+     * @param UI5AbstractElement $element
+     * @return OData2ServerAdapter
+     */
+    protected function registerExternalModules(UI5AbstractElement $element) : OData2ServerAdapter
+    {
+        $dateTimeDataType = DataTypeFactory::createFromPrototype($element->getWorkbench(), DateTimeDataType::class);
+        $dateTimeBindingFormatter = $element->getFacade()->getDataTypeFormatterForUI5Bindings($dateTimeDataType);
+        $dateTimeBindingFormatter->registerExternalModules($element->getController());
+        return $this;
     }
     
     /**
@@ -172,7 +188,7 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
             case get_class($action) === SaveData::class:
                 return $this->buildJsDataWrite($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             default:
-                throw new UI5ExportUnsupportedActionException('Action "' . $action->getAliasWithNamespace() . '" cannot be used with Fiori export!');
+                //throw new UI5ExportUnsupportedActionException('Action "' . $action->getAliasWithNamespace() . '" cannot be used with Fiori export!');
                 return <<<JS
 
         console.error('Unsupported action {$action->getAliasWithNamespace()}', {$oParamsJs});
@@ -226,6 +242,7 @@ JS;
             if ($qpart->getDataType() instanceof TimeDataType) {
                 $timeAttributes[] = $qpart->getAlias();
             }
+            
         }
         $dateAttributesJson = json_encode($dateAttributes);
         $timeAttributesJson = json_encode($timeAttributes);

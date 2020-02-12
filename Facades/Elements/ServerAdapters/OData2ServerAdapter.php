@@ -32,6 +32,8 @@ use exface\Core\Interfaces\Widgets\iHaveColumns;
 use exface\Core\DataTypes\DateTimeDataType;
 use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
 use exface\Core\Factories\DataTypeFactory;
+use exface\Core\Interfaces\Model\CompoundAttributeInterface;
+
 
 /**
  * 
@@ -171,6 +173,7 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
      */
     public function buildJsServerRequest(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
+        
         switch (true) {
             case get_class($action) === ReadPrefill::class:
                 return $this->buildJsPrefillLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
@@ -253,6 +256,7 @@ JS;
         $dateTimeFormat = DateTimeDataType::DATETIME_ICU_FORMAT_INTERNAL;
         
         return <<<JS
+            console.log('Params:', {$oParamsJs});
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
             var oDataReadParams = {};
             var oDataReadFiltersSearch = [];
@@ -592,6 +596,31 @@ JS;
 JS;
         $onModelLoadedJs = $takeFirstRowOnly . $onModelLoadedJs;
         $opEQ = EXF_COMPARATOR_EQUALS;
+        $filters = '';
+        
+        if ($uidAttr instanceof CompoundAttributeInterface) {
+            foreach($uidAttr->getComponents() as $comp) {
+                $filters .= <<<JS
+
+                    {
+                        comparator: "{$opEQ}",
+                        expression: "{$comp->getAttribute()->getAlias()}",
+                        object_alias: "{$object->getAliasWithNamespace()}",
+                        value: oFirstRow["{$comp->getAttribute()->getAlias()}"]
+                    },
+JS;
+            }            
+        } else {
+            $filters .= <<<JS
+
+                    {
+                        comparator: "{$opEQ}",
+                        expression: "{$uidAttr->getAlias()}",
+                        object_alias: "{$object->getAliasWithNamespace()}",
+                        value: oFirstRow["{$uidAttr->getAlias()}"]
+                    }
+JS;
+        }
         
         return <<<JS
         
@@ -602,12 +631,7 @@ JS;
     
             {$oParamsJs}.data.filters = {
                 conditions: [
-                    {
-                        comparator: "{$opEQ}",
-                        expression: "{$uidAttr->getAlias()}",
-                        object_alias: "{$object->getAliasWithNamespace()}",
-                        value: oFirstRow["{$object->getUidAttribute()->getAlias()}"]
-                    }
+                    {$filters}
                 ]
             };
             {$this->buildJsDataLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs)}

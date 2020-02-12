@@ -1045,23 +1045,68 @@ JS;
                         var aColsConfig = {$this->getConfiguratorElement()->buildJsP13nColumnConfig()};
                         var oTable = sap.ui.getCore().byId('{$this->getId()}');
                         var aColumns = oTable.getColumns();
-                        
+                        var aColumnsNew = [];
+                       
                         var bOrderChanged = false;
+                        var aOrderChanges = new Array;
                         aColsConfig.forEach(function(oColConfig, iConfIdx) {
                             aColumns.forEach(function(oColumn, iColIdx) {
                                 if (oColumn.getId() === oColConfig.column_id) {
                                     if (oColumn.getVisible() !== oColConfig.visible) {
                                         oColumn.setVisible(oColConfig.visible);
                                     }
-                                    if (oColumn.getVisible() && iColIdx !== iConfIdx) {
+                                    if (iColIdx !== iConfIdx) {
                                         bOrderChanged = true;
-                                    }                                    
+                                        aOrderChanges.push({idxFrom: iColIdx, idxTo: iConfIdx}); 
+                                    }
+                                    aColumnsNew.push(oColumn);                                    
                                     return;
                                 }
                             });
                         });
                         if (bOrderChanged === true) {
-                            {$this->buildJsShowMessageError("'Moving columns currently not supported for responsive tables'")}
+
+                            oTable.removeAllColumns();
+                            aColumnsNew.forEach(oColumn => {
+                                oTable.addColumn(oColumn);
+                            });
+
+                            var aNewItems = new Array;
+
+                            oTable.getItems().forEach(function(oItem, oItemIdx){
+                                var oCells = oItem.getCells();
+                                var aCellBuffer = new Array;
+                                var aRemovableCells = new Array;
+                                
+                                aOrderChanges.forEach(function(oOrderChange, oOrderChangeIdx){
+
+                                    var oCellFromBuffer = null;
+                                    aCellBuffer.forEach(function(oCellBuffer, oCellBufferIdx){
+                                        if (oCellBuffer.previousIdx == oOrderChange.idxFrom){
+                                            oCellFromBuffer = oCellBuffer.cell;
+                                            return;
+                                        }
+                                    });
+                                    
+                                    if (aRemovableCells.includes(oOrderChange.idxTo) == false){
+                                        aCellBuffer.push({previousIdx: oOrderChange.idxTo, cell: oCells[oOrderChange.idxTo]});
+                                    }
+                                    
+                                    if (oCellFromBuffer != null){
+                                        oCells[oOrderChange.idxTo] = oCellFromBuffer;
+                                    } else {
+                                        oCells[oOrderChange.idxTo] = oCells[oOrderChange.idxFrom];
+                                        aRemovableCells.push(oOrderChange.idxFrom);
+                                    }
+                                }); 
+                                
+                                oItem.removeAllCells();
+                                oCells.forEach(function(oCell){
+                                    oItem.addCell(oCell);
+                                });
+
+                                aNewItems.push(oItem);
+                            });
                         }
 
 JS;

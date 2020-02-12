@@ -389,12 +389,29 @@ JS;
                 var sorters = {$oParamsJs}.sort.split(",");
                 var directions = {$oParamsJs}.order.split(",");
                 for (var i = 0; i < sorters.length; i++) {
-                    if (directions[i] === "desc") {
-                        var sortObject = new sap.ui.model.Sorter(sorters[i], true);
+                    var sorter = sorters[i];
+                    var direction = directions[i];
+                    if (compoundAttributes[sorter] !== undefined) {
+                        var comp = compoundAttributes[sorter];
+                        var compAliases = comp['aliases'];
+                        for (var i = 0; i < compAliases.length; i++) {
+                            var alias = compAliases[i];
+                            if (direction === "desc") {
+                                var sortObject = new sap.ui.model.Sorter(alias, true);
+                            } else {
+                                var sortObject = new sap.ui.model.Sorter(alias, false);
+                            }
+                            oDataReadSorters.push(sortObject);
+                            
+                        }
                     } else {
-                        var sortObject = new sap.ui.model.Sorter(sorters[i], false);
+                        if (direction === "desc") {
+                            var sortObject = new sap.ui.model.Sorter(sorter, true);
+                        } else {
+                            var sortObject = new sap.ui.model.Sorter(sorter, false);
+                        }
+                        oDataReadSorters.push(sortObject);
                     }
-                    oDataReadSorters.push(sortObject);
                 }
             }
 

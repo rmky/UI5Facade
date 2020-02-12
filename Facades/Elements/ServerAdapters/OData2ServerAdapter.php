@@ -238,6 +238,7 @@ JS;
         
         $dateAttributes = [];
         $timeAttributes = [];
+        $compoundAttributes = [];
         foreach ($object->getAttributes() as $qpart) {
             if ($qpart->getDataType() instanceof DateDataType) {
                 $dateAttributes[] = $qpart->getAlias();
@@ -245,10 +246,28 @@ JS;
             if ($qpart->getDataType() instanceof TimeDataType) {
                 $timeAttributes[] = $qpart->getAlias();
             }
+            if ($qpart instanceof CompoundAttributeInterface) {
+                $components = $qpart->getComponents();
+                $properties = [];
+                $aliases = [];
+                $delimiter = [];
+                foreach ($components as $comp) {
+                    $aliases[] = $comp->getAttribute()->getAlias();
+                }
+                $properties['aliases'] = $aliases;
+                $delimiter[] = $components[0]->getValuePrefix() ?? '';
+                foreach ($qpart->getComponentDelimiters() as $del) {
+                    $delimiter[] = $del;
+                }
+                $delimiter[] = $components[count($components)-1]->getValueSuffix() ?? '';
+                $properties['delimiter'] = $delimiter;
+                $compoundAttributes[$qpart->getAlias()] = $properties;
+            }
             
         }
         $dateAttributesJson = json_encode($dateAttributes);
         $timeAttributesJson = json_encode($timeAttributes);
+        $compoundAttributesJson = json_encode($compoundAttributes);
         
         $opISNOT = EXF_COMPARATOR_IS_NOT;
         $opEQ = EXF_COMPARATOR_EQUALS;
@@ -271,6 +290,7 @@ JS;
                 date: $dateAttributesJson,
                 time: $timeAttributesJson
             };
+            var compoundAttributes = {$compoundAttributesJson};
             
             // Pagination
             if ({$oParamsJs}.hasOwnProperty('length') === true) {
@@ -287,18 +307,35 @@ JS;
                 var conditionsCount = conditions.length;               
                 for (var i = 0; i < conditionsCount; i++) {
                     var cond = conditions[i];
-                    {$this->buildJsAddConditionToFilter('oAttrsByDataType', 'oDataReadFiltersSearch', 'cond')}
+                    if (compoundAttributes[cond.expression] !== undefined) {
+                        {$this->buildJsCompoundAttributeAddFilters('compoundAttributes', 'cond', 'oAttrsByDataType', 'oDataReadFiltersSearch')}
+                    } else {
+                        {$this->buildJsAddConditionToFilter('oAttrsByDataType', 'oDataReadFiltersSearch', 'cond')}
+                    }
 
                     //QuickSearch
                     if ({$oParamsJs}.q !== undefined && {$oParamsJs}.q !== "" ) {
                         if (oQuickSearchFilters[0] !== undefined) {
                             if (oQuickSearchFilters.includes(cond.expression) && !oLocalFilters.includes(cond.expression)) {
-                                var filterQuickSearchItem = new sap.ui.model.Filter({
-                                    path: cond.expression,
-                                    operator: "Contains",
-                                    value1: {$oParamsJs}.q
-                                });
-                                oDataReadFiltersQuickSearch.push(filterQuickSearchItem);
+                                if (compoundAttributes[cond.expression] !== undefined) {
+                                    var compound = compoundAttributes[cond.expression];
+                                    var alias = compound.aliases;
+                                    for (var j = 0; j < aliases.length; j++) {
+                                        var filterQuickSearchItem = new sap.ui.model.Filter({
+                                            path: aliases[j],
+                                            operator: "Contains",
+                                            value1: {$oParamsJs}.q
+                                        });
+                                        oDataReadFiltersQuickSearch.push(filterQuickSearchItem);
+                                    }
+                                } else {
+                                    var filterQuickSearchItem = new sap.ui.model.Filter({
+                                        path: cond.expression,
+                                        operator: "Contains",
+                                        value1: {$oParamsJs}.q
+                                    });
+                                    oDataReadFiltersQuickSearch.push(filterQuickSearchItem);
+                                }
                             }
                         } 
                     }                        
@@ -313,7 +350,11 @@ JS;
                     var conditionsCount = conditions.length;              
                     for (var i = 0; i < conditionsCount; i++) {
                         var cond = conditions[i];
-                        {$this->buildJsAddConditionToFilter('oAttrsByDataType', 'oDataReadFiltersTempGroup', 'cond')}
+                        if (compoundAttributes[cond.expression] !== undefined) {                        
+                            {$this->buildJsCompoundAttributeAddFilters('compoundAttributes', 'cond', 'oAttrsByDataType', 'oDataReadFiltersTempGroup')}
+                        } else {                        
+                            {$this->buildJsAddConditionToFilter('oAttrsByDataType', 'oDataReadFiltersTempGroup', 'cond')}
+                        }
                     }
                     if (oDataReadFiltersTempGroup.length !== 0) {
                         var tempFilter = new sap.ui.model.Filter({filters: oDataReadFiltersTempGroup, and: true})
@@ -393,6 +434,15 @@ JS;
                                     resultRows[i][attr] = newVal;
                                 }
                             }
+                        }
+                    }
+
+                    //adding compound attribute columns
+                    if (Object.keys(compoundAttributes).length > 0) {
+                         for (var i = 0; i < resultRows.length; i++) {
+                            var row = resultRows[i];
+                            {$this->buildJsCompoundAttributeMergeValues('compoundAttributes', 'row')}
+                            resultRows[i] = row;
                         }
                     }
                     
@@ -562,6 +612,79 @@ JS;
                         }
                     }
 
+JS;
+    }
+    
+    protected function buildJsCompoundAttributeAddFilters(string $compoundAttributesJs, string $conditionJs, string $oAttrsByDataTypeJs, string $filterJs) : string
+    {
+        return <<<JS
+            var compound = {$compoundAttributesJs}[{$conditionJs}.expression];
+            var value = {$conditionJs}.value;
+            var delimiter = compound.delimiter;
+            var splitValues = [];
+            {$this->buildJsCompoundAttributeSplitValue('value', 'delimiter', 'splitValues')}
+            var aliases = compound.aliases;
+            if (aliases.length !== splitValues.length) {
+                var error = "Can not filter compound 'cond.expression': amount of split values does not fit amount of components!";
+                {$this->getElement()->buildJsShowMessageError('error')};
+            }
+            for (var j = 0; j < aliases.length; j++) {
+                var splitCond = [];
+                splitCond['value'] = splitValues[j];
+                splitCond['comparator'] = {$conditionJs}.comparator;
+                splitCond['expression'] = aliases[j];
+                {$this->buildJsAddConditionToFilter($oAttrsByDataTypeJs, $filterJs, 'splitCond')}
+            }
+JS;
+    }
+    
+    /**
+     * Build JS to split a compound attribute value into an array of the value split by the delimiters
+     * 
+     * @param string $valueJs
+     * @param string $delimiterJs
+     * @param string $splitValuesArrayJs
+     * @return string
+     */
+    protected function buildJsCompoundAttributeSplitValue(string $valueJs, string $delimiterJs, string $splitValuesArrayJs) : string
+    {
+        return <<<JS
+        
+                //cut off first prefix
+                var compValue = {$valueJs};
+                compValue = compValue.substring({$delimiterJs}[0].length, compValue.length);
+                for (var j = 1; j < {$delimiterJs}.length; j++) {
+                    var array = compValue.split({$delimiterJs}[j]);
+                    array.push(array.splice(1).join({$delimiterJs}[j]));
+                    {$splitValuesArrayJs}.push(array[0]);
+                    compValue = array[1];
+                }
+                if (compValue !== '') {
+                    var error = "Can not split compound attribute value '{$valueJs}': non-empty remainder 'compValue' after processing all components";
+                    {$this->getElement()->buildJsShowMessageError('error')};
+                }
+JS;
+    }
+    
+    protected function buildJsCompoundAttributeMergeValues(string $compoundAttributesJs, string $rowJs) : string
+    {
+        return <<<JS
+
+                            var compAttr = Object.keys({$compoundAttributesJs});
+                            for (var k = 0; k < compAttr.length; k++) {
+                                var compAlias = compAttr[k];
+                                var comp = {$compoundAttributesJs}[compAlias];
+                                var splitAliases = comp['aliases'];
+                                var delim = comp['delimiter'];
+                                var value = '';
+                                for (var l = 0; l < splitAliases.length; l++) {
+                                    var col = splitAliases[l]
+                                    value += delim[l] + {$rowJs}[col];
+                                }
+                                var delimCount = delim.length;
+                                value += delim[delimCount-1];
+                                {$rowJs}[compAlias] = value;
+                            }
 JS;
     }
 

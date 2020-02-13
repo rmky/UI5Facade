@@ -37,6 +37,13 @@ use exface\Core\Facades\AbstractFacade\AbstractFacade;
 /**
  * Renders SAP Fiori apps using OpenUI5 or SAP UI5.
  * 
+ * ## Custom facade options for widgets
+ * 
+ * ### Button
+ * 
+ * - `custom_request_data_script` - allows to process the javascript variable `requestData`
+ * right before the action is actually performed. Returning FALSE will prevent the the action!
+ * 
  * @method ui5AbstractElement getElement()
  * 
  * @author Andrej Kabachnik

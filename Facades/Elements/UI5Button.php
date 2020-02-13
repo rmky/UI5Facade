@@ -16,7 +16,26 @@ use exface\Core\Exceptions\Facades\FacadeUnsupportedWidgetPropertyWarning;
 use exface\Core\Actions\SendToWidget;
 
 /**
- * Generates jQuery Mobile buttons for ExFace
+ * Generates sap.m.Button for Button widgets.
+ * 
+ * ## Custom facade options
+ * 
+ * - `custom_request_data_script` - allows to process the javascript variable `requestData`
+ * right before the action is actually performed. Returning FALSE will prevent the the action!
+ * 
+ * Example:
+ * 
+ * ```
+ * {
+ *  "widget_type": "Button",
+ *  "facade_options": {
+ *      "exface.UI5Facade.UI5Facade": {
+ *          "custom_request_data_script": "console.log(requestData);"
+ *      }
+ *  }
+ * }
+ * 
+ * ```
  * 
  * @method Button getWidget()
  *
@@ -29,6 +48,7 @@ class UI5Button extends UI5AbstractElement
         buildJsInputRefresh as buildJsInputRefreshViaTrait;
         buildJsNavigateToPage as buildJsNavigateToPageViaTrait;
         buildJsClickSendToWidget as buildJsClickSendToWidgetViaTrait;
+        buildJsRequestDataCollector as buildJsRequestDataCollectorViaTrait;
     }
     
     /**
@@ -492,12 +512,12 @@ JS;
                                     */
 								}
 JS;
-		
-        $output = $this->buildJsRequestDataCollector($action, $input_element);
+		                       		
+   		$output = $this->buildJsRequestDataCollector($action, $input_element);
         $output .= <<<JS
                 
 				if ({$input_element->buildJsValidator()}) {
-					{$this->buildJsBusyIconShow()}
+                    {$this->buildJsBusyIconShow()}
                     var oResultModel = new sap.ui.model.json.JSONModel();
                     var params = {
 							action: "{$widget->getActionAlias()}",
@@ -513,7 +533,7 @@ JS;
 
 JS;
                                 
-            return $output;
+        return $output;
     }
 
     /**
@@ -560,5 +580,22 @@ JS;
     {
         $this->getFacade()->createController($this->getFacade()->getElement($this->getWidget()->getPage()->getWidgetRoot()));
         return $this->buildJsClickSendToWidgetViaTrait($action, $input_element);
+    }
+    
+    /**
+     * 
+     * @see JqueryButtonTrait::buildJsRequestDataCollector()
+     */
+    protected function buildJsRequestDataCollector(ActionInterface $action, AbstractJqueryElement $input_element)
+    {
+        $js = $this->buildJsRequestDataCollectorViaTrait($action, $input_element);
+        
+        if ($facadeOptUxon = $this->getWidget()->getFacadeOptions($this->getFacade())) {
+            if ($facadeOptUxon->hasProperty('custom_request_data_script')) {
+                $js .= $facadeOptUxon->getProperty('custom_request_data_script');
+            }
+        }
+        
+        return $js;
     }
 }

@@ -22,7 +22,7 @@ class UI5TimeFormatter extends UI5DateFormatter
     
     protected function getSapDataType()
     {
-        return 'sap.ui.model.type.Time';
+        return 'exface.ui5Custom.dataTypes.MomentTimeType';
     }
     
     /**

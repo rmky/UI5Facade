@@ -173,7 +173,7 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
      */
     public function buildJsServerRequest(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
-        
+        $test = '';
         switch (true) {
             case get_class($action) === ReadPrefill::class:
                 return $this->buildJsPrefillLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
@@ -183,7 +183,7 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
             case get_class($action) === CallOData2Operation::class:
                 return $this->buildJsCallFunctionImport($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             case get_class($action) === DeleteObject::class:
-                return $this->buildJsDataDelete($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
+                return $this->buildJsDataDelete($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             case get_class($action) === UpdateData::class:
                 return $this->buildJsDataWrite($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             case get_class($action) === CreateData::class:
@@ -411,9 +411,9 @@ JS;
                                 var attr = oAttrsByDataType.date[j].toString();
                                 var d = resultRows[i][attr];
                                 if (d !== undefined && d !== "" && d !== null) {
-                                    //var oDateFormat = sap.ui.core.format.DateFormat.getDateTimeInstance({pattern:'yyyy-MM-dd HH:mm:ss'});
-                                    //var newVal = oDateFormat.format(d);
-                                    var newVal = exfTools.date.format(d, '{$dateTimeFormat}');                                 
+                                    console.log('oDataDate:', d);
+                                    var date = moment.utc(d);
+                                    var newVal = exfTools.date.format(date, '{$dateTimeFormat}');                                 
                                     resultRows[i][attr] = newVal;
                                 }
                             }
@@ -517,6 +517,8 @@ JS;
                     }
                     
                     {$oModelJs}.setData(oRowData);
+                    var test = {$oModelJs}.getData();
+                    console.log('ResultData:' , test);
                     {$onModelLoadedJs}
                 },
                 error: function(oError){
@@ -570,7 +572,7 @@ JS;
                         default:
                             var sOperator = "EQ";
                     }
-                    if ({$condJs}.value !== "") {
+                    if ({$condJs}.value !== "" && {$condJs}.value !== undefined) {
                         var filterPush = true;
                         if ({$oAttrsByDataTypeJs}.time.indexOf({$condJs}.expression) > -1) {
                             var d = {$condJs}.value;
@@ -899,14 +901,12 @@ JS;
                             switch ({$typeJs}) {
                                 case 'Edm.DateTimeOffset':
                                     var d = exfTools.date.parse({$valueJs});
-                                    var date = d.toISOString();
-                                    var datestring = date.replace(/\.[0-9]{3}/, '');
+                                    var datestring = exfTools.date.format(d,'yyyy-MM-ddTHH:mm:ss')
                                     {$oDataValueJs} = datestring;
                                     break;
                                 case 'Edm.DateTime':
-                                    var d = exfTools.date.parse({$valueJs});                       
-                                    var date = d.toISOString();
-                                    var datestring = date.substring(0,19);
+                                    var d = exfTools.date.parse({$valueJs}); 
+                                    var datestring = exfTools.date.format(d,'yyyy-MM-ddTHH:mm:ss')
                                     {$oDataValueJs} = datestring;
                                     break;                        
                                 case 'Edm.Time':
@@ -978,61 +978,13 @@ JS;
 JS;
         }
         elseif ($action instanceof UpdateData || $action instanceof SaveData) {
+            
             $serverCall = <<<JS
             
-            var uidAliases = {$uidAliasesJson};
-            var uidAlias = '{$uidAttributeAlias}';
-            if (uidAliases.length === 0) {
-                if (uidAlias in oData) {
-                    var oDataUid = oData[uidAlias];
-                    var type = {$attributesType}[uidAlias];
-                    switch (type) {
-                        case 'Edm.Guid':
-                            oDataUid = "guid" + "'" + oData[uidAlias]+ "'";
-                            break;
-                        case 'Edm.Binary':
-                            oDataUid = "binary" + "'" + oData[uidAlias] + "'";
-                            break;
-                        default:
-                            oDataUid = "'" + oDataUid + "'";
-                    }
-                } else {
-                    var oDataUid = '';
-                }
-            } else {
-                var compoundAttributes = {$compoundAttributesJson}
-                var value = data[uidAlias];
-                var splitValues = [];
-                var delimiter = compoundAttributes[uidAlias]['delimiter'];
-                {$this->buildJsCompoundAttributeSplitValue('value', 'delimiter', 'splitValues')}
-                if (uidAliases.length !== splitValues.length) {
-                    var error = "Can not perform action '{$action->getName()}': amount of split values for attribute '{$uidAttributeAlias}' does not fit amount of components!";
-                    {$this->getElement()->buildJsShowMessageError('error')};
-                }
-                var oDataUid = '';
-                for (var i = 0; i < uidAliases.length; i++) {
-                    var uidAlias = uidAliases[i];
-                    var type = {$attributesType}[uidAlias];
-                    var uidPart = uidAlias + '=';
-                    var value = splitValues[i];
-                    var oDataValue = '';
-                    {$this->buildJsGetODataValue('value', 'type', 'oDataValue')}
-                    switch (type) {
-                        case 'Edm.Guid':
-                            uidPart += "guid" + "'" + oDataValue + "'";
-                            break;
-                        case 'Edm.Binary':
-                            uidPart += "binary" + "'" + oDataValue + "'";
-                            break;
-                        default:
-                            uidPart += "'" + oDataValue + "'";
-                    }
-                    oDataUid += uidPart + ',';                    
-                }
-                oDataUid = oDataUid.substr(0, oDataUid.length - 1);               
-            }
-
-            oDataModel.update("/{$object->getDataAddress()}(" + oDataUid+ ")", oData, mParameters);
+            var oDataUid = '';
+            {$this->buildJsGetUrlUidValue($action, 'uidAlias', 'uidAliases', 'attributesType', 'compoundAttributes', 'data', 'oDataUid')}
+            console.log('UpDateData: ', oData);
+            oDataModel.update("/{$object->getDataAddress()}(" + oDataUid + ")", oData, mParameters);
 
 JS;
         }
@@ -1046,6 +998,11 @@ JS;
             var mParameters = {};
             mParameters.groupId = "batchGroup";
             {$this->buildJsServerResponseHandling($onModelLoadedJs, 'mParameters', 'aResponses', 'rowCount')}
+
+            var uidAliases = {$uidAliasesJson};
+            var uidAlias = '{$uidAttributeAlias}';            
+            var compoundAttributes = {$compoundAttributesJson};
+            var attributesType = {$attributesType};
             
             for (var i = 0; i < rowCount; i++) {
                 var data = {$oParamsJs}.data.rows[i];            
@@ -1077,12 +1034,27 @@ JS;
      * @param string $onOfflineJs
      * @return string
      */
-    protected function buildJsDataDelete(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
+    protected function buildJsDataDelete(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
         $widget = $this->getElement()->getWidget();
         $object = $widget->getMetaObject();
-        $uidAttribute = $object->getUidAttributeAlias();
-        $uidAttributeType = $object->getUidAttribute()->getDataAddressProperty('odata_type');
+        $uidAttribute = $object->getUidAttribute();
+        $uidAttributeAlias = $uidAttribute->getUidAttributeAlias();
+        $uidAliases = [];
+        $attributesType = (object)array();
+        $compoundAttributes = $this->getCompoundAttributePropertiesForObject($object);
+        $compoundAttributesJson = json_encode($compoundAttributes);
+        if ($uidAttribute instanceof CompoundAttributeInterface) {
+            foreach ($uidAttribute->getComponents() as $comp) {
+                $alias = $comp->getAttribute()->getAlias();
+                $uidAliases[] = $alias;
+                $attributesType->$alias = $comp->getAttribute()->getDataAddressProperty('odata_type');
+            }
+        } else {
+            $attributesType->$uidAttributeAlias = $uidAttribute->getDataAddressProperty('odata_type');
+        }
+        $attributesType = json_encode($attributesType);
+        $uidAliasesJson = json_encode($uidAliases);
         $bUseBatchJs = $this->getUseBatchDeletes() ? 'true' : 'false';
         
         return <<<JS
@@ -1094,52 +1066,17 @@ JS;
             var mParameters = {};
             mParameters.groupId = "batchGroup";
             {$this->buildJsServerResponseHandling($onModelLoadedJs, 'mParameters', 'aResponses', 'rowCount')}
+
+            var uidAliases = {$uidAliasesJson};
+            var uidAlias = '{$uidAttributeAlias}';
+            var attributesType = {$attributesType};
+            var compoundAttributes = {$compoundAttributesJson};
+            var 
             
             for (var i = 0; i < rowCount; i++) {
                 var data = {$oParamsJs}.data.rows[i];
-                if ('{$uidAttribute}' in data) {
-                    var oDataUid = data.{$uidAttribute};
-                    var type = '{$uidAttributeType}';
-                    switch (type) {
-                        case 'Edm.Guid':
-                            oDataUid = "guid" + "'" + oDataUid + "'";
-                            break;
-                        case 'Edm.Binary':
-                            oDataUid = "binary" + "'" + oDataUid + "'";
-                            break;
-                        case 'Edm.DateTimeOffset':
-                            var d = exfTools.date.parse(oDataUid);
-                            var date = d.toISOString();
-                            var datestring = date.replace(/\.[0-9]{3}/, '');
-                            oDataUid = "'" + datestring + "'";
-                            break;
-                        case 'Edm.DateTime':
-                            var d = exfTools.date.parse(oDataUid);
-                            var date = d.toISOString();
-                            var datestring = date.substring(0,19);
-                            oDataUid = "'" + datestring + "'";
-                            break;                        
-                        case 'Edm.Time':
-                            var d = oDataUid;
-                            var timeParts = d.split(':');
-                            if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
-                                timeParts[3] = "00";
-                            }
-                            for (var i = 0; i < timeParts.length; i++) {
-                                timeParts[i] = ('0'+(timeParts[i])).slice(-2);
-                            }                            
-                            var timeString = "PT" + timeParts[0] + "H" + timeParts[1] + "M" + timeParts[3] + "S";
-                            oDataUid = "'" + timeString + "'";
-                            break;
-                        case 'Edm.Decimal':
-                            oDataUid = "'" + oDataUid.toString() + "'";
-                            break;
-                        default:
-                            oDataUid = "'" + oDataUid + "'";
-                    }
-                } else {
-                    var oDataUid = '';
-                }                
+                var oDataUid = '';
+                {$this->buildJsGetUrlUidValue($action, 'uidAlias', 'uidAliases', 'attributesType', 'compoundAttributes', 'data', 'oDataUid')}            
                 oDataModel.remove("/{$object->getDataAddress()}(" + oDataUid + ")", mParameters);
             }
 
@@ -1210,37 +1147,9 @@ JS;
                             if ({$oParamsJs}.data.rows[j][param] != undefined && {$oParamsJs}.data.rows[j][param] != "") {                           
                                 var type = {$attributesType}[param];
                                 var value = {$oParamsJs}.data.rows[j][param];
-                                switch (type) {
-                                    case 'Edm.DateTimeOffset':
-                                        var d = exfTools.date.parse(value);
-                                        var date = d.toISOString();
-                                        var datestring = date.replace(/\.[0-9]{3}/, '');
-                                        oDataActionParams[param] = datestring;
-                                        break;
-                                    case 'Edm.DateTime':
-                                        var d = exfTools.date.parse(value);                            
-                                        var date = d.toISOString();
-                                        var datestring = date.substring(0,19);
-                                        oDataActionParams[param] = datestring;
-                                        break;                        
-                                    case 'Edm.Time':
-                                        var d = value;
-                                        var timeParts = d.split(':');
-                                        if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
-                                            timeParts[3] = "00";
-                                        }
-                                        for (var i = 0; i < timeParts.length; i++) {
-                                            timeParts[i] = ('0'+(timeParts[i])).slice(-2);
-                                        }                            
-                                        var timeString = "PT" + timeParts[0] + "H" + timeParts[1] + "M" + timeParts[3] + "S";
-                                        oDataActionParams[param] = timeString;
-                                        break;
-                                    case 'Edm.Decimal':
-                                        oDataActionParams[param] = value.toString();
-                                        break; 
-                                    default:
-                                        oDataActionParams[param] = value;
-                                }
+                                var oDataValue = '';
+                                {$this->buildJsGetODataValue('value', 'type', 'oDataValue')}
+                                oDataActionParams[param] = oDataValue;
                             } else if (defaultValues.hasOwnProperty(param)) {
                                 oDataActionParams[param] = defaultValues[param];
                             } else {
@@ -1266,6 +1175,73 @@ JS;
                 {$onErrorJs}
             }
             
+JS;
+    }
+    
+    /**
+     * Get the string part for the UID in the URL.
+     * 
+     * @param string $uidAliasJs
+     * @param string $uidAliasJs
+     * @param string $attributesTypeJs
+     * @param string $compoundAttributesJs
+     * @param string $dataJs
+     * @return string
+     */
+    protected function buildJsGetUrlUidValue(ActionInterface $action, string $uidAliasJs, string $uidAliasesJs, string $attributesTypeJs, string $compoundAttributesJs, string $dataJs, string $uidStringJs) : string
+    {
+        return <<<JS
+
+        if ({$uidAliasesJs}.length === 0) {
+                if ({$uidAliasJs} in {$dataJs}) {
+                    var value = {$dataJs}[{$uidAliasJs}];
+                    var oDataValue = ''
+                    var type = {$attributesTypeJs}[{$uidAliasJs}];                    
+                    {$this->buildJsGetODataValue('value', 'type', 'oDataValue')}
+                    switch (type) {
+                        case 'Edm.Guid':
+                            {$uidStringJs} = "guid" + "'" + oDataValue + "'";
+                            break;
+                        case 'Edm.Binary':
+                            {$uidStringJs} = "binary" + "'" + oDataValue + "'";
+                            break;
+                        default:
+                            {$uidStringJs} = "'" + oDataValue + "'";
+                    }
+                } else {
+                    var {$uidStringJs} = '';
+                }
+            } else {
+                var value = {$dataJs}[{$uidAliasJs}];
+                var splitValues = [];
+                var delimiter = compoundAttributes[{$uidAliasJs}]['delimiter'];
+                {$this->buildJsCompoundAttributeSplitValue('value', 'delimiter', 'splitValues')}
+                if ({$uidAliasesJs}.length !== splitValues.length) {
+                    var error = "Can not perform action '{$action->getName()}': amount of split values for attribute '{$uidAliasJs}' does not fit amount of components!";
+                    {$this->getElement()->buildJsShowMessageError('error')};
+                }
+                var oDataUid = '';
+                for (var i = 0; i < {$uidAliasesJs}.length; i++) {
+                    var uidAlias = {$uidAliasesJs}[i];
+                    var type = {$attributesTypeJs}[uidAlias];
+                    var uidPart = uidAlias + '=';
+                    var value = splitValues[i];
+                    var oDataValue = '';
+                    {$this->buildJsGetODataValue('value', 'type', 'oDataValue')}
+                    switch (type) {
+                        case 'Edm.Guid':
+                            uidPart += "guid" + "'" + oDataValue + "'";
+                            break;
+                        case 'Edm.Binary':
+                            uidPart += "binary" + "'" + oDataValue + "'";
+                            break;
+                        default:
+                            uidPart += "'" + oDataValue + "'";
+                    }
+                    {$uidStringJs} += uidPart + ',';                    
+                }
+                {$uidStringJs} = {$uidStringJs}.substr(0, {$uidStringJs}.length - 1);               
+            }
 JS;
     }
     

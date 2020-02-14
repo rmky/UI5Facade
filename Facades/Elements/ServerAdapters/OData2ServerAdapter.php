@@ -670,13 +670,18 @@ JS;
                 var compValue = {$valueJs};
                 compValue = compValue.substring({$delimiterJs}[0].length, compValue.length);
                 for (var j = 1; j < {$delimiterJs}.length; j++) {
-                    var array = compValue.split({$delimiterJs}[j]);
-                    array.push(array.splice(1).join({$delimiterJs}[j]));
-                    {$splitValuesArrayJs}.push(array[0]);
-                    compValue = array[1];
+                    if ({$delimiterJs}[j] !== '') {
+                        var array = compValue.split({$delimiterJs}[j]);
+                        array.push(array.splice(1).join({$delimiterJs}[j]));
+                        {$splitValuesArrayJs}.push(array[0]);
+                        compValue = array[1];
+                    } else {
+                        {$splitValuesArrayJs}.push(compValue);
+                        compValue = '';
+                    }
                 }
                 if (compValue !== '') {
-                    var error = "Can not split compound attribute value \"{$valueJs}\": non-empty remainder \"" + compValue + "\" after processing all components";
+                    var error = "Can not split compound attribute value: non-empty remainder \"" + compValue + "\" after processing all components";
                     {$this->getElement()->buildJsShowError('error', '"ERROR"')};
                     {$onErrorJs}
                 }

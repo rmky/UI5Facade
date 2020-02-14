@@ -32,6 +32,8 @@ use exface\Core\CommonLogic\Actions\ServiceParameter;
 use exface\Core\Interfaces\Tasks\CliTaskInterface;
 use exface\Core\DataTypes\ComparatorDataType;
 use exface\Core\Exceptions\Actions\ActionRuntimeError;
+use exface\Core\Factories\TaskFactory;
+use GuzzleHttp\Psr7\ServerRequest;
 
 /**
  * Generates the code for a selected Fiori Webapp project.
@@ -229,7 +231,10 @@ class ExportFioriWebapp extends AbstractActionDeferred implements iModifyData, i
     protected function exportWidget(Webapp $webapp, WidgetInterface $widget, string $exportFolder, int $linkDepth, string $msgIndent) : \Generator
     {
         try {
-            //$widget = $webapp->handlePrefill($widget, $task);
+            $facade = FacadeFactory::createFromString('exface.UI5Facade.UI5Facade', $this->getWorkbench());
+            $request = new ServerRequest('GET', '');
+            $task = TaskFactory::createHttpTask($facade, $request);
+            $widget = $webapp->handlePrefill($widget, $task);
             // IMPORTANT: generate the view first to allow it to add controller methods!
             $view = $webapp->getViewForWidget($widget);
             $controller = $view->getController();

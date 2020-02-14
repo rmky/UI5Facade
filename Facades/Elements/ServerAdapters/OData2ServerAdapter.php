@@ -526,6 +526,14 @@ JS;
 JS;
     }
     
+    /**
+     * Adds the given filter condition to the given filter array
+     * 
+     * @param string $oAttrsByDataTypeJs
+     * @param string $filterArrayJs
+     * @param string $condJs
+     * @return string
+     */
     protected function buildJsAddConditionToFilter (string $oAttrsByDataTypeJs, string $filterArrayJs, string $condJs = 'cond') : string
     {
         $opIS = EXF_COMPARATOR_IS;
@@ -612,6 +620,16 @@ JS;
 JS;
     }
     
+    /**
+     * Splits the given filter condition (which is a filter over a combound attribute) into parts and adds them as filters to the given filter array
+     * 
+     * @param string $compoundAttributesJs
+     * @param string $conditionJs
+     * @param string $oAttrsByDataTypeJs
+     * @param string $filterJs
+     * @param string $onErrorJs
+     * @return string
+     */
     protected function buildJsCompoundAttributeAddFilters(string $compoundAttributesJs, string $conditionJs, string $oAttrsByDataTypeJs, string $filterJs, string $onErrorJs) : string
     {
         return <<<JS
@@ -665,6 +683,13 @@ JS;
 JS;
     }
     
+    /**
+     * Merges the values of a row that are part of a compound attribute to a single value and adds it to the row
+     * 
+     * @param string $compoundAttributesJs
+     * @param string $rowJs
+     * @return string
+     */
     protected function buildJsCompoundAttributeMergeValues(string $compoundAttributesJs, string $rowJs) : string
     {
         return <<<JS
@@ -916,6 +941,14 @@ JS;
         return $compoundAttributes;
     }
     
+    /**
+     * transforms the value into an OData value
+     * 
+     * @param string $valueJs
+     * @param string $typeJs
+     * @param string $oDataValueJs
+     * @return string
+     */
     protected function buildJsGetODataValue (string $valueJs, string $typeJs, string $oDataValueJs) : string
     {
         return <<<JS

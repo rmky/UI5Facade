@@ -293,5 +293,14 @@ JS;
         
         return $js;
     }
+    
+    /**
+     * Returns inline JS-code to give focus to this widget
+     * @return string
+     */
+    public function buildJsSetFocus() : string
+    {
+        return "sap.ui.getCore().byId('{$this->getId()}').focus()";
+    }
 }
 ?>

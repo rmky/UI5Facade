@@ -1064,6 +1064,7 @@ JS;
                                 }
                             });
                         });
+
                         if (bOrderChanged === true) {
 
                             oTable.removeAllColumns();
@@ -1071,43 +1072,36 @@ JS;
                                 oTable.addColumn(oColumn);
                             });
 
-                            var aNewItems = new Array;
+                            var aCellBuffer = new Array;
+                            var aRemovableCells = new Array;
+                            
+                            var aCells = oTable.getBindingInfo("items").template.getCells();
 
-                            oTable.getItems().forEach(function(oItem, oItemIdx){
-                                var oCells = oItem.getCells();
-                                var aCellBuffer = new Array;
-                                var aRemovableCells = new Array;
-                                
-                                aOrderChanges.forEach(function(oOrderChange, oOrderChangeIdx){
+                            aOrderChanges.forEach(function(oOrderChange, oOrderChangeIdx){
 
-                                    var oCellFromBuffer = null;
-                                    aCellBuffer.forEach(function(oCellBuffer, oCellBufferIdx){
-                                        if (oCellBuffer.previousIdx == oOrderChange.idxFrom){
-                                            oCellFromBuffer = oCellBuffer.cell;
-                                            return;
-                                        }
-                                    });
-                                    
-                                    if (aRemovableCells.includes(oOrderChange.idxTo) == false){
-                                        aCellBuffer.push({previousIdx: oOrderChange.idxTo, cell: oCells[oOrderChange.idxTo]});
+                                var oCellFromBuffer = null;
+                                aCellBuffer.forEach(function(oCellBuffer, oCellBufferIdx){
+                                    if (oCellBuffer.previousIdx == oOrderChange.idxFrom){
+                                        oCellFromBuffer = oCellBuffer.cell;
+                                        return;
                                     }
-                                    
-                                    if (oCellFromBuffer != null){
-                                        oCells[oOrderChange.idxTo] = oCellFromBuffer;
-                                    } else {
-                                        oCells[oOrderChange.idxTo] = oCells[oOrderChange.idxFrom];
-                                        aRemovableCells.push(oOrderChange.idxFrom);
-                                    }
-                                }); 
-                                
-                                oItem.removeAllCells();
-                                oCells.forEach(function(oCell){
-                                    oItem.addCell(oCell);
                                 });
+                                
+                                if (aRemovableCells.includes(oOrderChange.idxTo) == false){
+                                    aCellBuffer.push({previousIdx: oOrderChange.idxTo, cell: aCells[oOrderChange.idxTo]});
+                                }
+                                
+                                if (oCellFromBuffer != null){
+                                    aCells[oOrderChange.idxTo] = oCellFromBuffer;
+                                } else {
+                                    aCells[oOrderChange.idxTo] = aCells[oOrderChange.idxFrom];
+                                    aRemovableCells.push(oOrderChange.idxFrom);
+                                }
+                            }); 
 
-                                aNewItems.push(oItem);
-                            });
-                        }
+                            oTable.getBindingInfo("items").template.mAggregations.cells = aCells;
+
+                        } 
 
 JS;
         }

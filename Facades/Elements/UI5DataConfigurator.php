@@ -70,16 +70,13 @@ class UI5DataConfigurator extends UI5Tabs
         $dataElement = $this->getDataElement();
         if ($dataElement instanceof UI5DataTable) {
             $refreshP13n = $dataElement->buildJsRefreshPersonalization();
-            $refeshJS = '';
-        } else {
-            $refreshJS = $dataElement->buildJsRefresh();
         }
         
         $okScript = <<<JS
                 
                     oEvent.getSource().close();
                     {$refreshP13n}
-                    {$refreshJS};
+                    {$dataElement->buildJsRefresh()};
 
 JS;
         $controller->addOnEventScript($this, self::EVENT_BUTTON_OK, $okScript);

@@ -211,6 +211,7 @@ class Webapp implements WorkbenchDependantInterface
                     try {
                         $widget = $this->getWidgetFromPath($path);
                         if ($widget) {
+                            $widget = $this->handlePrefill($widget, $task);
                             return $this->getViewForWidget($widget)->buildJsView();
                         } 
                     } catch (\Throwable $e) {
@@ -218,7 +219,6 @@ class Webapp implements WorkbenchDependantInterface
                         $errorViewName = $this->getViewNamespace() . str_replace('/', '.', $path);
                         return $this->getErrorView($e, $errorViewName);
                     }
-                    $widget = $this->handlePrefill($widget, $task);
                     return '';
                 }
             case StringDataType::startsWith($route, 'controller/'):

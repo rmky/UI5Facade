@@ -257,7 +257,6 @@ JS;
         $dateTimeFormat = DateTimeDataType::DATETIME_ICU_FORMAT_INTERNAL;
         
         return <<<JS
-            console.log('Params:', {$oParamsJs});
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
             var oDataReadParams = {};
             var oDataReadFiltersSearch = [];
@@ -290,7 +289,7 @@ JS;
                 for (var i = 0; i < conditionsCount; i++) {
                     var cond = conditions[i];
                     if (compoundAttributes[cond.expression] !== undefined) {
-                        {$this->buildJsCompoundAttributeAddFilters('compoundAttributes', 'cond', 'oAttrsByDataType', 'oDataReadFiltersSearch')}
+                        {$this->buildJsCompoundAttributeAddFilters('compoundAttributes', 'cond', 'oAttrsByDataType', 'oDataReadFiltersSearch', $onErrorJs)}
                     } else {
                         {$this->buildJsAddConditionToFilter('oAttrsByDataType', 'oDataReadFiltersSearch', 'cond')}
                     }
@@ -333,7 +332,7 @@ JS;
                     for (var i = 0; i < conditionsCount; i++) {
                         var cond = conditions[i];
                         if (compoundAttributes[cond.expression] !== undefined) {                        
-                            {$this->buildJsCompoundAttributeAddFilters('compoundAttributes', 'cond', 'oAttrsByDataType', 'oDataReadFiltersTempGroup')}
+                            {$this->buildJsCompoundAttributeAddFilters('compoundAttributes', 'cond', 'oAttrsByDataType', 'oDataReadFiltersTempGroup', $onErrorJs)}
                         } else {                        
                             {$this->buildJsAddConditionToFilter('oAttrsByDataType', 'oDataReadFiltersTempGroup', 'cond')}
                         }
@@ -411,7 +410,6 @@ JS;
                                 var attr = oAttrsByDataType.date[j].toString();
                                 var d = resultRows[i][attr];
                                 if (d !== undefined && d !== "" && d !== null) {
-                                    console.log('oDataDate:', d);
                                     var date = moment.utc(d);
                                     var newVal = exfTools.date.format(date, '{$dateTimeFormat}');                                 
                                     resultRows[i][attr] = newVal;
@@ -515,15 +513,13 @@ JS;
                     if (oData.__count !== undefined) {
                         oRowData.recordsFiltered = oData.__count;
                     }
-                    
                     {$oModelJs}.setData(oRowData);
                     var test = {$oModelJs}.getData();
-                    console.log('ResultData:' , test);
                     {$onModelLoadedJs}
                 },
-                error: function(oError){
-                    {$onErrorJs}
+                error: function(oError){                    
                     {$this->buildJsServerResponseError('oError')}
+                    {$onErrorJs}
                 }
             });
                 
@@ -616,18 +612,19 @@ JS;
 JS;
     }
     
-    protected function buildJsCompoundAttributeAddFilters(string $compoundAttributesJs, string $conditionJs, string $oAttrsByDataTypeJs, string $filterJs) : string
+    protected function buildJsCompoundAttributeAddFilters(string $compoundAttributesJs, string $conditionJs, string $oAttrsByDataTypeJs, string $filterJs, string $onErrorJs) : string
     {
         return <<<JS
             var compound = {$compoundAttributesJs}[{$conditionJs}.expression];
             var value = {$conditionJs}.value;
             var delimiter = compound.delimiter;
             var splitValues = [];
-            {$this->buildJsCompoundAttributeSplitValue('value', 'delimiter', 'splitValues')}
+            {$this->buildJsCompoundAttributeSplitValue('value', 'delimiter', 'splitValues', $onErrorJs)}
             var aliases = compound.aliases;
             if (aliases.length !== splitValues.length) {
-                var error = "Can not filter compound 'cond.expression': amount of split values does not fit amount of components!";
-                {$this->getElement()->buildJsShowMessageError('error')};
+                var error = "Can not filter compound \"" + cond.expression + "\": amount of split values does not fit amount of components!";
+                {$this->getElement()->buildJsShowError('error', '"ERROR"')};
+                {$onErrorJs}
             }
             for (var j = 0; j < aliases.length; j++) {
                 var splitCond = [];
@@ -647,7 +644,7 @@ JS;
      * @param string $splitValuesArrayJs
      * @return string
      */
-    protected function buildJsCompoundAttributeSplitValue(string $valueJs, string $delimiterJs, string $splitValuesArrayJs) : string
+    protected function buildJsCompoundAttributeSplitValue(string $valueJs, string $delimiterJs, string $splitValuesArrayJs, string $onErrorJs) : string
     {
         return <<<JS
         
@@ -661,8 +658,9 @@ JS;
                     compValue = array[1];
                 }
                 if (compValue !== '') {
-                    var error = "Can not split compound attribute value '{$valueJs}': non-empty remainder 'compValue' after processing all components";
-                    {$this->getElement()->buildJsShowMessageError('error')};
+                    var error = "Can not split compound attribute value \"{$valueJs}\": non-empty remainder \"" + compValue + "\" after processing all components";
+                    {$this->getElement()->buildJsShowError('error', '"ERROR"')};
+                    {$onErrorJs}
                 }
 JS;
     }
@@ -721,9 +719,20 @@ JS;
         $onModelLoadedJs = $takeFirstRowOnly . $onModelLoadedJs;
         $opEQ = EXF_COMPARATOR_EQUALS;
         $filters = '';
+        $check = '';
         
         if ($uidAttr instanceof CompoundAttributeInterface) {
             foreach($uidAttr->getComponents() as $comp) {
+                $check .= <<<JS
+            
+            var value = oFirstRow["{$comp->getAttribute()->getAlias()}"];
+            if (value === undefined) {
+                var error = "Can not set prefill filters: Make sure prefill data contains value for attribute \"{$comp->getAttribute()->getAlias()}\" of object \"{$object->getAlias()}\" !";
+                {$this->getElement()->buildJsShowError('error', '"ERROR"')}
+                {$onErrorJs}
+            }
+JS;
+                
                 $filters .= <<<JS
 
                     {
@@ -735,6 +744,16 @@ JS;
 JS;
             }            
         } else {
+            $check = <<<JS
+            
+            var value = oFirstRow["{$uidAttr->getAlias()}"];
+            if (value === undefined) {
+                var error = "Can not set prefill filters: Make sure prefill data contains value for attribute \"{$uidAttr->getAlias()}\" of object \"{$object->getAlias()}\" !";
+                {$this->getElement()->buildJsShowError('error', '"ERROR"')}
+                {$onErrorJs}
+            }
+JS;
+            
             $filters .= <<<JS
 
                     {
@@ -751,8 +770,11 @@ JS;
             var oFirstRow = {$oParamsJs}.data.rows[0];
             if (oFirstRow === undefined) {
                 console.error('No data to filter the prefill!');
+                {$this->getElement()->buildJsShowError('"No data to filter the prefill!"', '"ERROR"')}
+                {$onErrorJs}
             }
-    
+            {$check}
+
             {$oParamsJs}.data.filters = {
                 conditions: [
                     {$filters}
@@ -982,8 +1004,7 @@ JS;
             $serverCall = <<<JS
             
             var oDataUid = '';
-            {$this->buildJsGetUrlUidValue($action, 'uidAlias', 'uidAliases', 'attributesType', 'compoundAttributes', 'data', 'oDataUid')}
-            console.log('UpDateData: ', oData);
+            {$this->buildJsGetUrlUidValue($action, 'uidAlias', 'uidAliases', 'attributesType', 'compoundAttributes', 'data', 'oDataUid', $onErrorJs)}
             oDataModel.update("/{$object->getDataAddress()}(" + oDataUid + ")", oData, mParameters);
 
 JS;
@@ -1076,7 +1097,7 @@ JS;
             for (var i = 0; i < rowCount; i++) {
                 var data = {$oParamsJs}.data.rows[i];
                 var oDataUid = '';
-                {$this->buildJsGetUrlUidValue($action, 'uidAlias', 'uidAliases', 'attributesType', 'compoundAttributes', 'data', 'oDataUid')}            
+                {$this->buildJsGetUrlUidValue($action, 'uidAlias', 'uidAliases', 'attributesType', 'compoundAttributes', 'data', 'oDataUid', $onErrorJs)}            
                 oDataModel.remove("/{$object->getDataAddress()}(" + oDataUid + ")", mParameters);
             }
 
@@ -1188,7 +1209,7 @@ JS;
      * @param string $dataJs
      * @return string
      */
-    protected function buildJsGetUrlUidValue(ActionInterface $action, string $uidAliasJs, string $uidAliasesJs, string $attributesTypeJs, string $compoundAttributesJs, string $dataJs, string $uidStringJs) : string
+    protected function buildJsGetUrlUidValue(ActionInterface $action, string $uidAliasJs, string $uidAliasesJs, string $attributesTypeJs, string $compoundAttributesJs, string $dataJs, string $uidStringJs, string $onErrorJs) : string
     {
         return <<<JS
 
@@ -1215,10 +1236,11 @@ JS;
                 var value = {$dataJs}[{$uidAliasJs}];
                 var splitValues = [];
                 var delimiter = compoundAttributes[{$uidAliasJs}]['delimiter'];
-                {$this->buildJsCompoundAttributeSplitValue('value', 'delimiter', 'splitValues')}
+                {$this->buildJsCompoundAttributeSplitValue('value', 'delimiter', 'splitValues', $onErrorJs)}
                 if ({$uidAliasesJs}.length !== splitValues.length) {
-                    var error = "Can not perform action '{$action->getName()}': amount of split values for attribute '{$uidAliasJs}' does not fit amount of components!";
-                    {$this->getElement()->buildJsShowMessageError('error')};
+                    var error = "Can not perform action \"{$action->getName()}\": amount of split values for attribute \"{$uidAliasJs}\" does not fit amount of components!";                    
+                    {$this->getElement()->buildJsShowError('error', '"ERROR"')};
+                    {$onErrorJs}
                 }
                 var oDataUid = '';
                 for (var i = 0; i < {$uidAliasesJs}.length; i++) {

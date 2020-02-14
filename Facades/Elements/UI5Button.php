@@ -513,27 +513,30 @@ JS;
 								}
 JS;
 		                       		
-   		$output = $this->buildJsRequestDataCollector($action, $input_element);
-        $output .= <<<JS
-                
-				if ({$input_element->buildJsValidator()}) {
-                    {$this->buildJsBusyIconShow()}
-                    var oResultModel = new sap.ui.model.json.JSONModel();
-                    var params = {
-							action: "{$widget->getActionAlias()}",
-							resource: "{$widget->getPage()->getAliasWithNamespace()}",
-							element: "{$widget->getId()}",
-							object: "{$widget->getMetaObject()->getId()}",
-							data: requestData
-					}
-                    {$this->getServerAdapter()->buildJsServerRequest($action, 'oResultModel', 'params', $onModelLoadedJs, $this->buildJsBusyIconHide())}	    
-				} else {
-					{$input_element->buildJsValidationError()}
-				}
+   		return <<<JS
 
+                var fnRequest = function() {
+                    if ({$input_element->buildJsValidator()}) {
+                        {$this->buildJsBusyIconShow()}
+                        var oResultModel = new sap.ui.model.json.JSONModel();
+                        var params = {
+    							action: "{$widget->getActionAlias()}",
+    							resource: "{$widget->getPage()->getAliasWithNamespace()}",
+    							element: "{$widget->getId()}",
+    							object: "{$widget->getMetaObject()->getId()}",
+    							data: requestData
+    					}
+                        {$this->getServerAdapter()->buildJsServerRequest($action, 'oResultModel', 'params', $onModelLoadedJs, $this->buildJsBusyIconHide())}	    
+    				} else {
+    					{$input_element->buildJsValidationError()}
+    				}
+                };
+
+                {$this->buildJsRequestDataCollector($action, $input_element)}
+
+                fnRequest();
+				
 JS;
-                                
-        return $output;
     }
 
     /**

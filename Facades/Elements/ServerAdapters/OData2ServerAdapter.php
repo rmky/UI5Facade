@@ -30,6 +30,10 @@ use exface\Core\CommonLogic\UxonObject;
 use exface\Core\Actions\Autosuggest;
 use exface\Core\Interfaces\Widgets\iHaveColumns;
 use exface\Core\DataTypes\DateTimeDataType;
+use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
+use exface\Core\Factories\DataTypeFactory;
+use exface\Core\Interfaces\Model\CompoundAttributeInterface;
+
 
 /**
  * 
@@ -104,6 +108,20 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
         }
         
         $this->checkWidgetExportable($element->getWidget());
+        $this->registerExternalModules($element);
+    }
+    
+    /**
+     * 
+     * @param UI5AbstractElement $element
+     * @return OData2ServerAdapter
+     */
+    protected function registerExternalModules(UI5AbstractElement $element) : OData2ServerAdapter
+    {
+        $dateTimeDataType = DataTypeFactory::createFromPrototype($element->getWorkbench(), DateTimeDataType::class);
+        $dateTimeBindingFormatter = $element->getFacade()->getDataTypeFormatterForUI5Bindings($dateTimeDataType);
+        $dateTimeBindingFormatter->registerExternalModules($element->getController());
+        return $this;
     }
     
     /**
@@ -155,6 +173,7 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
      */
     public function buildJsServerRequest(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
+        $test = '';
         switch (true) {
             case get_class($action) === ReadPrefill::class:
                 return $this->buildJsPrefillLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
@@ -164,7 +183,7 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
             case get_class($action) === CallOData2Operation::class:
                 return $this->buildJsCallFunctionImport($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             case get_class($action) === DeleteObject::class:
-                return $this->buildJsDataDelete($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
+                return $this->buildJsDataDelete($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             case get_class($action) === UpdateData::class:
                 return $this->buildJsDataWrite($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             case get_class($action) === CreateData::class:
@@ -172,7 +191,7 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
             case get_class($action) === SaveData::class:
                 return $this->buildJsDataWrite($action, $oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
             default:
-                throw new UI5ExportUnsupportedActionException('Action "' . $action->getAliasWithNamespace() . '" cannot be used with Fiori export!');
+                //throw new UI5ExportUnsupportedActionException('Action "' . $action->getAliasWithNamespace() . '" cannot be used with Fiori export!');
                 return <<<JS
 
         console.error('Unsupported action {$action->getAliasWithNamespace()}', {$oParamsJs});
@@ -219,16 +238,18 @@ JS;
         
         $dateAttributes = [];
         $timeAttributes = [];
+        $compoundAttributes = $this->getCompoundAttributePropertiesForObject($object);
         foreach ($object->getAttributes() as $qpart) {
             if ($qpart->getDataType() instanceof DateDataType) {
                 $dateAttributes[] = $qpart->getAlias();
             }
             if ($qpart->getDataType() instanceof TimeDataType) {
                 $timeAttributes[] = $qpart->getAlias();
-            }
+            }            
         }
         $dateAttributesJson = json_encode($dateAttributes);
         $timeAttributesJson = json_encode($timeAttributes);
+        $compoundAttributesJson = json_encode($compoundAttributes);
         
         $opISNOT = EXF_COMPARATOR_IS_NOT;
         $opEQ = EXF_COMPARATOR_EQUALS;
@@ -250,6 +271,7 @@ JS;
                 date: $dateAttributesJson,
                 time: $timeAttributesJson
             };
+            var compoundAttributes = {$compoundAttributesJson};
             
             // Pagination
             if ({$oParamsJs}.hasOwnProperty('length') === true) {
@@ -266,18 +288,35 @@ JS;
                 var conditionsCount = conditions.length;               
                 for (var i = 0; i < conditionsCount; i++) {
                     var cond = conditions[i];
-                    {$this->buildJsAddConditionToFilter('oAttrsByDataType', 'oDataReadFiltersSearch', 'cond')}
+                    if (compoundAttributes[cond.expression] !== undefined) {
+                        {$this->buildJsCompoundAttributeAddFilters('compoundAttributes', 'cond', 'oAttrsByDataType', 'oDataReadFiltersSearch', $onErrorJs)}
+                    } else {
+                        {$this->buildJsAddConditionToFilter('oAttrsByDataType', 'oDataReadFiltersSearch', 'cond')}
+                    }
 
                     //QuickSearch
                     if ({$oParamsJs}.q !== undefined && {$oParamsJs}.q !== "" ) {
                         if (oQuickSearchFilters[0] !== undefined) {
                             if (oQuickSearchFilters.includes(cond.expression) && !oLocalFilters.includes(cond.expression)) {
-                                var filterQuickSearchItem = new sap.ui.model.Filter({
-                                    path: cond.expression,
-                                    operator: "Contains",
-                                    value1: {$oParamsJs}.q
-                                });
-                                oDataReadFiltersQuickSearch.push(filterQuickSearchItem);
+                                if (compoundAttributes[cond.expression] !== undefined) {
+                                    var compound = compoundAttributes[cond.expression];
+                                    var alias = compound.aliases;
+                                    for (var j = 0; j < aliases.length; j++) {
+                                        var filterQuickSearchItem = new sap.ui.model.Filter({
+                                            path: aliases[j],
+                                            operator: "Contains",
+                                            value1: {$oParamsJs}.q
+                                        });
+                                        oDataReadFiltersQuickSearch.push(filterQuickSearchItem);
+                                    }
+                                } else {
+                                    var filterQuickSearchItem = new sap.ui.model.Filter({
+                                        path: cond.expression,
+                                        operator: "Contains",
+                                        value1: {$oParamsJs}.q
+                                    });
+                                    oDataReadFiltersQuickSearch.push(filterQuickSearchItem);
+                                }
                             }
                         } 
                     }                        
@@ -292,7 +331,11 @@ JS;
                     var conditionsCount = conditions.length;              
                     for (var i = 0; i < conditionsCount; i++) {
                         var cond = conditions[i];
-                        {$this->buildJsAddConditionToFilter('oAttrsByDataType', 'oDataReadFiltersTempGroup', 'cond')}
+                        if (compoundAttributes[cond.expression] !== undefined) {                        
+                            {$this->buildJsCompoundAttributeAddFilters('compoundAttributes', 'cond', 'oAttrsByDataType', 'oDataReadFiltersTempGroup', $onErrorJs)}
+                        } else {                        
+                            {$this->buildJsAddConditionToFilter('oAttrsByDataType', 'oDataReadFiltersTempGroup', 'cond')}
+                        }
                     }
                     if (oDataReadFiltersTempGroup.length !== 0) {
                         var tempFilter = new sap.ui.model.Filter({filters: oDataReadFiltersTempGroup, and: true})
@@ -327,12 +370,29 @@ JS;
                 var sorters = {$oParamsJs}.sort.split(",");
                 var directions = {$oParamsJs}.order.split(",");
                 for (var i = 0; i < sorters.length; i++) {
-                    if (directions[i] === "desc") {
-                        var sortObject = new sap.ui.model.Sorter(sorters[i], true);
+                    var sorter = sorters[i];
+                    var direction = directions[i];
+                    if (compoundAttributes[sorter] !== undefined) {
+                        var comp = compoundAttributes[sorter];
+                        var compAliases = comp['aliases'];
+                        for (var i = 0; i < compAliases.length; i++) {
+                            var alias = compAliases[i];
+                            if (direction === "desc") {
+                                var sortObject = new sap.ui.model.Sorter(alias, true);
+                            } else {
+                                var sortObject = new sap.ui.model.Sorter(alias, false);
+                            }
+                            oDataReadSorters.push(sortObject);
+                            
+                        }
                     } else {
-                        var sortObject = new sap.ui.model.Sorter(sorters[i], false);
+                        if (direction === "desc") {
+                            var sortObject = new sap.ui.model.Sorter(sorter, true);
+                        } else {
+                            var sortObject = new sap.ui.model.Sorter(sorter, false);
+                        }
+                        oDataReadSorters.push(sortObject);
                     }
-                    oDataReadSorters.push(sortObject);
                 }
             }
 
@@ -350,9 +410,8 @@ JS;
                                 var attr = oAttrsByDataType.date[j].toString();
                                 var d = resultRows[i][attr];
                                 if (d !== undefined && d !== "" && d !== null) {
-                                    //var oDateFormat = sap.ui.core.format.DateFormat.getDateTimeInstance({pattern:'yyyy-MM-dd HH:mm:ss'});
-                                    //var newVal = oDateFormat.format(d);
-                                    var newVal = exfTools.date.format(d, '{$dateTimeFormat}');                                 
+                                    var date = moment.utc(d);
+                                    var newVal = exfTools.date.format(date, '{$dateTimeFormat}');                                 
                                     resultRows[i][attr] = newVal;
                                 }
                             }
@@ -372,6 +431,15 @@ JS;
                                     resultRows[i][attr] = newVal;
                                 }
                             }
+                        }
+                    }
+
+                    //adding compound attribute columns
+                    if (Object.keys(compoundAttributes).length > 0) {
+                         for (var i = 0; i < resultRows.length; i++) {
+                            var row = resultRows[i];
+                            {$this->buildJsCompoundAttributeMergeValues('compoundAttributes', 'row')}
+                            resultRows[i] = row;
                         }
                     }
                     
@@ -445,19 +513,27 @@ JS;
                     if (oData.__count !== undefined) {
                         oRowData.recordsFiltered = oData.__count;
                     }
-                    
                     {$oModelJs}.setData(oRowData);
+                    var test = {$oModelJs}.getData();
                     {$onModelLoadedJs}
                 },
-                error: function(oError){
-                    {$onErrorJs}
+                error: function(oError){                    
                     {$this->buildJsServerResponseError('oError')}
+                    {$onErrorJs}
                 }
             });
                 
 JS;
     }
     
+    /**
+     * Adds the given filter condition to the given filter array
+     * 
+     * @param string $oAttrsByDataTypeJs
+     * @param string $filterArrayJs
+     * @param string $condJs
+     * @return string
+     */
     protected function buildJsAddConditionToFilter (string $oAttrsByDataTypeJs, string $filterArrayJs, string $condJs = 'cond') : string
     {
         $opIS = EXF_COMPARATOR_IS;
@@ -500,7 +576,7 @@ JS;
                         default:
                             var sOperator = "EQ";
                     }
-                    if ({$condJs}.value !== "") {
+                    if ({$condJs}.value !== "" && {$condJs}.value !== undefined) {
                         var filterPush = true;
                         if ({$oAttrsByDataTypeJs}.time.indexOf({$condJs}.expression) > -1) {
                             var d = {$condJs}.value;
@@ -543,6 +619,103 @@ JS;
 
 JS;
     }
+    
+    /**
+     * Splits the given filter condition (which is a filter over a combound attribute) into parts and adds them as filters to the given filter array
+     * 
+     * @param string $compoundAttributesJs
+     * @param string $conditionJs
+     * @param string $oAttrsByDataTypeJs
+     * @param string $filterJs
+     * @param string $onErrorJs
+     * @return string
+     */
+    protected function buildJsCompoundAttributeAddFilters(string $compoundAttributesJs, string $conditionJs, string $oAttrsByDataTypeJs, string $filterJs, string $onErrorJs) : string
+    {
+        return <<<JS
+            var compound = {$compoundAttributesJs}[{$conditionJs}.expression];
+            var value = {$conditionJs}.value;
+            var delimiter = compound.delimiter;
+            var splitValues = [];
+            {$this->buildJsCompoundAttributeSplitValue('value', 'delimiter', 'splitValues', $onErrorJs)}
+            var aliases = compound.aliases;
+            if (aliases.length !== splitValues.length) {
+                var error = "Can not filter compound \"" + cond.expression + "\": amount of split values does not fit amount of components!";
+                {$this->getElement()->buildJsShowError('error', '"ERROR"')};
+                {$onErrorJs}
+            }
+            for (var j = 0; j < aliases.length; j++) {
+                var splitCond = [];
+                splitCond['value'] = splitValues[j];
+                splitCond['comparator'] = {$conditionJs}.comparator;
+                splitCond['expression'] = aliases[j];
+                {$this->buildJsAddConditionToFilter($oAttrsByDataTypeJs, $filterJs, 'splitCond')}
+            }
+JS;
+    }
+    
+    /**
+     * Build JS to split a compound attribute value into an array of the value split by the delimiters
+     * 
+     * @param string $valueJs
+     * @param string $delimiterJs
+     * @param string $splitValuesArrayJs
+     * @return string
+     */
+    protected function buildJsCompoundAttributeSplitValue(string $valueJs, string $delimiterJs, string $splitValuesArrayJs, string $onErrorJs) : string
+    {
+        return <<<JS
+        
+                //cut off first prefix
+                var compValue = {$valueJs};
+                compValue = compValue.substring({$delimiterJs}[0].length, compValue.length);
+                for (var j = 1; j < {$delimiterJs}.length; j++) {
+                    if ({$delimiterJs}[j] !== '') {
+                        var array = compValue.split({$delimiterJs}[j]);
+                        array.push(array.splice(1).join({$delimiterJs}[j]));
+                        {$splitValuesArrayJs}.push(array[0]);
+                        compValue = array[1];
+                    } else {
+                        {$splitValuesArrayJs}.push(compValue);
+                        compValue = '';
+                    }
+                }
+                if (compValue !== '') {
+                    var error = "Can not split compound attribute value: non-empty remainder \"" + compValue + "\" after processing all components";
+                    {$this->getElement()->buildJsShowError('error', '"ERROR"')};
+                    {$onErrorJs}
+                }
+JS;
+    }
+    
+    /**
+     * Merges the values of a row that are part of a compound attribute to a single value and adds it to the row
+     * 
+     * @param string $compoundAttributesJs
+     * @param string $rowJs
+     * @return string
+     */
+    protected function buildJsCompoundAttributeMergeValues(string $compoundAttributesJs, string $rowJs) : string
+    {
+        return <<<JS
+
+                            var compAttr = Object.keys({$compoundAttributesJs});
+                            for (var k = 0; k < compAttr.length; k++) {
+                                var compAlias = compAttr[k];
+                                var comp = {$compoundAttributesJs}[compAlias];
+                                var splitAliases = comp['aliases'];
+                                var delim = comp['delimiter'];
+                                var value = '';
+                                for (var l = 0; l < splitAliases.length; l++) {
+                                    var col = splitAliases[l]
+                                    value += delim[l] + {$rowJs}[col];
+                                }
+                                var delimCount = delim.length;
+                                value += delim[delimCount-1];
+                                {$rowJs}[compAlias] = value;
+                            }
+JS;
+    }
 
     /**
      * 
@@ -575,22 +748,66 @@ JS;
 JS;
         $onModelLoadedJs = $takeFirstRowOnly . $onModelLoadedJs;
         $opEQ = EXF_COMPARATOR_EQUALS;
+        $filters = '';
+        $check = '';
+        
+        if ($uidAttr instanceof CompoundAttributeInterface) {
+            foreach($uidAttr->getComponents() as $comp) {
+                $check .= <<<JS
+            
+            var value = oFirstRow["{$comp->getAttribute()->getAlias()}"];
+            if (value === undefined) {
+                var error = "Can not set prefill filters: Make sure prefill data contains value for attribute \"{$comp->getAttribute()->getAlias()}\" of object \"{$object->getAlias()}\" !";
+                {$this->getElement()->buildJsShowError('error', '"ERROR"')}
+                {$onErrorJs}
+            }
+JS;
+                
+                $filters .= <<<JS
+
+                    {
+                        comparator: "{$opEQ}",
+                        expression: "{$comp->getAttribute()->getAlias()}",
+                        object_alias: "{$object->getAliasWithNamespace()}",
+                        value: oFirstRow["{$comp->getAttribute()->getAlias()}"]
+                    },
+JS;
+            }            
+        } else {
+            $check = <<<JS
+            
+            var value = oFirstRow["{$uidAttr->getAlias()}"];
+            if (value === undefined) {
+                var error = "Can not set prefill filters: Make sure prefill data contains value for attribute \"{$uidAttr->getAlias()}\" of object \"{$object->getAlias()}\" !";
+                {$this->getElement()->buildJsShowError('error', '"ERROR"')}
+                {$onErrorJs}
+            }
+JS;
+            
+            $filters .= <<<JS
+
+                    {
+                        comparator: "{$opEQ}",
+                        expression: "{$uidAttr->getAlias()}",
+                        object_alias: "{$object->getAliasWithNamespace()}",
+                        value: oFirstRow["{$uidAttr->getAlias()}"]
+                    }
+JS;
+        }
         
         return <<<JS
         
             var oFirstRow = {$oParamsJs}.data.rows[0];
             if (oFirstRow === undefined) {
                 console.error('No data to filter the prefill!');
+                {$this->getElement()->buildJsShowError('"No data to filter the prefill!"', '"ERROR"')}
+                {$onErrorJs}
             }
-    
+            {$check}
+
             {$oParamsJs}.data.filters = {
                 conditions: [
-                    {
-                        comparator: "{$opEQ}",
-                        expression: "{$uidAttr->getAlias()}",
-                        object_alias: "{$object->getAliasWithNamespace()}",
-                        value: oFirstRow["{$object->getUidAttribute()->getAlias()}"]
-                    }
+                    {$filters}
                 ]
             };
             {$this->buildJsDataLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs)}
@@ -697,6 +914,87 @@ JS;
     }
     
     /**
+     * Build an array containing properties for each compound attribute of an object with the alias of the compound attribute as key.
+     * Properties are `aliases` of the compound attribute components and `delimiter`.
+     *
+     * 
+     * @param MetaObjectInterface $object
+     * @return array
+     */
+    protected function getCompoundAttributePropertiesForObject (MetaObjectInterface $object) : array
+    {
+        $compoundAttributes = [];
+        foreach ($object->getAttributes() as $qpart) {
+            if ($qpart instanceof CompoundAttributeInterface) {
+                $components = $qpart->getComponents();
+                $properties = [];
+                $aliases = [];
+                $delimiter = [];
+                foreach ($components as $comp) {
+                    $aliases[] = $comp->getAttribute()->getAlias();
+                }
+                $properties['aliases'] = $aliases;
+                $delimiter[] = $components[0]->getValuePrefix() ?? '';
+                foreach ($qpart->getComponentDelimiters() as $del) {
+                    $delimiter[] = $del;
+                }
+                $delimiter[] = $components[count($components)-1]->getValueSuffix() ?? '';
+                $properties['delimiter'] = $delimiter;
+                $compoundAttributes[$qpart->getAlias()] = $properties;
+            }            
+        }
+        return $compoundAttributes;
+    }
+    
+    /**
+     * transforms the value into an OData value
+     * 
+     * @param string $valueJs
+     * @param string $typeJs
+     * @param string $oDataValueJs
+     * @return string
+     */
+    protected function buildJsGetODataValue (string $valueJs, string $typeJs, string $oDataValueJs) : string
+    {
+        return <<<JS
+
+                            switch ({$typeJs}) {
+                                case 'Edm.DateTimeOffset':
+                                    var d = exfTools.date.parse({$valueJs});
+                                    var datestring = exfTools.date.format(d,'yyyy-MM-ddTHH:mm:ss')
+                                    {$oDataValueJs} = datestring;
+                                    break;
+                                case 'Edm.DateTime':
+                                    var d = exfTools.date.parse({$valueJs}); 
+                                    var datestring = exfTools.date.format(d,'yyyy-MM-ddTHH:mm:ss')
+                                    {$oDataValueJs} = datestring;
+                                    break;                        
+                                case 'Edm.Time':
+                                    var d = {$valueJs};
+                                    var timeParts = d.split(':');
+                                    if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
+                                        timeParts[3] = "00";
+                                    }
+                                    for (var i = 0; i < timeParts.length; i++) {
+                                        timeParts[i] = ('0'+(timeParts[i])).slice(-2);
+                                    }                            
+                                    var timeString = "PT" + timeParts[0] + "H" + timeParts[1] + "M" + timeParts[3] + "S";
+                                    {$oDataValueJs} = timeString;
+                                    break;
+                                case 'Edm.Decimal':
+                                    {$oDataValueJs} = {$valueJs}.toString();
+                                    break; 
+                                case 'Edm.Boolean':
+                                    {$oDataValueJs} = ({$valueJs} === 'true');
+                                    break; 
+                                default:
+                                    {$oDataValueJs} = {$valueJs};
+                            }
+
+JS;
+    }
+    
+    /**
      * 
      * @param ActionInterface $action
      * @param string $oModelJs
@@ -710,15 +1008,26 @@ JS;
     {
         $widget = $this->getElement()->getWidget();
         $object = $widget->getMetaObject();
-        $uidAttribute = $object->getUidAttributeAlias();
+        $uidAttribute = $object->getUidAttribute();
+        $uidAttributeAlias = $object->getUidAttributeAlias();
+        $uidAliases = [];
+        $compoundAttributes = $this->getCompoundAttributePropertiesForObject($object);
+        $compoundAttributesJson = json_encode($compoundAttributes);
+        if ($uidAttribute instanceof CompoundAttributeInterface) {
+            foreach ($uidAttribute->getComponents() as $comp) {
+                $uidAliases[] = $comp->getAttribute()->getAlias();
+            }
+        }
         $attributes = $object->getAttributes();
         $attributesType = (object)array();
         foreach ($attributes as $attr) {
-            $key = $attr->getAlias();
-            $attributesType->$key= $attr->getDataAddressProperty('odata_type');
+            if (! ($attr instanceof CompoundAttributeInterface)) {
+                $key = $attr->getAlias();
+                $attributesType->$key= $attr->getDataAddressProperty('odata_type');
+            }
         }
         $attributesType = json_encode($attributesType);
-        $uidAttributeType = $object->getUidAttribute()->getDataAddressProperty('odata_type');
+        $uidAliasesJson = json_encode($uidAliases);
         $bUseBatchJs = $this->getUseBatchWrites() ? 'true' : 'false';
         
         if ($action instanceof CreateData) {
@@ -729,26 +1038,12 @@ JS;
 JS;
         }
         elseif ($action instanceof UpdateData || $action instanceof SaveData) {
+            
             $serverCall = <<<JS
             
-            if ('{$uidAttribute}' in oData) {
-                var oDataUid = oData.{$uidAttribute};
-                var type = '{$uidAttributeType}';
-                switch (type) {
-                    case 'Edm.Guid':
-                        oDataUid = "guid" + "'" + data['{$uidAttribute}']+ "'";
-                        break;
-                    case 'Edm.Binary':
-                        oDataUid = "binary" + "'" + data['{$uidAttribute}'] + "'";
-                        break;
-                    default:
-                        oDataUid = "'" + oDataUid + "'";
-                }
-            } else {
-                var oDataUid = '';
-            }
-
-            oDataModel.update("/{$object->getDataAddress()}(" + oDataUid+ ")", oData, mParameters);
+            var oDataUid = '';
+            {$this->buildJsGetUrlUidValue($action, 'uidAlias', 'uidAliases', 'attributesType', 'compoundAttributes', 'data', 'oDataUid', $onErrorJs)}
+            oDataModel.update("/{$object->getDataAddress()}(" + oDataUid + ")", oData, mParameters);
 
 JS;
         }
@@ -762,46 +1057,24 @@ JS;
             var mParameters = {};
             mParameters.groupId = "batchGroup";
             {$this->buildJsServerResponseHandling($onModelLoadedJs, 'mParameters', 'aResponses', 'rowCount')}
+
+            var uidAliases = {$uidAliasesJson};
+            var uidAlias = '{$uidAttributeAlias}';            
+            var compoundAttributes = {$compoundAttributesJson};
+            var attributesType = {$attributesType};
             
             for (var i = 0; i < rowCount; i++) {
                 var data = {$oParamsJs}.data.rows[i];            
                 var oData = {};
                 Object.keys(data).forEach(key => {
-                    if (data[key] != "") {
-                        var type = {$attributesType}[key];
-                        switch (type) {
-                            case 'Edm.DateTimeOffset':
-                                var d = exfTools.date.parse(data[key]);
-                                var date = d.toISOString();
-                                var datestring = date.replace(/\.[0-9]{3}/, '');
-                                oData[key] = datestring;
-                                break;
-                            case 'Edm.DateTime':
-                                var d = exfTools.date.parse(data[key]);                       
-                                var date = d.toISOString();
-                                var datestring = date.substring(0,19);
-                                oData[key] = datestring;
-                                break;                        
-                            case 'Edm.Time':
-                                var d = data[key];
-                                var timeParts = d.split(':');
-                                if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
-                                    timeParts[3] = "00";
-                                }
-                                for (var i = 0; i < timeParts.length; i++) {
-                                    timeParts[i] = ('0'+(timeParts[i])).slice(-2);
-                                }                            
-                                var timeString = "PT" + timeParts[0] + "H" + timeParts[1] + "M" + timeParts[3] + "S";
-                                oData[key] = timeString;
-                                break;
-                            case 'Edm.Decimal':
-                                oData[key] = data[key].toString();
-                                break; 
-                            default:
-                                oData[key] = data[key];
+                    if ({$attributesType}[key] !== undefined) {
+                        if (data[key] !== "") {
+                            var type = {$attributesType}[key];
+                            var value = data[key];
+                            var oDataValue = '';
+                            {$this->buildJsGetODataValue('value', 'type', 'oDataValue')}
+                            oData[key] = oDataValue;
                         }
-                    } else {
-                        oData[key] = data[key];
                     }
                 });
                 {$serverCall}
@@ -820,12 +1093,27 @@ JS;
      * @param string $onOfflineJs
      * @return string
      */
-    protected function buildJsDataDelete(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
+    protected function buildJsDataDelete(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
         $widget = $this->getElement()->getWidget();
         $object = $widget->getMetaObject();
-        $uidAttribute = $object->getUidAttributeAlias();
-        $uidAttributeType = $object->getUidAttribute()->getDataAddressProperty('odata_type');
+        $uidAttribute = $object->getUidAttribute();
+        $uidAttributeAlias = $uidAttribute->getUidAttributeAlias();
+        $uidAliases = [];
+        $attributesType = (object)array();
+        $compoundAttributes = $this->getCompoundAttributePropertiesForObject($object);
+        $compoundAttributesJson = json_encode($compoundAttributes);
+        if ($uidAttribute instanceof CompoundAttributeInterface) {
+            foreach ($uidAttribute->getComponents() as $comp) {
+                $alias = $comp->getAttribute()->getAlias();
+                $uidAliases[] = $alias;
+                $attributesType->$alias = $comp->getAttribute()->getDataAddressProperty('odata_type');
+            }
+        } else {
+            $attributesType->$uidAttributeAlias = $uidAttribute->getDataAddressProperty('odata_type');
+        }
+        $attributesType = json_encode($attributesType);
+        $uidAliasesJson = json_encode($uidAliases);
         $bUseBatchJs = $this->getUseBatchDeletes() ? 'true' : 'false';
         
         return <<<JS
@@ -837,52 +1125,17 @@ JS;
             var mParameters = {};
             mParameters.groupId = "batchGroup";
             {$this->buildJsServerResponseHandling($onModelLoadedJs, 'mParameters', 'aResponses', 'rowCount')}
+
+            var uidAliases = {$uidAliasesJson};
+            var uidAlias = '{$uidAttributeAlias}';
+            var attributesType = {$attributesType};
+            var compoundAttributes = {$compoundAttributesJson};
+            var 
             
             for (var i = 0; i < rowCount; i++) {
                 var data = {$oParamsJs}.data.rows[i];
-                if ('{$uidAttribute}' in data) {
-                    var oDataUid = data.{$uidAttribute};
-                    var type = '{$uidAttributeType}';
-                    switch (type) {
-                        case 'Edm.Guid':
-                            oDataUid = "guid" + "'" + oDataUid + "'";
-                            break;
-                        case 'Edm.Binary':
-                            oDataUid = "binary" + "'" + oDataUid + "'";
-                            break;
-                        case 'Edm.DateTimeOffset':
-                            var d = exfTools.date.parse(oDataUid);
-                            var date = d.toISOString();
-                            var datestring = date.replace(/\.[0-9]{3}/, '');
-                            oDataUid = "'" + datestring + "'";
-                            break;
-                        case 'Edm.DateTime':
-                            var d = exfTools.date.parse(oDataUid);
-                            var date = d.toISOString();
-                            var datestring = date.substring(0,19);
-                            oDataUid = "'" + datestring + "'";
-                            break;                        
-                        case 'Edm.Time':
-                            var d = oDataUid;
-                            var timeParts = d.split(':');
-                            if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
-                                timeParts[3] = "00";
-                            }
-                            for (var i = 0; i < timeParts.length; i++) {
-                                timeParts[i] = ('0'+(timeParts[i])).slice(-2);
-                            }                            
-                            var timeString = "PT" + timeParts[0] + "H" + timeParts[1] + "M" + timeParts[3] + "S";
-                            oDataUid = "'" + timeString + "'";
-                            break;
-                        case 'Edm.Decimal':
-                            oDataUid = "'" + oDataUid.toString() + "'";
-                            break;
-                        default:
-                            oDataUid = "'" + oDataUid + "'";
-                    }
-                } else {
-                    var oDataUid = '';
-                }                
+                var oDataUid = '';
+                {$this->buildJsGetUrlUidValue($action, 'uidAlias', 'uidAliases', 'attributesType', 'compoundAttributes', 'data', 'oDataUid', $onErrorJs)}            
                 oDataModel.remove("/{$object->getDataAddress()}(" + oDataUid + ")", mParameters);
             }
 
@@ -953,37 +1206,9 @@ JS;
                             if ({$oParamsJs}.data.rows[j][param] != undefined && {$oParamsJs}.data.rows[j][param] != "") {                           
                                 var type = {$attributesType}[param];
                                 var value = {$oParamsJs}.data.rows[j][param];
-                                switch (type) {
-                                    case 'Edm.DateTimeOffset':
-                                        var d = exfTools.date.parse(value);
-                                        var date = d.toISOString();
-                                        var datestring = date.replace(/\.[0-9]{3}/, '');
-                                        oDataActionParams[param] = datestring;
-                                        break;
-                                    case 'Edm.DateTime':
-                                        var d = exfTools.date.parse(value);                            
-                                        var date = d.toISOString();
-                                        var datestring = date.substring(0,19);
-                                        oDataActionParams[param] = datestring;
-                                        break;                        
-                                    case 'Edm.Time':
-                                        var d = value;
-                                        var timeParts = d.split(':');
-                                        if (timeParts[3] === undefined || timeParts[3]=== null || timeParts[3] === "") {
-                                            timeParts[3] = "00";
-                                        }
-                                        for (var i = 0; i < timeParts.length; i++) {
-                                            timeParts[i] = ('0'+(timeParts[i])).slice(-2);
-                                        }                            
-                                        var timeString = "PT" + timeParts[0] + "H" + timeParts[1] + "M" + timeParts[3] + "S";
-                                        oDataActionParams[param] = timeString;
-                                        break;
-                                    case 'Edm.Decimal':
-                                        oDataActionParams[param] = value.toString();
-                                        break; 
-                                    default:
-                                        oDataActionParams[param] = value;
-                                }
+                                var oDataValue = '';
+                                {$this->buildJsGetODataValue('value', 'type', 'oDataValue')}
+                                oDataActionParams[param] = oDataValue;
                             } else if (defaultValues.hasOwnProperty(param)) {
                                 oDataActionParams[param] = defaultValues[param];
                             } else {
@@ -1013,6 +1238,74 @@ JS;
     }
     
     /**
+     * Get the string part for the UID in the URL.
+     * 
+     * @param string $uidAliasJs
+     * @param string $uidAliasJs
+     * @param string $attributesTypeJs
+     * @param string $compoundAttributesJs
+     * @param string $dataJs
+     * @return string
+     */
+    protected function buildJsGetUrlUidValue(ActionInterface $action, string $uidAliasJs, string $uidAliasesJs, string $attributesTypeJs, string $compoundAttributesJs, string $dataJs, string $uidStringJs, string $onErrorJs) : string
+    {
+        return <<<JS
+
+        if ({$uidAliasesJs}.length === 0) {
+                if ({$uidAliasJs} in {$dataJs}) {
+                    var value = {$dataJs}[{$uidAliasJs}];
+                    var oDataValue = ''
+                    var type = {$attributesTypeJs}[{$uidAliasJs}];                    
+                    {$this->buildJsGetODataValue('value', 'type', 'oDataValue')}
+                    switch (type) {
+                        case 'Edm.Guid':
+                            {$uidStringJs} = "guid" + "'" + oDataValue + "'";
+                            break;
+                        case 'Edm.Binary':
+                            {$uidStringJs} = "binary" + "'" + oDataValue + "'";
+                            break;
+                        default:
+                            {$uidStringJs} = "'" + oDataValue + "'";
+                    }
+                } else {
+                    var {$uidStringJs} = '';
+                }
+            } else {
+                var value = {$dataJs}[{$uidAliasJs}];
+                var splitValues = [];
+                var delimiter = compoundAttributes[{$uidAliasJs}]['delimiter'];
+                {$this->buildJsCompoundAttributeSplitValue('value', 'delimiter', 'splitValues', $onErrorJs)}
+                if ({$uidAliasesJs}.length !== splitValues.length) {
+                    var error = "Can not perform action \"{$action->getName()}\": amount of split values for attribute \"{$uidAliasJs}\" does not fit amount of components!";                    
+                    {$this->getElement()->buildJsShowError('error', '"ERROR"')};
+                    {$onErrorJs}
+                }
+                var oDataUid = '';
+                for (var i = 0; i < {$uidAliasesJs}.length; i++) {
+                    var uidAlias = {$uidAliasesJs}[i];
+                    var type = {$attributesTypeJs}[uidAlias];
+                    var uidPart = uidAlias + '=';
+                    var value = splitValues[i];
+                    var oDataValue = '';
+                    {$this->buildJsGetODataValue('value', 'type', 'oDataValue')}
+                    switch (type) {
+                        case 'Edm.Guid':
+                            uidPart += "guid" + "'" + oDataValue + "'";
+                            break;
+                        case 'Edm.Binary':
+                            uidPart += "binary" + "'" + oDataValue + "'";
+                            break;
+                        default:
+                            uidPart += "'" + oDataValue + "'";
+                    }
+                    {$uidStringJs} += uidPart + ',';                    
+                }
+                {$uidStringJs} = {$uidStringJs}.substr(0, {$uidStringJs}.length - 1);               
+            }
+JS;
+    }
+    
+    /**
      * 
      * @param string $oDataModelJs
      * @param string $bUseBatchJs
@@ -1027,6 +1320,8 @@ JS;
             {$oDataModelJs}.setDeferredGroups(["batchGroup"]);
             {$oDataModelJs}.submitChanges({
                 groupId: "batchGroup",
+                success: function() {                    
+                },
                 error: function(oError) {
                     {$onErrorJs}
                     {$this->buildJsServerResponseError('oError')}
@@ -1051,6 +1346,7 @@ JS;
             {$mParameters}.success = function(oData) {
                 {$aResponses}.push(oData);
                 if ({$aResponses}.length === {$rowCount}) {
+                    var response = {};
                     {$onModelLoadedJs}
                 }
             };
@@ -1073,7 +1369,7 @@ JS;
         
                 var response = {};
                 try {
-                    response = $.parseJSON({$oErrorJs}.responseText);
+                    var response = $.parseJSON({$oErrorJs}.responseText);
                     var errorText = response.error.message.value;
                 } catch (e) {
                     var errorText = 'No error description send!';

@@ -77,7 +77,7 @@ class Webapp implements WorkbenchDependantInterface
      * 
      * @return WidgetInterface
      */
-    protected function handlePrefill(WidgetInterface $widget, HttpTaskInterface $task) : WidgetInterface
+    public function handlePrefill(WidgetInterface $widget, HttpTaskInterface $task) : WidgetInterface
     {
         // The whole trick only makes sense for widgets, that are created by actions (e.g. via button press).
         // Otherwise we would not be able to find out, if the widget is supposed to be prefilled because 

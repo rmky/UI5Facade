@@ -57,10 +57,20 @@ class UI5DataTable extends UI5AbstractElement
     
     protected function buildJsConstructorForControl($oControllerJs = 'oController') : string
     {
+        $widget = $this->getWidget();
         if ($this->isMTable()) {
             $js = $this->buildJsConstructorForMTable($oControllerJs);
         } else {
             $js = $this->buildJsConstructorForUiTable($oControllerJs);
+        }
+        
+        if (($syncAttributeAlias = $widget->getMultiSelectSyncAttributeAlias()) !== null)
+        {
+            if (($syncDataColumn = $widget->getColumnByAttributeAlias($syncAttributeAlias)) !== null) {
+                $this->addOnChangeScript($this->buildJsMultiSelectSync($syncDataColumn, $oControllerJs));
+            } else {
+                throw new WidgetConfigurationError($widget, "The attribute alias '{$syncAttributeAlias}' for multi select synchronisation was not found in the column attribute aliases for the widget '{$widget->getId()}'!");
+            }
         }
         
         return $js;
@@ -1351,5 +1361,71 @@ JS;
             
         $this->getController()->addOnEventScript($this, self::EVENT_NAME_FIRST_VISIBLE_ROW_CHANGED, $conditionalPropertiesJs);
         return $conditionalPropertiesJs;
+    }
+    
+    /**
+     * Builds the javascript to select all rows with the same value in the DataColumn as the selected row
+     * 
+     * @param DataColumn $column
+     * @return string
+     */
+    protected function buildJsMultiSelectSync(DataColumn $column) : string
+    {
+        $widget = $this->getWidget();
+        $syncDataColumnName = $column->getDataColumnName();
+        $selectRow ='';
+        if ($this->isMList() === true) {
+            $selectRow = <<<JS
+            
+                                    var oItem = oTable.getItems()[index];
+                                    oTable.setSelectedItem(oItem);
+                                    
+JS;
+        } else {
+            $selectRow = <<<JS
+            
+                                    oTable.addSelectionInterval(index, index);
+                                    
+JS;
+        }
+        
+        return <<<JS
+        
+                var oTable = sap.ui.getCore().byId('{$this->getId()}');
+                if (oTable.getModel()._syncChanges === undefined) {
+                    oTable.getModel()._syncChanges = false;
+                }
+                if (oTable.getModel()._syncChanges === false) {
+                    oTable.getModel()._syncChanges = true;
+                    var rows = {$this->buildJsGetSelectedRows('oTable')}
+                    if (rows[0].length != 0) {
+                        if (rows[0]['{$syncDataColumnName}'] !== undefined) {
+                            var values = [];
+                            rows.forEach(function(row) {
+                                var value = row['{$syncDataColumnName}'];
+                                if (! values.includes(value)) {
+                                    values.push(value);
+                                }
+                            })
+                            var aData = oTable.getModel().getData().rows;
+                            var iRowIdx = [];
+                            for (var i in aData) {
+                                if (values.includes(aData[i]['{$syncDataColumnName}'])) {
+                                    var index = parseInt(i);
+                                    {$selectRow}
+                                }
+                            console.log('SyncSelection Done!');
+                            }
+                        } else {
+                            var error = "Data Column '{$syncDataColumnName}' not found in data columns for widget '{$widget->getId()}'!";
+                            {$this->buildJsShowMessageError('error', '"ERROR"')}
+                        }
+                    }
+                oTable.getModel()._syncChanges = false;
+                }
+                
+JS;
+                            
+                            
     }
 }

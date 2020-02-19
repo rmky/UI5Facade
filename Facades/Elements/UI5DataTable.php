@@ -545,7 +545,7 @@ JS;
             if($this->getWidget()->getMultiSelect() === false) {
                 $row = "($oTableJs.getSelectedIndex() !== -1 ? [$oTableJs.getModel().getData().rows[$oTableJs.getSelectedIndex()]] : [])";
             } else {
-                $row = "[($oTableJs.getModel().getData().rows[$oTableJs.getSelectedIndex()] || [])]";
+                $row = "function(){var selectedIdx = $oTableJs.getSelectedIndices(); var aRows = []; selectedIdx.forEach(index => aRows.push($oTableJs.getModel().getData().rows[index])); return aRows;}();";
             }
         } else {
             if($this->getWidget()->getMultiSelect() === false) {
@@ -1388,7 +1388,7 @@ JS;
                     selectedItems = oEvent.getParameter("listItems");
                 }
                 
-                if (oTable.getModel()._syncChanges === false && selected === true && selectedItems.length !== 0) {
+                if (oTable.getModel()._syncChanges === false && oEvent !== undefined && selectedItems.length !== 0) {
                     oTable.getModel()._syncChanges = true;
                     var itemValues = selectedItems[0].getBindingContext().getObject();
                     var value = itemValues['{$syncDataColumnName}'];
@@ -1398,9 +1398,11 @@ JS;
                             if (value === aData[i]['{$syncDataColumnName}']) {
                                 var index = parseInt(i);
                                 var oItem = oTable.getItems()[index];
-                                oTable.setSelectedItem(oItem);
+                                oTable.setSelectedItem(oItem, selected);
                             }
-                        }
+                        }                        
+                        var exfSelection = {$this->buildJsGetSelectedRows('oTable')};
+                        oTable.data('exfPreviousSelection', exfSelection);
                     } else {
                         var error = "Data Column '{$syncDataColumnName}' not found in data columns for widget '{$widget->getId()}'!";
                         {$this->buildJsShowMessageError('error', '"ERROR"')}
@@ -1424,8 +1426,12 @@ JS;
                 }
                 var selectedRowsIdx = [];
                 selectedRowsIdx = oTable.getSelectedIndices();
+                var selected = false; 
+                if (selectedRowsIdx.includes(rowIdx)) {
+                    selected = true;    
+                }
                 
-                if (oTable.getModel()._syncChanges === false && selectedRowsIdx.includes(rowIdx)) {
+                if (oTable.getModel()._syncChanges === false && oEvent !== undefined) {
                     oTable.getModel()._syncChanges = true;
                     var rowValues = oEvent.getParameters().rowContext.getObject();
                     var value = rowValues['{$syncDataColumnName}'];
@@ -1434,7 +1440,11 @@ JS;
                             for (var i in aData) {
                                 if (value === aData[i]['{$syncDataColumnName}']) {
                                     var index = parseInt(i);
-                                    oTable.addSelectionInterval(index, index);
+                                    if (selected === true) {
+                                        oTable.addSelectionInterval(index, index);
+                                    } else {
+                                        oTable.removeSelectionInterval(index, index);
+                                    }
                                 }
                             }
                     } else {

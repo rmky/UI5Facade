@@ -389,6 +389,9 @@ class ExportFioriWebapp extends AbstractActionDeferred implements iModifyData, i
         if (file_exists($packageRootAbs . 'composer.json')) {
             $pathMap[$packageRoot . 'composer.json'] = $packageRoot . 'composer.json';
         }
+        if (file_exists($packageRootAbs . 'fonts')) {
+            $pathMap[$packageRoot . 'fonts'] = $packageRoot . 'fonts';
+        }
         
         return $pathMap;
     }

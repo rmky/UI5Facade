@@ -257,6 +257,7 @@ JS;
         $dateTimeFormat = DateTimeDataType::DATETIME_ICU_FORMAT_INTERNAL;
         
         return <<<JS
+            
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
             var oDataReadParams = {};
             var oDataReadFiltersSearch = [];
@@ -514,7 +515,6 @@ JS;
                         oRowData.recordsFiltered = oData.__count;
                     }
                     {$oModelJs}.setData(oRowData);
-                    var test = {$oModelJs}.getData();
                     {$onModelLoadedJs}
                 },
                 error: function(oError){                    
@@ -797,20 +797,24 @@ JS;
         
         return <<<JS
         
-            var oFirstRow = {$oParamsJs}.data.rows[0];
+            if ({$oParamsJs}.data !== undefined && {$oParamsJs}.data.rows !== undefined) {
+                var oFirstRow = {$oParamsJs}.data.rows[0];
+            }
             if (oFirstRow === undefined) {
                 console.error('No data to filter the prefill!');
                 {$this->getElement()->buildJsShowError('"No data to filter the prefill!"', '"ERROR"')}
                 {$onErrorJs}
+            } else {
+                {$check}
+    
+                {$oParamsJs}.data.filters = {
+                    conditions: [
+                        {$filters}
+                    ]
+                };
+                delete {$oParamsJs}.data.rows;
+                {$this->buildJsDataLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs)}
             }
-            {$check}
-
-            {$oParamsJs}.data.filters = {
-                conditions: [
-                    {$filters}
-                ]
-            };
-            {$this->buildJsDataLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs)}
 JS;
     }
     

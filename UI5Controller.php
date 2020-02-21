@@ -13,6 +13,8 @@ use exface\Core\Interfaces\Widgets\iCanPreloadData;
 use exface\Core\Interfaces\Actions\iShowWidget;
 use exface\UI5Facade\Facades\Elements\UI5Dialog;
 use exface\Core\Exceptions\Facades\FacadeRuntimeError;
+use exface\Core\Factories\ActionFactory;
+use exface\Core\Widgets\DataTable;
 
 class UI5Controller implements UI5ControllerInterface
 {
@@ -839,8 +841,48 @@ JS;
     {
         $rootElement = $this->getView()->getRootElement();
         $widget = $rootElement->getWidget();
+        $action = ActionFactory::createFromString($widget->getWorkbench(), 'exface.Core.ReadPrefill', $widget);
+        
+        if ($widget instanceof DataTable) {
+            $action = ActionFactory::createFromString($widget->getWorkbench(), 'exface.Core.ReadData', $widget);
+        }
+        
+        $onModelLoadesJs .= <<<JS
+
+                        
+                        {$oViewModelJs}.setProperty('/_prefill/pending', false);
+                        {$rootElement->buildJsBusyIconHide()}
+JS;
+                        
+        $onErrorJs = <<<JS
+
+                        oViewModel.setProperty('/_prefill/pending', false);
+                        {$rootElement->buildJsBusyIconHide()}
+JS;
+                        
+        $onOfflineJs = <<<JS
+                        
+                        {$oViewJs}.getController().getRouter().getTargets().display("offline");
+JS;
+        
         
         return <<<JS
+        
+            var oRouteParams = {$oViewModelJs}.getProperty('/_route').params;            
+            var oResultModel = sap.ui.getCore().byId("{$rootElement->getId()}").getModel();
+            if (! (Object.keys(oRouteParams).length === 0 && oRouteParams.constructor === Object)) {
+                {$rootElement->buildJsBusyIconShow()}
+                oViewModel.setProperty('/_prefill/pending', true);
+                var params = $.extend({}, {
+                    action: "{$action->getAlias()}",
+    				resource: "{$widget->getPage()->getAliasWithNamespace()}",
+    				element: "{$triggerWidget->getId()}",
+                }, oRouteParams);    			
+                {$rootElement->getServerAdapter()->buildJsServerRequest($action, 'oResultModel', 'params', $onModelLoadesJs, $onErrorJs, $onOfflineJs)}
+            }
+JS;
+        
+        /*return <<<JS
         
             var oRouteParams = {$oViewModelJs}.getProperty('/_route').params;
             if (! (Object.keys(oRouteParams).length === 0 && oRouteParams.constructor === Object)) {
@@ -868,6 +910,7 @@ JS;
     			})
             }
 JS;
+*/
     }
     
     protected function buildJsPrefillLoaderError(string $jqXHR = 'jqXHR', string $oViewJs = 'oView')

@@ -279,33 +279,33 @@ class Webapp implements WorkbenchDependantInterface
         $placeholders = $this->config;
         $tpl = file_get_contents($this->getFacadesFolder() . 'manifest.json');
         $tpl = str_replace('[#app_id#]', $placeholders['app_id'], $tpl);
-        $json = json_decode($tpl, true);
-        $json['_version'] = $this->getManifestVersion($placeholders['ui5_min_version']);
-        $json['sap.app']['id'] = $placeholders['app_id'];
-        $json['sap.app']['title'] = $this->getTitle();
-        $json['sap.app']['subTitle'] = $placeholders['app_subTitle'] ? $placeholders['app_subTitle'] : '';
-        $json['sap.app']['shortTitle'] = $placeholders['app_shortTitle'] ? $placeholders['app_shortTitle'] : '';
-        $json['sap.app']['info'] = $placeholders['app_info'] ? $placeholders['app_info'] : '';
-        $json['sap.app']['description'] = $placeholders['app_description'] ? $placeholders['app_description'] : '';
-        $json['sap.app']['applicationVersion']['version'] = $placeholders['current_version'];
-        $json['sap.ui5']['dependencies']['minUI5Version'] = $placeholders['ui5_min_version'];
+        $json = json_decode($tpl);
+        $json->_version = $this->getManifestVersion($placeholders['ui5_min_version']);
+        $json->{'sap.app'}->id = $placeholders['app_id'];
+        $json->{'sap.app'}->title = $this->getTitle();
+        $json->{'sap.app'}->subTitle = $placeholders['app_subTitle'] ? $placeholders['app_subTitle'] : '';
+        $json->{'sap.app'}->shortTitle = $placeholders['app_shortTitle'] ? $placeholders['app_shortTitle'] : '';
+        $json->{'sap.app'}->info = $placeholders['app_info'] ? $placeholders['app_info'] : '';
+        $json->{'sap.app'}->description = $placeholders['app_description'] ? $placeholders['app_description'] : '';
+        $json->{'sap.app'}->applicationVersion->version = $placeholders['current_version'];
+        $json->{'sap.ui5'}->dependencies->minUI5Version = $placeholders['ui5_min_version'];
         
-        $json['exface']['useCombinedViewControllers'] = $placeholders['use_combined_viewcontrollers'];
+        $json->exface->useCombinedViewControllers = $placeholders['use_combined_viewcontrollers'];
         
         if ($this->isPWA() === true) {
-            $json["short_name"] = $this->getName();
-            $json["name"] = $this->getTitle();
-            $json["icons"] = $this->getWorkbench()->getCMS()->getFavIcons();
-            $json["start_url"] = $this->getStartUrl();
-            $json["scope"] = $this->getRootUrl() . "/";
-            $json["background_color"] = $this->config['pwa_background_color'];
-            $json["theme_color"] = $this->config['pwa_theme_color'];
-            $json["display"] = "standalone";
+            $json->short_name = $this->getName();
+            $json->name = $this->getTitle();
+            $json->icons = $this->getWorkbench()->getCMS()->getFavIcons();
+            $json->start_url = $this->getStartUrl();
+            $json->scope = $this->getRootUrl() . "/";
+            $json->background_color = $this->config['pwa_background_color'];
+            $json->theme_color = $this->config['pwa_theme_color'];
+            $json->display = "standalone";
         }
         
-        $json['sap.app']['dataSources'] = $this->facade->getConfig()->getOption('WEBAPP_EXPORT.MANIFEST.DATASOURCES')->toArray();
+        $json->{'sap.app'}->dataSources = $this->facade->getConfig()->getOption('WEBAPP_EXPORT.MANIFEST.DATASOURCES')->toArray();
         
-        return json_encode($json, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_FORCE_OBJECT);
+        return json_encode($json, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES);
     }
     
     /**

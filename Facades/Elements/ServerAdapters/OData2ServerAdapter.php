@@ -258,6 +258,7 @@ JS;
         
         return <<<JS
             
+            console.log({$oParamsJs});
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
             var oDataReadParams = {};
             var oDataReadFiltersSearch = [];
@@ -289,6 +290,11 @@ JS;
                 var conditionsCount = conditions.length;               
                 for (var i = 0; i < conditionsCount; i++) {
                     var cond = conditions[i];
+                    var suggestedExpression = 'filter_' + cond.expression
+                    var suggestedValue = {$oParamsJs}[suggestedExpression] || '';
+                    if (suggestedValue !== '') {
+                        cond.value = suggestedValue;
+                    }
                     if (compoundAttributes[cond.expression] !== undefined) {
                         {$this->buildJsCompoundAttributeAddFilters('compoundAttributes', 'cond', 'oAttrsByDataType', 'oDataReadFiltersSearch', $onErrorJs)}
                     } else {
@@ -742,49 +748,24 @@ JS;
                 {$oModelJs}.setData({});
             }
             if (Array.isArray(oRowData.rows) && oRowData.rows.length === 1) {
+                sap.ui.getCore().byId('{$this->getElement()->getId()}').getModel('view').setProperty('/_prefill/data', oRowData);
                 {$oModelJs}.setData(oRowData.rows[0]);
             }
 
 JS;
-        $onModelLoadedJs = $takeFirstRowOnly . $onModelLoadedJs;
-        $opEQ = EXF_COMPARATOR_EQUALS;
-        $filters = '';
-        $check = '';
-        
-        if ($uidAttr instanceof CompoundAttributeInterface) {
-            foreach($uidAttr->getComponents() as $comp) {
-                $check .= <<<JS
-            
-            var value = oFirstRow["{$comp->getAttribute()->getAlias()}"];
-            if (value === undefined) {
-                var error = "Can not set prefill filters: Make sure prefill data contains value for attribute \"{$comp->getAttribute()->getAlias()}\" of object \"{$object->getAlias()}\" !";
-                {$this->getElement()->buildJsShowError('error', '"ERROR"')}
-                {$onErrorJs}
-            }
-JS;
-                
-                $filters .= <<<JS
 
-                    {
-                        comparator: "{$opEQ}",
-                        expression: "{$comp->getAttribute()->getAlias()}",
-                        object_alias: "{$object->getAliasWithNamespace()}",
-                        value: oFirstRow["{$comp->getAttribute()->getAlias()}"]
-                    },
-JS;
-            }            
-        } else {
-            $check = <<<JS
-            
-            var value = oFirstRow["{$uidAttr->getAlias()}"];
-            if (value === undefined) {
-                var error = "Can not set prefill filters: Make sure prefill data contains value for attribute \"{$uidAttr->getAlias()}\" of object \"{$object->getAlias()}\" !";
-                {$this->getElement()->buildJsShowError('error', '"ERROR"')}
-                {$onErrorJs}
-            }
+        $opEQ = EXF_COMPARATOR_EQUALS;
+        $check = <<<JS
+        
+                var value = oFirstRow["{$uidAttr->getAlias()}"];
+                if (value === undefined) {
+                    var error = "Can not set prefill filters: Make sure prefill data contains value for attribute \"{$uidAttr->getAlias()}\" of object \"{$object->getAlias()}\" !";
+                    {$this->getElement()->buildJsShowError('error', '"ERROR"')}
+                    {$onErrorJs}
+                }
 JS;
             
-            $filters .= <<<JS
+        $filters = <<<JS
 
                     {
                         comparator: "{$opEQ}",
@@ -793,18 +774,12 @@ JS;
                         value: oFirstRow["{$uidAttr->getAlias()}"]
                     }
 JS;
-        }
         
         return <<<JS
         
-            if ({$oParamsJs}.data !== undefined && {$oParamsJs}.data.rows !== undefined) {
+            
+            if ({$oParamsJs}.data !== undefined && {$oParamsJs}.data.rows !== undefined) {               
                 var oFirstRow = {$oParamsJs}.data.rows[0];
-            }
-            if (oFirstRow === undefined) {
-                console.error('No data to filter the prefill!');
-                {$this->getElement()->buildJsShowError('"No data to filter the prefill!"', '"ERROR"')}
-                {$onErrorJs}
-            } else {
                 {$check}
     
                 {$oParamsJs}.data.filters = {
@@ -812,9 +787,32 @@ JS;
                         {$filters}
                     ]
                 };
-                delete {$oParamsJs}.data.rows;
-                {$this->buildJsDataLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs)}
+                {$this->buildJsDataLoader($oModelJs, $oParamsJs, $takeFirstRowOnly . $onModelLoadedJs, $onErrorJs, $onOfflineJs)}
+            } else if ({$oParamsJs}.prefill !== undefined && {$oParamsJs}.prefill.rows !== undefined) {
+                var oFirstRow = {$oParamsJs}.prefill.rows[0];
+                var prefillParams = {};
+                prefillParams.data = {};
+                prefillParams.data.filters = {};
+                var conditions = [];
+                var keys = Object.keys(oFirstRow);
+                keys.forEach (function (key) {
+                    var value = oFirstRow[key];
+                    var filter = {
+                        comparator: "{$opEQ}",
+                        expression: key,
+                        object_alias: "{$object->getAliasWithNamespace()}",
+                        value: value
+                    }
+                    conditions.push(filter);   
+                })
+                prefillParams.data.filters.conditions = conditions;
+                {$this->buildJsDataLoader($oModelJs, 'prefillParams', $takeFirstRowOnly . $onModelLoadedJs, $onErrorJs, $onOfflineJs)}
+            } else {
+                console.error('Incorrect data given to filter the prefill!');
+                {$this->getElement()->buildJsShowError('"Incorrect data given to filter the prefill!"', '"ERROR"')}
+                {$onErrorJs}
             }
+            
 JS;
     }
     

@@ -63,7 +63,7 @@
 			},
 			"routes": [
 				{
-				"pattern": "",
+				"pattern": ":params:",
 				"name": "[#app_id#]",
 				"target": "[#app_id#]"
 				}

@@ -654,6 +654,52 @@ JS;
      */
     protected function buildJsPage(string $content, string $oControllerJs) : string
     {
+        if ($this->getWidget()->hasParent() === false) {
+            $filters = $this->getWidget()->getConfiguratorWidget()->getFilters();
+            foreach ($filters as $filter) {
+                $alias = $filter->getAttributeAlias();
+                $setFilterValuesJs .= <<<JS
+
+                                var alias = '{$alias}';
+                                if (oPrefillRow[alias] !== undefined) {
+                                    {$this->getFacade()->getElement($this->getWidget()->getConfiguratorWidget()->getFilters()[0])->buildJsValueSetter('oPrefillRow[alias]')}
+                                }
+
+JS;
+            }
+            $filterPrefillJs = <<<JS
+                setTimeout(function(){
+                    var oViewModel = sap.ui.getCore().byId("{$this->getId()}").getModel("view");
+                    var fnPrefillFilters = function() {
+                        var oPrefillData = oViewModel.getProperty('/_prefill/data');
+                        console.log(oViewModel.getProperty('/_prefill'));
+                        if (oPrefillData !== undefined && Array.isArray(oPrefillData.rows)) {
+                            oViewModel.getProperty('/_prefill/data/rows').forEach(function(oPrefillRow){
+                                {$setFilterValuesJs}
+                            });
+                        }
+                    };
+                    var sPendingPropery = "/_prefill/pending";
+                    if (oViewModel.getProperty(sPendingPropery) === true) {
+                        var oPrefillBinding = new sap.ui.model.Binding(oViewModel, sPendingPropery, oViewModel.getContext(sPendingPropery));
+                        var fnPrefillHandler = function(oEvent) {
+                            oPrefillBinding.detachChange(fnPrefillHandler);
+                            setTimeout(function() {
+                                fnPrefillFilters();
+                            }, 0);
+                        };
+                        oPrefillBinding.attachChange(fnPrefillHandler);
+                        return;
+                    } else {
+                        fnPrefillFilters();
+                    }
+                }, 0);
+    
+JS;
+            
+            $this->getController()->addOnInitScript($filterPrefillJs);
+        }
+        
         foreach ($this->getWidget()->getToolbarMain()->getButtonGroupForSearchActions()->getButtons() as $btn) {
             if ($btn->getAction()->isExactly('exface.Core.RefreshWidget')){
                 $btn->setShowIcon(false);

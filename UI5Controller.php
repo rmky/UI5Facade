@@ -842,13 +842,8 @@ JS;
         $rootElement = $this->getView()->getRootElement();
         $widget = $rootElement->getWidget();
         $action = ActionFactory::createFromString($widget->getWorkbench(), 'exface.Core.ReadPrefill', $widget);
-        
-        if ($widget instanceof DataTable) {
-            $action = ActionFactory::createFromString($widget->getWorkbench(), 'exface.Core.ReadData', $widget);
-        }
-        
+                
         $onModelLoadesJs .= <<<JS
-
                         
                         {$oViewModelJs}.setProperty('/_prefill/pending', false);
                         {$rootElement->buildJsBusyIconHide()}
@@ -874,7 +869,7 @@ JS;
                 {$rootElement->buildJsBusyIconShow()}
                 oViewModel.setProperty('/_prefill/pending', true);
                 var params = $.extend({}, {
-                    action: "{$action->getAlias()}",
+                    action: "{$action->getAliasWithNamespace()}",
     				resource: "{$widget->getPage()->getAliasWithNamespace()}",
     				element: "{$triggerWidget->getId()}",
                 }, oRouteParams);    			
@@ -938,7 +933,7 @@ JS;
                     if (Object.keys(oDataModel.getData()).length !== 0) {
                         oDataModel.setData({});
                     }
-                    if (Array.isArray({$responseJs}.rows) && {$responseJs}.rows.length === 1) {
+                    if (Array.isArray({$responseJs}.rows) && {$responseJs}.rows.length === 1) {                       
                         oDataModel.setData({$responseJs}.rows[0]);
                     }
                     

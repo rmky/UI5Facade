@@ -34,6 +34,17 @@ class UI5DataConfigurator extends UI5Tabs
     private $modelNameForConfig = null;
        
     /**
+     * Can't use JqueryDataConfiguratorTrait::init() here because it would call registerFiltersWithApplyOnChange() too
+     * early: before the controller was initialized! Instead, the method will be called in buildJsConstructor()
+     * 
+     * @see JqueryDataConfiguratorTrait::init()
+     */
+    protected function init()
+    {
+        parent::init();
+    }
+    
+    /**
      * 
      * @param boolean $true_or_false
      * @return \exface\UI5Facade\Facades\Elements\UI5DataConfigurator
@@ -71,6 +82,8 @@ class UI5DataConfigurator extends UI5Tabs
         if ($dataElement instanceof UI5DataTable) {
             $refreshP13n = $dataElement->buildJsRefreshPersonalization();
         }
+        
+        $this->registerFiltersWithApplyOnChange();
         
         $okScript = <<<JS
                 

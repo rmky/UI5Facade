@@ -258,7 +258,6 @@ JS;
         
         return <<<JS
             
-            console.log({$oParamsJs});
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
             var oDataReadParams = {};
             var oDataReadFiltersSearch = [];
@@ -519,6 +518,7 @@ JS;
                     // Pagination
                     if (oData.__count !== undefined) {
                         oRowData.recordsFiltered = oData.__count;
+                        oRowData.recordsTotal = oData.__count;
                     }
                     {$oModelJs}.setData(oRowData);
                     {$onModelLoadedJs}
@@ -788,28 +788,12 @@ JS;
                     ]
                 };
                 {$this->buildJsDataLoader($oModelJs, $oParamsJs, $takeFirstRowOnly . $onModelLoadedJs, $onErrorJs, $onOfflineJs)}
-            } else if ({$oParamsJs}.prefill !== undefined && {$oParamsJs}.prefill.rows !== undefined) {
-                var oFirstRow = {$oParamsJs}.prefill.rows[0];
-                var prefillParams = {};
-                prefillParams.data = {};
-                prefillParams.data.filters = {};
-                var conditions = [];
-                var keys = Object.keys(oFirstRow);
-                keys.forEach (function (key) {
-                    var value = oFirstRow[key];
-                    var filter = {
-                        comparator: "{$opEQ}",
-                        expression: key,
-                        object_alias: "{$object->getAliasWithNamespace()}",
-                        value: value
-                    }
-                    conditions.push(filter);   
-                })
-                prefillParams.data.filters.conditions = conditions;
-                {$this->buildJsDataLoader($oModelJs, 'prefillParams', $takeFirstRowOnly . $onModelLoadedJs, $onErrorJs, $onOfflineJs)}
+            } else if ({$oParamsJs}.filters !== undefined) {
+                {$onModelLoadedJs}    
             } else {
-                console.error('Incorrect data given to filter the prefill!');
-                {$this->getElement()->buildJsShowError('"Incorrect data given to filter the prefill!"', '"ERROR"')}
+                var error = "Incorrect data given to filter the prefill!";
+                console.error(error);
+                {$this->getElement()->buildJsShowError('error', '"ERROR"')}
                 {$onErrorJs}
             }
             

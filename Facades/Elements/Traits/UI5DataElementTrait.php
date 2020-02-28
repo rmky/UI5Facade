@@ -657,26 +657,34 @@ JS;
         if ($this->getWidget()->hasParent() === false) {
             $filters = $this->getWidget()->getConfiguratorWidget()->getFilters();
             foreach ($filters as $filter) {
-                $alias = $filter->getAttributeAlias();
-                $setFilterValuesJs .= <<<JS
-
+                $alias = $filter->getAttributeAlias();                                    
+                $setFilterValues .= <<<JS
+                                    
                                 var alias = '{$alias}';
-                                if (oPrefillRow[alias] !== undefined) {
-                                    {$this->getFacade()->getElement($this->getWidget()->getConfiguratorWidget()->getFilters()[0])->buildJsValueSetter('oPrefillRow[alias]')}
+                                if (cond.expression === alias) {
+                                    var condVal = cond.value;
+                                    {$this->getFacade()->getElement($filter)->buildJsValueSetter('condVal')}
                                 }
-
+                                
 JS;
             }
+
+            
             $filterPrefillJs = <<<JS
                 setTimeout(function(){
                     var oViewModel = sap.ui.getCore().byId("{$this->getId()}").getModel("view");
                     var fnPrefillFilters = function() {
-                        var oPrefillData = oViewModel.getProperty('/_prefill/data');
-                        console.log(oViewModel.getProperty('/_prefill'));
-                        if (oPrefillData !== undefined && Array.isArray(oPrefillData.rows)) {
-                            oViewModel.getProperty('/_prefill/data/rows').forEach(function(oPrefillRow){
-                                {$setFilterValuesJs}
-                            });
+                        var routeData = oViewModel.getProperty('/_route');
+                        if (routeData !== undefined && routeData.params !== undefined && routeData.params.oId !== undefined && routeData.params.filters !== undefined) {
+                            var oId = routeData.params.oId;
+                            var routeFilters = routeData.params.filters;
+                            if (oId === '{$this->getWidget()->getMetaObject()->getId()}') {
+                                if (Array.isArray(routeFilters.conditions)) {
+                                    routeFilters.conditions.forEach(function (cond) {
+                                        {$setFilterValues}
+                                    })
+                                }
+                            }
                         }
                     };
                     var sPendingPropery = "/_prefill/pending";

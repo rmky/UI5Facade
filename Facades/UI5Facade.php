@@ -39,10 +39,15 @@ use exface\Core\Facades\AbstractFacade\AbstractFacade;
  * 
  * ## Custom facade options for widgets
  * 
- * ### Button
+ * ### `Button` and derivatives
  * 
- * - `custom_request_data_script` - allows to process the javascript variable `requestData`
+ * - `custom_request_data_script` [string] - allows to process the javascript variable `requestData`
  * right before the action is actually performed. Returning FALSE will prevent the the action!
+ * 
+ * ### `Input` and derivatives
+ * 
+ * - `advance_focus_on_enter` [boolean] - makes the focus go to the next focusable widget when ENTER 
+ * is pressed (in addition to the default TAB).
  * 
  * @method ui5AbstractElement getElement()
  * 

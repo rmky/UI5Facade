@@ -20,7 +20,7 @@ use exface\Core\Actions\SendToWidget;
  * 
  * ## Custom facade options
  * 
- * - `custom_request_data_script` - allows to process the javascript variable `requestData`
+ * - `custom_request_data_script` [string] - allows to process the javascript variable `requestData`
  * right before the action is actually performed. Returning FALSE will prevent the the action!
  * 
  * Example:

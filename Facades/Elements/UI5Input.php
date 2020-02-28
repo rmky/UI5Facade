@@ -4,9 +4,29 @@ namespace exface\UI5Facade\Facades\Elements;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryDisableConditionTrait;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryInputValidationTrait;
 use exface\Core\Interfaces\Widgets\iHaveValue;
+use exface\Core\DataTypes\BooleanDataType;
 
 /**
- * Generates OpenUI5 inputs
+ * Generates sap.m.Input fow `Input` widgets.
+ * 
+ * ## Custom facade options
+ * 
+ * - `advance_focus_on_enter` [boolean] - makes the focus go to the next focusable widget when ENTER 
+ * is pressed (in addition to the default TAB).
+ * 
+ * Example:
+ * 
+ * ```
+ * {
+ *  "widget_type": "Button",
+ *  "facade_options": {
+ *      "exface.UI5Facade.UI5Facade": {
+ *          "advance_focus_on_enter": "true"
+ *      }
+ *  }
+ * }
+ * 
+ * ```
  *
  * @author Andrej Kabachnik
  *        
@@ -301,6 +321,32 @@ JS;
     public function buildJsSetFocus() : string
     {
         return "sap.ui.getCore().byId('{$this->getId()}').focus()";
+    }
+    
+    protected function buildJsSetFocusToNext() : string
+    {
+        return <<<JS
+
+                (function(){
+                    var jqFocusable = $('a[href], area[href], input, select, textarea, button, iframe, object, embed, *[tabindex], *[contenteditable]').not('[tabindex=-1], [disabled], :hidden');
+                    var iCurIdx = jqFocusable.index(sap.ui.getCore().byId('{$this->getId()}').getFocusDomRef());
+                    if (iCurIdx === -1 || iCurIdx === (jqFocusable.length + 1)) return;
+                    var sNextDomId = jqFocusable[iCurIdx + 1].id; 
+                    var sNextId = sNextDomId.substr(0, sNextDomId.indexOf('-'));
+                    sap.ui.getCore().byId(sNextId).focus()
+                })();
+
+JS;
+    }
+    
+    protected function buildJsPseudoEventHandlers()
+    {
+        if ($facadeOptUxon = $this->getWidget()->getFacadeOptions($this->getFacade())) {
+            if (BooleanDataType::cast($facadeOptUxon->getProperty('advance_focus_on_enter')) === true) {
+                $this->addPseudoEventHandler('onsapenter', $this->buildJsSetFocusToNext());
+            }
+        }
+        return parent::buildJsPseudoEventHandlers();
     }
 }
 ?>

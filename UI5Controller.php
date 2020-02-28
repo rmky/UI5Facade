@@ -876,50 +876,7 @@ JS;
                 {$rootElement->getServerAdapter()->buildJsServerRequest($action, 'oResultModel', 'params', $onModelLoadesJs, $onErrorJs, $onOfflineJs)}
             }
 JS;
-        
-        /*return <<<JS
-        
-            var oRouteParams = {$oViewModelJs}.getProperty('/_route').params;
-            if (! (Object.keys(oRouteParams).length === 0 && oRouteParams.constructor === Object)) {
-                {$rootElement->buildJsBusyIconShow()}
-                oViewModel.setProperty('/_prefill/pending', true);
-                var data = $.extend({}, {
-                    action: "exface.Core.ReadPrefill",
-    				resource: "{$widget->getPage()->getAliasWithNamespace()}",
-    				element: "{$triggerWidget->getId()}",
-                }, oRouteParams);
-    			$.ajax({
-                    url: "{$rootElement->getAjaxUrl()}",
-                    type: "POST",
-    				data: data,
-                    success: function(response, textStatus, jqXHR) {
-                        {$oViewModelJs}.setProperty('/_prefill/pending', false);
-                        {$this->buildJsPrefillLoaderSuccess('response', $oViewJs)}
-                        {$rootElement->buildJsBusyIconHide()}
-                    },
-                    error: function(jqXHR, textStatus, errorThrown){
-                        oViewModel.setProperty('/_prefill/pending', false);
-                        {$rootElement->buildJsBusyIconHide()}
-                        {$this->buildJsPrefillLoaderError('jqXHR', $oViewJs)}
-                    }
-    			})
-            }
-JS;
-*/
-    }
-    
-    protected function buildJsPrefillLoaderError(string $jqXHR = 'jqXHR', string $oViewJs = 'oView')
-    {
-        return <<<JS
-        
-                    if (navigator.onLine === false) {
-                        {$oViewJs}.getController().getRouter().getTargets().display("offline");
-                    } else {
-                        {$this->buildJsComponentGetter()}.showAjaxErrorDialog({$jqXHR})
-                    }
-                    
-JS;
-    }
+    }    
     
     protected function buildJsPrefillLoaderSuccess(string $responseJs = 'response', string $oViewJs = 'oView') : string
     {

@@ -32,7 +32,10 @@ use exface\Core\Events\DataSheet\OnBeforeReadDataEvent;
 class Webapp implements WorkbenchDependantInterface
 {
     const VIEW_FILE_SUFFIX = '.view.js';
+    
     const CONTROLLER_FILE_SUFFIX = '.controller.js';
+    
+    const WIDGET_DELIMITER = 'widget';
     
     private $workbench = null;
     
@@ -50,7 +53,6 @@ class Webapp implements WorkbenchDependantInterface
     
     private $models = [];
     
-    const WIDGET_DELIMITER = 'widget';
     
     public function __construct(UI5Facade $facade, string $ui5AppId, string $facadeFolder, array $config)
     {
@@ -488,7 +490,7 @@ class Webapp implements WorkbenchDependantInterface
     }
     
     /**
-     * Computes the view name for a given widget: e.g. e.g. my.app.root.view.my.app.page_alias.widget.widget_id...
+     * Computes the view name for a given widget: e.g. my.app.root.view.my.app.page_alias.widget.widget_id...
      * 
      * @see getWidgetFromPath() for more details.
      * 
@@ -515,7 +517,7 @@ class Webapp implements WorkbenchDependantInterface
     }
     
     /**
-     * Returns the controller name for the given widget: e.g. e.g. my.app.root.controller.my.app.page_alias.widget.widget_id...
+     * Returns the controller name for the given widget: e.g. my.app.root.controller.my.app.page_alias.widget.widget_id...
      * 
      * @see getWidgetFromPath() for more details.
      * 

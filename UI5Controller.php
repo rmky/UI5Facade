@@ -420,7 +420,7 @@ JS;
         } else {
             $name = $this->getName();
         }
-        return $this->webapp::convertNameToPath($name, '.controller.js');
+        return $this->getWebapp()->convertNameToPath($name, $this->getWebapp()->getControllerFileSuffix());
     }
     
     /**

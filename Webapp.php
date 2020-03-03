@@ -31,6 +31,9 @@ use exface\Core\Events\DataSheet\OnBeforeReadDataEvent;
 
 class Webapp implements WorkbenchDependantInterface
 {
+    const VIEW_FILE_SUFFIX = '.view.js';
+    const CONTROLLER_FILE_SUFFIX = '.controller.js';
+    
     private $workbench = null;
     
     private $facade = null;
@@ -46,6 +49,8 @@ class Webapp implements WorkbenchDependantInterface
     private $controllers = [];
     
     private $models = [];
+    
+    const WIDGET_DELIMITER = 'widget';
     
     public function __construct(UI5Facade $facade, string $ui5AppId, string $facadeFolder, array $config)
     {
@@ -115,7 +120,7 @@ class Webapp implements WorkbenchDependantInterface
                 }
                 
                 // Listen to OnPrefillChangePropertyEvent and generate model bindings from it
-                $model = $this->createViewModel($this->facade->getViewName($widget, $this->getRootPage()));
+                $model = $this->createViewModel($this->getViewName($widget));
                 $eventHandler = function($event) use ($model) {
                     $model->setBindingPointer($event->getWidget(), $event->getPropertyName(), $event->getPrefillValuePointer());
                 };
@@ -206,8 +211,8 @@ class Webapp implements WorkbenchDependantInterface
                 return $this->getFromFileTemplate($route);
             case StringDataType::startsWith($route, 'view/'):
                 $path = StringDataType::substringAfter($route, 'view/');
-                if (StringDataType::endsWith($path, '.view.js')) {
-                    $path = StringDataType::substringBefore($path, '.view.js');
+                if (StringDataType::endsWith($path, $this->getViewFileSuffix())) {
+                    $path = StringDataType::substringBefore($path, $this->getViewFileSuffix());
                     try {
                         $widget = $this->getWidgetFromPath($path);
                         if ($widget) {
@@ -223,8 +228,8 @@ class Webapp implements WorkbenchDependantInterface
                 }
             case StringDataType::startsWith($route, 'controller/'):
                 $path = StringDataType::substringAfter($route, 'controller/');
-                if (StringDataType::endsWith($path, '.controller.js')) {
-                    $path = StringDataType::substringBefore($path, '.controller.js');
+                if (StringDataType::endsWith($path, $this->getControllerFileSuffix())) {
+                    $path = StringDataType::substringBefore($path, $this->getControllerFileSuffix());
                     try {
                         $widget = $this->getWidgetFromPath($path);
                         if ($widget) {
@@ -407,6 +412,18 @@ class Webapp implements WorkbenchDependantInterface
     }
     
     /**
+     * Returns the widget, that the given path (e.g. appRoot/view/mypage/widget/widget_id) points to.
+     * 
+     * SAP UI5 computes it's routes (= pathes) by replacing `.` in view or controller names by `/` - in
+     * other words, namespaces become subfolders. View and controller names for widgets are created by
+     * `getViewName()` and `getControllerName()`. This method basically does the opposite: it split's
+     * the path into it's components and puzzles them back into a page selector and a widget id. Those
+     * two together define a widget unambiguosly.
+     * 
+     * @see getViewName()
+     * @see getControllerName()
+     * @see Facades/Webapp/Controller/BaseController.js::_getUrlFromRoute()
+     * @see Facades/Webapp/Controller/BaseController.js::getViewName()
      * 
      * @param string $path
      * @throws UI5RouteInvalidException
@@ -416,26 +433,33 @@ class Webapp implements WorkbenchDependantInterface
     {
         $parts = explode('/', $path);
         $cnt = count($parts);
-        if ($cnt === 1 || $cnt === 2) {
+        if ($cnt === 1 || ($cnt > 1 && $parts[1] === self::WIDGET_DELIMITER)) {
             // URLs of non-namespaced pages like 
             // - appRoot/view/mypage
-            // - appRoot/view/mypage/widget_id
+            // - appRoot/view/mypage/widget/widget_id
             $pageAlias = $parts[0];
-        } elseif ($cnt === 3 || $cnt === 4) {
+        } elseif (($cnt === 3 && !in_array(self::WIDGET_DELIMITER, $parts)) || ($cnt > 3 && in_array(self::WIDGET_DELIMITER, $parts))) {
             // URLs of namespaced pages like 
             // - appRoot/view/vendor/app/page
-            // - appRoot/view/vendor/app/page/widget_id
-            $pageAlias = $parts[0] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[1] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[2];
+            // - appRoot/view/vendor/app/page/widget/widget_id
+            $pageAlias = $parts[0] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[1] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[2];          
         } else {
             throw new UI5RouteInvalidException('Route "' . $path . '" not found!');
         }
         
         $page = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $pageAlias);
         
-        if ($cnt === 4) {
-            $widget = $page->getWidget($parts[3]);
-        } elseif ($cnt === 2) {
-            $widget = $page->getWidget($parts[1]);
+        if (in_array(self::WIDGET_DELIMITER, $parts)) {            
+            $idx = array_search(self::WIDGET_DELIMITER, $parts);
+            $widgetId = '';
+            for ($i = $idx + 1; $i < $cnt; $i++) {
+                $widgetId .= $parts[$i] . '_';
+            }
+            if ($widgetId === '') {
+                throw new UI5RouteInvalidException('Route "' . $path . '" not found!');
+            }
+            $widgetId = substr($widgetId, 0, -1);
+            $widget = $page->getWidget($widgetId);
         } else {
             $widget = $page->getWidgetRoot();
         }
@@ -461,6 +485,60 @@ class Webapp implements WorkbenchDependantInterface
     public function getComponentUrl() : string
     {
         return 'exface' . $this->facade->getConfig()->getOption('DEFAULT_AJAX_URL') . '/webapps/' . $this->getComponentName() . '/';
+    }
+    
+    /**
+     * Computes the view name for a given widget: e.g. e.g. my.app.root.view.my.app.page_alias.widget.widget_id...
+     * 
+     * @see getWidgetFromPath() for more details.
+     * 
+     * @param WidgetInterface $widget
+     * @return string
+     */
+    public function getViewName(WidgetInterface $widget) : string
+    {
+        $appRootPage = $this->getRootPage();
+        $pageAlias = $widget->getPage()->getAliasWithNamespace() ? $widget->getPage()->getAliasWithNamespace() : $appRootPage->getAliasWithNamespace();
+        return $appRootPage->getAliasWithNamespace() . '.view.' . $pageAlias . ($widget->hasParent() ? '.' . self::WIDGET_DELIMITER . '.' . str_replace('_', '.', $widget->getId()) : '');
+    }
+    
+    /**
+     * Returns the suffix of view files - `.view.js` by default.
+     * 
+     * @see getWidgetFromPath() for more details.
+     * 
+     * @return string
+     */
+    public function getViewFileSuffix() : string
+    {
+        return self::VIEW_FILE_SUFFIX;
+    }
+    
+    /**
+     * Returns the controller name for the given widget: e.g. e.g. my.app.root.controller.my.app.page_alias.widget.widget_id...
+     * 
+     * @see getWidgetFromPath() for more details.
+     * 
+     * @param WidgetInterface $widget
+     * @return string
+     */
+    public function getControllerName(WidgetInterface $widget) : string
+    {
+        $appRootPage = $this->getRootPage();
+        $pageAlias = $widget->getPage()->getAliasWithNamespace() ? $widget->getPage()->getAliasWithNamespace() : $appRootPage->getAliasWithNamespace();
+        return $appRootPage->getAliasWithNamespace() . '.controller.' . $pageAlias . ($widget->hasParent() ? '.' . self::WIDGET_DELIMITER . '.' . str_replace('_', '.', $widget->getId()) : '');
+    }
+    
+    /**
+     * Returns the suffix of view files - `.controller.js` by default.
+     *
+     * @see getWidgetFromPath() for more details.
+     * 
+     * @return string
+     */
+    public function getControllerFileSuffix() : string
+    {
+        return self::CONTROLLER_FILE_SUFFIX;
     }
     
     public function getComponentPreload() : string
@@ -549,7 +627,16 @@ class Webapp implements WorkbenchDependantInterface
         return $resources;
     }
     
-    public static function convertNameToPath(string $name, string $suffix = '.view.js') : string
+    /**
+     * Converts given name into a path by replacing all '.' with '/' and adding the suffix
+     * 
+     * @see getWidgetFromPath() for more details.
+     * 
+     * @param string $name
+     * @param string $suffix
+     * @return string
+     */
+    public function convertNameToPath(string $name, string $suffix = self::VIEW_FILE_SUFFIX) : string
     {
         $path = str_replace('.', '/', $name);
         return $path . $suffix;
@@ -563,10 +650,10 @@ class Webapp implements WorkbenchDependantInterface
     {
         return [
             'controller/BaseController.js',
-            'controller/App.controller.js',
-            'controller/NotFound.controller.js',
-            'controller/Offline.controller.js',
-            'controller/Error.controller.js'
+            'controller/App' . $this->getControllerFileSuffix(),
+            'controller/NotFound' . $this->getControllerFileSuffix(),
+            'controller/Offline' . $this->getControllerFileSuffix(),
+            'controller/Error' . $this->getControllerFileSuffix()
         ];
     }
     
@@ -577,9 +664,9 @@ class Webapp implements WorkbenchDependantInterface
     public function getBaseViews() : array
     {
         return [
-            'view/App.view.js',
-            'view/NotFound.view.js',
-            'view/Offline.view.js'
+            'view/App' . $this->getViewFileSuffix(),
+            'view/NotFound' . $this->getViewFileSuffix(),
+            'view/Offline' . $this->getViewFileSuffix()
         ];
     }
     
@@ -682,7 +769,7 @@ class Webapp implements WorkbenchDependantInterface
             'error_text' => $text,
             'error_description' => $description            
         ]);
-        return $this->getFromFileTemplate('view/Error.view.js', $placeholders);
+        return $this->getFromFileTemplate('view/Error' . $this->getViewFileSuffix(), $placeholders);
     }
     
     /**
@@ -693,7 +780,7 @@ class Webapp implements WorkbenchDependantInterface
      */
     protected function getErrorController(\Throwable $exception) : string
     {
-        return $this->getFromFileTemplate('controller/Error.controller.js');
+        return $this->getFromFileTemplate('controller/Error' . $this->getControllerFileSuffix());
     }
     
     /**

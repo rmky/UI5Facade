@@ -15,21 +15,21 @@ interface UI5ViewInterface {
     public function getRootElement() : UI5AbstractElement;
     
     /**
-     * Returns the name of the view: e.g. my.app.root.view.my.app.Page
+     * Returns the name of the view: e.g. my.app.root.view.my.app.page_alias
      *
      * @return string
      */
     public function getName() : string;
     
     /**
-     * Returns the path to the controller: e.g. my.app.root/view/my/app/Page.view.js
+     * Returns the path to the view: e.g. my.app.root/view/my/app/page_alias.view.js
      *
      * @return string
      */
     public function getPath() : string;
     
     /**
-     * Returns the name of the default route of the view: e.g. my.app.Page
+     * Returns the name of the default route of the view: e.g. my.app.page_alias
      * 
      * @return string
      */

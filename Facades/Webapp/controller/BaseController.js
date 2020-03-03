@@ -14,7 +14,7 @@ sap.ui.define([
 		},
 		
 		getViewName : function(sPageAlias, sWidgetId) {
-			return sPageAlias + (sWidgetId ? '.'+sWidgetId : '');
+			return sPageAlias + (sWidgetId ? '.' + 'widget' + '.' + sWidgetId.replace(/\_/g, '.') : '');
 		},
 		
 		/**

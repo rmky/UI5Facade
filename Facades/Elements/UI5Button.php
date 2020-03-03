@@ -246,7 +246,7 @@ JS;
                                 oComponent.runAsOwner(function(){
                                     return sap.ui.core.mvc.JSView.create({
                                         id: sViewId,
-                                        viewName: "{$this->getFacade()->getViewName($targetWidget, $this->getController()->getWebapp()->getRootPage())}"
+                                        viewName: "{$this->getController()->getWebapp()->getViewName($targetWidget)}"
                                     }).then(function(oView){
                                         var oParentView = {$this->getController()->getView()->buildJsViewGetter($this)};
                                         if (oParentView !== undefined) {
@@ -443,12 +443,7 @@ JS;
     protected function buildJsCloseDialog($widget, $input_element)
     {
         if ($widget->getWidgetType() == 'DialogButton' && $widget->getCloseDialogAfterActionSucceeds()) {
-            $dialogElement = $this->getFacade()->getElement($widget->getDialog());
-            if ($dialogElement->isMaximized()) {
-                return $this->getController()->buildJsControllerGetter($this) . '.onNavBack();';
-            } else {
-                return "try{ sap.ui.getCore().byId('{$dialogElement->getId()}').close(); } catch (e) { console.error('Could not close dialog: ' + e); }";
-            }
+            return $this->getFacade()->getElement($widget->getDialog())->buildJsCloseDialog();
         }
         return "";
     }

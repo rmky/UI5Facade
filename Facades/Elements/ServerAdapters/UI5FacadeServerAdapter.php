@@ -131,6 +131,7 @@ JS;
                         {$oModelJs}.setData({});
                     }
                     if (Array.isArray(response.rows) && response.rows.length === 1) {
+                        sap.ui.getCore().byId('{$this->getElement()->getId()}').getModel('view').setProperty('/_prefill/data', response);
                         {$oModelJs}.setData(response.rows[0]);
                     }
                     {$onModelLoadedJs}

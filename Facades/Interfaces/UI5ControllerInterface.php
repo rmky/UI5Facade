@@ -72,14 +72,14 @@ interface UI5ControllerInterface {
     public function buildJsController() : string;
     
     /**
-     * Returns the name of the controller: e.g. my.app.root.controller.my.app.widgetPage
+     * Returns the name of the controller: e.g. my.app.root.controller.my.app.page_alias
      * 
      * @return string
      */
     public function getName() : string;
     
     /**
-     * Returns the path to the controller: e.g. my/app/root/controller/my/app/widgetPage.controller.js
+     * Returns the path to the controller: e.g. my/app/root/controller/my/app/page_alias.controller.js
      * 
      * @return string
      */

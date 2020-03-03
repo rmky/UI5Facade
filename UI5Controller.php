@@ -13,6 +13,8 @@ use exface\Core\Interfaces\Widgets\iCanPreloadData;
 use exface\Core\Interfaces\Actions\iShowWidget;
 use exface\UI5Facade\Facades\Elements\UI5Dialog;
 use exface\Core\Exceptions\Facades\FacadeRuntimeError;
+use exface\Core\Factories\ActionFactory;
+use exface\Core\Widgets\DataTable;
 
 class UI5Controller implements UI5ControllerInterface
 {
@@ -418,7 +420,7 @@ JS;
         } else {
             $name = $this->getName();
         }
-        return $this->webapp::convertNameToPath($name, '.controller.js');
+        return $this->getWebapp()->convertNameToPath($name, $this->getWebapp()->getControllerFileSuffix());
     }
     
     /**
@@ -839,49 +841,42 @@ JS;
     {
         $rootElement = $this->getView()->getRootElement();
         $widget = $rootElement->getWidget();
+        $action = ActionFactory::createFromString($widget->getWorkbench(), 'exface.Core.ReadPrefill', $widget);
+                
+        $onModelLoadesJs .= <<<JS
+                        
+                        {$oViewModelJs}.setProperty('/_prefill/pending', false);
+                        {$rootElement->buildJsBusyIconHide()}
+JS;
+                        
+        $onErrorJs = <<<JS
+
+                        oViewModel.setProperty('/_prefill/pending', false);
+                        {$rootElement->buildJsBusyIconHide()}
+JS;
+                        
+        $onOfflineJs = <<<JS
+                        
+                        {$oViewJs}.getController().getRouter().getTargets().display("offline");
+JS;
+        
         
         return <<<JS
         
-            var oRouteParams = {$oViewModelJs}.getProperty('/_route').params;
+            var oRouteParams = {$oViewModelJs}.getProperty('/_route').params;            
+            var oResultModel = sap.ui.getCore().byId("{$rootElement->getId()}").getModel();
             if (! (Object.keys(oRouteParams).length === 0 && oRouteParams.constructor === Object)) {
                 {$rootElement->buildJsBusyIconShow()}
                 oViewModel.setProperty('/_prefill/pending', true);
-                var data = $.extend({}, {
-                    action: "exface.Core.ReadPrefill",
+                var params = $.extend({}, {
+                    action: "{$action->getAliasWithNamespace()}",
     				resource: "{$widget->getPage()->getAliasWithNamespace()}",
     				element: "{$triggerWidget->getId()}",
-                }, oRouteParams);
-    			$.ajax({
-                    url: "{$rootElement->getAjaxUrl()}",
-                    type: "POST",
-    				data: data,
-                    success: function(response, textStatus, jqXHR) {
-                        {$oViewModelJs}.setProperty('/_prefill/pending', false);
-                        {$this->buildJsPrefillLoaderSuccess('response', $oViewJs)}
-                        {$rootElement->buildJsBusyIconHide()}
-                    },
-                    error: function(jqXHR, textStatus, errorThrown){
-                        oViewModel.setProperty('/_prefill/pending', false);
-                        {$rootElement->buildJsBusyIconHide()}
-                        {$this->buildJsPrefillLoaderError('jqXHR', $oViewJs)}
-                    }
-    			})
+                }, oRouteParams);    			
+                {$rootElement->getServerAdapter()->buildJsServerRequest($action, 'oResultModel', 'params', $onModelLoadesJs, $onErrorJs, $onOfflineJs)}
             }
 JS;
-    }
-    
-    protected function buildJsPrefillLoaderError(string $jqXHR = 'jqXHR', string $oViewJs = 'oView')
-    {
-        return <<<JS
-        
-                    if (navigator.onLine === false) {
-                        {$oViewJs}.getController().getRouter().getTargets().display("offline");
-                    } else {
-                        {$this->buildJsComponentGetter()}.showAjaxErrorDialog({$jqXHR})
-                    }
-                    
-JS;
-    }
+    }    
     
     protected function buildJsPrefillLoaderSuccess(string $responseJs = 'response', string $oViewJs = 'oView') : string
     {
@@ -895,7 +890,7 @@ JS;
                     if (Object.keys(oDataModel.getData()).length !== 0) {
                         oDataModel.setData({});
                     }
-                    if (Array.isArray({$responseJs}.rows) && {$responseJs}.rows.length === 1) {
+                    if (Array.isArray({$responseJs}.rows) && {$responseJs}.rows.length === 1) {                       
                         oDataModel.setData({$responseJs}.rows[0]);
                     }
                     

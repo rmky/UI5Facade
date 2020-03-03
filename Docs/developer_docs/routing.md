@@ -21,13 +21,13 @@ Once the app is loaded, the regular UI5 router is used to pull in the actual con
 The view corresponding to a UI page can be accessed via the following URL where "entry.point.alias" corresponds to the webapp root as described above
 
 ```
-api/ui5/webapp/entry.point.alias/view/pageVendor/pageApp/PageAlias.view.js
+api/ui5/webapp/entry.point.page_alias/view/pageVendor/pageApp/page_alias.view.js
 ```
 
 In the code, these views are accessible via
 
 ```
-this.getRouter().navTo('pageVendor.pageApp.PageAlias');
+this.getRouter().navTo('pageVendor.pageApp.page_alias');
 ```
 
 ### Widget views
@@ -35,22 +35,23 @@ this.getRouter().navTo('pageVendor.pageApp.PageAlias');
 Any widget within the page can be represented as a view itself. This is used for lazy loading - in particular for dialogs. These views reside in a virtual subfolder named after the page: e.g.
 
 ```
-api/ui5/webapp/entry.point.alias/view/pageVendor/pageApp/PageAlias/Widget_id.view.js
+api/ui5/webapp/entry.point.alias/view/pageVendor/pageApp/page_alias/widget/root_widget_id/.../target_widget_id.view.js
 ```
 
 In the code of a controller, these views are accessible via
 
 ```
-this.navTo('pageVendor.pageApp.PageAlias.Widget_id');
+this.navTo('pageVendor.pageApp.page_alias', 'widget_id');
 ```
 
 ### Static views
 
 Apart from dynamically generated views, there are the following static views, that do not depend on the UI configuration:
 
-- "App" view
-- "NotFound" view
-- "Offline" view
+- "App.view.js"
+- "NotFound.view.js"
+- "Offline.view.js"
+- "Error.view.js"
 
 These views reside directly in the "view" virtual folder and can be referenced by the above names (e.g. <code>this.getRouter().navTo('Offline')</code>).
 
@@ -65,13 +66,13 @@ Controllers are generated for each view and use the same routing patterns but un
 In addition to regular views and controllers, the facade API can also supplie both combined into a single JS document:
 
 ```
-api/ui5/webapp/entry.point.alias/viewcontroller/pageVendor/pageApp/PageAlias.viewcontroller.js
+api/ui5/webapp/entry.point.alias/viewcontroller/pageVendor/pageApp/page_alias.viewcontroller.js
 ```
 
 or in the case of a specific widget:
 
 ```
-api/ui5/webapp/entry.point.alias/viewcontroller/pageVendor/pageApp/PageAlias/Widget_id.viewcontroller.js
+api/ui5/webapp/entry.point.alias/viewcontroller/pageVendor/pageApp/page_alias/widget/root_widget_id/.../target_widget_id.viewcontroller.js
 ```
 
 ## Working with the UI5 Router
@@ -89,35 +90,35 @@ The following routing configuration (in <code>manifest.json</code>) shows some e
 	"config": {},
 	"routes": [
 		{
-			"pattern": "",
-			"name": "rootVendor.rootApp.rootPageAlias",
-			"target": "rootVendor.rootApp.rootPageAlias"
+			"pattern": ":params:",
+			"name": "rootVendor.rootApp.rootpage_alias",
+			"target": "rootVendor.rootApp.rootpage_alias"
 		},
 		{
-			"pattern": "pageVendor.pageApp.Page1Alias/:params:",
-			"name": "pageVendor.pageApp.Page1Alias",
-			"target": "pageVendor.pageApp.PageAlias"
+			"pattern": "pageVendor.pageApp.page1_alias/:params:",
+			"name": "pageVendor.pageApp.page1_alias",
+			"target": "pageVendor.pageApp.page1_alias"
 		},
 		{
-			"pattern": "pageVendor.pageApp.Page1Alias.Widget_Id/:params:",
-			"name": "pageVendor.pageApp.Page1Alias.Widget_Id",
-			"target": "pageVendor.pageApp.Page1Alias.Widget_Id"
+			"pattern": "pageVendor.pageApp.page1_alias.widget.root_widget_id.....target_widget_id/:params:",
+			"name": "pageVendor.pageApp.page1_alias.widget.root_widget_id.....target_widget_id",
+			"target": "pageVendor.pageApp.page1_alias.widget.root_widget_id.....target_widget_id"
 		}
 	],
 	"targets": {
-		"rootVendor.rootApp.rootPageAlias": {
-		   "viewId": "rootVendor.rootApp.rootPageAlias",
-		   "viewName": "rootVendor.rootApp.rootPageAlias",
+		"rootVendor.rootApp.rootpage_alias": {
+		   "viewId": "rootVendor.rootApp.rootpage_alias",
+		   "viewName": "rootVendor.rootApp.rootpage_alias",
 		   "viewLevel" : 1
 		},
-		"pageVendor.pageApp.Page1Alias": {
-		   "viewId": "pageVendor.pageApp.Page1Alias",
-		   "viewName": "pageVendor.pageApp.Page1Alias",
+		"pageVendor.pageApp.page1_alias": {
+		   "viewId": "pageVendor.pageApp.page1_alias",
+		   "viewName": "pageVendor.pageApp.page1_alias",
 		   "viewLevel" : 2
 		},
-		"pageVendor.pageApp.Page1Alias.Widget_Id": {
-		   "viewId": "pageVendor.pageApp.Page1Alias.Widget_Id",
-		   "viewName": "pageVendor.pageApp.Page1Alias.Widget_Id",
+		"pageVendor.pageApp.page1_alias.widget.root_widget_id.....target_widget_id": {
+		   "viewId": "pageVendor.pageApp.page1_alias.widget.root_widget_id.....target_widget_id",
+		   "viewName": "pageVendor.pageApp.page1_alias.widget.root_widget_id.....target_widget_id",
 		   "viewLevel" : 3
 		},
 		"notFound": {
@@ -134,7 +135,7 @@ The following routing configuration (in <code>manifest.json</code>) shows some e
 }
 ```
 
-Basically every view has a default route matching it's view name. Thus, you can call <code>this.getRouter().getRoute("vendor.app.PageAlias")</code> in a controller to get the route to a specific page. Keep in mind, though, that routes are only created when the view is loaded via <code>BaseController.navTo()</code> (see below), so when getting a route, you must be sure, it was already loaded!
+Basically every view has a default route matching it's view name. Thus, you can call <code>this.getRouter().getRoute("vendor.app.page_alias")</code> in a controller to get the route to a specific page. Keep in mind, though, that routes are only created when the view is loaded via <code>BaseController.navTo()</code> (see below), so when getting a route, you must be sure, it was already loaded!
 
 Every route also has a generic optional parameter <code>params</code>, which accepts a JSON encoded object with parameters like data, prefill, etc.
 
@@ -147,7 +148,7 @@ The <code>BaseController</code> provides a custom resource loader, that preloads
 Routing can be performed programmatically via nav-functions of the <code>BaseController</code>:
 
 ```
-this.navTo('pageVendor.pageApp.PageAlias.Widget_id');
+this.navTo('pageVendor.pageApp.page_alias', 'widget_id');
 ```
 
 This method should be generally preferred to <code>this.getRouter().navTo()</code> becuase it makes sure all required resources are loaded asynchronously.
@@ -157,7 +158,7 @@ This method should be generally preferred to <code>this.getRouter().navTo()</cod
 The <code>navTo</code> method of the <code>BaseController</code> allows a lot of customization for the AJAX request used to load the view from the server: it's third parameter accepts the same settings object, your would pass to <code>jQuery.ajax()</code>. Here is an example controller code:
 
 ```
-this.navTo('pageVendor.pageApp.PageAlias', '', {
+this.navTo('pageVendor.pageApp.page_alias', '', {
 	method: 'POST',
 	headers: [/* ... */]
 });
@@ -166,6 +167,10 @@ this.navTo('pageVendor.pageApp.PageAlias', '', {
 ### Passing data
 
 Every route has a generic optional parameter <code>params</code>, that accepts a JSON encoded object with any kind of parameters. Thes parameter object is automatically made available in the view model and, thus, the target controller via <code>this.getView().getModel('view').getProperty('_route/params')</code>. This way, you can allways access data, prefill and other parameters passed when the view was loaded.
+
+### Prefilling values via URL
+
+The generic option to pass data to a route (as described above) also allows to create URLs with prefill-values - typically used to preset filters, etc. See [designer's docs](../Designing_UI5_apps/Prefilling_values.md) for details.
 
 ### Modifying/extending fetched views
 

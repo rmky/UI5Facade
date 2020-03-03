@@ -88,7 +88,7 @@ JS;
             $controller->addOnDefineScript("exfPreloader.addPreload('{$widget->getTableObject()->getAliasWithNamespace()}', ['{$cols}'], [], '{$widget->getPage()->getId()}', '{$widget->getTable()->getId()}');");
         }
         
-        $controller->addMethod('onSuggest', $this, 'oEvent', $this->buildJsDataLoder('oEvent'));
+        $controller->addMethod('onSuggest', $this, 'oEvent', $this->buildJsDataLoader('oEvent'));
         
         if (! $this->isValueBoundToModel() && $value = $widget->getValueWithDefaults()) {
             // If the widget value is set explicitly, we either set the key only or the 
@@ -320,11 +320,27 @@ JS;
      * @param string $oEventJs
      * @return string
      */
-    protected function buildJsDataLoder(string $oEventJs = 'oEvent') : string
+    protected function buildJsDataLoader(string $oEventJs = 'oEvent') : string
     {
         $widget = $this->getWidget();
         $configuratorElement = $this->getFacade()->getElement($widget->getTable()->getConfiguratorWidget());
         $serverAdapter = $this->getFacade()->getElement($widget->getTable())->getServerAdapter();
+        
+        $silentOnModelLoadedJs = <<<JS
+                            
+                {$this->buildJsBusyIconShow()}
+                var data = oModel.getProperty('/rows');
+                var curKey = oInput.{$this->buildJsValueGetterMethod()};
+                if (parseInt(oModel.getProperty("/recordsTotal")) == 1 && (curKey === '' || data[0]['{$widget->getValueColumn()->getDataColumnName()}'] == curKey)) {
+                    oInput.{$this->buildJsSetSelectedKeyMethod("data[0]['{$widget->getValueColumn()->getDataColumnName()}']", "data[0]['{$widget->getTextColumn()->getDataColumnName()}']")}
+                    oInput.closeSuggestions();
+                    oInput.setValueState(sap.ui.core.ValueState.None);
+                } else {
+                    oInput.setSelectedKey("");
+                    oInput.setValueState(sap.ui.core.ValueState.Error);
+                }
+                {$this->buildJsBusyIconHide()}
+JS;
         
         return <<<JS
 
@@ -352,35 +368,18 @@ JS;
                 $.extend(params, qParams);
 
                 var oModel = oInput.getModel('{$this->getModelNameForAutosuggest()}');
-                if (silent) {
-                    {$this->buildJsBusyIconShow()}
-                    var silencer = function(oEvent){
-                        if (oEvent.getParameters().success) {
-                            var data = this.getProperty('/rows');
-                            var curKey = oInput.{$this->buildJsValueGetterMethod()};
-                            if (parseInt(this.getProperty("/recordsTotal")) == 1 && (curKey === '' || data[0]['{$widget->getValueColumn()->getDataColumnName()}'] == curKey)) {
-                                oInput.{$this->buildJsSetSelectedKeyMethod("data[0]['{$widget->getValueColumn()->getDataColumnName()}']", "data[0]['{$widget->getTextColumn()->getDataColumnName()}']")}
-                                oInput.closeSuggestions();
-                                oInput.setValueState(sap.ui.core.ValueState.None);
-                            } else {
-                                oInput.setSelectedKey("");
-                                oInput.setValueState(sap.ui.core.ValueState.Error);
-                            }
-                        }
-                        this.detachRequestCompleted(silencer);
-                        {$this->buildJsBusyIconHide()}
-                    };
-                    oModel.attachRequestCompleted(silencer);
-                }
+                
                 if (fnCallback) {
                     oModel.attachRequestCompleted(function(){
                         fnCallback();
                         oModel.detachRequestCompleted(fnCallback);
                     });
                 }
-
-                {$serverAdapter->buildJsServerRequest($widget->getLazyLoadingAction(), 'oModel', 'params', $this->buildJsBusyIconHide(), $this->buildJsBusyIconHide())}
-
+                if (silent) {
+                    {$serverAdapter->buildJsServerRequest($widget->getLazyLoadingAction(), 'oModel', 'params', $silentOnModelLoadedJs, $this->buildJsBusyIconHide())}
+                } else {
+                    {$serverAdapter->buildJsServerRequest($widget->getLazyLoadingAction(), 'oModel', 'params', $this->buildJsBusyIconHide(), $this->buildJsBusyIconHide())}
+                }
 JS;
     }
     

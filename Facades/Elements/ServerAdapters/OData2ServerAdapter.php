@@ -257,6 +257,7 @@ JS;
         $dateTimeFormat = DateTimeDataType::DATETIME_ICU_FORMAT_INTERNAL;
         
         return <<<JS
+            
             var oDataModel = new sap.ui.model.odata.v2.ODataModel({$this->getODataModelParams($object)});
             var oDataReadParams = {};
             var oDataReadFiltersSearch = [];
@@ -288,6 +289,11 @@ JS;
                 var conditionsCount = conditions.length;               
                 for (var i = 0; i < conditionsCount; i++) {
                     var cond = conditions[i];
+                    var suggestedExpression = 'filter_' + cond.expression
+                    var suggestedValue = {$oParamsJs}[suggestedExpression] || '';
+                    if (suggestedValue !== '') {
+                        cond.value = suggestedValue;
+                    }
                     if (compoundAttributes[cond.expression] !== undefined) {
                         {$this->buildJsCompoundAttributeAddFilters('compoundAttributes', 'cond', 'oAttrsByDataType', 'oDataReadFiltersSearch', $onErrorJs)}
                     } else {
@@ -512,9 +518,9 @@ JS;
                     // Pagination
                     if (oData.__count !== undefined) {
                         oRowData.recordsFiltered = oData.__count;
+                        oRowData.recordsTotal = oData.__count;
                     }
                     {$oModelJs}.setData(oRowData);
-                    var test = {$oModelJs}.getData();
                     {$onModelLoadedJs}
                 },
                 error: function(oError){                    
@@ -742,49 +748,24 @@ JS;
                 {$oModelJs}.setData({});
             }
             if (Array.isArray(oRowData.rows) && oRowData.rows.length === 1) {
+                sap.ui.getCore().byId('{$this->getElement()->getId()}').getModel('view').setProperty('/_prefill/data', oRowData);
                 {$oModelJs}.setData(oRowData.rows[0]);
             }
 
 JS;
-        $onModelLoadedJs = $takeFirstRowOnly . $onModelLoadedJs;
-        $opEQ = EXF_COMPARATOR_EQUALS;
-        $filters = '';
-        $check = '';
-        
-        if ($uidAttr instanceof CompoundAttributeInterface) {
-            foreach($uidAttr->getComponents() as $comp) {
-                $check .= <<<JS
-            
-            var value = oFirstRow["{$comp->getAttribute()->getAlias()}"];
-            if (value === undefined) {
-                var error = "Can not set prefill filters: Make sure prefill data contains value for attribute \"{$comp->getAttribute()->getAlias()}\" of object \"{$object->getAlias()}\" !";
-                {$this->getElement()->buildJsShowError('error', '"ERROR"')}
-                {$onErrorJs}
-            }
-JS;
-                
-                $filters .= <<<JS
 
-                    {
-                        comparator: "{$opEQ}",
-                        expression: "{$comp->getAttribute()->getAlias()}",
-                        object_alias: "{$object->getAliasWithNamespace()}",
-                        value: oFirstRow["{$comp->getAttribute()->getAlias()}"]
-                    },
-JS;
-            }            
-        } else {
-            $check = <<<JS
-            
-            var value = oFirstRow["{$uidAttr->getAlias()}"];
-            if (value === undefined) {
-                var error = "Can not set prefill filters: Make sure prefill data contains value for attribute \"{$uidAttr->getAlias()}\" of object \"{$object->getAlias()}\" !";
-                {$this->getElement()->buildJsShowError('error', '"ERROR"')}
-                {$onErrorJs}
-            }
+        $opEQ = EXF_COMPARATOR_EQUALS;
+        $check = <<<JS
+        
+                var value = oFirstRow["{$uidAttr->getAlias()}"];
+                if (value === undefined) {
+                    var error = "Can not set prefill filters: Make sure prefill data contains value for attribute \"{$uidAttr->getAlias()}\" of object \"{$object->getAlias()}\" !";
+                    {$this->getElement()->buildJsShowError('error', '"ERROR"')}
+                    {$onErrorJs}
+                }
 JS;
             
-            $filters .= <<<JS
+        $filters = <<<JS
 
                     {
                         comparator: "{$opEQ}",
@@ -793,24 +774,29 @@ JS;
                         value: oFirstRow["{$uidAttr->getAlias()}"]
                     }
 JS;
-        }
         
         return <<<JS
         
-            var oFirstRow = {$oParamsJs}.data.rows[0];
-            if (oFirstRow === undefined) {
-                console.error('No data to filter the prefill!');
-                {$this->getElement()->buildJsShowError('"No data to filter the prefill!"', '"ERROR"')}
+            
+            if ({$oParamsJs}.data !== undefined && {$oParamsJs}.data.rows !== undefined) {               
+                var oFirstRow = {$oParamsJs}.data.rows[0];
+                {$check}
+    
+                {$oParamsJs}.data.filters = {
+                    conditions: [
+                        {$filters}
+                    ]
+                };
+                {$this->buildJsDataLoader($oModelJs, $oParamsJs, $takeFirstRowOnly . $onModelLoadedJs, $onErrorJs, $onOfflineJs)}
+            } else if ({$oParamsJs}.filters !== undefined) {
+                {$onModelLoadedJs}    
+            } else {
+                var error = "Incorrect data given to filter the prefill!";
+                console.error(error);
+                {$this->getElement()->buildJsShowError('error', '"ERROR"')}
                 {$onErrorJs}
             }
-            {$check}
-
-            {$oParamsJs}.data.filters = {
-                conditions: [
-                    {$filters}
-                ]
-            };
-            {$this->buildJsDataLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs)}
+            
 JS;
     }
     
@@ -1056,7 +1042,7 @@ JS;
             var rowCount = {$oParamsJs}.data.rows.length;
             var mParameters = {};
             mParameters.groupId = "batchGroup";
-            {$this->buildJsServerResponseHandling($onModelLoadedJs, 'mParameters', 'aResponses', 'rowCount')}
+            {$this->buildJsServerResponseHandling($onModelLoadedJs, 'mParameters', 'aResponses', 'rowCount', $onErrorJs)}
 
             var uidAliases = {$uidAliasesJson};
             var uidAlias = '{$uidAttributeAlias}';            
@@ -1124,7 +1110,7 @@ JS;
             var aResponses = [];
             var mParameters = {};
             mParameters.groupId = "batchGroup";
-            {$this->buildJsServerResponseHandling($onModelLoadedJs, 'mParameters', 'aResponses', 'rowCount')}
+            {$this->buildJsServerResponseHandling($onModelLoadedJs, 'mParameters', 'aResponses', 'rowCount', $onErrorJs)}
 
             var uidAliases = {$uidAliasesJson};
             var uidAlias = '{$uidAttributeAlias}';
@@ -1323,8 +1309,8 @@ JS;
                 success: function() {                    
                 },
                 error: function(oError) {
+                    {$this->buildJsServerResponseError('oError')}                    
                     {$onErrorJs}
-                    {$this->buildJsServerResponseError('oError')}
                 }
             });
 
@@ -1339,7 +1325,7 @@ JS;
      * @param string $rowCount
      * @return string
      */
-    protected function buildJsServerResponseHandling (string $onModelLoadedJs, string $mParameters = 'mParameters', string $aResponses = 'aResponses', string $rowCount = 'rowCount') :string
+    protected function buildJsServerResponseHandling (string $onModelLoadedJs, string $mParameters = 'mParameters', string $aResponses = 'aResponses', string $rowCount = 'rowCount', string $onErrorJs = '') :string
     {
         return <<<JS
 
@@ -1352,7 +1338,8 @@ JS;
             };
             {$mParameters}.error = function(oError) { 
                 {$aResponses}.push(oError);
-                {$this->buildJsServerResponseError('oError')} 
+                {$this->buildJsServerResponseError('oError')}
+                {$onErrorJs} 
             };
 
 JS;

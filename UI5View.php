@@ -80,7 +80,7 @@ class UI5View implements UI5ViewInterface
         } else {
             $name = $this->getName();
         }
-        return $this->webapp::convertNameToPath($name, '.view.js');
+        return $this->getController()->getWebapp()->convertNameToPath($name, $this->getController()->getWebapp()->getViewFileSuffix());
     }
 
     /**

@@ -326,18 +326,19 @@ JS;
         $configuratorElement = $this->getFacade()->getElement($widget->getTable()->getConfiguratorWidget());
         $serverAdapter = $this->getFacade()->getElement($widget->getTable())->getServerAdapter();
         
-        $silentOnModelLoadedJs = <<<JS
+        $onSuggestLoadedJs = <<<JS
                             
-                {$this->buildJsBusyIconShow()}
-                var data = oModel.getProperty('/rows');
-                var curKey = oInput.{$this->buildJsValueGetterMethod()};
-                if (parseInt(oModel.getProperty("/recordsTotal")) == 1 && (curKey === '' || data[0]['{$widget->getValueColumn()->getDataColumnName()}'] == curKey)) {
-                    oInput.{$this->buildJsSetSelectedKeyMethod("data[0]['{$widget->getValueColumn()->getDataColumnName()}']", "data[0]['{$widget->getTextColumn()->getDataColumnName()}']")}
-                    oInput.closeSuggestions();
-                    oInput.setValueState(sap.ui.core.ValueState.None);
-                } else {
-                    oInput.setSelectedKey("");
-                    oInput.setValueState(sap.ui.core.ValueState.Error);
+                if (silent) {
+                    var data = oModel.getProperty('/rows');
+                    var curKey = oInput.{$this->buildJsValueGetterMethod()};
+                    if (parseInt(oModel.getProperty("/recordsTotal")) == 1 && (curKey === '' || data[0]['{$widget->getValueColumn()->getDataColumnName()}'] == curKey)) {
+                        oInput.{$this->buildJsSetSelectedKeyMethod("data[0]['{$widget->getValueColumn()->getDataColumnName()}']", "data[0]['{$widget->getTextColumn()->getDataColumnName()}']")}
+                        oInput.closeSuggestions();
+                        oInput.setValueState(sap.ui.core.ValueState.None);
+                    } else {
+                        oInput.setSelectedKey("");
+                        oInput.setValueState(sap.ui.core.ValueState.Error);
+                    }
                 }
                 {$this->buildJsBusyIconHide()}
 JS;
@@ -375,11 +376,13 @@ JS;
                         oModel.detachRequestCompleted(fnCallback);
                     });
                 }
+
                 if (silent) {
-                    {$serverAdapter->buildJsServerRequest($widget->getLazyLoadingAction(), 'oModel', 'params', $silentOnModelLoadedJs, $this->buildJsBusyIconHide())}
-                } else {
-                    {$serverAdapter->buildJsServerRequest($widget->getLazyLoadingAction(), 'oModel', 'params', $this->buildJsBusyIconHide(), $this->buildJsBusyIconHide())}
+                    {$this->buildJsBusyIconShow()}
                 }
+                
+                {$serverAdapter->buildJsServerRequest($widget->getLazyLoadingAction(), 'oModel', 'params', $onSuggestLoadedJs, $this->buildJsBusyIconHide())}
+
 JS;
     }
     

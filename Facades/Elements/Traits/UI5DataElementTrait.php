@@ -654,9 +654,15 @@ JS;
      */
     protected function buildJsPage(string $content, string $oControllerJs) : string
     {
-        $filterPrefillJs = $this->buildJsFilterPrefill();
-        if ($filterPrefillJs !== '') {
-            $this->getController()->addOnInitScript($filterPrefillJs);
+        // If the data widget is the root of the page, prefill data from the URL can be used
+        // to prefill filters. The default prefill-logic of the view will not work, however,
+        // because it will load data into the view's default model and this will not have any
+        // effect on the table because it's default model is a different one. Thus, we need
+        // to do the prefill manually at this point. 
+        // If the widget is not the root, the URL prefill will be applied to the view normally
+        // and it will work fine. 
+        if ($this->getWidget()->hasParent() === false) {
+            $this->getController()->addOnInitScript('console.log("prefilling");' . $this->buildJsPrefillFiltersFromRouteParams());
         }
         
         foreach ($this->getWidget()->getToolbarMain()->getButtonGroupForSearchActions()->getButtons() as $btn) {
@@ -758,17 +764,15 @@ JS;
     }
     
     /**
-     * 
+     * Returns the JS code to give filters default values if there is prefill data
      * @return string
      */
-    protected function buildJsFilterPrefill() : string
+    protected function buildJsPrefillFiltersFromRouteParams() : string
     {
-        $filterPrefillJs = '';
-        if ($this->getWidget()->hasParent() === false) {
-            $filters = $this->getWidget()->getConfiguratorWidget()->getFilters();
-            foreach ($filters as $filter) {
-                $alias = $filter->getAttributeAlias();
-                $setFilterValues .= <<<JS
+        $filters = $this->getWidget()->getConfiguratorWidget()->getFilters();
+        foreach ($filters as $filter) {
+            $alias = $filter->getAttributeAlias();
+            $setFilterValues .= <<<JS
                 
                                 var alias = '{$alias}';
                                 if (cond.expression === alias) {
@@ -777,17 +781,23 @@ JS;
                                 }
                                 
 JS;
-            }
+        }
             
-            
-            $filterPrefillJs = <<<JS
+        return <<<JS
+
                 setTimeout(function(){
                     var oViewModel = sap.ui.getCore().byId("{$this->getId()}").getModel("view");
                     var fnPrefillFilters = function() {
-                        var routeData = oViewModel.getProperty('/_route');
-                        if (routeData !== undefined && routeData.params !== undefined && routeData.params.oId !== undefined && routeData.params.filters !== undefined) {
-                            var oId = routeData.params.oId;
-                            var routeFilters = routeData.params.filters;
+                        var oRouteData = oViewModel.getProperty('/_route');console.log(oRouteData);
+                        if (oRouteData === undefined) return;
+                        if (oRouteData.params === undefined) return;
+                        
+                        var oPrefillData = oRouteData.params.prefill;
+                        if (oPrefillData === undefined) return;
+
+                        if (oPrefillData.oId !== undefined && oPrefillData.filters !== undefined) {
+                            var oId = oPrefillData.oId;
+                            var routeFilters = oPrefillData.filters;
                             if (oId === '{$this->getWidget()->getMetaObject()->getId()}') {
                                 if (Array.isArray(routeFilters.conditions)) {
                                     routeFilters.conditions.forEach(function (cond) {
@@ -813,11 +823,7 @@ JS;
                     }
                 }, 0);
                 
-JS;                                        
-            
-        }
-        
-        return $filterPrefillJs;
+JS;
     }
     
     /**
@@ -847,7 +853,8 @@ JS;
      *
      * @return string
      */
-    protected function buildJsFilterSummaryFunctionName() {
+    protected function buildJsFilterSummaryFunctionName() 
+    {
         return "{$this->buildJsFunctionPrefix()}CountFilters";
     }
     

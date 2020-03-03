@@ -654,57 +654,8 @@ JS;
      */
     protected function buildJsPage(string $content, string $oControllerJs) : string
     {
-        if ($this->getWidget()->hasParent() === false) {
-            $filters = $this->getWidget()->getConfiguratorWidget()->getFilters();
-            foreach ($filters as $filter) {
-                $alias = $filter->getAttributeAlias();                                    
-                $setFilterValues .= <<<JS
-                                    
-                                var alias = '{$alias}';
-                                if (cond.expression === alias) {
-                                    var condVal = cond.value;
-                                    {$this->getFacade()->getElement($filter)->buildJsValueSetter('condVal')}
-                                }
-                                
-JS;
-            }
-
-            
-            $filterPrefillJs = <<<JS
-                setTimeout(function(){
-                    var oViewModel = sap.ui.getCore().byId("{$this->getId()}").getModel("view");
-                    var fnPrefillFilters = function() {
-                        var routeData = oViewModel.getProperty('/_route');
-                        if (routeData !== undefined && routeData.params !== undefined && routeData.params.oId !== undefined && routeData.params.filters !== undefined) {
-                            var oId = routeData.params.oId;
-                            var routeFilters = routeData.params.filters;
-                            if (oId === '{$this->getWidget()->getMetaObject()->getId()}') {
-                                if (Array.isArray(routeFilters.conditions)) {
-                                    routeFilters.conditions.forEach(function (cond) {
-                                        {$setFilterValues}
-                                    })
-                                }
-                            }
-                        }
-                    };
-                    var sPendingPropery = "/_prefill/pending";
-                    if (oViewModel.getProperty(sPendingPropery) === true) {
-                        var oPrefillBinding = new sap.ui.model.Binding(oViewModel, sPendingPropery, oViewModel.getContext(sPendingPropery));
-                        var fnPrefillHandler = function(oEvent) {
-                            oPrefillBinding.detachChange(fnPrefillHandler);
-                            setTimeout(function() {
-                                fnPrefillFilters();
-                            }, 0);
-                        };
-                        oPrefillBinding.attachChange(fnPrefillHandler);
-                        return;
-                    } else {
-                        fnPrefillFilters();
-                    }
-                }, 0);
-    
-JS;
-            
+        $filterPrefillJs = $this->buildJsFilterPrefill();
+        if ($filterPrefillJs !== '') {
             $this->getController()->addOnInitScript($filterPrefillJs);
         }
         
@@ -804,6 +755,69 @@ JS;
             ]
         })
 JS;
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    protected function buildJsFilterPrefill() : string
+    {
+        $filterPrefillJs = '';
+        if ($this->getWidget()->hasParent() === false) {
+            $filters = $this->getWidget()->getConfiguratorWidget()->getFilters();
+            foreach ($filters as $filter) {
+                $alias = $filter->getAttributeAlias();
+                $setFilterValues .= <<<JS
+                
+                                var alias = '{$alias}';
+                                if (cond.expression === alias) {
+                                    var condVal = cond.value;
+                                    {$this->getFacade()->getElement($filter)->buildJsValueSetter('condVal')}
+                                }
+                                
+JS;
+            }
+            
+            
+            $filterPrefillJs = <<<JS
+                setTimeout(function(){
+                    var oViewModel = sap.ui.getCore().byId("{$this->getId()}").getModel("view");
+                    var fnPrefillFilters = function() {
+                        var routeData = oViewModel.getProperty('/_route');
+                        if (routeData !== undefined && routeData.params !== undefined && routeData.params.oId !== undefined && routeData.params.filters !== undefined) {
+                            var oId = routeData.params.oId;
+                            var routeFilters = routeData.params.filters;
+                            if (oId === '{$this->getWidget()->getMetaObject()->getId()}') {
+                                if (Array.isArray(routeFilters.conditions)) {
+                                    routeFilters.conditions.forEach(function (cond) {
+                                        {$setFilterValues}
+                                    })
+                                }
+                            }
+                        }
+                    };
+                    var sPendingPropery = "/_prefill/pending";
+                    if (oViewModel.getProperty(sPendingPropery) === true) {
+                        var oPrefillBinding = new sap.ui.model.Binding(oViewModel, sPendingPropery, oViewModel.getContext(sPendingPropery));
+                        var fnPrefillHandler = function(oEvent) {
+                            oPrefillBinding.detachChange(fnPrefillHandler);
+                            setTimeout(function() {
+                                fnPrefillFilters();
+                            }, 0);
+                        };
+                        oPrefillBinding.attachChange(fnPrefillHandler);
+                        return;
+                    } else {
+                        fnPrefillFilters();
+                    }
+                }, 0);
+                
+JS;                                        
+            
+        }
+        
+        return $filterPrefillJs;
     }
     
     /**

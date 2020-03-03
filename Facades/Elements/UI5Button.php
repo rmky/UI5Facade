@@ -443,12 +443,7 @@ JS;
     protected function buildJsCloseDialog($widget, $input_element)
     {
         if ($widget->getWidgetType() == 'DialogButton' && $widget->getCloseDialogAfterActionSucceeds()) {
-            $dialogElement = $this->getFacade()->getElement($widget->getDialog());
-            if ($dialogElement->isMaximized()) {
-                return $this->getController()->buildJsControllerGetter($this) . '.onNavBack();';
-            } else {
-                return "try{ sap.ui.getCore().byId('{$dialogElement->getId()}').close(); } catch (e) { console.error('Could not close dialog: ' + e); }";
-            }
+            return $this->getFacade()->getElement($widget->getDialog())->buildJsCloseDialog();
         }
         return "";
     }

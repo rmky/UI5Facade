@@ -52,6 +52,7 @@ class UI5Dialog extends UI5Form
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         $widget = $this->getWidget();
+                
         // If we need a prefill, we need to let the view model know this, so all the wigdget built
         // for this dialog can see, that a prefill will be done. This is especially important for
         // widget with lazy loading (like tables), that should postpone loading until the prefill data
@@ -61,8 +62,10 @@ class UI5Dialog extends UI5Form
         }
         
         if ($this->isMaximized() === false) {
+            $this->getController()->addMethod('closeDialog', $this, 'oEvent', "try{ this.getView().getModel('view').setProperty('/_prefill/current_data_hash', null); sap.ui.getCore().byId('{$this->getFacade()->getElement($widget)->getId()}').close(); } catch (e) { console.error('Could not close dialog: ' + e); }");
             return $this->buildJsDialog();
         } else {
+            $this->getController()->addMethod('closeDialog', $this, 'oEvent', "this.getView().getModel('view').setProperty('/_prefill/current_data_hash', null); this.onNavBack(oEvent);");
             $visibleChildren = $widget->getWidgets(function(WidgetInterface $widget){
                 return $widget->isHidden() === false;
             });
@@ -271,6 +274,7 @@ JS;
 
         new sap.m.Dialog("{$this->getId()}", {
 			{$icon}
+            {$this->buildJsPropertyContentHeight()}
             stretch: jQuery.device.is.phone,
             title: "{$this->getCaption()}",
 			buttons : [ {$this->buildJsDialogButtons()} ],
@@ -278,6 +282,21 @@ JS;
             {$prefill}
 		});
 JS;
+    }
+    
+    protected function buildJsPropertyContentHeight() : string
+    {
+        $widget = $this->getWidget();
+        $height = '';
+        
+        $filterCallback = function(WidgetInterface $w) {
+            return $w->isHidden() === false;
+        };
+        if ($widget->countWidgets($filterCallback) === 1 && $this->getFacade()->getElement($widget->getWidgetFirst($filterCallback)) instanceof UI5Tabs) {
+            $height = 'contentHeight: "70%",';
+        }
+        
+        return $height;
     }
     
     /**
@@ -313,7 +332,7 @@ JS;
         new sap.m.Page("{$this->getId()}", {
             title: "{$this->getCaption()}",
             showNavButton: true,
-            navButtonPress: [oController.onNavBack, oController],
+            navButtonPress: {$this->getController()->buildJsMethodCallFromView('closeDialog', $this, $oControllerJs)},
             content: [
                 {$content_js}
             ],
@@ -381,9 +400,8 @@ JS;
         // FIXME use buildJsPrefillLoaderSuccess here somewere?
         
         return <<<JS
-        
+        (function(){
             {$this->buildJsBusyIconShow()}
-            {$oViewJs}.getModel().setData({});
             var oViewModel = {$oViewJs}.getModel('view');
             oViewModel.setProperty('/_prefill/pending', true);
 
@@ -393,6 +411,18 @@ JS;
 				resource: "{$widget->getPage()->getAliasWithNamespace()}",
 				element: "{$triggerWidget->getId()}",
             }, oRouteParams.params);
+            
+            var oLastRouteString = oViewModel.getProperty('/_prefill/current_data_hash');
+            var oCurrentRouteString = JSON.stringify(data);
+            if (oLastRouteString === oCurrentRouteString) {
+                {$this->buildJsBusyIconHide()}
+                oViewModel.setProperty('/_prefill/pending', false);
+                return;
+            } else {
+                {$oViewJs}.getModel().setData({});
+                oViewModel.setProperty('/_prefill/current_data_hash', oCurrentRouteString);    
+            }
+
             var oResultModel = {$oViewJs}.getModel();
 
             {$this->getServerAdapter()->buildJsServerRequest(
@@ -403,6 +433,7 @@ JS;
                 "console.log('prefill error!'); {$this->buildJsBusyIconHide()}; oViewModel.setProperty('/_prefill/pending', false);",
                 $offlineError
             )}
+        })();
 			
 JS;
     }
@@ -549,6 +580,16 @@ JS;
             $js = $this->getFacade()->getElement($btn)->buildJsConstructor() . ",\n" . $js;
         }
         return $js;
+    }
+    
+    /**
+     * returns javascript to close a dialog
+     * 
+     * @return string
+     */
+    public function buildJsCloseDialog() : string
+    {
+        return $this->getController()->buildJsMethodCallFromController('closeDialog', $this, '') . ';';
     }
 }
 ?>

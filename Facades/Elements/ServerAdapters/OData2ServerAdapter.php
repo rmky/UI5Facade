@@ -1042,7 +1042,7 @@ JS;
             var rowCount = {$oParamsJs}.data.rows.length;
             var mParameters = {};
             mParameters.groupId = "batchGroup";
-            {$this->buildJsServerResponseHandling($onModelLoadedJs, 'mParameters', 'aResponses', 'rowCount')}
+            {$this->buildJsServerResponseHandling($onModelLoadedJs, 'mParameters', 'aResponses', 'rowCount', $onErrorJs)}
 
             var uidAliases = {$uidAliasesJson};
             var uidAlias = '{$uidAttributeAlias}';            
@@ -1110,7 +1110,7 @@ JS;
             var aResponses = [];
             var mParameters = {};
             mParameters.groupId = "batchGroup";
-            {$this->buildJsServerResponseHandling($onModelLoadedJs, 'mParameters', 'aResponses', 'rowCount')}
+            {$this->buildJsServerResponseHandling($onModelLoadedJs, 'mParameters', 'aResponses', 'rowCount', $onErrorJs)}
 
             var uidAliases = {$uidAliasesJson};
             var uidAlias = '{$uidAttributeAlias}';
@@ -1309,8 +1309,8 @@ JS;
                 success: function() {                    
                 },
                 error: function(oError) {
+                    {$this->buildJsServerResponseError('oError')}                    
                     {$onErrorJs}
-                    {$this->buildJsServerResponseError('oError')}
                 }
             });
 
@@ -1325,7 +1325,7 @@ JS;
      * @param string $rowCount
      * @return string
      */
-    protected function buildJsServerResponseHandling (string $onModelLoadedJs, string $mParameters = 'mParameters', string $aResponses = 'aResponses', string $rowCount = 'rowCount') :string
+    protected function buildJsServerResponseHandling (string $onModelLoadedJs, string $mParameters = 'mParameters', string $aResponses = 'aResponses', string $rowCount = 'rowCount', string $onErrorJs = '') :string
     {
         return <<<JS
 
@@ -1338,7 +1338,8 @@ JS;
             };
             {$mParameters}.error = function(oError) { 
                 {$aResponses}.push(oError);
-                {$this->buildJsServerResponseError('oError')} 
+                {$this->buildJsServerResponseError('oError')}
+                {$onErrorJs} 
             };
 
 JS;

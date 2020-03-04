@@ -429,8 +429,8 @@ JS;
                 $action,
                 'oResultModel',
                 'data',
-                "console.log('prefill done!'); {$this->buildJsBusyIconHide()}; oViewModel.setProperty('/_prefill/pending', false);",
-                "console.log('prefill error!'); {$this->buildJsBusyIconHide()}; oViewModel.setProperty('/_prefill/pending', false);",
+                "{$this->buildJsBusyIconHide()}; oViewModel.setProperty('/_prefill/pending', false);",
+                "console.error('Error loading prefill data!'); {$this->buildJsBusyIconHide()}; oViewModel.setProperty('/_prefill/pending', false);",
                 $offlineError
             )}
         })();

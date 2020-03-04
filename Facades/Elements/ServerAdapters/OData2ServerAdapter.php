@@ -774,9 +774,12 @@ JS;
                         value: oFirstRow["{$uidAttr->getAlias()}"]
                     }
 JS;
+      
+        // IDEA 
         
+        // If the route params contain `data`, call the data loader an let it perform onModelLoaderJs
+        // as always.
         return <<<JS
-        
             
             if ({$oParamsJs}.data !== undefined && {$oParamsJs}.data.rows !== undefined) {               
                 var oFirstRow = {$oParamsJs}.data.rows[0];

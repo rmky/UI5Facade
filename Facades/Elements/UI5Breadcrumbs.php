@@ -21,19 +21,21 @@ class UI5Breadcrumbs extends UI5AbstractElement
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
         $breadcrumbs = $this->getWidget()->getBreadcrumbs();
-        $currentLocation = $this->getWidget()->getPage()->getName();
-        
-        $output = <<<JS
-
-new sap.m.Breadcrumbs("{$this->getId()}", {
-    links: [{$this->buildBreadcrumbLinks($breadcrumbs)}],
-    separatorStyle: 'DoubleGreaterThan',
-    currentLocationText: '{$currentLocation}'
-})
-
+        if (count($breadcrumbs) === 0) {
+            return '';
+        } else {
+            $currentLocation = $this->getWidget()->getPage()->getName();
+            
+            return <<<JS
+    
+    new sap.m.Breadcrumbs("{$this->getId()}", {
+        links: [{$this->buildBreadcrumbLinks($breadcrumbs)}],
+        separatorStyle: 'DoubleGreaterThan',
+        currentLocationText: '{$currentLocation}'
+    })
+    
 JS;
-        
-        return $output;
+        }
     }
     
     /**

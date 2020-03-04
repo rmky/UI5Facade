@@ -788,7 +788,7 @@ JS;
                     ]
                 };
                 {$this->buildJsDataLoader($oModelJs, $oParamsJs, $takeFirstRowOnly . $onModelLoadedJs, $onErrorJs, $onOfflineJs)}
-            } else if ({$oParamsJs}.filters !== undefined) {
+            } else if ({$oParamsJs}.prefill !== undefined && {$oParamsJs}.prefill.filters !== undefined) {
                 {$onModelLoadedJs}    
             } else {
                 var error = "Incorrect data given to filter the prefill!";

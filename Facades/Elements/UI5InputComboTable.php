@@ -493,6 +493,7 @@ JS;
             oInput.fireChange({
                 value: val
             });
+            return oInput;
         })()";
     }
     

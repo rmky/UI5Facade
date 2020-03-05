@@ -137,7 +137,35 @@ trait UI5DataElementTrait {
         
         $js = $this->buildJsConstructorForControl();
         
-        $initModels = ".setModel(new sap.ui.model.json.JSONModel()).setModel(new sap.ui.model.json.JSONModel(), '{$this->getModelNameForConfigurator()}')";
+        $initModels = <<<JS
+
+        .setModel(new sap.ui.model.json.JSONModel())
+        .setModel(new sap.ui.model.json.JSONModel(), '{$this->getModelNameForConfigurator()}')
+JS;
+        
+        // If the table has editable columns, we need to track changes made by the user.
+        // This is done by listening to changes of the /rows property of the model and
+        // comparing it's current state with the initial state. This IF initializes
+        // the whole thing. The rest ist handlede by buildJsEditableChangesWatcherXXX()
+        // methods.
+        if ($this->isEditable()) {
+            $initModels .= <<<JS
+
+        .setModel(new sap.ui.model.json.JSONModel(), '{$this->getModelNameForDataLastLoaded()}')
+        .setModel(new sap.ui.model.json.JSONModel({changes: {}, watching: false}), '{$this->getModelNameForChanges()}')
+JS;
+            $controller->addMethod('updateChangesModel', $this, 'oDataChanged', $this->buildJsEditableChangesWatcherUpdateMethod('oDataChanged'));
+            $bindChangeWatcherJs = <<<JS
+
+            var oRowsBinding = new sap.ui.model.Binding(sap.ui.getCore().byId('{$this->getId()}').getModel(), '/rows', sap.ui.getCore().byId('{$this->getId()}').getModel().getContext('/rows'));
+            oRowsBinding.attachChange(function(oEvent){
+                var oBinding = oEvent.getSource();
+                var oDataChanged = oBinding.getModel().getData();
+                {$controller->buildJsMethodCallFromController('updateChangesModel', $this, 'oDataChanged')};
+            });
+JS;
+            $controller->addOnInitScript($bindChangeWatcherJs);
+        }
         
         if ($this->isWrappedInDynamicPage()){
             return $this->buildJsPage($js, $oControllerJs) . $initModels;
@@ -381,8 +409,16 @@ JS;
                 
 JS;
     }
-                        
-    abstract protected function buildJsDataResetter() : string;
+    
+    /**
+     * Empties the table by replacing it's model by an empty object.
+     *
+     * @return string
+     */
+    protected function buildJsDataResetter() : string
+    {
+        return "sap.ui.getCore().byId('{$this->getId()}').getModel().setData({})";
+    }
     
     /**
      * Returns the definition of a javascript function to fill the table with data: onLoadDataTableId(oControlEvent).
@@ -412,6 +448,10 @@ JS;
                     oPrefillBinding.attachChange(fnPrefillHandler);
                     return;
                 }
+                
+                // Disable editable-column-change-watcher because reloading from server
+                // changes the data but does not mean a change by the editor
+                {$this->buildJsEditableChangesWatcherDisable()}
 
                 {$this->buildJsDataLoaderPrepare()}
 
@@ -530,13 +570,23 @@ JS;
 JS;
         }
         
-        
+        if ($this->getWidget()->isEditable()) {
+            // Enable watching changes for editable columns from now on
+            $editableTableWatchChanges = <<<JS
+            
+            oTable.getModel("{$this->getModelNameForDataLastLoaded()}").setData(JSON.parse(JSON.stringify($oModelJs.getData())));
+            {$this->buildJsEditableChangesApplyToModel($oModelJs)} 
+            {$this->buildJsEditableChangesWatcherEnable()}
+
+JS;
+        }
         
         return <<<JS
         
             oTable.getModel("{$this->getModelNameForConfigurator()}").setProperty('/filterDescription', {$this->getController()->buildJsMethodCallFromController('onUpdateFilterSummary', $this, '', 'oController')});
             {$dynamicPageFixes}
             {$this->buildJsDataLoaderOnLoadedHandleWidgetLinks($oModelJs)}
+            {$editableTableWatchChanges}
 			
 JS;
     }
@@ -662,7 +712,7 @@ JS;
         // If the widget is not the root, the URL prefill will be applied to the view normally
         // and it will work fine. 
         if ($this->getWidget()->hasParent() === false) {
-            $this->getController()->addOnInitScript('console.log("prefilling");' . $this->buildJsPrefillFiltersFromRouteParams());
+            $this->getController()->addOnInitScript($this->buildJsPrefillFiltersFromRouteParams());
         }
         
         foreach ($this->getWidget()->getToolbarMain()->getButtonGroupForSearchActions()->getButtons() as $btn) {
@@ -788,7 +838,7 @@ JS;
                 setTimeout(function(){
                     var oViewModel = sap.ui.getCore().byId("{$this->getId()}").getModel("view");
                     var fnPrefillFilters = function() {
-                        var oRouteData = oViewModel.getProperty('/_route');console.log(oRouteData);
+                        var oRouteData = oViewModel.getProperty('/_route');
                         if (oRouteData === undefined) return;
                         if (oRouteData.params === undefined) return;
                         
@@ -1011,5 +1061,134 @@ JS;
     protected function getDynamicPageShowToolbar() : bool
     {
         return $this->dynamicPageShowToolbar;
+    }
+    
+    protected function getModelNameForChanges() : string
+    {
+        return 'data_changes';
+    }
+    
+    protected function getModelNameForDataLastLoaded() : string
+    {
+        return 'data_last_loaded';
+    }
+    
+    protected function getEditableColumnNamesJson() : string
+    {
+        $editabelColNames = [];
+        foreach ($this->getWidget()->getColumns() as $col) {
+            if ($col->isEditable()) {
+                $editabelColNames[] = $col->getDataColumnName();
+            }
+        }
+        return json_encode($editabelColNames);
+    }
+    
+    protected function buildJsEditableChangesWatcherUpdateMethod(string $changedDataJs) : string
+    {
+        if ($this->getWidget()->hasUidColumn() === false) {
+            return '';
+        }
+        
+        $uidColName = $this->getWidget()->getUidColumn()->getDataColumnName();
+        
+        return <<<JS
+
+            var oTable = sap.ui.getCore().byId('{$this->getId()}');
+            var oChangesModel = oTable.getModel('{$this->getModelNameForChanges()}');
+            
+            if (oChangesModel.getProperty('/watching') !== true) return;
+            
+            var oDataLastLoaded = oTable.getModel('{$this->getModelNameForDataLastLoaded()}').getData();
+            var oDataChanged = $changedDataJs;
+            var oChanges = oChangesModel.getProperty('/changes');
+            var aEditableColNames = {$this->getEditableColumnNamesJson()};        
+
+            if (oDataChanged.rows === undefined || oDataChanged.rows.lenght === 0) return;
+
+            oDataChanged.rows.forEach(function(oRowChanged) {
+                var oRowLast;
+                var sUid = oRowChanged['$uidColName'];
+                for (var i in oDataLastLoaded.rows) {
+                    if (oDataLastLoaded.rows[i]['$uidColName'] === sUid) {
+                        oRowLast = oDataLastLoaded.rows[i];
+                        break;
+                    }
+                }
+                if (oRowLast) {
+                    aEditableColNames.forEach(function(sFld){
+                        if (oRowChanged[sFld] != oRowLast[sFld]) {
+                            if (oChanges[sUid] === undefined) {
+                                oChanges[sUid] = {};
+                            }
+                            oChanges[sUid][sFld] = oRowChanged[sFld];
+                        } else {
+                            if (oChanges[sUid] && oChanges[sUid][sFld]) {
+                                delete oChanges[sUid][sFld];
+                                if (Object.keys(oChanges[sUid]).length === 0) {
+                                    delete oChanges[sUid];
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+
+            oChangesModel.setProperty('/changes', oChanges);
+
+JS;
+    }
+    
+    protected function buildJsEditableChangesWatcherDisable(string $oTableJs = null) : string
+    {
+        return ($oTableJs ?? "sap.ui.getCore().byId('{$this->getId()}')") . ".getModel('{$this->getModelNameForChanges()}').setProperty('/watching', false);";
+    }
+    
+    protected function buildJsEditableChangesWatcherEnable(string $oTableJs = null) : string
+    {
+        return ($oTableJs ?? "sap.ui.getCore().byId('{$this->getId()}')") . ".getModel('{$this->getModelNameForChanges()}').setProperty('/watching', true);";
+    }
+    
+    protected function buildJsEditableChangesWatcherReset(string $oTableJs = null) : string
+    {
+        return ($oTableJs ?? "sap.ui.getCore().byId('{$this->getId()}')") . ".getModel('{$this->getModelNameForChanges()}').setData({changes: {}, watching: false});";
+    }
+    
+    protected function buildJsEditableChangesApplyToModel(string $oModelJs) : string
+    {
+        if ($this->getWidget()->hasUidColumn() === false) {
+            return '';
+        }
+        $uidColName = $this->getWidget()->getUidColumn()->getDataColumnName();
+        
+        return <<<JS
+        
+            // Keep previous values of all editable column in case the had changed
+            (function(){
+                var aEditableColNames = {$this->getEditableColumnNamesJson()};
+                var oData = $oModelJs.getData();
+                var aRows = oData.rows;
+                if (aRows === undefined || aRows.length === 0) return;
+                
+                var bDataUpdated = false;
+                var oChanges = sap.ui.getCore().byId('{$this->getId()}').getModel('{$this->getModelNameForChanges()}').getProperty('/changes');
+                
+                for (var iRow in aRows) {
+                    var sUid = aRows[iRow]['$uidColName'];
+                    if (oChanges[sUid]) {
+                        for (var sFld in oChanges[sUid]) {
+                            aRows[iRow][sFld] = oChanges[sUid][sFld];
+                            bDataUpdated = true;
+                        }
+                    }
+                }
+                
+                if (bDataUpdated) {
+                    oData.rows = aRows;
+                    $oModelJs.setData(oData);
+                }
+            })();
+            
+JS;
     }
 }

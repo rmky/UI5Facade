@@ -10,10 +10,6 @@ use exface\Core\Interfaces\Widgets\iShowImage;
 use exface\UI5Facade\Facades\Elements\UI5SearchField;
 use exface\Core\Widgets\Input;
 use exface\Core\Interfaces\Widgets\iHaveColumns;
-use exface\Core\Interfaces\Widgets\iCanPreloadData;
-use exface\UI5Facade\Facades\UI5Facade;
-use exface\UI5Facade\Facades\Interfaces\UI5ServerAdapterInterface;
-use exface\UI5Facade\Facades\Elements\ServerAdapters\OData2ServerAdapter;
 
 /**
  * This trait helps wrap thrid-party data widgets (like charts, image galleries, etc.) in 
@@ -74,6 +70,12 @@ use exface\UI5Facade\Facades\Elements\ServerAdapters\OData2ServerAdapter;
  * There is also a secondary
  * model for the configurator (i.e. filter values, sorting options, etc.) - it's name can be obtained
  * from `getModelNameForConfigurator()`.
+ * 
+ * ### Editable columns and tracking changes
+ * 
+ * The trait will automatically track changes for editable columns if the built-in data loader is used 
+ * (see above). All changes are strored in a separate model (see. `getModelNameForChanges()`). The trait 
+ * provides `buildJsEditableChangesXXX()` methods use in your JS. 
  * 
  * @author Andrej Kabachnik
  *
@@ -1176,17 +1178,27 @@ JS;
     
     protected function buildJsEditableChangesWatcherDisable(string $oTableJs = null) : string
     {
-        return ($oTableJs ?? "sap.ui.getCore().byId('{$this->getId()}')") . ".getModel('{$this->getModelNameForChanges()}').setProperty('/watching', false);";
+        return $this->buildJsEditableChangesModelGetter($oTableJs) . ".setProperty('/watching', false);";
     }
     
     protected function buildJsEditableChangesWatcherEnable(string $oTableJs = null) : string
     {
-        return ($oTableJs ?? "sap.ui.getCore().byId('{$this->getId()}')") . ".getModel('{$this->getModelNameForChanges()}').setProperty('/watching', true);";
+        return $this->buildJsEditableChangesModelGetter($oTableJs) . ".setProperty('/watching', true);";
     }
     
     protected function buildJsEditableChangesWatcherReset(string $oTableJs = null) : string
     {
-        return ($oTableJs ?? "sap.ui.getCore().byId('{$this->getId()}')") . ".getModel('{$this->getModelNameForChanges()}').setData({changes: {}, watching: false});";
+        return $this->buildJsEditableChangesModelGetter($oTableJs) . ".setData({changes: {}, watching: false});";
+    }
+    
+    protected function buildJsEditableChangesGetter(string $oTableJs = null) : string
+    {
+        return $this->buildJsEditableChangesModelGetter($oTableJs) . ".getProperty('/changes')";
+    }
+    
+    protected function buildJsEditableChangesModelGetter(string $oTableJs = null) : string
+    {
+        return ($oTableJs ?? "sap.ui.getCore().byId('{$this->getId()}')") . ".getModel('{$this->getModelNameForChanges()}')";
     }
     
     protected function buildJsEditableChangesApplyToModel(string $oModelJs) : string
@@ -1206,7 +1218,7 @@ JS;
                 if (aRows === undefined || aRows.length === 0) return;
                 
                 var bDataUpdated = false;
-                var oChanges = sap.ui.getCore().byId('{$this->getId()}').getModel('{$this->getModelNameForChanges()}').getProperty('/changes');
+                var oChanges = {$this->buildJsEditableChangesGetter()};
                 
                 for (var iRow in aRows) {
                     var sUid = aRows[iRow]['$uidColName'];

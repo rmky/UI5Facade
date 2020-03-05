@@ -782,9 +782,6 @@ JS;
         // FIXME #DataPreloader this will force the form to use any preload - regardless of the columns.
         if ($callerWidget instanceof iCanPreloadData && $callerWidget->isPreloadDataEnabled() === true) {
             $this->addOnDefineScript("exfPreloader.addPreload('{$callerWidget->getMetaObject()->getAliasWithNamespace()}');");
-            $loadPrefillData = $this->buildJsPrefillLoaderFromPreload($triggerWidget, $oViewJs, 'oViewModel');
-        } else {
-            $loadPrefillData = $this->buildJsPrefillLoaderFromServer($triggerWidget, $oViewJs, 'oViewModel');
         }
         
         $action = ActionFactory::createFromString($callerWidget->getWorkbench(), 'exface.Core.ReadPrefill', $callerWidget);
@@ -792,33 +789,37 @@ JS;
         $stopJs = <<<JS
         
                         oViewModel.setProperty('/_prefill/pending', false);
-                        {$callerElement->buildJsBusyIconHide()}
+                        {$callerElement->buildJsBusyIconHide()};
 JS;
         $onModelLoadedJs .= $stopJs;               
         $onErrorJs .= $stopJs;           
         $onOfflineJs .= $stopJs;
         
-        if ($callerWidget instanceof Dialog) {
-            $onRouteParamsJs = <<<JS
+        // Dialogs allways do prefill. Other widgets only if they have route parameters data
+        if (! ($callerWidget instanceof Dialog)) {
+            $oRouteParamsCheckJs = <<<JS
 
-            if (oRouteParams.constructor !== Object || Object.keys(oRouteParams).length === 0)) {
+            if (oRouteParams.constructor !== Object || Object.keys(oRouteParams).length === 0) {
+                $stopJs
                 return;
             }
 JS;
         }
                         
                         return <<<JS
+
+        // Load prefill data
         (function(){
-            {$this->buildJsBusyIconShow()}
+            {$callerElement->buildJsBusyIconShow()}
             var oViewModel = {$oViewJs}.getModel('view');
             oViewModel.setProperty('/_prefill/pending', true);
             
             var oRouteParams = oViewModel.getProperty('/_route/params');
             
-            $onRouteParamsJs;
+            $oRouteParamsCheckJs;
 
             var data = $.extend({}, {
-                action: "exface.Core.ReadPrefill",
+                action: "{$action->getAliasWithNamespace()}",
 				resource: "{$callerWidget->getPage()->getAliasWithNamespace()}",
 				element: "{$triggerWidget->getId()}",
             }, oRouteParams);
@@ -826,8 +827,7 @@ JS;
             var oLastRouteString = oViewModel.getProperty('/_prefill/current_data_hash');
             var oCurrentRouteString = JSON.stringify(data);
             if (oLastRouteString === oCurrentRouteString) {
-                {$this->buildJsBusyIconHide()}
-                oViewModel.setProperty('/_prefill/pending', false);
+                $stopJs
                 return;
             } else {
                 {$oViewJs}.getModel().setData({});
@@ -837,103 +837,16 @@ JS;
             //var oResultModel = {$oViewJs}.getModel();
             var oResultModel = sap.ui.getCore().byId("{$callerElement->getId()}").getModel();
             
-            {$this->getServerAdapter()->buildJsServerRequest(
+            {$callerElement->getServerAdapter()->buildJsServerRequest(
                 $action,
                 'oResultModel',
                 'data',
-                "{$this->buildJsBusyIconHide()}; oViewModel.setProperty('/_prefill/pending', false);",
-                "console.error('Error loading prefill data!'); {$this->buildJsBusyIconHide()}; oViewModel.setProperty('/_prefill/pending', false);",
+                $onModelLoadedJs,
+                "console.error('Error loading prefill data!');" . $onErrorJs,
                 $onOfflineJs
             )}
         })();
         
-JS;
-        return <<<JS
-        
-            //- {$oViewJs}.getModel().setData({});
-            //- var oViewModel = {$oViewJs}.getModel('view');
-            
-            //- var oRouteParams = oViewModel.getProperty('/_route').params;
-            var oResultModel = sap.ui.getCore().byId("{$callerElement->getId()}").getModel();
-            if (! (Object.keys(oRouteParams).length === 0 && oRouteParams.constructor === Object)) {
-                {$callerElement->buildJsBusyIconShow()}
-                oViewModel.setProperty('/_prefill/pending', true);
-                var params = $.extend({}, {
-                    action: "{$action->getAliasWithNamespace()}",
-    				resource: "{$callerWidget->getPage()->getAliasWithNamespace()}",
-    				element: "{$triggerWidget->getId()}",
-                }, oRouteParams);
-                {$callerElement->getServerAdapter()->buildJsServerRequest($action, 'oResultModel', 'params', $onModelLoadesJs, $onErrorJs, $onOfflineJs)}
-            }
-            
-JS;
-    }
-    
-    protected function buildJsPrefillLoaderFromPreload(WidgetInterface $triggerWidget, string $oViewJs = 'oView', string $oViewModelJs = 'oViewModel') : string
-    {
-        $rootElement = $this->getView()->getRootElement();
-        $widget = $rootElement->getWidget();
-        return <<<JS
-        
-                {$rootElement->buildJsBusyIconShow()}
-                oViewModel.setProperty('/_prefill/pending', true);
-                exfPreloader
-                .getPreload('{$widget->getMetaObject()->getAliasWithNamespace()}')
-                .then(preload => {
-                    var failed = false;
-                    if (preload !== undefined && preload.response !== undefined && preload.response.rows !== undefined) {
-                        var oRouteData = {$oViewModelJs}.getProperty('/_route').params.data;
-                        if (oRouteData !== undefined) {
-                            var uid = oRouteData.rows[0]['{$widget->getMetaObject()->getUidAttributeAlias()}'];
-                            var aData = preload.response.rows.filter(oRow => {
-                                return oRow['{$widget->getMetaObject()->getUidAttributeAlias()}'] == uid;
-                            });
-                            if (aData.length === 1) {
-                                var response = $.extend({}, preload.response, {rows: aData});
-                                {$this->buildJsPrefillLoaderSuccess('response', $oViewJs, $oViewModelJs)}
-                            } else {
-                                failed = true;
-                            }
-                        } else {
-                            failed = true;
-                        }
-                    } else {
-                        failed = true;
-                    }
-                    
-                    if (failed == true) {
-                        console.info('Controller: Failed to prefill view from preload data: falling back to server request');
-                        oViewModel.setProperty('/_prefill/pending', false);
-                        {$this->buildJsPrefillLoaderFromServer($triggerWidget, $oViewJs, $oViewModelJs)}
-                    }
-                });
-                
-JS;
-    }
-    
-    protected function buildJsPrefillLoaderFromServer(WidgetInterface $triggerWidget, string $oViewJs = 'oView', string $oViewModelJs = 'oViewModel') : string
-    {
-        $callerElement = $this->getView()->getRootElement();
-        $callerWidget = $callerElement->getWidget();
-
-    }    
-    
-    protected function buildJsPrefillLoaderSuccess(string $responseJs = 'response', string $oViewJs = 'oView') : string
-    {
-        // IMPORTANT: We must ensure, ther is no model data before replacing it with the prefill!
-        // Otherwise the model will not fire binding changes properly: InputComboTables will loose
-        // their values! But only reset the model if it has data, because the reset will trigger
-        // an update of all bindings.
-        return <<<JS
-        
-                    var oDataModel = {$oViewJs}.getModel();
-                    if (Object.keys(oDataModel.getData()).length !== 0) {
-                        oDataModel.setData({});
-                    }
-                    if (Array.isArray({$responseJs}.rows) && {$responseJs}.rows.length === 1) {                       
-                        oDataModel.setData({$responseJs}.rows[0]);
-                    }
-                    
 JS;
     }
     

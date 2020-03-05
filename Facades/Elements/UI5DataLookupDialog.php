@@ -37,8 +37,23 @@ class UI5DataLookupDialog extends UI5Dialog
         parent::init();
         $table = $this->getWidget()->getDataWidget();
         $table->setHideCaption(true);
+        
         if ($table instanceof iHaveHeader) {
             $this->getWidget()->getDataWidget()->setHideHeader(false);
+        }
+        
+        // Make sure, a label column exists, so the label can be used in the selection-chips
+        if ($table->getMetaObject()->hasLabelAttribute()) {
+            $labelColExists = false;
+            foreach ($table->getColumns() as $col) {
+                if ($col->isBoundToAttribute() && $col->getAttribute()->isLabelForObject()) {
+                    $labelColExists = true;
+                    break;
+                }
+            }
+            if ($labelColExists === false) {
+                $table->addColumn($table->createColumnFromAttribute($table->getMetaObject()->getLabelAttribute()));
+            }
         }
         return;
     }
@@ -80,8 +95,13 @@ JS;
 			buttons : [ {$this->buildJsDialogButtons()} ],
 			content : [ {$this->buildJsDialogContent()} ],
             {$prefill}
-		});
+		}).addStyleClass('{$this->buildCssElementClass()}')
 JS;
+    }
+    
+    public function buildCssElementClass()
+    {
+        return 'exf-datalookup';
     }
     
     /**
@@ -95,14 +115,15 @@ JS;
     protected function buildJsDialogContent() : string
     {
         return <<<JS
-new sap.ui.layout.Splitter({
+
+                new sap.ui.layout.Splitter({
                     orientation: "Vertical",
                     height: "100%",
                     contentAreas: [
                         {$this->buildJsDialogContentChildren()},
                         {$this->buildJsDialogSelectedItemsPanel()}
                     ]
-                    })
+                })
 JS;
     }
     
@@ -148,6 +169,7 @@ JS;
             new sap.m.Panel( "{$this->getDialogContentPanelId()}",
                 {
                     expandable: true,
+                    expandAnimation: false,
                     expanded: true,
                     height: "100%",
                     headerToolbar: [
@@ -165,20 +187,22 @@ JS;
                         })
                     ],
                     layoutData: [
-                        new sap.ui.layout.SplitterLayoutData("{$splitterId}",
-                            {
-                                size: "5rem",
-                                resizable: false
-                            })
+                        new sap.ui.layout.SplitterLayoutData("{$splitterId}", {
+                            //size: "5rem",
+                            size: "6.5rem",
+                            resizable: false
+                        })
                     ]
                 }).attachExpand(function(){
-                                    // resize on expanding / collapsing to allow the table to utilize as much space as possible
-                                    if (this.getExpanded() == true){
-                                        sap.ui.getCore().byId('{$splitterId}').setSize("5rem");
-                                    } else {
-                                        sap.ui.getCore().byId('{$splitterId}').setSize("2.1rem");
-                                    }
-                                })
+                    // resize on expanding / collapsing to allow the table to utilize as much space as possible
+                    if (this.getExpanded() == true){
+                        //sap.ui.getCore().byId('{$splitterId}').setSize("5rem");
+                        sap.ui.getCore().byId('{$splitterId}').setSize("6.5rem");
+                    } else {
+                        //sap.ui.getCore().byId('{$splitterId}').setSize("2.1rem");
+                        sap.ui.getCore().byId('{$splitterId}').setSize("3.0rem");
+                    }
+                })
 JS;
     }
     

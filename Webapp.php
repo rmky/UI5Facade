@@ -53,6 +53,8 @@ class Webapp implements WorkbenchDependantInterface
     
     private $models = [];
     
+    private $viewControllerNames = [];
+    
     
     public function __construct(UI5Facade $facade, string $ui5AppId, string $facadeFolder, array $config)
     {
@@ -435,33 +437,26 @@ class Webapp implements WorkbenchDependantInterface
     {
         $parts = explode('/', $path);
         $cnt = count($parts);
-        if ($cnt === 1 || ($cnt > 1 && $parts[1] === self::WIDGET_DELIMITER)) {
-            // URLs of non-namespaced pages like 
+        if ($cnt === 1 || $cnt === 2) {
+            // URLs of non-namespaced pages like
             // - appRoot/view/mypage
-            // - appRoot/view/mypage/widget/widget_id
+            // - appRoot/view/mypage/widget_id
             $pageAlias = $parts[0];
-        } elseif (($cnt === 3 && !in_array(self::WIDGET_DELIMITER, $parts)) || ($cnt > 3 && in_array(self::WIDGET_DELIMITER, $parts))) {
-            // URLs of namespaced pages like 
+        } elseif ($cnt === 3 || $cnt === 4) {
+            // URLs of namespaced pages like
             // - appRoot/view/vendor/app/page
-            // - appRoot/view/vendor/app/page/widget/widget_id
-            $pageAlias = $parts[0] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[1] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[2];          
+            // - appRoot/view/vendor/app/page/widget_id
+            $pageAlias = $parts[0] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[1] . AliasSelectorInterface::ALIAS_NAMESPACE_DELIMITER . $parts[2];
         } else {
             throw new UI5RouteInvalidException('Route "' . $path . '" not found!');
         }
         
         $page = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $pageAlias);
         
-        if (in_array(self::WIDGET_DELIMITER, $parts)) {            
-            $idx = array_search(self::WIDGET_DELIMITER, $parts);
-            $widgetId = '';
-            for ($i = $idx + 1; $i < $cnt; $i++) {
-                $widgetId .= $parts[$i] . '_';
-            }
-            if ($widgetId === '') {
-                throw new UI5RouteInvalidException('Route "' . $path . '" not found!');
-            }
-            $widgetId = substr($widgetId, 0, -1);
-            $widget = $page->getWidget($widgetId);
+        if ($cnt === 4) {
+            $widget = $page->getWidget($parts[3]);
+        } elseif ($cnt === 2) {
+            $widget = $page->getWidget($parts[1]);
         } else {
             $widget = $page->getWidgetRoot();
         }
@@ -501,7 +496,7 @@ class Webapp implements WorkbenchDependantInterface
     {
         $appRootPage = $this->getRootPage();
         $pageAlias = $widget->getPage()->getAliasWithNamespace() ? $widget->getPage()->getAliasWithNamespace() : $appRootPage->getAliasWithNamespace();
-        return $appRootPage->getAliasWithNamespace() . '.view.' . $pageAlias . ($widget->hasParent() ? '.' . self::WIDGET_DELIMITER . '.' . str_replace('_', '.', $widget->getId()) : '');
+        return $appRootPage->getAliasWithNamespace() . '.view.' . $pageAlias . ($widget->hasParent() ? '.' . $this->getWidgetIdForViewControllerName($widget) : '');
     }
     
     /**
@@ -528,7 +523,44 @@ class Webapp implements WorkbenchDependantInterface
     {
         $appRootPage = $this->getRootPage();
         $pageAlias = $widget->getPage()->getAliasWithNamespace() ? $widget->getPage()->getAliasWithNamespace() : $appRootPage->getAliasWithNamespace();
-        return $appRootPage->getAliasWithNamespace() . '.controller.' . $pageAlias . ($widget->hasParent() ? '.' . self::WIDGET_DELIMITER . '.' . str_replace('_', '.', $widget->getId()) : '');
+        return $appRootPage->getAliasWithNamespace() . '.controller.' . $pageAlias . ($widget->hasParent() ? '.' . $this->getWidgetIdForViewControllerName($widget) : '');
+    }
+    
+    /**
+     * Returns the id for the given widget to use in view and controller names.
+     * Normal that is `$widget->getId()` but for exported apps we need shorter names.
+     * For exported apps the id will consist of the widget type, the widget caption, the meta object alias
+     * and an added counter if ids duplicate.
+     * 
+     * @param WidgetInterface $widget
+     * @return string
+     */
+    public function getWidgetIdForViewControllerName(WidgetInterface $widget) : string
+    {
+        if ($this->getFacade()->getConfig()->getOption('WIDGET.USE_SHORT_ID') === true) {
+            if (array_key_exists($widget->getId(), $this->viewControllerNames)) {
+                return $this->viewControllerNames[$widget->getId()];
+            }
+            $name = $widget->getWidgetType() . '_' . filter_var($widget->getCaption(), FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH) . '_' . $widget->getMetaObject()->getAlias();
+            if (in_array($name, $this->viewControllerNames)) {
+                $duplicate = true;
+                $idx = 2;
+                while ($duplicate === true) {
+                    $potentialName = $name . '_' . strval($idx);
+                    if (in_array($potentialName, $this->viewControllerNames)) {
+                        $idx++;
+                    } else {
+                        $duplicate = false;
+                        $name = $potentialName;
+                    }
+                }
+            }
+            $this->viewControllerNames[$widget->getId()] = $name;
+            return $name;
+        } else {
+            return $widget->getId();
+        }
+        
     }
     
     /**

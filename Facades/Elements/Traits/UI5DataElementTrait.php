@@ -427,6 +427,17 @@ JS;
      */
     protected function buildJsDataLoader($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'keep_page_pos')
     {
+        if ($this->getWidget()->isEditable()) {
+            $disableEditableChangesWatcher = <<<JS
+                
+                // Disable editable-column-change-watcher because reloading from server
+                // changes the data but does not mean a change by the editor
+                {$this->buildJsEditableChangesWatcherDisable()}
+JS;
+        } else {
+            $disableEditableChangesWatcher = '';
+        }
+        
         // Before we load anything, we need to make sure, the view data is loaded.
         // The view model has a special property to indicate if view (prefill) data
         // is being loaded. So we check that property and, if it shows a prefill
@@ -448,11 +459,7 @@ JS;
                     oPrefillBinding.attachChange(fnPrefillHandler);
                     return;
                 }
-                
-                // Disable editable-column-change-watcher because reloading from server
-                // changes the data but does not mean a change by the editor
-                {$this->buildJsEditableChangesWatcherDisable()}
-
+                {$disableEditableChangesWatcher}
                 {$this->buildJsDataLoaderPrepare()}
 
 JS;

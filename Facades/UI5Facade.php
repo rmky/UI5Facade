@@ -113,6 +113,17 @@ class UI5Facade extends AbstractAjaxFacade
     /**
      * 
      * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\AbstractAjaxFacade::buildHtml($widget)
+     */
+    public function buildHtml(WidgetInterface $widget)
+    {
+        $element = $this->getElement($widget);
+        return $element->buildJsConstructor();
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
      * @see \exface\Core\Facades\AbstractAjaxFacade\AbstractAjaxFacade::buildJs()
      */
     public function buildJs(\exface\Core\Widgets\AbstractWidget $widget)
@@ -467,5 +478,10 @@ JS;
             $uxon->setProperty('theme', $this->getTheme());
         }
         return $uxon;
+    }
+    
+    protected function getPageTemplateFilePathDefault() : string
+    {
+        return $this->getApp()->getDirectoryAbsolutePath() . DIRECTORY_SEPARATOR . 'Facades' . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'OpenUI5Template.html';
     }
 }

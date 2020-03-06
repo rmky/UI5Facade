@@ -75,7 +75,9 @@ use exface\Core\Interfaces\Widgets\iHaveColumns;
  * 
  * The trait will automatically track changes for editable columns if the built-in data loader is used 
  * (see above). All changes are strored in a separate model (see. `getModelNameForChanges()`). The trait 
- * provides `buildJsEditableChangesXXX()` methods use in your JS. 
+ * provides `buildJsEditableChangesXXX()` methods use in your JS. If the data widget has 
+ * `editable_changes_reset_on_refresh` set to `false`, the trait will automatically restore changes
+ * after every refresh.
  * 
  * @author Andrej Kabachnik
  *
@@ -457,7 +459,8 @@ JS;
      */
     protected function buildJsDataLoader($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'keep_page_pos')
     {
-        if ($this->getWidget()->isEditable()) {
+        $widget = $this->getWidget();
+        if ($widget->isEditable()) {
             $disableEditableChangesWatcher = <<<JS
                 
                 // Disable editable-column-change-watcher because reloading from server
@@ -587,6 +590,7 @@ JS;
     
     protected function buildJsDataLoaderOnLoaded(string $oModelJs = 'oModel') : string
     {
+        $widget = $this->getWidget();
         if ($this->isWrappedInDynamicPage()) {
             if ($this->getDynamicPageHeaderCollapsed() === null) {
                 $dynamicPageFixes = <<<JS
@@ -607,7 +611,7 @@ JS;
 JS;
         }
         
-        if ($this->getWidget()->isEditable()) {
+        if ($widget->isEditable()) {
             // Enable watching changes for editable columns from now on
             $editableTableWatchChanges = <<<JS
             
@@ -1203,10 +1207,11 @@ JS;
     
     protected function buildJsEditableChangesApplyToModel(string $oModelJs) : string
     {
-        if ($this->getWidget()->hasUidColumn() === false) {
+        $widget = $this->getWidget();
+        if ($widget->hasUidColumn() === false || $widget->getEditableChangesResetOnRefresh()) {
             return '';
         }
-        $uidColName = $this->getWidget()->getUidColumn()->getDataColumnName();
+        $uidColName = $widget->getUidColumn()->getDataColumnName();
         
         return <<<JS
         

@@ -19,6 +19,8 @@ use exface\Core\Widgets\Dialog;
 
 class UI5Controller implements UI5ControllerInterface
 {
+    const EVENT_NAME_PREFILL = 'prefill';
+    
     private $isBuilt = false;
     
     private $webapp = null;
@@ -32,6 +34,8 @@ class UI5Controller implements UI5ControllerInterface
     private $onInitScripts = [];
     
     private $onRouteMatchedScripts = [];
+    
+    private $onViewPrefilledScripts = [];
     
     private $onDefineScripts = [];
     
@@ -347,14 +351,22 @@ sap.ui.define([
         onInit: function () {
             var oController = this;
             var oView = this.getView();
-            
+
             // Init model for view settings
-            oView.setModel(new sap.ui.model.json.JSONModel({
+            var oViewModel = new sap.ui.model.json.JSONModel({
                 _prefill: {
                     pending: false, 
                     data: {}
                 } 
-            }), "view");
+            });
+            oView.setModel(oViewModel, "view");
+            var oPrefillPendingBinding = new sap.ui.model.Binding(oViewModel, '/_prefill/pending', oViewModel.getContext('/_prefill/pending'));
+            oPrefillPendingBinding.attachChange(function(oEvent){
+                if (oViewModel.getProperty('/_prefill/pending') === false) {
+                        oController._onViewPrefilled();
+                }
+            });
+            
             // Init base view model (used for prefills, control values, etc.)
             oView.setModel(new sap.ui.model.json.JSONModel());
             // Add pseudo event handlers if any defined
@@ -389,6 +401,11 @@ sap.ui.define([
             
             {$this->buildJsOnRouteMatched()}
 		},
+
+        _onViewPrefilled : function () {
+            console.log('onViewPrefilled');
+            {$this->buildJsOnViewPrefilledScript()}
+        },
 
         {$this->buildJsProperties()}
 
@@ -557,12 +574,27 @@ JS;
     }
     
     /**
-     * 
+     *
      * @return string
      */
     protected function buildJsOnRouteMatched() : string
     {
         return implode($this->onRouteMatchedScripts);
+    }
+    
+    public function addOnViewPrefilledScript(string $js) : UI5ControllerInterface
+    {
+        $this->onViewPrefilledScripts[] = $js;
+        return $this;
+    }
+    
+    /**
+     *
+     * @return string
+     */
+    protected function buildJsOnViewPrefilledScript() : string
+    {
+        return implode(array_unique($this->onViewPrefilledScripts));
     }
     
     /**

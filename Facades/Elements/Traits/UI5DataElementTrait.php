@@ -813,7 +813,6 @@ JS;
         
         new sap.f.DynamicPage("{$this->getIdOfDynamicPage()}", {
             fitContent: true,
-            height: "100%",
             preserveHeaderStateOnScroll: true,
             headerExpanded: (sap.ui.Device.system.phone === false),
             title: new sap.f.DynamicPageTitle({

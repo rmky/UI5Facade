@@ -12,6 +12,8 @@ use exface\Core\Exceptions\Facades\FacadeLogicError;
 use exface\UI5Facade\Facades\Elements\UI5ValueHelpDialog;
 use exface\Core\Interfaces\Widgets\iShowDataColumn;
 use exface\Core\Interfaces\Widgets\iShowSingleAttribute;
+use exface\UI5Facade\UI5Controller;
+use exface\Core\CommonLogic\Model\RelationPath;
 
 /**
  * Generates OpenUI5 selects
@@ -108,19 +110,46 @@ JS;
         } else {
             // If the value is to be taken from a model, we need to check if both - key
             // and value are there. If not, the value needs to be fetched from the server.
-            // FIXME for some reason sKey is sometimes empty despite the binding getting a value...
-            // This seems to happen in non-maximized dialogs (e.g. editor of a small object).
-            $value_init_js = <<<JS
-
-        .attachModelContextChange(function(oEvent) {
-            var oInput = oEvent.getSource();
+            $missingValueJs = <<<JS
+            
             var sKey = sap.ui.getCore().byId('{$this->getId()}').{$this->buildJsValueGetterMethod()};
             var sVal = oInput.getValue();
             if (sKey !== '' && sVal === '') {
                 {$this->buildJsValueSetter('sKey')};
             }
+JS;
+            // Do the missing-text-check every time the model of the sap.m.Input changes
+            $value_init_js = <<<JS
+
+        .attachModelContextChange(function(oEvent) {
+            var oInput = oEvent.getSource();
+            $missingValueJs
         })
 JS;
+            // Also do the check with every prefill (the model-change-trigger for some reason does not
+            // work on non-maximized dialogs, but this check does)
+            $this->getController()->addOnViewPrefilledScript("var oInput = sap.ui.getCore().byId('{$this->getId()}'); " . $missingValueJs);
+            
+            // Finally, if the value is bound to model, but the text is not, all the above logic will only
+            // work once, because after that one time, there will be a text (value) and it won't change
+            // with the model. To avoid this, the following code will empty the value of the input every
+            // time the selectedKey changes to empty. This happens at least before every prefill.
+            if ($this->isValueBoundToModel() && ! $this->getView()->getModel()->hasBinding($widget, 'value_text')) {
+                $emptyValueWithKeyJs = <<<JS
+
+            (function(){
+                var oInput = sap.ui.getCore().byId('{$this->getId()}');
+                var oModel = oInput.getModel();
+                var oKeyBinding = new sap.ui.model.Binding(oModel, '{$this->getValueBindingPath()}', oModel.getContext('{$this->getValueBindingPath()}'));
+                oKeyBinding.attachChange(function(){
+                    if (oInput.getSelectedKey() == '') {
+                        oInput.setValue('');
+                    }
+                });
+            })();
+JS;
+                $this->getController()->addOnInitScript($emptyValueWithKeyJs);
+            }
         }
         
         // See if there are promoted columns. If not, make the first two visible columns 

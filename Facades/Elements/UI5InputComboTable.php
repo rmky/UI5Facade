@@ -645,7 +645,6 @@ JS;
 
 !function() {
     var oData = {$jsData};
-console.log(oData);
     if (oData !== undefined && Array.isArray(oData.rows) && oData.rows.length > 0) {
         if (oData.oId == "{$this->getWidget()->getTable()->getMetaObject()->getId()}") {
 

@@ -403,7 +403,6 @@ sap.ui.define([
 		},
 
         _onViewPrefilled : function () {
-            console.log('onViewPrefilled');
             {$this->buildJsOnViewPrefilledScript()}
         },
 

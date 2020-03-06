@@ -528,8 +528,8 @@ class Webapp implements WorkbenchDependantInterface
     
     /**
      * Returns the id for the given widget to use in view and controller names.
-     * Normal that is `$widget->getId()` but for exported apps we need shorter names.
-     * For exported apps the id will consist of the widget type, the widget caption, the meta object alias
+     * Normally that id is `$widget->getId()` but for exported apps we need shorter names.
+     * For exported apps the id consist of the widget type, the widget caption, the meta object alias
      * and an added counter if ids duplicate.
      * 
      * @param WidgetInterface $widget

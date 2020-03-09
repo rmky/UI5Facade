@@ -27,6 +27,7 @@ use exface\Core\Actions\UpdateData;
  */
 class UI5DataLookupDialog extends UI5Dialog 
 {
+    const EVENT_NAME_TOKEN_UPDATE = 'tokenUpdate';
     /**
      * 
      * {@inheritDoc}
@@ -163,6 +164,9 @@ JS;
             return '';
         }
         
+        $table = $this->getWidget()->getDataWidget();
+        $tableElement = $this->getFacade()->getElement($table);
+        
         $splitterId = $this->getDialogContentPanelSplitterLayoutId();
         
         return <<<JS
@@ -173,7 +177,14 @@ JS;
                     expanded: true,
                     height: "100%",
                     headerToolbar: [
-                        {$this->buildJsSelectedItemsPanelHeaderToolbar()}
+                        new sap.m.OverflowToolbar({
+                            content: [
+                                new sap.m.Text("{$this->getDialogContentPanelItemCounterId()}",
+                                {
+                                    text: "{$this->translate('WIDGET.DATALOOKUPDIALOG.SELECTED_ITEMS')}"
+                                })
+                            ]
+                        })
                     ],
                     content: [
                         new sap.m.HBox({
@@ -181,8 +192,35 @@ JS;
                             alignItems: "Center",
                             fitContainer: true,
                             items: [
-                                {$this->buildJsSelectedItemsPanelTokenizer()},
-                                {$this->buildJsSelectedItemsPanelDeleteButtons()}
+                                new sap.m.MultiInput("{$this->getDialogContentPanelTokenizerId()}",
+                                    {
+                                    width: "100%",
+                                    showValueHelp: true,
+                                    valueHelpOnly: true,
+                                    showSuggestion: false,
+                                    showTableSuggestionValueHelp: false,
+                                    layoutData: [
+                                        new sap.m.FlexItemData({
+                                            growFactor: 1
+                                        })
+                                    ],
+                                    tokenUpdate: {$this->getController()->buildJsEventHandler($this, self::EVENT_NAME_TOKEN_UPDATE, true)},
+                                }).addStyleClass('exf-datalookup-tokenizer'),
+                                new sap.m.Button("{$this->getDialogContentPanelTokenizerClearButtonId()}",
+                                {
+                                    icon: "sap-icon://sys-cancel",
+                                    type: "Transparent",
+                                    enabled: false,
+                                    layoutData: [
+                                        new sap.m.FlexItemData({
+                                            growFactor: 0
+                                        })
+                                    ],
+                                    press: function(){
+                                        sap.ui.getCore().byId("{$this->getDialogContentPanelTokenizerId()}").removeAllTokens();
+                                        sap.ui.getCore().byId("{$tableElement->getId()}").removeSelections().fireSelectionChange();
+                                    }
+                                })
                             ]
                         })
                     ],
@@ -204,76 +242,6 @@ JS;
                     }
                 })
 JS;
-    }
-    
-    /**
-     * This function returns the JS-code for the `sap.m.OverflowToolbar` for the
-     * `headerToolbar` aggrgation used in the 'Selected Items' panel.
-     * It contains a Text, which displays the number of itmes, currently selelected.
-     * 
-     * @return string
-     */
-    protected function buildJsSelectedItemsPanelHeaderToolbar() : string
-    {
-        return <<<JS
-                        new sap.m.OverflowToolbar({
-                            content: [
-                                new sap.m.Text("{$this->getDialogContentPanelItemCounterId()}",
-                                {
-                                    text: "Selected Items"
-                                })
-                            ]
-                        })
-JS;
-    }
-    
-    /**
-     * This function returns the JS-code for the `sap.m.Tokenizer`, used in the 'SelectedItems' panel.
-     * 
-     * @return string
-     */
-    protected function buildJsSelectedItemsPanelTokenizer() : string
-    {
-        return <<<JS
-                                new sap.m.Tokenizer("{$this->getDialogContentPanelTokenizerId()}",
-                                    {
-                                    width: "100%",
-                                    layoutData: [
-                                        new sap.m.FlexItemData({
-                                            styleClass: "dataLookupDialogSelectedElementsHBoxFlexItem"
-                                        })
-                                    ]
-                                }).addStyleClass('dataLookupDialogSelectedElementsTokenizer')
-JS;
-    }
-    
-    /**
-     * This function returns the JS-code for the `sap.m.Button`, used in the 'SelectedItems' panel.
-     * Upon clicking it, it clears the selection from the DataTable, therefore deleting all tokens
-     * from the SelectedItems tokenizer.
-     * 
-     * @return string
-     */
-    protected function buildJsSelectedItemsPanelDeleteButtons() : string
-    {
-        return <<<JS
-                                new sap.m.Button("{$this->getDialogContentPanelTokenizerClearButtonId()}",
-                                {
-                                    icon: "sap-icon://sys-cancel",
-                                    type: "Transparent",
-                                    enabled: false,
-                                    press: function(){
-                                        var oTokenizer = sap.ui.getCore().byId("{$this->getDialogContentPanelTokenizerId()}");
-                                        var aTokens = oTokenizer.getTokens();
-                                        if (aTokens.length != 0){
-                                            // remove all tokens by clearing the selection in the table, the tokens are assigned to
-                                            var oTable = sap.ui.getCore().byId(aTokens[0].data().tableId);
-                                            oTable.removeSelections().fireSelectionChange();
-                                        }
-                                    }
-                                })
-JS;
-        
     }
     
     /**
@@ -333,6 +301,7 @@ JS;
             // if the widget is the DataTable, and it uses Multiselect attatch the handlers for the SelectedITems panel
             if ($widget instanceof iSupportMultiSelect && $this->getWidget()->getMultiSelect() === true){
                 $this->getFacade()->getElement($widget)->addOnChangeScript($this->buildJsSelectionChangeHandler());
+                $this->getController()->addOnEventScript($this, self::EVENT_NAME_TOKEN_UPDATE, $this->buildJsTokenChangeHandler('oEvent'));
             }
             
             if ($widget->isHidden() === false) {
@@ -349,6 +318,38 @@ JS;
         }
         
         return $js;
+    }
+    
+    protected function buildJsTokenChangeHandler(string $oEventJs) : string
+    {
+        $table = $this->getWidget()->getDataWidget();
+        $tableElement = $this->getFacade()->getElement($table);
+        
+        return <<<JS
+
+                var oMultiInput = $oEventJs.getSource();
+                var oEventParams = $oEventJs.getParameters();
+                var aRemovedTokens = oEventParams['removedTokens'] || [];
+                var aAddedTokens = oEventParams['addedTokens'] || [];
+                var iItemCounter = oMultiInput.getTokens().length + aAddedTokens.length - aRemovedTokens.length;
+                var sItemCounterText = '{$this->translate('WIDGET.DATALOOKUPDIALOG.SELECTED_ITEMS')} (' + iItemCounter + ')';
+                
+                aRemovedTokens.forEach(function(oToken){
+                    var sKey = oToken.getKey();
+                    {$tableElement->buildJsSelectRowByValue($table->getUidColumn(), 'sKey', '', 'rowIdx', true)}
+                });
+
+                sap.ui.getCore().byId("{$this->getDialogContentPanelItemCounterId()}").setText(sItemCounterText);
+    
+                // disable the remove-selection button when no selection is made
+                var oMultiInputClearButton = sap.ui.getCore().byId("{$this->getDialogContentPanelTokenizerClearButtonId()}");
+                if (iItemCounter == 0){
+                    oMultiInputClearButton.setEnabled(false);
+                } else {
+                    oMultiInputClearButton.setEnabled(true);
+                }
+
+JS;
     }
     
     /**
@@ -386,55 +387,38 @@ JS;
         $dataGetterJs = $tableElement->buildJsDataGetter(ActionFactory::createFromString($this->getWorkbench(), UpdateData::class));
         
         return <<<JS
-            var oTokenizer =  sap.ui.getCore().byId("{$this->getDialogContentPanelTokenizerId()}");
-            if (! oTokenizer) {
+
+            var oMultiInput =  sap.ui.getCore().byId("{$this->getDialogContentPanelTokenizerId()}");
+            if (! oMultiInput) {
                 return;
             }
 
-			oTokenizer.destroyTokens();
+			oMultiInput.removeAllTokens();
 
             var aSelection = {$dataGetterJs};
             var aRows =  aSelection.rows;
+            var aNewTokens = [];
 
-            var sItemCounterText = 'Selected Items';
-            if (aRows.length != 0){
-                sItemCounterText += ' (' + aRows.length + ')';
-            }
-            sap.ui.getCore().byId("{$this->getDialogContentPanelItemCounterId()}").setText(sItemCounterText);
-
-            // disable the remove-selection button when no selection is made
-            var oTokenizerClearButton = sap.ui.getCore().byId("{$this->getDialogContentPanelTokenizerClearButtonId()}");
-            if (aRows.length == 0){
-                oTokenizerClearButton.setEnabled(false);                
-                return;
-            }
-            
-            oTokenizerClearButton.setEnabled(true);
-
-            //get selected items from table
+            // Create tokens for every selected row
             var aSelectedIds = {$tableElement->buildJsValueGetter($idAttributeAlias)};
             var aSelectedLables = {$tableElement->buildJsValueGetter("{$labelColName}")};
             aRows.forEach(function(oRow){
-      
-                 oTokenizer.addToken(
-    				 new sap.m.Token({
-                         customData: [
-                            {
-                                Type: "sap.ui.core.CustomData",
-                                key: "tableId",
-                                value: oEvent.getSource().getId()
-                            }
-                         ],
-    				 	 key: oRow.{$idAttributeAlias},
-    				 	 text: oRow.{$labelColName},        				 	 
-                         delete: function(oEvent){
-                              var sKey = this.getKey();
-                              {$tableElement->buildJsSelectRowByValue($table->getUidColumn(), 'sKey', '', 'rowIdx', true)}
-                              sap.ui.getCore().byId(this.data().tableId).fireSelectionChange();
-                        }
-    				 })
-    			);
+                var oToken = new sap.m.Token({
+                    key: oRow.{$idAttributeAlias},
+                    text: oRow.{$labelColName}
+                });
+                aNewTokens.push(oToken);
             });
+
+            // Fire tokenUpdaet (_before_ actually adding tokens because that's how it seems
+            // to work when doing it manually)
+            oMultiInput.fireTokenUpdate({
+                type: sap.m.Tokenizer.TokenUpdateType.Added,
+                addedTokens: aNewTokens
+            });
+            
+            // add the tokens
+            aNewTokens.forEach(function(oToken) {oMultiInput.addToken(oToken);});
 JS;
     }
 }

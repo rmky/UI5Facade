@@ -481,7 +481,7 @@ class Webapp implements WorkbenchDependantInterface
     
     public function getComponentUrl() : string
     {
-        return 'exface' . $this->facade->getConfig()->getOption('DEFAULT_AJAX_URL') . '/webapps/' . $this->getComponentName() . '/';
+        return 'exface' . $this->facade->getConfig()->getOption('FACADE.AJAX.BASE_URL') . '/webapps/' . $this->getComponentName() . '/';
     }
     
     /**

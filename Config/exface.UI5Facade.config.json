@@ -1,12 +1,13 @@
 {
-	"WIDTH_RELATIVE_UNIT": 400,
-	"WIDTH_DEFAULT": 1,
-	"HEIGHT_RELATIVE_UNIT": 32,
-	"HEIGHT_DEFAULT": 1,
-	"HINT_MAX_CHARS_IN_LINE": 60,
-	"FORBIDDEN_CHARS_IN_ELEMENT_ID": ["/", "(", ")", "."],
-	"FORBIDDEN_CHARS_IN_FUNCTION_PREFIX": ["-", "."],
-	"DEFAULT_AJAX_URL": "/api/ui5",
+	"FACADE.AJAX.BASE_URL": "/api/ui5",
+	"FACADE.AJAX.ACCESS_CONTROL_HEADERS" : {
+		"Access-Control-Allow-Origin": "",
+		"Access-Control-Allow-Credentials": "true",
+		"Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE",
+		"Access-Control-Allow-Headers": "",
+		"Access-Control-Expose-Headers": ""
+	},
+	
 	"DEFAULT_SERVER_ADAPTER_CLASS": "\\exface\\UI5Facade\\Facades\\Elements\\ServerAdapters\\UI5FacadeServerAdapter",
 	
 	"ICON_CLASSES.DEFAULT_CLASS_PREFIX": "",
@@ -101,6 +102,13 @@
 	"WEBAPP_EXPORT.MANIFEST.DATASOURCES": {},
 	"WEBAPP_EXPORT.MANIFEST.DATASOURCES_USE_RELATIVE_URLS": true,
 	
+	"WIDGET.ALL.WIDTH_RELATIVE_UNIT": 400,
+	"WIDGET.ALL.WIDTH_DEFAULT": 1,
+	"WIDGET.ALL.HEIGHT_RELATIVE_UNIT": 32,
+	"WIDGET.ALL.HEIGHT_DEFAULT": 1,
+	"WIDGET.ALL.HINT_MAX_CHARS_IN_LINE": 60,
+	"WIDGET.ALL.FORBIDDEN_CHARS_IN_ELEMENT_ID": ["/", "(", ")", "."],
+	"WIDGET.ALL.FORBIDDEN_CHARS_IN_FUNCTION_PREFIX": ["-", "."],
 	"WIDGET.ALL.DEFAULT_ALIGNMENT": "left",
 	
 	"WIDGET.CHART.PAGE_SIZE": 20,

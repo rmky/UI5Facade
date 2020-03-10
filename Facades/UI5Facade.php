@@ -33,6 +33,7 @@ use exface\UI5Facade\Facades\Formatters\UI5EnumFormatter;
 use exface\Core\Interfaces\DataSheets\DataSheetInterface;
 use exface\UI5Facade\Facades\Formatters\UI5TimeFormatter;
 use exface\Core\Facades\AbstractFacade\AbstractFacade;
+use exface\UI5Facade\Facades\Templates\UI5FacadePageTemplateRenderer;
 
 /**
  * Renders SAP Fiori apps using OpenUI5 or SAP UI5.
@@ -480,8 +481,24 @@ JS;
         return $uxon;
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\AbstractAjaxFacade::getPageTemplateFilePathDefault()
+     */
     protected function getPageTemplateFilePathDefault() : string
     {
         return $this->getApp()->getDirectoryAbsolutePath() . DIRECTORY_SEPARATOR . 'Facades' . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'OpenUI5Template.html';
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\AbstractAjaxFacade::buildHtmlPage()
+     */
+    protected function buildHtmlPage(WidgetInterface $widget) : string
+    {
+        $renderer = new UI5FacadePageTemplateRenderer($this, $this->getPageTemplateFilePath(), $widget);
+        return $renderer->render();
     }
 }

@@ -292,7 +292,7 @@ JS;
             //'app_shortTitle' => '', 
             //'app_info' => '', 
             //'app_description' => '{{appDescription}}', 
-            'assets_path' => $this->buildUrlToFacade() . '/webapps/' . $appId,
+            'assets_path' => $this->buildUrlToFacade(true) . '/webapps/' . $appId,
             'pwa_flag' => $config->getOption('PWA.ENABLED'),
             'pwa_theme_color' => $config->getOption('PWA.DEFAULT_STYLE.THEME_COLOR'),
             'pwa_background_color' => $config->getOption('PWA.DEFAULT_STYLE.BACKGROUND_COLOR'),

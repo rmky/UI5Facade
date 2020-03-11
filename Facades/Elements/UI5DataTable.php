@@ -350,7 +350,6 @@ JS;
                 }
 
 JS;
-        
                   
         if ($this->isUiTable() === true) {            
             $tableParams = <<<JS
@@ -790,16 +789,6 @@ JS;
         }
         return $menu_item;
     }
-        
-    /**
-     * Empties the table by replacing it's model by an empty object.
-     * 
-     * @return string
-     */
-    protected function buildJsDataResetter() : string
-    {
-        return "sap.ui.getCore().byId('{$this->getId()}').getModel().setData({})";   
-    }
     
     /**
      * 
@@ -864,11 +853,11 @@ JS;
 
             {$paginator->buildJsSetTotal($oModelJs . '.getProperty("/recordsFiltered")', 'oController')};
             {$paginator->buildJsRefresh('oController')};  
-            {$this->buildJsOnChangeTrigger(false)}
-            {$singleResultJs} 
-            {$sortOrderFix}   
-            {$heightFix} 
-            {$this->buildJsCellConditionalDisablers()}     
+            {$this->buildJsOnChangeTrigger(false)};
+            {$singleResultJs};
+            {$sortOrderFix};
+            {$heightFix};
+            {$this->buildJsCellConditionalDisablers()};   
             
 JS;
     }
@@ -1407,8 +1396,8 @@ JS;
                         var error = "Data Column '{$syncDataColumnName}' not found in data columns for widget '{$widget->getId()}'!";
                         {$this->buildJsShowMessageError('error', '"ERROR"')}
                     }
-                console.log('SyncSelection Done!');
-                oTable.getModel()._syncChanges = false;
+                
+                    oTable.getModel()._syncChanges = false;
                 }
                 
 JS;
@@ -1451,11 +1440,22 @@ JS;
                         var error = "Data Column '{$syncDataColumnName}' not found in data columns for widget '{$widget->getId()}'!";
                         {$this->buildJsShowMessageError('error', '"ERROR"')}
                     }
-                console.log('SyncSelection Done!');
-                oTable.getModel()._syncChanges = false;
+
+                    oTable.getModel()._syncChanges = false;
                 }
                 
 JS;
         }
+    }
+    
+    /**
+     *
+     * {@inheritdoc}
+     * @see AbstractJqueryElement
+     */
+    public function buildJsResetter() : string
+    {
+        $configuratorElement = $this->getFacade()->getElement($this->getWidget()->getConfiguratorWidget());
+        return $this->buildJsDataResetter() . ';' . $this->buildJsEditableChangesWatcherReset() . ';' . $configuratorElement->buildJsResetter();
     }
 }

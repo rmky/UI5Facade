@@ -222,7 +222,7 @@ JS;
         if ($this->opensDialogPage()) {
             // If the dialog is actually a UI5 page, just navigate to the respecitve view.
             $output .= <<<JS
-                        this.navTo('{$targetWidget->getPage()->getAliasWithNamespace()}', '{$targetWidget->getId()}', xhrSettings);
+                        this.navTo('{$targetWidget->getPage()->getAliasWithNamespace()}', '{$this->getController()->getWebapp()->getWidgetIdForViewControllerName($targetWidget)}', xhrSettings);
 
 JS;
         } else {

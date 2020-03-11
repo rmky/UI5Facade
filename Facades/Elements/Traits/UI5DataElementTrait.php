@@ -10,42 +10,74 @@ use exface\Core\Interfaces\Widgets\iShowImage;
 use exface\UI5Facade\Facades\Elements\UI5SearchField;
 use exface\Core\Widgets\Input;
 use exface\Core\Interfaces\Widgets\iHaveColumns;
-use exface\Core\Interfaces\Widgets\iCanPreloadData;
-use exface\UI5Facade\Facades\UI5Facade;
-use exface\UI5Facade\Facades\Interfaces\UI5ServerAdapterInterface;
-use exface\UI5Facade\Facades\Elements\ServerAdapters\OData2ServerAdapter;
 
 /**
  * This trait helps wrap thrid-party data widgets (like charts, image galleries, etc.) in 
  * UI5 panels with standard toolbars, a configurator dialog, etc. 
  * 
- * How it works:
+ * ## How it works:
  * 
  * The method buildJsConstructor() is pre-implemented and takes care of creating the report floorplan,
  * toolbars, the P13n-Dialog, etc. The control to be placed with the report floorplan is provided by the
  * method buildJsConstructorForControl(), which nees to be implemented in every class using the trait.
  * 
- * The trait also provides a default data loader implementation via buildJsDataLoader(), which supports
- * lazy loading and data preload out of the box. The data loaded is automatically placed in the main
- * model of the control (use `sap.ui.getCore().byId({$this->getId()}).getModel()` to access it). However,
- * you can still customize the data loading logic by implementing 
+ * ### Default data loader
  * 
- * - buildJsDataLoaderPrepare() - called right before the default loading starts.
- * - buildJsDataLoaderParams() - called after the default request parameters were computed and allowing
+ * The trait also provides a default data loader implementation via buildJsDataLoader(), which supports
+ * different server adapter (i.e. to switch to direct OData communication in exported Fiori apps), lazy 
+ * loading and data preload out of the box. 
+ * 
+ * It is definitely a good idea to use this data loader in all data controls like tables, lists, etc.! 
+ * 
+ * The data loaded is automatically placed in the main model of the control (use 
+ * `sap.ui.getCore().byId({$this->getId()}).getModel()` to access it). However, you can still customize 
+ * the data loading logic by implementing 
+ * 
+ * - `buildJsDataLoaderPrepare()` - called right before the default loading starts.
+ * - `buildJsDataLoaderParams()` - called after the default request parameters were computed and allowing
  * to customize them
- * - buildJsDataLoaderOnLoaded() - called right after the data was placed in the model, but before
+ * - `buildJsDataLoaderOnLoaded()` - called right after the data was placed in the model, but before
  * the busy-state is dismissed. This is the place, where you would add all sorts of postprocessing or
  * the logic to load the data into a non-UI5 control.
  * 
- * NOTE: The main model of the control and it's page wrapper (if the report floorplan is used) is 
- * NOT the view model - it's a separate one. It contains the data set loaded. There is also a secondary
+ * **NOTE:** The main model of the control and it's page wrapper (if the report floorplan is used) is 
+ * NOT the view model - it's a separate one. It contains the data set loaded. 
+ * 
+ * ### Wrapping the control in sap.f.DynamicPage
+ * 
+ * The trait will automatically wrap the data control in a sap.f.DynamicPage turning it into a "report
+ * floorplan" if the method `isWrappedInDynamicPage()` returns `true`. Override this method to implement
+ * a custom wrapping condition.
+ * 
+ * The page will have a collapsible header with filters (instead of the filter tab in the widget 
+ * configurator (see below). The behavior of the dynamic page can be customized via
+ * 
+ * - `getDynamicPageXXX()` methods - override them to change the page's behavior from the element class
+ * - `setDynamicPageXXX()` methods - call them from other classes to set available options externally 
+ * 
+ * ### Toolbars
+ * 
+ * The trait provides methods to generate the standard toolbar with the widget's `caption`, buttons,
+ * quick search field and the configurator-button.
+ * 
+ * You can also customize the toolbars by overriding
+ * - `buildJsToolbar()` - returns the constructor of the top toolbar (sap.m.OverflowToolbar by default)
+ * - `buildJsToolbarContent()` - returns the toolbar content (i.e. title, buttons, etc.)
+ * - `buildJsQuickSearchConstructor()`
+ * 
+ * ### Configurator: filters, sorters, advanced search query builder, etc.
+ * 
+ * There is also a secondary
  * model for the configurator (i.e. filter values, sorting options, etc.) - it's name can be obtained
  * from `getModelNameForConfigurator()`.
  * 
- * You can also customize the toolbars by overriding
- * - buildJsToolbar() - returns the constructor of the top toolbar (sap.m.OverflowToolbar by default)
- * - buildJsToolbarContent() - returns the toolbar content (i.e. title, buttons, etc.)
- * - buildJsQuickSearchConstructor()
+ * ### Editable columns and tracking changes
+ * 
+ * The trait will automatically track changes for editable columns if the built-in data loader is used 
+ * (see above). All changes are strored in a separate model (see. `getModelNameForChanges()`). The trait 
+ * provides `buildJsEditableChangesXXX()` methods use in your JS. If the data widget has 
+ * `editable_changes_reset_on_refresh` set to `false`, the trait will automatically restore changes
+ * after every refresh.
  * 
  * @author Andrej Kabachnik
  *
@@ -137,7 +169,35 @@ trait UI5DataElementTrait {
         
         $js = $this->buildJsConstructorForControl();
         
-        $initModels = ".setModel(new sap.ui.model.json.JSONModel()).setModel(new sap.ui.model.json.JSONModel(), '{$this->getModelNameForConfigurator()}')";
+        $initModels = <<<JS
+
+        .setModel(new sap.ui.model.json.JSONModel())
+        .setModel(new sap.ui.model.json.JSONModel(), '{$this->getModelNameForConfigurator()}')
+JS;
+        
+        // If the table has editable columns, we need to track changes made by the user.
+        // This is done by listening to changes of the /rows property of the model and
+        // comparing it's current state with the initial state. This IF initializes
+        // the whole thing. The rest ist handlede by buildJsEditableChangesWatcherXXX()
+        // methods.
+        if ($this->isEditable()) {
+            $initModels .= <<<JS
+
+        .setModel(new sap.ui.model.json.JSONModel(), '{$this->getModelNameForDataLastLoaded()}')
+        .setModel(new sap.ui.model.json.JSONModel({changes: {}, watching: false}), '{$this->getModelNameForChanges()}')
+JS;
+            $controller->addMethod('updateChangesModel', $this, 'oDataChanged', $this->buildJsEditableChangesWatcherUpdateMethod('oDataChanged'));
+            $bindChangeWatcherJs = <<<JS
+
+            var oRowsBinding = new sap.ui.model.Binding(sap.ui.getCore().byId('{$this->getId()}').getModel(), '/rows', sap.ui.getCore().byId('{$this->getId()}').getModel().getContext('/rows'));
+            oRowsBinding.attachChange(function(oEvent){
+                var oBinding = oEvent.getSource();
+                var oDataChanged = oBinding.getModel().getData();
+                {$controller->buildJsMethodCallFromController('updateChangesModel', $this, 'oDataChanged')};
+            });
+JS;
+            $controller->addOnInitScript($bindChangeWatcherJs);
+        }
         
         if ($this->isWrappedInDynamicPage()){
             return $this->buildJsPage($js, $oControllerJs) . $initModels;
@@ -381,8 +441,16 @@ JS;
                 
 JS;
     }
-                        
-    abstract protected function buildJsDataResetter() : string;
+    
+    /**
+     * Empties the table by replacing it's model by an empty object.
+     *
+     * @return string
+     */
+    protected function buildJsDataResetter() : string
+    {
+        return "sap.ui.getCore().byId('{$this->getId()}').getModel().setData({})";
+    }
     
     /**
      * Returns the definition of a javascript function to fill the table with data: onLoadDataTableId(oControlEvent).
@@ -391,6 +459,18 @@ JS;
      */
     protected function buildJsDataLoader($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'keep_page_pos')
     {
+        $widget = $this->getWidget();
+        if ($widget->isEditable()) {
+            $disableEditableChangesWatcher = <<<JS
+                
+                // Disable editable-column-change-watcher because reloading from server
+                // changes the data but does not mean a change by the editor
+                {$this->buildJsEditableChangesWatcherDisable()}
+JS;
+        } else {
+            $disableEditableChangesWatcher = '';
+        }
+        
         // Before we load anything, we need to make sure, the view data is loaded.
         // The view model has a special property to indicate if view (prefill) data
         // is being loaded. So we check that property and, if it shows a prefill
@@ -412,7 +492,7 @@ JS;
                     oPrefillBinding.attachChange(fnPrefillHandler);
                     return;
                 }
-
+                {$disableEditableChangesWatcher}
                 {$this->buildJsDataLoaderPrepare()}
 
 JS;
@@ -510,6 +590,7 @@ JS;
     
     protected function buildJsDataLoaderOnLoaded(string $oModelJs = 'oModel') : string
     {
+        $widget = $this->getWidget();
         if ($this->isWrappedInDynamicPage()) {
             if ($this->getDynamicPageHeaderCollapsed() === null) {
                 $dynamicPageFixes = <<<JS
@@ -530,13 +611,23 @@ JS;
 JS;
         }
         
-        
+        if ($widget->isEditable()) {
+            // Enable watching changes for editable columns from now on
+            $editableTableWatchChanges = <<<JS
+            
+            oTable.getModel("{$this->getModelNameForDataLastLoaded()}").setData(JSON.parse(JSON.stringify($oModelJs.getData())));
+            {$this->buildJsEditableChangesApplyToModel($oModelJs)} 
+            {$this->buildJsEditableChangesWatcherEnable()}
+
+JS;
+        }
         
         return <<<JS
         
             oTable.getModel("{$this->getModelNameForConfigurator()}").setProperty('/filterDescription', {$this->getController()->buildJsMethodCallFromController('onUpdateFilterSummary', $this, '', 'oController')});
             {$dynamicPageFixes}
             {$this->buildJsDataLoaderOnLoadedHandleWidgetLinks($oModelJs)}
+            {$editableTableWatchChanges}
 			
 JS;
     }
@@ -662,7 +753,7 @@ JS;
         // If the widget is not the root, the URL prefill will be applied to the view normally
         // and it will work fine. 
         if ($this->getWidget()->hasParent() === false) {
-            $this->getController()->addOnInitScript('console.log("prefilling");' . $this->buildJsPrefillFiltersFromRouteParams());
+            $this->getController()->addOnInitScript($this->buildJsPrefillFiltersFromRouteParams());
         }
         
         foreach ($this->getWidget()->getToolbarMain()->getButtonGroupForSearchActions()->getButtons() as $btn) {
@@ -722,7 +813,6 @@ JS;
         
         new sap.f.DynamicPage("{$this->getIdOfDynamicPage()}", {
             fitContent: true,
-            height: "100%",
             preserveHeaderStateOnScroll: true,
             headerExpanded: (sap.ui.Device.system.phone === false),
             title: new sap.f.DynamicPageTitle({
@@ -788,7 +878,7 @@ JS;
                 setTimeout(function(){
                     var oViewModel = sap.ui.getCore().byId("{$this->getId()}").getModel("view");
                     var fnPrefillFilters = function() {
-                        var oRouteData = oViewModel.getProperty('/_route');console.log(oRouteData);
+                        var oRouteData = oViewModel.getProperty('/_route');
                         if (oRouteData === undefined) return;
                         if (oRouteData.params === undefined) return;
                         
@@ -1011,5 +1101,145 @@ JS;
     protected function getDynamicPageShowToolbar() : bool
     {
         return $this->dynamicPageShowToolbar;
+    }
+    
+    protected function getModelNameForChanges() : string
+    {
+        return 'data_changes';
+    }
+    
+    protected function getModelNameForDataLastLoaded() : string
+    {
+        return 'data_last_loaded';
+    }
+    
+    protected function getEditableColumnNamesJson() : string
+    {
+        $editabelColNames = [];
+        foreach ($this->getWidget()->getColumns() as $col) {
+            if ($col->isEditable()) {
+                $editabelColNames[] = $col->getDataColumnName();
+            }
+        }
+        return json_encode($editabelColNames);
+    }
+    
+    protected function buildJsEditableChangesWatcherUpdateMethod(string $changedDataJs) : string
+    {
+        if ($this->getWidget()->hasUidColumn() === false) {
+            return '';
+        }
+        
+        $uidColName = $this->getWidget()->getUidColumn()->getDataColumnName();
+        
+        return <<<JS
+
+            var oTable = sap.ui.getCore().byId('{$this->getId()}');
+            var oChangesModel = oTable.getModel('{$this->getModelNameForChanges()}');
+            
+            if (oChangesModel.getProperty('/watching') !== true) return;
+            
+            var oDataLastLoaded = oTable.getModel('{$this->getModelNameForDataLastLoaded()}').getData();
+            var oDataChanged = $changedDataJs;
+            var oChanges = oChangesModel.getProperty('/changes');
+            var aEditableColNames = {$this->getEditableColumnNamesJson()};        
+
+            if (oDataChanged.rows === undefined || oDataChanged.rows.lenght === 0) return;
+
+            oDataChanged.rows.forEach(function(oRowChanged) {
+                var oRowLast;
+                var sUid = oRowChanged['$uidColName'];
+                for (var i in oDataLastLoaded.rows) {
+                    if (oDataLastLoaded.rows[i]['$uidColName'] === sUid) {
+                        oRowLast = oDataLastLoaded.rows[i];
+                        break;
+                    }
+                }
+                if (oRowLast) {
+                    aEditableColNames.forEach(function(sFld){
+                        if (oRowChanged[sFld] != oRowLast[sFld]) {
+                            if (oChanges[sUid] === undefined) {
+                                oChanges[sUid] = {};
+                            }
+                            oChanges[sUid][sFld] = oRowChanged[sFld];
+                        } else {
+                            if (oChanges[sUid] && oChanges[sUid][sFld]) {
+                                delete oChanges[sUid][sFld];
+                                if (Object.keys(oChanges[sUid]).length === 0) {
+                                    delete oChanges[sUid];
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+
+            oChangesModel.setProperty('/changes', oChanges);
+
+JS;
+    }
+    
+    protected function buildJsEditableChangesWatcherDisable(string $oTableJs = null) : string
+    {
+        return $this->buildJsEditableChangesModelGetter($oTableJs) . ".setProperty('/watching', false);";
+    }
+    
+    protected function buildJsEditableChangesWatcherEnable(string $oTableJs = null) : string
+    {
+        return $this->buildJsEditableChangesModelGetter($oTableJs) . ".setProperty('/watching', true);";
+    }
+    
+    protected function buildJsEditableChangesWatcherReset(string $oTableJs = null) : string
+    {
+        return $this->buildJsEditableChangesModelGetter($oTableJs) . ".setData({changes: {}, watching: false});";
+    }
+    
+    protected function buildJsEditableChangesGetter(string $oTableJs = null) : string
+    {
+        return $this->buildJsEditableChangesModelGetter($oTableJs) . ".getProperty('/changes')";
+    }
+    
+    protected function buildJsEditableChangesModelGetter(string $oTableJs = null) : string
+    {
+        return ($oTableJs ?? "sap.ui.getCore().byId('{$this->getId()}')") . ".getModel('{$this->getModelNameForChanges()}')";
+    }
+    
+    protected function buildJsEditableChangesApplyToModel(string $oModelJs) : string
+    {
+        $widget = $this->getWidget();
+        if ($widget->hasUidColumn() === false || $widget->getEditableChangesResetOnRefresh()) {
+            return '';
+        }
+        $uidColName = $widget->getUidColumn()->getDataColumnName();
+        
+        return <<<JS
+        
+            // Keep previous values of all editable column in case the had changed
+            (function(){
+                var aEditableColNames = {$this->getEditableColumnNamesJson()};
+                var oData = $oModelJs.getData();
+                var aRows = oData.rows;
+                if (aRows === undefined || aRows.length === 0) return;
+                
+                var bDataUpdated = false;
+                var oChanges = {$this->buildJsEditableChangesGetter()};
+                
+                for (var iRow in aRows) {
+                    var sUid = aRows[iRow]['$uidColName'];
+                    if (oChanges[sUid]) {
+                        for (var sFld in oChanges[sUid]) {
+                            aRows[iRow][sFld] = oChanges[sUid][sFld];
+                            bDataUpdated = true;
+                        }
+                    }
+                }
+                
+                if (bDataUpdated) {
+                    oData.rows = aRows;
+                    $oModelJs.setData(oData);
+                }
+            })();
+            
+JS;
     }
 }

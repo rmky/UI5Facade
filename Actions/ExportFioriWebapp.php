@@ -99,6 +99,8 @@ class ExportFioriWebapp extends AbstractActionDeferred implements iModifyData, i
         $facade->getConfig()->setOption('DEFAULT_SERVER_ADAPTER_CLASS', $facade->getConfig()->getOption('WEBAPP_EXPORT.SERVER_ADAPTER_CLASS'));
         // Disable all global actions as they cannot be used with the oData adapter
         $facade->getWorkbench()->getConfig()->setOption('WIDGET.DATATOOLBAR.GLOBAL_ACTIONS', new UxonObject());
+        // use short Widget IDs for export
+        $facade->getConfig()->setOption('WIDGET.USE_SHORT_ID', true);
         
         $result = new ResultMessageStream($task);
         $generator = function() use ($rootPage, $facade, $row, $input, $transaction, $result) {

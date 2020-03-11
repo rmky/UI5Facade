@@ -125,6 +125,14 @@ interface UI5ControllerInterface {
     public function addOnRouteMatchedScript(string $js, string $id) : UI5ControllerInterface;
     
     /**
+     * Executes the provided script every time the route's prefill data is loaded
+     * 
+     * @param string $js
+     * @return UI5ControllerInterface
+     */
+    public function addOnViewPrefilledScript(string $js) : UI5ControllerInterface;
+    
+    /**
      * Executes a script before the controller is initialized: before it's define()
      * 
      * @param string $js

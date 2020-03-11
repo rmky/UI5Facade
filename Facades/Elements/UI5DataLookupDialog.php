@@ -27,6 +27,7 @@ use exface\Core\Actions\UpdateData;
  */
 class UI5DataLookupDialog extends UI5Dialog 
 {
+    const EVENT_NAME_TOKEN_UPDATE = 'tokenUpdate';
     /**
      * 
      * {@inheritDoc}
@@ -37,8 +38,23 @@ class UI5DataLookupDialog extends UI5Dialog
         parent::init();
         $table = $this->getWidget()->getDataWidget();
         $table->setHideCaption(true);
+        
         if ($table instanceof iHaveHeader) {
             $this->getWidget()->getDataWidget()->setHideHeader(false);
+        }
+        
+        // Make sure, a label column exists, so the label can be used in the selection-chips
+        if ($table->getMetaObject()->hasLabelAttribute()) {
+            $labelColExists = false;
+            foreach ($table->getColumns() as $col) {
+                if ($col->isBoundToAttribute() && $col->getAttribute()->isLabelForObject()) {
+                    $labelColExists = true;
+                    break;
+                }
+            }
+            if ($labelColExists === false) {
+                $table->addColumn($table->createColumnFromAttribute($table->getMetaObject()->getLabelAttribute()));
+            }
         }
         return;
     }
@@ -80,8 +96,13 @@ JS;
 			buttons : [ {$this->buildJsDialogButtons()} ],
 			content : [ {$this->buildJsDialogContent()} ],
             {$prefill}
-		});
+		}).addStyleClass('{$this->buildCssElementClass()}')
 JS;
+    }
+    
+    public function buildCssElementClass()
+    {
+        return 'exf-datalookup';
     }
     
     /**
@@ -95,14 +116,15 @@ JS;
     protected function buildJsDialogContent() : string
     {
         return <<<JS
-new sap.ui.layout.Splitter({
+
+                new sap.ui.layout.Splitter({
                     orientation: "Vertical",
                     height: "100%",
                     contentAreas: [
                         {$this->buildJsDialogContentChildren()},
                         {$this->buildJsDialogSelectedItemsPanel()}
                     ]
-                    })
+                })
 JS;
     }
     
@@ -142,16 +164,27 @@ JS;
             return '';
         }
         
+        $table = $this->getWidget()->getDataWidget();
+        $tableElement = $this->getFacade()->getElement($table);
+        
         $splitterId = $this->getDialogContentPanelSplitterLayoutId();
         
         return <<<JS
             new sap.m.Panel( "{$this->getDialogContentPanelId()}",
                 {
                     expandable: true,
+                    expandAnimation: false,
                     expanded: true,
                     height: "100%",
                     headerToolbar: [
-                        {$this->buildJsSelectedItemsPanelHeaderToolbar()}
+                        new sap.m.OverflowToolbar({
+                            content: [
+                                new sap.m.Text("{$this->getDialogContentPanelItemCounterId()}",
+                                {
+                                    text: "{$this->translate('WIDGET.DATALOOKUPDIALOG.SELECTED_ITEMS')}"
+                                })
+                            ]
+                        })
                     ],
                     content: [
                         new sap.m.HBox({
@@ -159,97 +192,56 @@ JS;
                             alignItems: "Center",
                             fitContainer: true,
                             items: [
-                                {$this->buildJsSelectedItemsPanelTokenizer()},
-                                {$this->buildJsSelectedItemsPanelDeleteButtons()}
-                            ]
-                        })
-                    ],
-                    layoutData: [
-                        new sap.ui.layout.SplitterLayoutData("{$splitterId}",
-                            {
-                                size: "5rem",
-                                resizable: false
-                            })
-                    ]
-                }).attachExpand(function(){
-                                    // resize on expanding / collapsing to allow the table to utilize as much space as possible
-                                    if (this.getExpanded() == true){
-                                        sap.ui.getCore().byId('{$splitterId}').setSize("5rem");
-                                    } else {
-                                        sap.ui.getCore().byId('{$splitterId}').setSize("2.1rem");
-                                    }
-                                })
-JS;
-    }
-    
-    /**
-     * This function returns the JS-code for the `sap.m.OverflowToolbar` for the
-     * `headerToolbar` aggrgation used in the 'Selected Items' panel.
-     * It contains a Text, which displays the number of itmes, currently selelected.
-     * 
-     * @return string
-     */
-    protected function buildJsSelectedItemsPanelHeaderToolbar() : string
-    {
-        return <<<JS
-                        new sap.m.OverflowToolbar({
-                            content: [
-                                new sap.m.Text("{$this->getDialogContentPanelItemCounterId()}",
-                                {
-                                    text: "Selected Items"
-                                })
-                            ]
-                        })
-JS;
-    }
-    
-    /**
-     * This function returns the JS-code for the `sap.m.Tokenizer`, used in the 'SelectedItems' panel.
-     * 
-     * @return string
-     */
-    protected function buildJsSelectedItemsPanelTokenizer() : string
-    {
-        return <<<JS
-                                new sap.m.Tokenizer("{$this->getDialogContentPanelTokenizerId()}",
+                                new sap.m.MultiInput("{$this->getDialogContentPanelTokenizerId()}",
                                     {
                                     width: "100%",
+                                    showValueHelp: true,
+                                    valueHelpOnly: true,
+                                    showSuggestion: false,
+                                    showTableSuggestionValueHelp: false,
                                     layoutData: [
                                         new sap.m.FlexItemData({
-                                            styleClass: "dataLookupDialogSelectedElementsHBoxFlexItem"
+                                            growFactor: 1
                                         })
-                                    ]
-                                }).addStyleClass('dataLookupDialogSelectedElementsTokenizer')
-JS;
-    }
-    
-    /**
-     * This function returns the JS-code for the `sap.m.Button`, used in the 'SelectedItems' panel.
-     * Upon clicking it, it clears the selection from the DataTable, therefore deleting all tokens
-     * from the SelectedItems tokenizer.
-     * 
-     * @return string
-     */
-    protected function buildJsSelectedItemsPanelDeleteButtons() : string
-    {
-        return <<<JS
+                                    ],
+                                    tokenUpdate: {$this->getController()->buildJsEventHandler($this, self::EVENT_NAME_TOKEN_UPDATE, true)},
+                                }).addStyleClass('exf-datalookup-tokenizer'),
                                 new sap.m.Button("{$this->getDialogContentPanelTokenizerClearButtonId()}",
                                 {
                                     icon: "sap-icon://sys-cancel",
                                     type: "Transparent",
                                     enabled: false,
+                                    layoutData: [
+                                        new sap.m.FlexItemData({
+                                            growFactor: 0
+                                        })
+                                    ],
                                     press: function(){
-                                        var oTokenizer = sap.ui.getCore().byId("{$this->getDialogContentPanelTokenizerId()}");
-                                        var aTokens = oTokenizer.getTokens();
-                                        if (aTokens.length != 0){
-                                            // remove all tokens by clearing the selection in the table, the tokens are assigned to
-                                            var oTable = sap.ui.getCore().byId(aTokens[0].data().tableId);
-                                            oTable.removeSelections().fireSelectionChange();
-                                        }
+                                        sap.ui.getCore().byId("{$this->getDialogContentPanelTokenizerId()}").removeAllTokens();
+                                        sap.ui.getCore().byId("{$tableElement->getId()}").removeSelections().fireSelectionChange();
                                     }
                                 })
+                            ]
+                        })
+                    ],
+                    layoutData: [
+                        new sap.ui.layout.SplitterLayoutData("{$splitterId}", {
+                            //size: "5rem",
+                            size: "6.5rem",
+                            resizable: false
+                        })
+                    ]
+                }).attachExpand(function(){
+                    // resize on expanding / collapsing to allow the table to utilize as much space as possible
+                    if (this.getExpanded() == true){
+                        //sap.ui.getCore().byId('{$splitterId}').setSize("5rem");
+                        sap.ui.getCore().byId('{$splitterId}').setSize("6.5rem");
+                    } else {
+                        //sap.ui.getCore().byId('{$splitterId}').setSize("2.1rem");
+                        sap.ui.getCore().byId('{$splitterId}').setSize("3.0rem");
+                    }
+                })
 JS;
-        
     }
     
     /**
@@ -309,6 +301,7 @@ JS;
             // if the widget is the DataTable, and it uses Multiselect attatch the handlers for the SelectedITems panel
             if ($widget instanceof iSupportMultiSelect && $this->getWidget()->getMultiSelect() === true){
                 $this->getFacade()->getElement($widget)->addOnChangeScript($this->buildJsSelectionChangeHandler());
+                $this->getController()->addOnEventScript($this, self::EVENT_NAME_TOKEN_UPDATE, $this->buildJsTokenChangeHandler('oEvent'));
             }
             
             if ($widget->isHidden() === false) {
@@ -325,6 +318,38 @@ JS;
         }
         
         return $js;
+    }
+    
+    protected function buildJsTokenChangeHandler(string $oEventJs) : string
+    {
+        $table = $this->getWidget()->getDataWidget();
+        $tableElement = $this->getFacade()->getElement($table);
+        
+        return <<<JS
+
+                var oMultiInput = $oEventJs.getSource();
+                var oEventParams = $oEventJs.getParameters();
+                var aRemovedTokens = oEventParams['removedTokens'] || [];
+                var aAddedTokens = oEventParams['addedTokens'] || [];
+                var iItemCounter = oMultiInput.getTokens().length + aAddedTokens.length - aRemovedTokens.length;
+                var sItemCounterText = '{$this->translate('WIDGET.DATALOOKUPDIALOG.SELECTED_ITEMS')} (' + iItemCounter + ')';
+                
+                aRemovedTokens.forEach(function(oToken){
+                    var sKey = oToken.getKey();
+                    {$tableElement->buildJsSelectRowByValue($table->getUidColumn(), 'sKey', '', 'rowIdx', true)}
+                });
+
+                sap.ui.getCore().byId("{$this->getDialogContentPanelItemCounterId()}").setText(sItemCounterText);
+    
+                // disable the remove-selection button when no selection is made
+                var oMultiInputClearButton = sap.ui.getCore().byId("{$this->getDialogContentPanelTokenizerClearButtonId()}");
+                if (iItemCounter == 0){
+                    oMultiInputClearButton.setEnabled(false);
+                } else {
+                    oMultiInputClearButton.setEnabled(true);
+                }
+
+JS;
     }
     
     /**
@@ -362,55 +387,38 @@ JS;
         $dataGetterJs = $tableElement->buildJsDataGetter(ActionFactory::createFromString($this->getWorkbench(), UpdateData::class));
         
         return <<<JS
-            var oTokenizer =  sap.ui.getCore().byId("{$this->getDialogContentPanelTokenizerId()}");
-            if (! oTokenizer) {
+
+            var oMultiInput =  sap.ui.getCore().byId("{$this->getDialogContentPanelTokenizerId()}");
+            if (! oMultiInput) {
                 return;
             }
 
-			oTokenizer.destroyTokens();
+			oMultiInput.removeAllTokens();
 
             var aSelection = {$dataGetterJs};
             var aRows =  aSelection.rows;
+            var aNewTokens = [];
 
-            var sItemCounterText = 'Selected Items';
-            if (aRows.length != 0){
-                sItemCounterText += ' (' + aRows.length + ')';
-            }
-            sap.ui.getCore().byId("{$this->getDialogContentPanelItemCounterId()}").setText(sItemCounterText);
-
-            // disable the remove-selection button when no selection is made
-            var oTokenizerClearButton = sap.ui.getCore().byId("{$this->getDialogContentPanelTokenizerClearButtonId()}");
-            if (aRows.length == 0){
-                oTokenizerClearButton.setEnabled(false);                
-                return;
-            }
-            
-            oTokenizerClearButton.setEnabled(true);
-
-            //get selected items from table
+            // Create tokens for every selected row
             var aSelectedIds = {$tableElement->buildJsValueGetter($idAttributeAlias)};
             var aSelectedLables = {$tableElement->buildJsValueGetter("{$labelColName}")};
             aRows.forEach(function(oRow){
-      
-                 oTokenizer.addToken(
-    				 new sap.m.Token({
-                         customData: [
-                            {
-                                Type: "sap.ui.core.CustomData",
-                                key: "tableId",
-                                value: oEvent.getSource().getId()
-                            }
-                         ],
-    				 	 key: oRow.{$idAttributeAlias},
-    				 	 text: oRow.{$labelColName},        				 	 
-                         delete: function(oEvent){
-                              var sKey = this.getKey();
-                              {$tableElement->buildJsSelectRowByValue($table->getUidColumn(), 'sKey', '', 'rowIdx', true)}
-                              sap.ui.getCore().byId(this.data().tableId).fireSelectionChange();
-                        }
-    				 })
-    			);
+                var oToken = new sap.m.Token({
+                    key: oRow.{$idAttributeAlias},
+                    text: oRow.{$labelColName}
+                });
+                aNewTokens.push(oToken);
             });
+
+            // Fire tokenUpdaet (_before_ actually adding tokens because that's how it seems
+            // to work when doing it manually)
+            oMultiInput.fireTokenUpdate({
+                type: sap.m.Tokenizer.TokenUpdateType.Added,
+                addedTokens: aNewTokens
+            });
+            
+            // add the tokens
+            aNewTokens.forEach(function(oToken) {oMultiInput.addToken(oToken);});
 JS;
     }
 }

@@ -48,23 +48,23 @@ class UI5Display extends UI5Value
         $widget = $this->getWidget();
         if ($widget->getValueDataType() instanceof BooleanDataType) {
             if ($this->getWidget()->isInTable() === true) {
-                $icon_yes = 'sap-icon://accept';
-                $icon_no = '';
+                $icon_yes = "'sap-icon://accept'";
+                $icon_no = "null";
                 $icon_width = '"100%"';
             } else {
-                $icon_yes = 'sap-icon://message-success';
-                $icon_no = 'sap-icon://border';
-                $icon_width = '"14px"';
+                $icon_yes = "'sap-icon://message-success'";
+                $icon_no = "'sap-icon://border'";
+                $icon_width = "'14px'";
             }
             $js = <<<JS
 
         new sap.ui.core.Icon({
             width: {$icon_width},
             {$this->buildJsPropertyTooltip()}
-            src: {$this->buildJsValueBinding('formatter: function(value) {
-                    if (value === "1" || value === "true" || value === 1 || value === true) return "' . $icon_yes . '";
-                    else return "' . $icon_no . '";
-                }')}
+            src: {$this->buildJsValueBinding("formatter: function(value) {
+                    if (value === '1' || value === 'true' || value === 1 || value === true) return $icon_yes;
+                    else return $icon_no;
+                }")}
         })
 
 JS;

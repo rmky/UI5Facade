@@ -4,6 +4,16 @@ namespace exface\UI5Facade\Facades\Templates;
 use exface\Core\DataTypes\StringDataType;
 use exface\Core\Facades\AbstractAjaxFacade\Templates\FacadePageTemplateRenderer;
 
+/**
+ * UI5Facade specific HTML template renderer working with [#placeholders#].
+ *
+ * ## additional Supported Placeholders
+ *
+ * - `[#ui5:<option>#]` - replaced by option specific value
+ *
+ * @author Ralf Mulansky
+ *
+ */
 class UI5FacadePageTemplateRenderer extends FacadePageTemplateRenderer
 {
     protected function renderPlaceholderValue(string $placeholder) : string
@@ -26,9 +36,6 @@ class UI5FacadePageTemplateRenderer extends FacadePageTemplateRenderer
                 } else {
                     $val = 'sapUiBody sapUiSizeCompact';
                 }
-                break;
-            case 'theme':
-                $val = $this->getFacade()->getTheme();
                 break;
             default:
                 $val = '';

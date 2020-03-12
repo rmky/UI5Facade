@@ -672,14 +672,14 @@ JS;
                             });
                             $oModelJs.updateBindings();
 JS;
-                            $addLocalValuesOnChange = <<<JS
+            $addLocalValuesOnChange = <<<JS
                             
                             var $oModelJs = sap.ui.getCore().byId("{$this->getId()}").getModel();
                             {$addLocalValuesJs}
 JS;
-                            foreach ($linkedEls as $linkedEl) {
-                                $linkedEl->addOnChangeScript($addLocalValuesOnChange);
-                            }
+            foreach ($linkedEls as $linkedEl) {
+                $linkedEl->addOnChangeScript($addLocalValuesOnChange);
+            }
         }
         return $addLocalValuesJs;
     }

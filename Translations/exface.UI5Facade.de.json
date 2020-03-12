@@ -4,6 +4,7 @@
 	"ERROR.DETAILS": "Details",
 	"ERROR.LOG_ID_HINT": "Bei Support-Anfragen bitte angeben!",
 	"SAP-ERROR": "im SAP",
+	"SAP-LOGIC": "in SAP-Verabreitungslogik",
 	
 	"MESSAGE.ERROR_TITLE": "Fehler",
 	"MESSAGE.SUCCESS_TITLE": "",

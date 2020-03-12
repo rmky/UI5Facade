@@ -302,7 +302,7 @@ const exfLauncher = {};
 					//if ($('#contextBar .context-bar-spinner').length > 0){
 						$.ajax({
 							type: 'POST',
-							url: 'exface/api/ui5/' + _oLauncher.getPageId() + '/context',
+							url: 'api/ui5/' + _oLauncher.getPageId() + '/context',
 							dataType: 'json',
 							success: function(data, textStatus, jqXHR) {
 								_oContextBar.refresh(data);
@@ -389,7 +389,7 @@ const exfLauncher = {};
 				
 				$.ajax({
 					type: 'POST',
-					url: 'exface/api/ui5',
+					url: 'api/ui5',
 					dataType: 'script',
 					data: {
 						action: 'exface.Core.ShowContextPopup',
@@ -509,7 +509,7 @@ const exfPreloader = {};
 		}
 		return $.ajax({
 			type: 'POST',
-			url: 'exface/api/ui5',
+			url: 'api/ui5',
 			dataType: 'json',
 			data: {
 				action: 'exface.Core.ReadPreload',

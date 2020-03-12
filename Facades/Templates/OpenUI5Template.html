@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv='X-UA-Compatible' content='IE=edge'>
+		<meta http-equiv='Content-Type' content='text/html;charset=UTF-8'>
+		<meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+		<meta name="HandheldFriendly" content="True">
+		<meta name="MobileOptimized" content="240"/>
+		<meta name="PalmComputingPlatform" content="true"/>
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="mobile-web-app-capable" content="yes">
+		
+		<link rel="shortcut icon" sizes="196x196" href="assets/images/alexa_icon_196.png">
+		<link rel="apple-touch-icon" sizes="128x128" href="assets/images/alexa_icon_128.png">
+		<link rel="apple-touch-icon-precomposed" sizes="128x128" href="assets/images/alexa_icon_128.png">
+
+		<meta id="exf-page-id" name="page_id" content="[#~page:alias#]">
+		
+		<title>[#~page:name#]</title>
+		
+		<style>
+			#exf-loader-spinner {
+			    border: 16px solid #f3f3f3; /* Light grey */
+			    border-top: 16px solid #3498db; /* Blue */
+			    border-radius: 50%;
+			    width: 120px;
+			    height: 120px;
+			    animation: spin 2s linear infinite;
+				    margin: calc(100vh / 2 - 60px) auto
+			}
+			
+			@keyframes spin {
+			    0% { transform: rotate(0deg); }
+			    100% { transform: rotate(360deg); }
+			}
+		</style>
+		
+		<script>
+			// Check that service workers are registered
+			if ('serviceWorker' in navigator) {				
+			  // Use the window load event to keep the page load performant
+			  window.addEventListener('load', () => {
+				navigator.serviceWorker.register('ServiceWorker.js');
+			  });
+			}			
+		</script>
+		
+		<!-- Load SAPUI5, select theme and control library -->
+		<script src="vendor/exface/UI5Facade/Facades/js_openui5/resources/sap-ui-core.js"
+				id="sap-ui-bootstrap"
+				data-sap-ui-libs="sap.m,sap.tnt,sap.ui.unified,sap.ui.commons,sap.ui.table,sap.f,sap.uxap"
+				data-sap-ui-theme="[#~facade:theme#]"
+				data-sap-ui-bindingSyntax="complex"
+				data-sap-ui-compatVersion="edge"
+				data-sap-ui-preload="async"
+				data-sap-ui-resourceroots='{
+					"[#~page:alias#]": "api/ui5/webapps/[#~page:alias#]/"
+				}'
+				data-sap-ui-language="[#~session:language#]">
+		</script>
+		
+		<script type="text/javascript" src="vendor/npm-asset/dexie/dist/dexie.min.js"></script>
+		<script type="text/javascript" src="vendor/exface/UI5Facade/Facades/js/openui5.facade.js"></script>
+		
+		<script type="text/javascript">
+			// Main menu
+			function initMainMenu(oShell) {
+				var oNavMenu = [#~widget:NavMenu#]
+				
+				oShell.addPaneContent(oNavMenu);
+			}
+			
+			sap.ui.getCore().attachInit(function () {
+				sap.ui.require([
+					"sap/ui/unified/Shell",
+					"sap/ui/core/ComponentContainer",
+					"sap/f/Avatar",
+					"sap/tnt/NavigationList"
+				], function (Shell, ComponentContainer, Avatar, NavigationList) {
+					var oShell = exfLauncher.initShell();
+					oShell.addContent(
+			    		new sap.ui.core.ComponentContainer({
+							name: "[#~page:alias#]",
+							async: true,
+							manifest: true,
+							settings: {
+								id: "[#~page:alias#].Component"
+							},
+							componentCreated: function(oEvent) {
+								var oComponent = oEvent.getParameters().component;
+								exfLauncher.contextBar.init(oComponent);
+							}
+						})
+				    );
+					
+					initMainMenu(oShell);
+					
+					setTimeout(function(){
+						oShell.getModel().setProperty('/_app', {
+							home_title: '[#~page:name#]',
+							home_url: '[#~url:index#]',
+							app_url: '[#~page:url#]'
+						});
+						
+						oShell.placeAt("[#~page:alias#]");
+					}, 1000);
+				});
+			});
+		</script>
+
+		
+	</head>
+	<body id="[#~page:alias#]" class="[#ui5:density#]">
+		<div id="exf-loader" style="width: 100%; height: 100vh; background: white; position: absolute;"><div id="exf-loader-spinner"></div></div>
+	</body>
+</html>

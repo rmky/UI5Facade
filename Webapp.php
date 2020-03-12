@@ -407,7 +407,7 @@ class Webapp implements WorkbenchDependantInterface
     {
         if ($this->rootPage === null) {
             try {
-                $this->rootPage = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $this->appId);
+                $this->rootPage = UiPageFactory::createFromModel($this->getWorkbench(), $this->appId);
             } catch (\Throwable $e) {
                 throw new FacadeRoutingError('Root page for UI5 app "' . $this->appId . '" not found!', null, $e);
             }
@@ -451,7 +451,7 @@ class Webapp implements WorkbenchDependantInterface
             throw new UI5RouteInvalidException('Route "' . $path . '" not found!');
         }
         
-        $page = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $pageAlias);
+        $page = UiPageFactory::createFromModel($this->getWorkbench(), $pageAlias);
         
         if ($cnt === 4) {
             $widget = $page->getWidget($parts[3]);
@@ -481,7 +481,7 @@ class Webapp implements WorkbenchDependantInterface
     
     public function getComponentUrl() : string
     {
-        return 'exface' . $this->facade->getConfig()->getOption('FACADE.AJAX.BASE_URL') . '/webapps/' . $this->getComponentName() . '/';
+        return $this->facade->getConfig()->getOption('FACADE.AJAX.BASE_URL') . '/webapps/' . $this->getComponentName() . '/';
     }
     
     /**
@@ -636,7 +636,7 @@ class Webapp implements WorkbenchDependantInterface
             // do with scripts hosted on other servers? The current script simply assumes, that all external modules
             // reside in subfolders of the platform and the platform itself is located in the subfolder exface of the
             // server root.
-            $filePath = $this->getWorkbench()->filemanager()->getPathToBaseFolder() . StringDataType::substringAfter($filePath, 'exface');
+            $filePath = $this->getWorkbench()->filemanager()->getPathToBaseFolder() . DIRECTORY_SEPARATOR . $filePath;
             $lib = str_replace('.', '/', $name);
             $lib = StringDataType::endsWith($lib, '.js', false) ? $lib : $lib . '.js';
             if (file_exists($filePath)) {

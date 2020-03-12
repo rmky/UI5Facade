@@ -33,6 +33,7 @@ use exface\UI5Facade\Facades\Formatters\UI5EnumFormatter;
 use exface\Core\Interfaces\DataSheets\DataSheetInterface;
 use exface\UI5Facade\Facades\Formatters\UI5TimeFormatter;
 use exface\Core\Facades\AbstractFacade\AbstractFacade;
+use exface\UI5Facade\Facades\Templates\UI5FacadePageTemplateRenderer;
 
 /**
  * Renders SAP Fiori apps using OpenUI5 or SAP UI5.
@@ -108,6 +109,17 @@ class UI5Facade extends AbstractAjaxFacade
     public function buildHtmlBody(WidgetInterface $widget)
     {
         return $this->buildJs($widget);
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\AbstractAjaxFacade::buildHtml($widget)
+     */
+    public function buildHtml(WidgetInterface $widget)
+    {
+        $element = $this->getElement($widget);
+        return $element->buildJsConstructor();
     }
     
     /**
@@ -280,7 +292,7 @@ JS;
             //'app_shortTitle' => '', 
             //'app_info' => '', 
             //'app_description' => '{{appDescription}}', 
-            'assets_path' => $this->buildUrlToFacade() . '/webapps/' . $appId,
+            'assets_path' => $this->buildUrlToFacade(true) . '/webapps/' . $appId,
             'pwa_flag' => $config->getOption('PWA.ENABLED'),
             'pwa_theme_color' => $config->getOption('PWA.DEFAULT_STYLE.THEME_COLOR'),
             'pwa_background_color' => $config->getOption('PWA.DEFAULT_STYLE.BACKGROUND_COLOR'),
@@ -467,5 +479,26 @@ JS;
             $uxon->setProperty('theme', $this->getTheme());
         }
         return $uxon;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\AbstractAjaxFacade::getPageTemplateFilePathDefault()
+     */
+    protected function getPageTemplateFilePathDefault() : string
+    {
+        return $this->getApp()->getDirectoryAbsolutePath() . DIRECTORY_SEPARATOR . 'Facades' . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'OpenUI5Template.html';
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\AbstractAjaxFacade::buildHtmlPage()
+     */
+    protected function buildHtmlPage(WidgetInterface $widget) : string
+    {
+        $renderer = new UI5FacadePageTemplateRenderer($this, $this->getPageTemplateFilePath(), $widget);
+        return $renderer->render();
     }
 }

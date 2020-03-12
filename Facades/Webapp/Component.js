@@ -142,7 +142,7 @@ sap.ui.define([
 		 * @return sap.m.Dialog
 		 */
 		showErrorDialog : function(sBody, sTitle, sContentType) {
-			var sViewName, oBody;
+			var sViewName, oBody, sDialogType = 'Error';
 			
 			sBody = sBody ? sBody.trim() : '';
 			
@@ -190,8 +190,9 @@ sap.ui.define([
 					}
 					
 					// Message
-					if (oError.code) {
-						sMessage = oError.type + ' ' + oError.code + ': ';
+					if (oError.code || oError.title) {
+						sTitle = "{i18n>MESSAGE.TYPE." + oError.type + "} {i18n>" + oError.code + "}";
+						sMessage = '';
 						if (oError.title) {
 							sMessage += oError.title;
 							sDetails = oError.message;
@@ -215,7 +216,7 @@ sap.ui.define([
 					}).addStyleClass('sapUiSmallMargin');
 					
 					// Add details if applicable
-					if (sDetails) {
+					if (sDetails && sDetails !== sMessage) {
 						oDetailsControl = new sap.m.Text({
 								text: sDetails,
 								visible: false
@@ -235,7 +236,13 @@ sap.ui.define([
 					}
 					
 					// Show the dialog
-					var oDialog = this.showDialog(sTitle, oDialogContent, 'Error');
+					switch (oError.type) {
+						case 'WARNING': sDialogType = 'Warning'; break;
+						case 'SUCCESS': sDialogType = 'Success'; break;
+						case 'INFO': case 'HINT': sDialogType = 'Information'; break;
+					}
+					console.log(oError, sDialogType);
+					var oDialog = this.showDialog(sTitle, oDialogContent, sDialogType);
 					if (oDetailsControl) {
 						oDialog.setBeginButton(
 							new sap.m.Button({

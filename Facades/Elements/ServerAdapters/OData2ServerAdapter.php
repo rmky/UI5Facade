@@ -839,43 +839,43 @@ JS;
             'uri' => $url
         ]));
         $config->setOption('WEBAPP_EXPORT.MANIFEST.DATASOURCES', $sourcesUxon);
+        $user = '';
+        $password = '';
+        $fixedParamsJson = '{}';
+        if ($fixedParams = $connection->getFixedUrlParams()) {
+         $fixedParamsArr = [];
+         parse_str($fixedParams, $fixedParamsArr);
+         $fixedParamsJson = json_encode($fixedParamsArr);
+         }
         
-        $params = '';
-        $serivceUrl = <<<JS
-            function(){
-                var sConfigUrl = {$this->getElement()->getController()->buildJsComponentGetter()}.getManifestEntry("/.../{$dataSourceAlias}/uri");
-                return sConfigUrl || '{$url}';
-            }()
-
-JS;
-        $auth = '';
         if ($connection->getUser()) {
             if ($this->getUseConnectionCredentials() === true) {
-                $auth = "user: '{$connection->getUser()}',";
-                $auth .= "password: '{$connection->getPassword()}',";
+                $user = $connection->getUser();
+                $password = $connection->getPassword();
             }
-            $auth .= "withCredentials: true,";
         }
-        $metadataUrlParams = '';
-        $serviceUrlParams = '';
-        if ($fixedParams = $connection->getFixedUrlParams()) {     
-            $fixedParamsArr = [];
-            parse_str($fixedParams, $fixedParamsArr);
-            $serviceUrlParams = json_encode(array_merge($params['serviceUrlParams'] ?? [], $fixedParamsArr));
-            $metadataUrlParams = json_encode(array_merge($params['metadataUrlParams'] ?? [], $fixedParamsArr));
-            $serviceUrlParamsJs = "serviceUrlParams: {$serviceUrlParams},";
-            $metadataUrlParamsJs = "metadataUrlParams: {$metadataUrlParams}";
-        }
-        
-        
         
         return <<<JS
-                {
-                    serviceUrl: {$serivceUrl},
-                    {$auth}
-                    {$serviceUrlParamsJs}
-                    {$metadataUrlParamsJs}
+
+            function(){
+                var dataSource = {$this->getElement()->getController()->buildJsComponentGetter()}.getManifestEntry("/sap.app/dataSources/{$dataSourceAlias}");
+                var url = dataSource.uri || '{$url}';
+                var user = dataSource.user || '{$user}';
+                var password = dataSource.password || '{$password}';
+                var client = dataSource['sap-client'] || jQuery.sap.getUriParameters().get("sap-client") || {$fixedParamsJson}['sap-client'] || null;
+                var params = {serviceUrl: url};
+                if (user !== null && user !== undefined && user !== '') {
+                    params['user'] = user;
+                    params['password'] = password;
+                    params['withCredentials'] = true;
                 }
+                if (client !== null && client !== undefined && client !== '') {
+                    params['serviceUrlParams'] = {'sap-client': client};
+                    params['metadataUrlParams'] = {'sap-client': client};
+                }
+
+                return params;               
+            }()
 
 JS;
     }

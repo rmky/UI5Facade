@@ -241,7 +241,7 @@ sap.ui.define([
 						case 'SUCCESS': sDialogType = 'Success'; break;
 						case 'INFO': case 'HINT': sDialogType = 'Information'; break;
 					}
-					console.log(oError, sDialogType);
+					
 					var oDialog = this.showDialog(sTitle, oDialogContent, sDialogType);
 					if (oDetailsControl) {
 						oDialog.setBeginButton(

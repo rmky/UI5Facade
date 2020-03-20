@@ -71,7 +71,7 @@ class UI5FileList extends UI5AbstractElement
             $attributesConstructors .= $objectAttribute->buildJsConstructor($oControllerJs) . ',';
         }
         
-        $uploadEnabled = $widget->getUpload() ? 'true' : 'false';
+        $uploadEnabled = $widget->isUploadEnabled() ? 'true' : 'false';
         $maxFilenameLength = $widget->getUploader()->getMaxFilenameLength() ?? 'null';
         
         return <<<JS
@@ -126,6 +126,11 @@ JS;
     {
         $widget = $this->getWidget();
         $uploadAction = ActionFactory::createFromString($this->getWorkbench(), SaveData::class, $widget);
+        
+        $fileModificationColumnJs = '';
+        if ($widget->hasFileModificationTimeColumn()) {
+            $fileModificationColumnJs = "{$widget->getMimeTypeColumn()->getDataColumnName()}: file.lastModified,";
+        }
         
         $onUploadCompleteJs = <<<JS
         
@@ -190,7 +195,8 @@ JS;
                             {
                                 {$widget->getFilenameColumn()->getDataColumnName()}: file.name,
                                 {$widget->getMimeTypeColumn()->getDataColumnName()}: file.type,
-                                {$widget->getFileContentColumn()->getDataColumnName()}: sContent
+                                {$widget->getFileContentColumn()->getDataColumnName()}: sContent,
+                                {$fileModificationColumnJs}
                             }
                         ] 
                     });
@@ -302,5 +308,27 @@ JS;
             return "url: '{{$widget->getDownloadUrlColumn()->getDataColumnName()}}',";
         }
         return '';
+    }
+    
+    protected function buildJsDataLoaderOnLoaded(string $oModelJs = 'oModel') : string
+    {
+        $widget = $this->getWidget();
+        
+        if ($widget->isUploadEnabled() && ($maxFiles = $widget->getUploader()->getMaxFiles()) > 0) {
+            $checkMaxFilesJs = <<<JS
+
+            (function(){
+                var oUploadSet = sap.ui.getCore().byId('{$this->getId()}');
+                if ($oModelJs.getData() && $oModelJs.getData().rows && $oModelJs.getData().rows.length < $maxFiles) {
+                    oUploadSet.setUploadEnabled(true);
+                } else {
+                    oUploadSet.setUploadEnabled(false);
+                }
+            })();
+JS;
+        }
+        
+        return $this->buildJsDataLoaderOnLoadedViaTrait($oModelJs)
+                . $checkMaxFilesJs;
     }
 }

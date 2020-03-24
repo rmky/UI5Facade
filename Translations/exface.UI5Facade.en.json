@@ -3,6 +3,9 @@
 	
 	"ERROR.DETAILS": "Details",
 	"ERROR.LOG_ID_HINT": "Please use it in all support requests!",
+	"ERROR.BUTTON_TEXT": "Close",
+	"SAP-ERROR": "in SAP",
+	"SAP-LOGIC": "in SAP",
 	
 	"MESSAGE.ERROR_TITLE": "Error",
 	"MESSAGE.SUCCESS_TITLE": "",
@@ -46,6 +49,12 @@
 	"WIDGET.DATALOOKUPDIALOG.SELECTED_ITEMS": "Selected Items",
 	
 	"WIDGET.DIALOG.TITLE_NEW": "New",
+	
+	"WIDGET.FILELIST.ERROR_EXTENSION_NOT_ALLOWED": "File type \"%ext%\" not allowed!",
+	"WIDGET.FILELIST.ERROR_MIMETYPE_NOT_ALLOWED": "Content type \"%type%\" not allowed!",
+	"WIDGET.FILELIST.ERROR_FILE_TOO_BIG": "File too big: max. %mb% MB allowed!",
+	"WIDGET.FILELIST.ERROR_FILENAME_TOO_LONG": "File name too long: max. %length% characters allowed!",
+	"WIDGET.FILELIST.ERROR_DELETE": "Delete failed: unknown error in UI5.",
 	
 	"WIDGET.PAGINATOR.NEXT_PAGE": "Next Page",
 	"WIDGET.PAGINATOR.PREVIOUS_PAGE": "Previous Page"

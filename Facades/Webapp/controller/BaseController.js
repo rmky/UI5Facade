@@ -44,7 +44,9 @@ sap.ui.define([
 			// Now using substitute name ~anonymous~1.js -  sap.ui.ModuleSystem
 			// Obviously, we need to wrap ap.ui.jsview(...) in the view definition file in
 			// something - but what???
-			return this._loadView(sViewName, function(){oRouter.navTo(sViewName, {params: sRouteParams})}, oXHRSettings);
+			return this._loadView(sViewName, function(){
+				oRouter.navTo(sViewName, {params: sRouteParams})
+			}, oXHRSettings);
 		},
 		
 		/**

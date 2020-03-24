@@ -136,6 +136,8 @@ trait UI5DataElementTrait {
         $widget = $this->getDataWidget();
         $controller = $this->getController();
         
+        $this->registerExternalModules($this->getController());
+        
         $controller->addMethod('onUpdateFilterSummary', $this, '', $this->buildJsFilterSummaryUpdater());
         $controller->addMethod('onLoadData', $this, 'oControlEvent, keep_page_pos', $this->buildJsDataLoader());
         $this->initConfiguratorControl($controller);
@@ -453,6 +455,16 @@ JS;
     }
     
     /**
+     *
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsRefresh()
+     */
+    public function buildJsRefresh()
+    {
+        return $this->getController()->buildJsMethodCallFromController('onLoadData', $this, '');
+    }
+    
+    /**
      * Returns the definition of a javascript function to fill the table with data: onLoadDataTableId(oControlEvent).
      *
      * @return string
@@ -736,6 +748,8 @@ JS;
     {
         return $this->getWidget()->getLazyLoading(true);
     }
+    
+    protected abstract function isEditable();
     
     /**
      * Wraps the given content in a constructor for the sap.f.DynamicPage used to create the Fiori list report floorplan.

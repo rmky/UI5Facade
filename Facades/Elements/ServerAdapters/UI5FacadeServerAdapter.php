@@ -89,31 +89,50 @@ JS;
     
     protected function buildJsDataLoader(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
+        $headers = ! empty($this->getElement()->getAjaxHeaders()) ? 'headers: ' . json_encode($this->getElement()->getAjaxHeaders()) . ',' : '';
         return <<<JS
-        
-                var fnCompleted = function(oEvent){
-        			if (oEvent.getParameters().success) {
-                        {$onModelLoadedJs}
-                    } else {
-                        {$onErrorJs}
-                        var error = oEvent.getParameters().errorobject;
-                        if (navigator.onLine === false) {
-                            if (oData.length = 0) {
-                                {$onOfflineJs}
-                            } else {
-                                {$this->getElement()->getController()->buildJsComponentGetter()}.showDialog('{$this->getElement()->translate('WIDGET.DATATABLE.OFFLINE_ERROR')}', '{$this->getElement()->translate('WIDGET.DATATABLE.OFFLINE_ERROR_TITLE')}', 'Error');
-                            }
+
+                $.ajax({
+					type: 'GET',
+					url: '{$this->getElement()->getAjaxUrl()}',
+                    {$headers}
+					data: {$oParamsJs},
+					success: function(data, textStatus, jqXHR) {
+                        if (typeof data === 'object') {
+                            response = data;
                         } else {
-                            {$this->getElement()->buildJsShowError('error.responseText', "(error.statusCode+' '+error.statusText)")}
+                            var response = {};
+							try {
+								response = $.parseJSON(data);
+							} catch (e) {
+								response.error = data;
+							}
                         }
-                    }
-                    
-                    this.detachRequestCompleted(fnCompleted);
-        		};
-        		
-        		$oModelJs.attachRequestCompleted(fnCompleted);
-        		
-                $oModelJs.loadData("{$this->getElement()->getAjaxUrl()}", {$oParamsJs});
+	                   	if (response.success){
+                            $oModelJs.setData(response);
+							{$onModelLoadedJs}
+	                    } else {
+							if (navigator.onLine === false) {
+                                if (oData.length = 0) {
+                                    {$onOfflineJs}
+                                } else {
+                                    {$this->getElement()->getController()->buildJsComponentGetter()}.showDialog('{$this->getElement()->translate('WIDGET.DATATABLE.OFFLINE_ERROR')}', '{$this->getElement()->translate('WIDGET.DATATABLE.OFFLINE_ERROR_TITLE')}', 'Error');
+                                }
+                            } else {
+                                {$this->getElement()->buildJsShowError('jqXHR.responseText', "(jqXHR.statusCode+' '+jqXHR.statusText)")}
+                            }
+                            {$onErrorJs}
+	                    }
+					},
+					error: function(jqXHR, textStatus, errorThrown){
+                        {$onErrorJs}
+                        if (navigator.onLine === false) {
+                            {$onOfflineJs}
+                        } else {
+                            {$this->getElement()->getController()->buildJsComponentGetter()}.showAjaxErrorDialog(jqXHR)
+                        }
+					}
+				});
                 
 JS;
     }

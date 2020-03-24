@@ -493,18 +493,24 @@ JS;
 		                       	$('#{$this->getId()}').trigger('{$action->getAliasWithNamespace()}.action.performed', [requestData, '{$input_element->getId()}']);
 								{$this->buildJsOnSuccessScript()}
 
-                                if (response.success || response.undoURL){
-		                       		{$this->buildJsShowMessageSuccess("response.success + (response.undoable ? ' <a href=\"" . $this->buildJsUndoUrl($action, $input_element) . "\" style=\"display:block; float:right;\">UNDO</a>' : '')")}
-									/* TODO redirects do not work in UI5 that easily. Additionally server adapters don't return any response variable.
-                                    if(response.redirect){
-										if (response.redirect.indexOf('target=_blank') !== 0) {
-											window.open(response.redirect.replace('target=_blank',''), '_newtab');
-										}
-										else {
-											window.location.href = response.redirect;
+                                if (oResultModel.getProperty('/success') !== undefined || oResultModel.getProperty('/undoURL')){
+		                       		{$this->buildJsShowMessageSuccess("oResultModel.getProperty('/success') + (response.undoable ? ' <a href=\"" . $this->buildJsUndoUrl($action, $input_element) . "\" style=\"display:block; float:right;\">UNDO</a>' : '')")}
+									/* TODO redirects do not work in UI5 that easily. Additionally server adapters don't return any response variable.*/
+                                    var sRedirect;
+                                    if((sRedirect = oResultModel.getProperty('/redirect')) !== undefined){
+                                        switch (true) {
+										    case sRedirect.indexOf('target=_blank') !== -1:
+											    window.open(sRedirect.replace('target=_blank',''), '_newtab');
+                                                break;
+                                            case sRedirect === '':
+                                                {$this->getFacade()->getElement($widget->getPage()->getWidgetRoot())->buildJsBusyIconShow()}
+                                                window.location.reload();
+                                                break;
+                                            default: 
+                                                {$this->getFacade()->getElement($widget->getPage()->getWidgetRoot())->buildJsBusyIconShow()}
+                                                window.location.href = sRedirect;
 										}
                    					}
-                                    */
 								}
 JS;
 		                       		
@@ -515,10 +521,7 @@ JS;
                         {$this->buildJsBusyIconShow()}
                         var oResultModel = new sap.ui.model.json.JSONModel();
                         var params = {
-    							action: "{$widget->getActionAlias()}",
-    							resource: "{$widget->getPage()->getAliasWithNamespace()}",
-    							element: "{$widget->getId()}",
-    							object: "{$widget->getMetaObject()->getId()}",
+    							{$this->buildJsRequestCommonParams($widget, $action)}
     							data: requestData
     					}
                         {$this->getServerAdapter()->buildJsServerRequest($action, 'oResultModel', 'params', $onModelLoadedJs, $this->buildJsBusyIconHide())}	    

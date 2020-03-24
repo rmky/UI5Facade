@@ -1,18 +1,20 @@
 <?php
 namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Widgets\NavMenu;
+use exface\Core\Widgets\NavCrumbs;
 
 /**
  *
- * @method Breadcrumbs getWidget()
+ * @method NavCrumbs getWidget()
  * @method UI5ControllerInterface getController()
  *
  * @author Ralf Mulansky
  *
  */
-class UI5Breadcrumbs extends UI5AbstractElement
+class UI5NavCrumbs extends UI5AbstractElement
 {
+    private $currentPage = null;
+
     /**
      *
      * {@inheritDoc}
@@ -20,6 +22,7 @@ class UI5Breadcrumbs extends UI5AbstractElement
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
+        $this->currentPage = $this->getWidget()->getPage();
         $breadcrumbs = $this->getWidget()->getBreadcrumbs();
         $currentLocation = $this->getWidget()->getPage()->getName();
         
@@ -43,21 +46,23 @@ JS;
      */
     protected function buildBreadcrumbLinks(array $menu) : string
     {
-        $node = $menu[0]; 
         $output = '';
         //add all breadcrumbs leading to leaf page
-        while ($node->hasChildNodes() === true) {
-            $url = $this->getFacade()->buildUrlToPage($node->getPageAlias());
-            
-            $output .= <<<JS
-    new sap.m.Link({
-        href: '{$url}',
-        text: '{$node->getName()}'
-    }),
-    
+        
+        foreach($menu as $node) {
+            if ($node->isAncestorOf($this->currentPage)) {
+                $url = $this->getFacade()->buildUrlToPage($node->getPageAlias());
+                $output .= <<<JS
+        new sap.m.Link({
+            href: '{$url}',
+            text: '{$node->getName()}'
+        }),
+        
 JS;
-            
-            $node = $node->getChildNodes()[0];
+                if ($node->hasChildNodes()) {
+                    $output .= $this->buildBreadcrumbLinks($node->getChildNodes());
+                }
+            }
         }
         return $output;
     }

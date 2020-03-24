@@ -33,6 +33,9 @@ use exface\UI5Facade\Facades\Formatters\UI5EnumFormatter;
 use exface\Core\Interfaces\DataSheets\DataSheetInterface;
 use exface\UI5Facade\Facades\Formatters\UI5TimeFormatter;
 use exface\Core\Facades\AbstractFacade\AbstractFacade;
+use exface\Core\CommonLogic\Model\UiPage;
+use exface\Core\CommonLogic\Selectors\UiPageSelector;
+use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
 
 /**
  * Renders SAP Fiori apps using OpenUI5 or SAP UI5.
@@ -88,13 +91,16 @@ class UI5Facade extends AbstractAjaxFacade
     
     public function handle(ServerRequestInterface $request, $useCacheKey = null) : ResponseInterface
     {
+        /* @var $task \exface\Core\CommonLogic\Tasks\HttpTask */
         if ($task = $request->getAttribute($this->getRequestAttributeForTask())) {
-            $pageAlias = $task->getPageTriggeredOn()->getAliasWithNamespace();
-            if ($this->requestPageAlias === null) {
-                $this->requestPageAlias = $pageAlias;
-            }
-            if ($this->webapp === null) {
-                $this->initWebapp($pageAlias);
+            if ($task->isTriggeredOnPage()) {
+                $pageAlias = $task->getPageTriggeredOn()->getAliasWithNamespace();
+                if ($this->requestPageAlias === null) {
+                    $this->requestPageAlias = $pageAlias;
+                }
+                if ($this->webapp === null) {
+                    $this->initWebapp($pageAlias);
+                }
             }
         }
         return parent::handle($request);
@@ -467,5 +473,23 @@ JS;
             $uxon->setProperty('theme', $this->getTheme());
         }
         return $uxon;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\AbstractAjaxFacade::createResponseUnauthorized()
+     */
+    protected function createResponseUnauthorized(\Throwable $exception, UiPageInterface $page = null) : ?ResponseInterface
+    {
+        if ($page === null) {
+            if ($exception instanceof ErrorExceptionInterface) {
+                $pageAlias = 'ERROR_' . $exception->getId();
+            } else {
+                $pageAlias = 'ERROR';
+            }
+            $page = new UiPage(new UiPageSelector($this->getWorkbench(), $pageAlias));
+        }
+        return parent::createResponseUnauthorized($exception, $page);
     }
 }

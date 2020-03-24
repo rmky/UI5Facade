@@ -3,6 +3,7 @@
 	
 	"ERROR.DETAILS": "Details",
 	"ERROR.LOG_ID_HINT": "Please use it in all support requests!",
+	"ERROR.BUTTON_TEXT": "Close",
 	"SAP-ERROR": "in SAP",
 	"SAP-LOGIC": "in SAP",
 	

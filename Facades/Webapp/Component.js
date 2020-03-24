@@ -94,7 +94,7 @@ sap.ui.define([
     			stretch: bStretch,
     			content: oContent,
     			endButton: new sap.m.Button({
-    				text: 'OK',
+    				text: '{i18n>ERROR.BUTTON_TEXT}',
     				type: sap.m.ButtonType.Emphasized,
     				press: function () {
     					oDialog.close();

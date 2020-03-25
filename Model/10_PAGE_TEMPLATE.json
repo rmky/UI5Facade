@@ -45,32 +45,57 @@
     "rows": [
         {
             "CREATED_ON": "1970-01-01 01:00:00",
-            "MODIFIED_ON": "2019-12-17 07:57:53",
+            "MODIFIED_ON": "2020-03-11 12:29:46",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
-            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x11e9545e8e69e0d8b95b00505689aada",
             "UID": "0x11ea2033058cb468aa030205857feb80",
             "APP": "0x11e837e87a640bfd91380205857feb80",
             "NAME": "SAP Fiori (OpenUI5)",
             "DESCRIPTION": "Responsive template based on OpenUI5",
             "FACADE": "exface\/UI5Facade\/Facades\/UI5Facade.php",
-            "FACADE_UXON": null
+            "FACADE_UXON": "{\"theme\":\"sap_belize\"}"
         },
         {
             "CREATED_ON": "1970-01-01 01:00:00",
-            "MODIFIED_ON": "2019-12-17 09:32:38",
+            "MODIFIED_ON": "2020-03-10 12:43:39",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
-            "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
+            "MODIFIED_BY_USER": "0x11e9545e8e69e0d8b95b00505689aada",
             "UID": "0x11ea2033058cb54eaa030205857feb80",
             "APP": "0x11e837e87a640bfd91380205857feb80",
             "NAME": "SAP Fiori mobile (OpenUI5)",
             "DESCRIPTION": "Mobile template based on OpenUI5",
             "FACADE": "exface\/UI5Facade\/Facades\/UI5Facade.php",
             "FACADE_UXON": "{\"content_density\":\"cozy\"}"
+        },
+        {
+            "CREATED_ON": "2020-03-10 12:48:54",
+            "MODIFIED_ON": "2020-03-10 12:48:54",
+            "CREATED_BY_USER": "0x11e9545e8e69e0d8b95b00505689aada",
+            "MODIFIED_BY_USER": "0x11e9545e8e69e0d8b95b00505689aada",
+            "UID": "0x11ea62c5217900d48cf48c04ba002958",
+            "APP": "0x11e837e87a640bfd91380205857feb80",
+            "NAME": "SAP Fiori 3 (OpenUI5)",
+            "DESCRIPTION": "Mobile template based on OpenUI5",
+            "FACADE": "exface\/UI5Facade\/Facades\/UI5Facade.php",
+            "FACADE_UXON": "{\"theme\":\"sap_fiori_3\"}"
+        },
+        {
+            "CREATED_ON": "2020-03-10 12:49:17",
+            "MODIFIED_ON": "2020-03-10 12:49:17",
+            "CREATED_BY_USER": "0x11e9545e8e69e0d8b95b00505689aada",
+            "MODIFIED_BY_USER": "0x11e9545e8e69e0d8b95b00505689aada",
+            "UID": "0x11ea62c52f90ca6d8cf48c04ba002958",
+            "APP": "0x11e837e87a640bfd91380205857feb80",
+            "NAME": "SAP Fiori 3 mobile (OpenUI5)",
+            "DESCRIPTION": "Mobile template based on OpenUI5",
+            "FACADE": "exface\/UI5Facade\/Facades\/UI5Facade.php",
+            "FACADE_UXON": "{\"theme\":\"sap_fiori_3\",\"content_density\":\"cozy\"}"
         }
     ],
     "totals_rows": [],
     "filters": {
         "operator": "AND",
+        "base_object_alias": "exface.Core.PAGE_TEMPLATE",
         "conditions": [
             {
                 "expression": "APP",

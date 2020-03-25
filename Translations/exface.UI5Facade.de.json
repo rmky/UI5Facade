@@ -5,16 +5,15 @@
 	"ERROR.LOG_ID_HINT": "Bei Support-Anfragen bitte angeben!",
 	"ERROR.BUTTON_TEXT": "Schließen",
 	"SAP-ERROR": "im SAP",
-	"SAP-LOGIC": "in SAP-Verabreitungslogik",
+	"SAP-LOGIC": "vom SAP",
 	
 	"MESSAGE.ERROR_TITLE": "Fehler",
+	"MESSAGE.ERROR.SERVER_ERROR_TITLE": "Fehler im Server",
 	"MESSAGE.SUCCESS_TITLE": "",
 	"MESSAGE.FILL_REQUIRED_ATTRIBUTES": "Bitte füllen Sie die benötigten Felder aus: ",
-	"MESSAGE.ERROR.SERVER_ERROR_TITLE": "Fehler im Server",
 	"MESSAGE.TYPE.ERROR": "Fehler",
 	"MESSAGE.TYPE.WARNING": "Warnung",
 	"MESSAGE.TYPE.INFO": "Info",
-	"MESSAGE.ERROR.SERVER_ERROR_TITLE": "Fehler im Server",
 	
 	"WEBAPP.ROUTING.NOTFOUND.TITLE": "URL nicht gefunden",
 	"WEBAPP.ROUTING.NOTFOUND.TEXT": "Seite nicht gefunden!",

@@ -87,6 +87,10 @@ table.jexcel {width: 100%}
 .sapFCardContent > .sapMPanel > .sapMPanelContent {border-bottom: 0 !important}
 .dashboard_gridcontainer_gap_margin_bottom {margin-bottom: 10px !important}
 
+/* Dialog */
+html.sap-phone .sapMDialog {min-width: 20rem !important}
+html.sap-tablet .sapMDialog, html.sap-desktop .sapMDialog {min-width: 25rem !important}
+
 /* DataLookupDialog */
 .sapMDialog > .sapMDialogSection > .sapMDialogScroll {height: 100%}
 .sapMDialog .sapMVBox > .sapMFlexItemAlignAuto {height: 100%}

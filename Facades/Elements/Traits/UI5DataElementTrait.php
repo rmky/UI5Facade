@@ -10,6 +10,7 @@ use exface\Core\Interfaces\Widgets\iShowImage;
 use exface\UI5Facade\Facades\Elements\UI5SearchField;
 use exface\Core\Widgets\Input;
 use exface\Core\Interfaces\Widgets\iHaveColumns;
+use exface\Core\Interfaces\Widgets\iShowData;
 
 /**
  * This trait helps wrap thrid-party data widgets (like charts, image galleries, etc.) in 
@@ -472,7 +473,7 @@ JS;
     protected function buildJsDataLoader($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'keep_page_pos')
     {
         $widget = $this->getWidget();
-        if ($widget->isEditable()) {
+        if ($widget instanceof iShowData && $widget->isEditable()) {
             $disableEditableChangesWatcher = <<<JS
                 
                 // Disable editable-column-change-watcher because reloading from server
@@ -623,7 +624,7 @@ JS;
 JS;
         }
         
-        if ($widget->isEditable()) {
+        if ($widget instanceof iShowData && $widget->isEditable()) {
             // Enable watching changes for editable columns from now on
             $editableTableWatchChanges = <<<JS
             

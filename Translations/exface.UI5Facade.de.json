@@ -13,6 +13,7 @@
 	"MESSAGE.TYPE.INFO": "Info",
 	"MESSAGE.ERROR.SERVER_ERROR_TITLE": "Fehler im Server",
 	
+	
 	"WEBAPP.ROUTING.NOTFOUND.TITLE": "URL nicht gefunden",
 	"WEBAPP.ROUTING.NOTFOUND.TEXT": "Seite nicht gefunden!",
 	"WEBAPP.ROUTING.NOTFOUND.DESCRIPTION": "Versuchen Sie die App neu zu starten.",
@@ -51,6 +52,9 @@
 	"WIDGET.DATALOOKUPDIALOG.SELECTED_ITEMS": "Ausgewählt",
 	
 	"WIDGET.DIALOG.TITLE_NEW": "Neu",
+	
+	"WIDGET.INPUTPASSWORD.CONFIRM": "Passwort bestätigen",
+	"WIDGET.INPUTPASSWORD.DONT_MATCH": "Passwörter stimmen nicht überein",
 	
 	"WIDGET.PAGINATOR.NEXT_PAGE": "Nächste Seite",
 	"WIDGET.PAGINATOR.PREVIOUS_PAGE": "Vorherige Seite"

@@ -47,6 +47,9 @@
 	
 	"WIDGET.DIALOG.TITLE_NEW": "New",
 	
+	"WIDGET.INPUTPASSWORD.CONFIRM": "Confirm password",	
+	"WIDGET.INPUTPASSWORD.DONT_MATCH": "Passwords do not match",
+	
 	"WIDGET.PAGINATOR.NEXT_PAGE": "Next Page",
 	"WIDGET.PAGINATOR.PREVIOUS_PAGE": "Previous Page"
 }

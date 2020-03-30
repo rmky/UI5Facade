@@ -45,7 +45,7 @@ JS;
         
         $onConfirmInputChangeScript = <<<JS
         
-            sap.ui.getCore().byId('{$this->getId()}').setValueStateText('')
+            sap.ui.getCore().byId('{$this->getId()}').setValueStateText('{$this->getValidationErrorText()}');
             if(! {$this->buildJsValidator()} ) {
                 {$this->buildJsValidationError()};
             } else {
@@ -99,6 +99,14 @@ JS;
             $this->conformationInputWidget = $confirmWidget;
         }
         return $this->conformationInputWidget;
+    }
+    
+    /**
+     * 
+     */
+    protected function getValidationErrorText() : string
+    {
+        return $this->translate("WIDGET.INPUTPASSWORD.DONT_MATCH");
     }
     
 }

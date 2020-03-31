@@ -27,7 +27,8 @@ class UI5Chart extends UI5AbstractElement
     use UI5DataElementTrait {
         buildJsConfiguratorButtonConstructor as buildJsConfiguratorButtonConstructorViaTrait;
         buildJsDataLoaderOnLoaded as buildJsDataLoaderOnLoadedViaTrait;
-        UI5DataElementTrait::buildJsRowCompare insteadof EChartsTrait; 
+        UI5DataElementTrait::buildJsRowCompare insteadof EChartsTrait;
+        EChartsTrait::buildJsDataResetter insteadof UI5DataElementTrait;
     }
     
     /**
@@ -375,5 +376,10 @@ JS;
     protected function buildJsShowMessageOverlay(string $message) : string
     {
         return $this->buildJsDataResetter() . ';' . $this->buildJsMessageOverlayShow($message);
+    }
+    
+    protected function isEditable()
+    {
+        return false;
     }
 }

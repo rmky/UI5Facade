@@ -123,9 +123,7 @@ sap.ui.define([
     	 */
     	showHtmlInDialog : function (sTitle, sHtml, sState) {
     		try {
-	    		var oContent = new sap.ui.core.HTML({
-	    			content: sHtml
-	    		});
+	    		var oContent = new sap.ui.core.HTML().setContent(sHtml);
     		} catch (e) {
     			return this.showErrorDialog('Unkown error', sTitle, 'string');
     		}
@@ -141,7 +139,7 @@ sap.ui.define([
 		 * 
 		 * @return sap.m.Dialog
 		 */
-		showErrorDialog : function(sBody, sTitle, sContentType) {
+		showErrorDialog : function(sBody, sTitle, sContentType) {console.log('error dialog');
 			var sViewName, oBody, sState = 'Error';
 			
 			sBody = sBody ? sBody.trim() : '';
@@ -290,7 +288,7 @@ sap.ui.define([
 		 * 
 		 * @return sap.m.Dialog
 		 */
-		showAjaxErrorDialog : function (jqXHR, sMessage) {
+		showAjaxErrorDialog : function (jqXHR, sMessage) {console.log('ajax error dialog');
 			var sContentType = jqXHR.getResponseHeader('Content-Type');
 			var sBodyType;
 			

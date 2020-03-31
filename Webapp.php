@@ -304,7 +304,8 @@ class Webapp implements WorkbenchDependantInterface
         if ($this->isPWA() === true) {
             $json->short_name = $this->getName();
             $json->name = $this->getTitle();
-            $json->icons = $this->getWorkbench()->getCMS()->getFavIcons();
+            // TODO #nocms
+            //$json->icons = $this->getWorkbench()->getCMS()->getFavIcons();
             $json->start_url = $this->getStartUrl();
             $json->scope = $this->getRootUrl() . "/";
             $json->background_color = $this->config['pwa_background_color'];
@@ -721,7 +722,7 @@ class Webapp implements WorkbenchDependantInterface
     
     public function getStartUrl() : string
     {
-        $uri = new Uri($this->getWorkbench()->getCMS()->buildUrlToPage($this->getRootPage()));
+        $uri = new Uri($this->facade->buildUrlToPage($this->getRootPage()));
         $path = $uri->getPath();
         $path = '/' . ltrim($path, "/");        
         return $path;

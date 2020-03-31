@@ -275,7 +275,7 @@ JS;
         if ($this->requestPageAlias === null) {
             throw new RuntimeException('No root page found in request for facade "' . $this->getAliasWithNamespace() . '"!');
         }
-        return UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $this->requestPageAlias);
+        return UiPageFactory::createFromModel($this->getWorkbench(), $this->requestPageAlias);
     }
     
     protected function getWebappDefaultConfig(string $appId) : array

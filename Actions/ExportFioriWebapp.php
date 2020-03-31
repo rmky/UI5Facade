@@ -92,7 +92,7 @@ class ExportFioriWebapp extends AbstractActionDeferred implements iModifyData, i
         $row['assets_path'] = './';
         $row['use_combined_viewcontrollers'] = 'false';
         
-        $rootPage = UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $row['root_page_alias']);
+        $rootPage = UiPageFactory::createFromModel($this->getWorkbench(), $row['root_page_alias']);
         $facade = FacadeFactory::createFromString($this->facadeSelectorString, $this->getWorkbench());
         
         // Always use oData server adapter

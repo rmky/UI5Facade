@@ -57,7 +57,7 @@ class UI5FacadeApp extends App
         
         
         // Install ServiceWorker
-        $installer->addInstaller(ServiceWorkerInstaller::fromConfig($this->getSelector(), $this->getConfig(), $this->getWorkbench()->getCMS()));
+        $installer->addInstaller(ServiceWorkerInstaller::fromConfig($this->getSelector(), $this->getConfig()));
         
         return $installer;
     }

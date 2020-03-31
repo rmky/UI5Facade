@@ -37,6 +37,7 @@ class UI5InputPassword extends UI5Input
         
                     if ({$this->buildJsValueGetter()} === '') {
                         {$confirmInputElement->buildJsDisabler()}
+                        {$confirmInputElement->buildJsValueSetter('')}
                     } else {
                         {$confirmInputElement->buildJsEnabler()}
                     }

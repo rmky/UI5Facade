@@ -94,7 +94,7 @@ sap.ui.define([
     			stretch: bStretch,
     			content: oContent,
     			endButton: new sap.m.Button({
-    				text: 'OK',
+    				text: '{i18n>ERROR.BUTTON_TEXT}',
     				type: sap.m.ButtonType.Emphasized,
     				press: function () {
     					oDialog.close();
@@ -123,9 +123,7 @@ sap.ui.define([
     	 */
     	showHtmlInDialog : function (sTitle, sHtml, sState) {
     		try {
-	    		var oContent = new sap.ui.core.HTML({
-	    			content: sHtml
-	    		});
+	    		var oContent = new sap.ui.core.HTML().setContent(sHtml);
     		} catch (e) {
     			return this.showErrorDialog('Unkown error', sTitle, 'string');
     		}
@@ -141,11 +139,10 @@ sap.ui.define([
 		 * 
 		 * @return sap.m.Dialog
 		 */
-		showErrorDialog : function(sBody, sTitle, sContentType) {
-			var sViewName, oBody;
+		showErrorDialog : function(sBody, sTitle, sContentType) {console.log('error dialog');
+			var sViewName, oBody, sState = 'Error';
 			
 			sBody = sBody ? sBody.trim() : '';
-			
 			if (! sContentType) {
 				if (sBody.startsWith('{') && sBody.endsWith('}')) {
 					try {
@@ -156,11 +153,13 @@ sap.ui.define([
 					}
 				} else if (sBody.startsWith('<') && sBody.endsWith('>')) {
 					sContentType = 'html';
-				} else if (sViewName = this._findViewInString(sBody)) {
-					sContentType = 'view';
 				} else {
 					sContentType = 'string';
 				}
+			}
+			
+			if (sContentType === 'html' && (sViewName = this._findViewInString(sBody))) {
+				sContentType = 'view';
 			}
 			
 			switch (sContentType) {
@@ -168,11 +167,7 @@ sap.ui.define([
 					if (! sViewName) {
 						sViewName = this._findViewInString(sBody);
 					}
-					var randomizer = window.performance.now().toString();
-					var sViewNameUnique = sViewName+randomizer;
-			        sBody = sBody.replace(sViewName, sViewNameUnique);
-			        $('body').append(sBody);
-			        return this.showDialog(sTitle, sap.ui.view({type:sap.ui.core.mvc.ViewType.JS, viewName:sViewNameUnique}), 'Error');
+			        return this.showViewDialog(sTitle, sViewName, sBody, 'Error');
 				case 'json':
 					var sMessage, sDetails, oDetailsControl;
 					
@@ -190,8 +185,9 @@ sap.ui.define([
 					}
 					
 					// Message
-					if (oError.code) {
-						sMessage = oError.type + ' ' + oError.code + ': ';
+					if (oError.code || oError.title) {
+						sTitle = "{i18n>MESSAGE.TYPE." + oError.type + "} {i18n>" + oError.code + "}";
+						sMessage = '';
 						if (oError.title) {
 							sMessage += oError.title;
 							sDetails = oError.message;
@@ -215,7 +211,7 @@ sap.ui.define([
 					}).addStyleClass('sapUiSmallMargin');
 					
 					// Add details if applicable
-					if (sDetails) {
+					if (sDetails && sDetails !== sMessage) {
 						oDetailsControl = new sap.m.Text({
 								text: sDetails,
 								visible: false
@@ -235,7 +231,13 @@ sap.ui.define([
 					}
 					
 					// Show the dialog
-					var oDialog = this.showDialog(sTitle, oDialogContent, 'Error');
+					switch (oError.type) {
+						case 'WARNING': sState = 'Warning'; break;
+						case 'SUCCESS': sState = 'Success'; break;
+						case 'INFO': case 'HINT': sState = 'Information'; break;
+					}
+					
+					var oDialog = this.showDialog(sTitle, oDialogContent, sState);
 					if (oDetailsControl) {
 						oDialog.setBeginButton(
 							new sap.m.Button({
@@ -286,7 +288,7 @@ sap.ui.define([
 		 * 
 		 * @return sap.m.Dialog
 		 */
-		showAjaxErrorDialog : function (jqXHR, sMessage) {
+		showAjaxErrorDialog : function (jqXHR, sMessage) {console.log('ajax error dialog');
 			var sContentType = jqXHR.getResponseHeader('Content-Type');
 			var sBodyType;
 			
@@ -296,8 +298,77 @@ sap.ui.define([
 				sBodyType = 'html';
 			}
 			return this.showErrorDialog(jqXHR.responseText, (sMessage ? sMessage : jqXHR.status + " " + jqXHR.statusText), sBodyType);
+		},
+		
+		/**
+		 * Opens a sap.m.Dialog showing the view from the given JS source code.
+		 * 
+		 * The dialog and the view are destroyed after the dialog is closed!
+		 * 
+		 * @param string sTitle
+		 * @param string sViewName
+		 * @param string sViewSource
+		 * @param string sState
+		 * 
+		 * @return void
+		 */
+		showViewDialog : function (sTitle, sViewName, sViewSource, sState) {
+			var oComponent = this;
+			var sViewId = oComponent.createId(sViewName);
+			var sTagId = 'dynamicview_' + sViewName.replace(/\./g, '_');
+			$('body').append('<script type="text/javascript" id="' + sTagId + '">' + sViewSource + '</script>');
+			var fnOnClose = function(){
+				console.log($('#' + sTagId));
+				$('#' + sTagId).remove();
+			};
+			oComponent.runAsOwner(function(){
+                sap.ui.core.mvc.JSView.create({
+                    id: sViewId,
+                    viewName: sViewName
+                }).then(function(oView){                    
+                    setTimeout(function() {
+                        var oContentCtrl = oView.getContent()[0];
+                        if (oContentCtrl instanceof sap.m.Dialog) {
+                        	oContentCtrl.attachAfterClose(function() {
+                                oView.destroy();
+                                fnOnClose();
+                            });
+                        	oContentCtrl.open();
+                        } else {
+                        	var oDialog = oComponent.showDialog(sTitle, oView, sState);
+                        	var oFirstChild;
+                        	var fHeight = 0;
+                        	var fChildHeight = 0;
+                        	if (oContentCtrl instanceof sap.m.Page) {
+                        		oContentCtrl
+                        			.setShowNavButton(false)
+                        			.setEnableScrolling(false);
+                        		fHeight += oContentCtrl.$().height();
+                        		oFirstChild = oContentCtrl.getContent()[0];
+                        		while (oFirstChild && fChildHeight == 0) {
+	                        		fChildHeight = oFirstChild.$().height();
+	                        		fHeight += fChildHeight;
+	                        		if (oFirstChild.getContent !== undefined) {
+	                        			oFirstChild = oFirstChild.getContent()[0];
+	                        		} else {
+	                        			oFirstChild = null;
+	                        		}
+                        		}
+                        	}
+                        	var iChildHeight = oContentCtrl.getContent()[0].getContent()[0].$().height();
+                        	oView.setHeight('100%');
+                        	oDialog
+	                        	.setContentHeight((fHeight+2).toString() + 'px')
+	                    		.attachAfterClose(function() {
+		                            oView.destroy();
+		                            oDialog.destroy();
+		                            fnOnClose();
+		                        });
+                        }
+                    }, 0);
+                });
+            });
 		}
-
+		
 	});
-
 });

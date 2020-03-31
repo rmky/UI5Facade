@@ -45,6 +45,7 @@ class UI5DataColumn extends UI5AbstractElement
         $col = $this->getWidget();
         
         return <<<JS
+
 	 new sap.ui.table.Column('{$this->getId()}', {
 	    label: new sap.ui.commons.Label({
             text: "{$this->getCaption()}"

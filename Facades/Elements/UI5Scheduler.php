@@ -104,11 +104,6 @@ JS;
 JS;
     }
         
-    public function buildJsRefresh()
-    {
-        return $this->getController()->buildJsMethodCallFromController('onLoadData', $this, '');
-    }
-        
     protected function buildJsDataResetter() : string
     {
         // TODO

@@ -10,6 +10,7 @@ use exface\Core\Interfaces\Widgets\iShowImage;
 use exface\UI5Facade\Facades\Elements\UI5SearchField;
 use exface\Core\Widgets\Input;
 use exface\Core\Interfaces\Widgets\iHaveColumns;
+use exface\Core\Interfaces\Widgets\iShowData;
 
 /**
  * This trait helps wrap thrid-party data widgets (like charts, image galleries, etc.) in 
@@ -135,6 +136,8 @@ trait UI5DataElementTrait {
     {
         $widget = $this->getDataWidget();
         $controller = $this->getController();
+        
+        $this->registerExternalModules($this->getController());
         
         $controller->addMethod('onUpdateFilterSummary', $this, '', $this->buildJsFilterSummaryUpdater());
         $controller->addMethod('onLoadData', $this, 'oControlEvent, keep_page_pos', $this->buildJsDataLoader());
@@ -453,6 +456,16 @@ JS;
     }
     
     /**
+     *
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsRefresh()
+     */
+    public function buildJsRefresh()
+    {
+        return $this->getController()->buildJsMethodCallFromController('onLoadData', $this, '');
+    }
+    
+    /**
      * Returns the definition of a javascript function to fill the table with data: onLoadDataTableId(oControlEvent).
      *
      * @return string
@@ -460,7 +473,7 @@ JS;
     protected function buildJsDataLoader($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'keep_page_pos')
     {
         $widget = $this->getWidget();
-        if ($widget->isEditable()) {
+        if ($widget instanceof iShowData && $widget->isEditable()) {
             $disableEditableChangesWatcher = <<<JS
                 
                 // Disable editable-column-change-watcher because reloading from server
@@ -611,7 +624,7 @@ JS;
 JS;
         }
         
-        if ($widget->isEditable()) {
+        if ($widget instanceof iShowData && $widget->isEditable()) {
             // Enable watching changes for editable columns from now on
             $editableTableWatchChanges = <<<JS
             
@@ -672,14 +685,14 @@ JS;
                             });
                             $oModelJs.updateBindings();
 JS;
-                            $addLocalValuesOnChange = <<<JS
+            $addLocalValuesOnChange = <<<JS
                             
                             var $oModelJs = sap.ui.getCore().byId("{$this->getId()}").getModel();
                             {$addLocalValuesJs}
 JS;
-                            foreach ($linkedEls as $linkedEl) {
-                                $linkedEl->addOnChangeScript($addLocalValuesOnChange);
-                            }
+            foreach ($linkedEls as $linkedEl) {
+                $linkedEl->addOnChangeScript($addLocalValuesOnChange);
+            }
         }
         return $addLocalValuesJs;
     }
@@ -736,6 +749,8 @@ JS;
     {
         return $this->getWidget()->getLazyLoading(true);
     }
+    
+    protected abstract function isEditable();
     
     /**
      * Wraps the given content in a constructor for the sap.f.DynamicPage used to create the Fiori list report floorplan.

@@ -23,9 +23,10 @@ interface UI5ServerAdapterInterface {
      * @param string $oModelJs
      * @param string $oParamsJs
      * @param string $onModelLoadedJs
+     * @param string $onErrorJs
      * @param string $onOfflineJs
      * @return string
      */
-    public function buildJsServerRequest(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onOfflineJs = '') : string;
+    public function buildJsServerRequest(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string;
     
 }

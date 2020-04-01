@@ -10,7 +10,7 @@
 	"MESSAGE.ERROR_TITLE": "Error",
 	"MESSAGE.ERROR.SERVER_ERROR_TITLE": "Server error",
 	"MESSAGE.SUCCESS_TITLE": "",
-	"MESSAGE.FILL_REQUIRED_ATTRIBUTES": "Please fill in the required fields: ",
+	"MESSAGE.FILL_REQUIRED_ATTRIBUTES": "Please fill in the required fields: ",	
 	"MESSAGE.TYPE.ERROR": "Error",
 	"MESSAGE.TYPE.WARNING": "Warning",
 	"MESSAGE.TYPE.INFO": "Info",
@@ -59,6 +59,9 @@
 	"WIDGET.FILELIST.ERROR_FILE_TOO_BIG": "File too big: max. %mb% MB allowed!",
 	"WIDGET.FILELIST.ERROR_FILENAME_TOO_LONG": "File name too long: max. %length% characters allowed!",
 	"WIDGET.FILELIST.ERROR_DELETE": "Delete failed: unknown error in UI5.",
+	
+	"WIDGET.INPUTPASSWORD.CONFIRM": "Confirm password",	
+	"WIDGET.INPUTPASSWORD.DONT_MATCH": "Passwords do not match",
 	
 	"WIDGET.PAGINATOR.NEXT_PAGE": "Next Page",
 	"WIDGET.PAGINATOR.PREVIOUS_PAGE": "Previous Page"

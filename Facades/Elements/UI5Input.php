@@ -220,7 +220,10 @@ JS;
      */
     public function buildJsValueSetterMethod($valueJs)
     {
-        return parent::buildJsValueSetterMethod($valueJs) . '.fireChange({value: ' . $valueJs . '})';
+        if ($valueJs === '' || $valueJs === null) {
+            return parent::buildJsValueSetterMethod($valueJs) . ".fireChange({value: ''})";
+        }
+        return parent::buildJsValueSetterMethod($valueJs) . ".fireChange({value: " . $valueJs . "})";
     }
     
     /**

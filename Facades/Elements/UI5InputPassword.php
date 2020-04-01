@@ -55,7 +55,8 @@ JS;
 
 JS;
         //add script do disable confirm input if password input is empty initially
-        $confirmInputElement->addPseudoEventHandler('onAfterRendering', $onAfterRendering);
+        //deactivated due to a bug in UI5 where enabling/disabling doesnt work even so the proeprty gets correctly changed
+        //$confirmInputElement->addPseudoEventHandler('onAfterRendering', $onAfterRendering);
         
         $onConfirmInputChangeScript = <<<JS
         

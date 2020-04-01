@@ -44,6 +44,19 @@ class UI5InputPassword extends UI5Input
 JS;
         $this->addOnChangeScript($onChangeEnableDisableScript);
         
+        $onAfterRendering = <<<JS
+
+            setTimeout(function(){
+                if ({$this->buildJsValueGetter()} === '') {             
+                    {$confirmInputElement->buildJsDisabler()}
+                    {$confirmInputElement->buildJsValueSetter('')}
+                }
+            }, 0);
+
+JS;
+        //add script do disable confirm input if password input is empty initially
+        $confirmInputElement->addPseudoEventHandler('onAfterRendering', $onAfterRendering);
+        
         $onConfirmInputChangeScript = <<<JS
         
             sap.ui.getCore().byId('{$this->getId()}').setValueStateText('{$this->getValidationErrorText()}');
@@ -93,7 +106,7 @@ JS;
     {
         if ($this->conformationInputWidget === null) {
             $widget = $this->getWidget();
-            $confirmWidget = WidgetFactory::create($widget->getPage(), $widget->getWidgetType());
+            $confirmWidget = WidgetFactory::create($widget->getPage(), $widget->getWidgetType(), $widget->getParent());
             $confirmWidget->setMetaObject($this->getMetaObject());
             $confirmWidget->setCaption($this->translate("WIDGET.INPUTPASSWORD.CONFIRM"));
             //$confirmWidget->setWidth('100%');

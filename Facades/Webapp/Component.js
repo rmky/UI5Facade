@@ -273,6 +273,7 @@ sap.ui.define([
 		 * @return String|Boolean
 		 */
 		_findViewInString : function (sString) {
+			if (! string) return false;
 			var viewMatch = sString.match(/sap.ui.jsview\("(.*)"/i);
 		    if (viewMatch !== null) {
 		        return viewMatch[1];
@@ -292,10 +293,12 @@ sap.ui.define([
 			var sContentType = jqXHR.getResponseHeader('Content-Type');
 			var sBodyType;
 			
-			if (sContentType.match(/json/i)) {
-				sBodyType = 'json';
-			} else if (sContentType.match(/html/i)) {
-				sBodyType = 'html';
+			if (sContentType) {
+				if (sContentType.match(/json/i)) {
+					sBodyType = 'json';
+				} else if (sContentType.match(/html/i)) {
+					sBodyType = 'html';
+				}
 			}
 			return this.showErrorDialog(jqXHR.responseText, (sMessage ? sMessage : jqXHR.status + " " + jqXHR.statusText), sBodyType);
 		},

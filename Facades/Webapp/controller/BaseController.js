@@ -1,7 +1,7 @@
 sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/core/routing/History"
-], function (Controller, History) {
+], function (Controller, History, HashChanger) {
 	"use strict";
 	return Controller.extend("[#app_id#].controller.BaseController", {
 		
@@ -29,7 +29,7 @@ sap.ui.define([
 		 * 
 		 * @return jqXHR|undefined
 		 */
-		navTo : function(sPageAlias, sWidgetId, oXHRSettings) {
+		navTo : function(sPageAlias, sWidgetId, oXHRSettings, bReplaceHash) {
 			var oRouter = this.getRouter();	
 			var sViewName = this.getViewName(sPageAlias, sWidgetId);
 			var sRouteParams = this._encodeRouteParams(oXHRSettings && oXHRSettings.data ? oXHRSettings.data : {});
@@ -44,8 +44,8 @@ sap.ui.define([
 			// Now using substitute name ~anonymous~1.js -  sap.ui.ModuleSystem
 			// Obviously, we need to wrap ap.ui.jsview(...) in the view definition file in
 			// something - but what???
-			return this._loadView(sViewName, function(){
-				oRouter.navTo(sViewName, {params: sRouteParams})
+			return this._loadView(sViewName, function() {
+				oRouter.navTo(sViewName, {params: sRouteParams}, bReplaceHash)
 			}, oXHRSettings);
 		},
 		

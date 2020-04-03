@@ -5,13 +5,13 @@ sap.ui.jsview("[#app_id#].view.NotFound", {
 	},
 
 	createContent : function(oController) {
-	    
 	    return new sap.m.MessagePage({
 			title: "{i18n>WEBAPP.ROUTING.NOTFOUND.TITLE}",
 			text: "{i18n>WEBAPP.ROUTING.NOTFOUND.TEXT}",
 			description: "{i18n>WEBAPP.ROUTING.NOTFOUND.DESCRIPTION}",
 			showNavButton: true,
-			navButtonPress: [oController.onNavBack, oController]
+			navButtonPress: [oController.onNavBack, oController],
+			visible: (oController.getOwnerComponent().getManifest()['exface']['useCombinedViewControllers'] !== true)
 		});
 	}
 });

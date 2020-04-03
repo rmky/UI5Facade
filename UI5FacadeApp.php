@@ -7,8 +7,6 @@ use exface\Core\CommonLogic\Model\App;
 use exface\Core\Factories\FacadeFactory;
 use exface\Core\CommonLogic\AppInstallers\MySqlDatabaseInstaller;
 use exface\Core\Facades\AbstractPWAFacade\ServiceWorkerInstaller;
-use exface\Core\CommonLogic\Filemanager;
-use exface\ModxCmsConnector\CommonLogic\Installers\ModxCmsTemplateInstaller;
 
 class UI5FacadeApp extends App
 {
@@ -37,24 +35,7 @@ class UI5FacadeApp extends App
         ->setFoldersWithMigrations(['InitDB','Migrations'])
         ->setDataConnection($exportProjectsDataSource)
         ->setMigrationsTableName('_migrations_ui5facade');
-        $installer->addInstaller($schema_installer);
-        
-        // Install MODx templates if needed
-        $cmsTplInstaller = new ModxCmsTemplateInstaller($this->getSelector());
-        $cmsTplInstaller
-            ->setTemplateName('SAP Fiori')
-            ->setTemplateDescription('Responsive template based on SAP OpenUI5')
-            ->setFacadeAlias('exface.UI5Facade.UI5Facade')
-            ->setTemplateFilePath('vendor/exface/UI5Facade/Facades/exface.OpenUI5Template.modx.html');
-        $installer->addInstaller($cmsTplInstaller);
-        $cmsTplInstaller = new ModxCmsTemplateInstaller($this->getSelector());
-        $cmsTplInstaller
-        ->setTemplateName('SAP Fiori mobile')
-        ->setTemplateDescription('Mobile template based on SAP OpenUI5')
-        ->setFacadeAlias('exface.UI5Facade.UI5Facade')
-        ->setTemplateFilePath('vendor/exface/UI5Facade/Facades/exface.OpenUI5TemplateMobile.modx.html');
-        $installer->addInstaller($cmsTplInstaller);
-        
+        $installer->addInstaller($schema_installer);        
         
         // Install ServiceWorker
         $installer->addInstaller(ServiceWorkerInstaller::fromConfig($this->getSelector(), $this->getConfig()));

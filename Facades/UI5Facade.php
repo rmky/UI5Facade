@@ -36,6 +36,8 @@ use exface\Core\Facades\AbstractFacade\AbstractFacade;
 use exface\Core\CommonLogic\Model\UiPage;
 use exface\Core\CommonLogic\Selectors\UiPageSelector;
 use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
+use exface\Core\Interfaces\Tasks\HttpTaskInterface;
+use exface\Core\Exceptions\Facades\FacadeLogicError;
 
 /**
  * Renders SAP Fiori apps using OpenUI5 or SAP UI5.
@@ -59,12 +61,6 @@ use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
  */
 class UI5Facade extends AbstractAjaxFacade
 {
-    private $requestPageAlias = null;
-    
-    private $rootView = null;
-    
-    private $rootController = null;
-    
     private $webapp = null;
     
     private $contentDensity = null;
@@ -93,13 +89,16 @@ class UI5Facade extends AbstractAjaxFacade
     {
         /* @var $task \exface\Core\CommonLogic\Tasks\HttpTask */
         if ($task = $request->getAttribute($this->getRequestAttributeForTask())) {
-            if ($task->isTriggeredOnPage()) {
-                $pageAlias = $task->getPageTriggeredOn()->getAliasWithNamespace();
-                if ($this->requestPageAlias === null) {
-                    $this->requestPageAlias = $pageAlias;
+            if ($this->webapp === null) {
+                if (! $appRootPageAlias = $task->getParameter('webapp')) {
+                    if ($task->isTriggeredOnPage()) {
+                        $appRootPageAlias = $task->getPageTriggeredOn()->getAliasWithNamespace();
+                    }
                 }
-                if ($this->webapp === null) {
-                    $this->initWebapp($pageAlias);
+                if ($appRootPageAlias) {
+                    $this->initWebapp($appRootPageAlias);
+                } else {
+                    throw new FacadeLogicError('Cannot determine webapp from request!');
                 }
             }
         }
@@ -256,14 +255,6 @@ JS;
         $app = new Webapp($this, $id, $this->getWebappFacadeFolder(), $config);
         $this->webapp = $app;
         return $app;
-    }
-    
-    protected function getRequestPage() : UiPageInterface
-    {
-        if ($this->requestPageAlias === null) {
-            throw new RuntimeException('No root page found in request for facade "' . $this->getAliasWithNamespace() . '"!');
-        }
-        return UiPageFactory::createFromCmsPage($this->getWorkbench()->getCMS(), $this->requestPageAlias);
     }
     
     protected function getWebappDefaultConfig(string $appId) : array

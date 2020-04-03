@@ -92,8 +92,6 @@ trait UI5DataElementTrait {
     
     private $dynamicPageHeaderCollapsed = null;
     
-    private $dynamicPageShowBackButton = false;
-    
     private $dynamicPageShowToolbar = false;
     
     /**
@@ -1093,7 +1091,7 @@ JS;
      */
     protected function getDynamicPageShowBackButton() : bool
     {
-        return $this->dynamicPageShowBackButton ?? $this->getView()->isWebAppRoot() === false;
+        return $this->getView()->isWebAppRoot() === false;
     }
     
     /**

@@ -273,7 +273,7 @@ sap.ui.define([
 		 * @return String|Boolean
 		 */
 		_findViewInString : function (sString) {
-			if (! string) return false;
+			if (! sString) return false;
 			var viewMatch = sString.match(/sap.ui.jsview\("(.*)"/i);
 		    if (viewMatch !== null) {
 		        return viewMatch[1];

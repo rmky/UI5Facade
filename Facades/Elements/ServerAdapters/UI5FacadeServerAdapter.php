@@ -50,7 +50,9 @@ class UI5FacadeServerAdapter implements UI5ServerAdapterInterface
         
         return <<<JS
 
-							$.ajax({
+							$oParamsJs.webapp = '{$this->getElement()->getFacade()->getWebapp()->getRootPage()->getAliasWithNamespace()}';                
+
+                            $.ajax({
 								type: 'POST',
 								url: '{$this->getElement()->getAjaxUrl()}',
                                 {$headers}
@@ -90,7 +92,10 @@ JS;
     protected function buildJsDataLoader(string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
         $headers = ! empty($this->getElement()->getAjaxHeaders()) ? 'headers: ' . json_encode($this->getElement()->getAjaxHeaders()) . ',' : '';
+        
         return <<<JS
+                
+                $oParamsJs.webapp = '{$this->getElement()->getFacade()->getWebapp()->getRootPage()->getAliasWithNamespace()}';                
 
                 $.ajax({
 					type: 'GET',
@@ -141,6 +146,8 @@ JS;
     {
         return <<<JS
         
+            $oParamsJs.webapp = '{$this->getElement()->getFacade()->getWebapp()->getRootPage()->getAliasWithNamespace()}';                
+            
             $.ajax({
                 url: "{$this->getElement()->getAjaxUrl()}",
                 type: "POST",

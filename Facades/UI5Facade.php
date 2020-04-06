@@ -21,8 +21,6 @@ use exface\UI5Facade\Facades\Elements\UI5AbstractElement;
 use exface\Core\Interfaces\Model\UiPageInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use exface\Core\Factories\UiPageFactory;
-use exface\Core\Exceptions\RuntimeException;
 use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
 use exface\UI5Facade\UI5Controller;
 use exface\Core\Exceptions\LogicException;
@@ -37,7 +35,6 @@ use exface\UI5Facade\Facades\Templates\UI5FacadePageTemplateRenderer;
 use exface\Core\CommonLogic\Model\UiPage;
 use exface\Core\CommonLogic\Selectors\UiPageSelector;
 use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
-use exface\Core\Interfaces\Tasks\HttpTaskInterface;
 use exface\Core\Exceptions\Facades\FacadeLogicError;
 
 /**
@@ -500,11 +497,11 @@ JS;
     }
     
     /**
-     * 
+     *
      * {@inheritDoc}
      * @see \exface\Core\Facades\AbstractAjaxFacade\AbstractAjaxFacade::createResponseUnauthorized()
      */
-    protected function createResponseUnauthorized(\Throwable $exception, UiPageInterface $page = null) : ?ResponseInterface
+    protected function createResponseUnauthorized(ServerRequestInterface $request, \Throwable $exception, UiPageInterface $page = null) : ?ResponseInterface
     {
         if ($page === null) {
             if ($exception instanceof ErrorExceptionInterface) {
@@ -514,6 +511,6 @@ JS;
             }
             $page = new UiPage(new UiPageSelector($this->getWorkbench(), $pageAlias));
         }
-        return parent::createResponseUnauthorized($exception, $page);
+        return parent::createResponseUnauthorized($request, $exception, $page);
     }
 }

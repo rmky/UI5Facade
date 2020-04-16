@@ -87,7 +87,7 @@ JS;
                 $cols .= $col->getDataColumnName() . ',';
             }
             $cols = rtrim($cols, ",");
-            $controller->addOnDefineScript("exfPreloader.addPreload('{$widget->getTableObject()->getAliasWithNamespace()}', ['{$cols}'], [], '{$widget->getPage()->getId()}', '{$widget->getTable()->getId()}');");
+            $controller->addOnDefineScript("exfPreloader.addPreload('{$widget->getTableObject()->getAliasWithNamespace()}', ['{$cols}'], [], '{$widget->getPage()->getUid()}', '{$widget->getTable()->getId()}');");
         }
         
         $controller->addMethod('onSuggest', $this, 'oEvent', $this->buildJsDataLoader('oEvent'));

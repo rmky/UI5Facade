@@ -367,7 +367,7 @@ JS;
             return '';
         }
         
-        return substr($this->getWidget()->getPage()->getId(), 1) . '__' . parent::getId();
+        return substr($this->getWidget()->getPage()->getUid(), 1) . '__' . parent::getId();
     }
     
     /**

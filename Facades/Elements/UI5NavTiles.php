@@ -24,7 +24,7 @@ class UI5NavTiles extends UI5Container
         // If the NavTiles is the root widget of a view, it will have a header with the caption
         // of the first tile group - so just hide the caption of that group to avoid duplicates.
         $widget = $this->getWidget();
-        if ($widget->hasParent() === false && $widget->getParent()->hasWidgets()) {
+        if ($widget->hasParent() === false && $widget->hasWidgets()) {
             $widget->getWidgetFirst()->setHideCaption(true);
         }
         return parent::buildJsConstructor($oControllerJs);

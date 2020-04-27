@@ -28,6 +28,10 @@ use exface\Core\Interfaces\Exceptions\ExceptionInterface;
 use exface\Core\Exceptions\Facades\FacadeRoutingError;
 use exface\Core\Interfaces\DataSheets\DataSheetInterface;
 use exface\Core\Events\DataSheet\OnBeforeReadDataEvent;
+use exface\Core\Exceptions\Security\AccessPermissionDeniedError;
+use exface\Core\CommonLogic\Security\Authorization\UiPageAuthorizationPoint;
+use exface\Core\Widgets\LoginPrompt;
+use exface\Core\Exceptions\Security\AuthenticationFailedError;
 
 class Webapp implements WorkbenchDependantInterface
 {
@@ -408,10 +412,27 @@ class Webapp implements WorkbenchDependantInterface
     {
         if ($this->rootPage === null) {
             try {
-                $this->rootPage = UiPageFactory::createFromModel($this->getWorkbench(), $this->appId);
+                $appRootPage = UiPageFactory::createFromModel($this->getWorkbench(), $this->appId);
             } catch (\Throwable $e) {
                 throw new FacadeRoutingError('Root page for UI5 app "' . $this->appId . '" not found!', null, $e);
             }
+            
+            try {
+                $pageAP = $this->getWorkbench()->getSecurity()->getAuthorizationPoint(UiPageAuthorizationPoint::class);
+                $appRootPage = $pageAP->authorize($appRootPage);
+            } catch (AccessPermissionDeniedError $accessError) {
+                $authError = new AuthenticationFailedError($this->getWorkbench()->getSecurity(), $accessError->getMessage(), null, $accessError);
+                $appRootPage = UiPageFactory::createBlank($this->getWorkbench(), $this->appId);
+                try {
+                    $loginPrompt = LoginPrompt::createFromException($appRootPage, $authError);
+                } catch (\Throwable $e) {
+                    throw $e;
+                    $this->getWorkbench()->getLogger()->logException($e, LoggerInterface::DEBUG);
+                    return null;
+                }
+                $appRootPage->addWidget($loginPrompt);
+            } 
+            $this->rootPage = $appRootPage;
         }
         return $this->rootPage;
     }

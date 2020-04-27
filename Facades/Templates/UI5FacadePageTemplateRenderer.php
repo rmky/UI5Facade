@@ -30,7 +30,7 @@ class UI5FacadePageTemplateRenderer extends FacadePageTemplateRenderer
     protected function renderPlaceholderUI5Option(string $option) : string
     {
         switch ($option) {
-            case 'density':
+            case 'density_body_class':
                 if ($this->getFacade()->getContentDensity() === 'cozy') {
                     $val = 'sapUiBody';
                 } else {

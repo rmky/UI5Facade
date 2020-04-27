@@ -36,6 +36,12 @@ use exface\Core\CommonLogic\Model\UiPage;
 use exface\Core\CommonLogic\Selectors\UiPageSelector;
 use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
 use exface\Core\Exceptions\Facades\FacadeLogicError;
+use exface\Core\Exceptions\Security\AccessPermissionDeniedError;
+use exface\Core\Factories\UiPageFactory;
+use exface\Core\CommonLogic\Security\Authorization\UiPageAuthorizationPoint;
+use exface\Core\Widgets\LoginPrompt;
+use exface\Core\Interfaces\Log\LoggerInterface;
+use GuzzleHttp\Psr7\Response;
 
 /**
  * Renders SAP Fiori apps using OpenUI5 or SAP UI5.
@@ -87,12 +93,13 @@ class UI5Facade extends AbstractAjaxFacade
     {
         /* @var $task \exface\Core\CommonLogic\Tasks\HttpTask */
         if ($task = $request->getAttribute($this->getRequestAttributeForTask())) {
+            $appRootPageAlias = null;
             if ($this->webapp === null) {
                 if (! $appRootPageAlias = $task->getParameter('webapp')) {
                     if ($task->isTriggeredOnPage()) {
-                        $appRootPageAlias = $task->getPageTriggeredOn()->getAliasWithNamespace();
+                        $appRootPageAlias = $task->getPageSelector()->__toString();
                     }
-                }
+                } 
                 if ($appRootPageAlias) {
                     $this->initWebapp($appRootPageAlias);
                 } else {
@@ -482,7 +489,7 @@ JS;
      */
     protected function getPageTemplateFilePathDefault() : string
     {
-        return $this->getApp()->getDirectoryAbsolutePath() . DIRECTORY_SEPARATOR . 'Facades' . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'OpenUI5Template.html';
+        return $this->getApp()->getDirectoryAbsolutePath() . DIRECTORY_SEPARATOR . 'Facades' . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'OpenUI5AppTemplate.html';
     }
     
     /**
@@ -490,9 +497,10 @@ JS;
      * {@inheritDoc}
      * @see \exface\Core\Facades\AbstractAjaxFacade\AbstractAjaxFacade::buildHtmlPage()
      */
-    protected function buildHtmlPage(WidgetInterface $widget) : string
+    protected function buildHtmlPage(WidgetInterface $widget, string $pagetTemplateFilePath = null) : string
     {
-        $renderer = new UI5FacadePageTemplateRenderer($this, $this->getPageTemplateFilePath(), $widget);
+        $pagetTemplateFilePath = $pagetTemplateFilePath ?? $this->getPageTemplateFilePath();
+        $renderer = new UI5FacadePageTemplateRenderer($this, $pagetTemplateFilePath, $widget);
         return $renderer->render();   
     }
     
@@ -504,13 +512,26 @@ JS;
     protected function createResponseUnauthorized(ServerRequestInterface $request, \Throwable $exception, UiPageInterface $page = null) : ?ResponseInterface
     {
         if ($page === null) {
-            if ($exception instanceof ErrorExceptionInterface) {
-                $pageAlias = 'ERROR_' . $exception->getId();
-            } else {
-                $pageAlias = 'ERROR';
-            }
-            $page = new UiPage(new UiPageSelector($this->getWorkbench(), $pageAlias));
+            $page = $this->getWebapp()->getRootPage();
         }
-        return parent::createResponseUnauthorized($request, $exception, $page);
+        
+        try {
+            $loginPrompt = LoginPrompt::createFromException($page, $exception);
+        } catch (\Throwable $e) {
+            $this->getWorkbench()->getLogger()->logException($e, LoggerInterface::DEBUG);
+            return null;
+        }
+        
+        if ($this->isRequestAjax($request)) {
+            $responseBody = $this->buildHtmlHead($loginPrompt) . "\n" . $this->buildHtmlBody($loginPrompt);
+        } else {
+            $page->addWidget($loginPrompt);
+            
+            $tplPath = $this->getPageTemplateFilePathForUnauthorized();
+            $renderer = new UI5FacadePageTemplateRenderer($this, $tplPath, $loginPrompt);
+            $responseBody = $renderer->render();   
+        }
+        
+        return new Response(401, $this->buildHeadersAccessControl(), $responseBody);
     }
 }

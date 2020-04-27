@@ -14,9 +14,9 @@
 		<link rel="apple-touch-icon" sizes="128x128" href="assets/images/alexa_icon_128.png">
 		<link rel="apple-touch-icon-precomposed" sizes="128x128" href="assets/images/alexa_icon_128.png">
 
-		<meta id="exf-page-id" name="page_id" content="[*id*]">
+		<meta id="exf-page-id" name="page_id" content="[#~page:alias#]">
 		
-		<title>[*pagetitle*]</title>
+		<title>[#~page:name#]</title>
 		
 		<style>
 			#exf-loader-spinner {
@@ -46,58 +46,26 @@
 		</script>
 		
 		<!-- Load SAPUI5, select theme and control library -->
-		<script src="exface/vendor/exface/UI5Facade/Facades/js_openui5/resources/sap-ui-core.js"
+		<script src="vendor/exface/UI5Facade/Facades/js_openui5/resources/sap-ui-core.js"
 				id="sap-ui-bootstrap"
 				data-sap-ui-libs="sap.m,sap.tnt,sap.ui.unified,sap.ui.commons,sap.ui.table,sap.f,sap.uxap"
-				data-sap-ui-theme="sap_belize"
+				data-sap-ui-theme="[#~facade:theme#]"
 				data-sap-ui-bindingSyntax="complex"
 				data-sap-ui-compatVersion="edge"
 				data-sap-ui-preload="async"
 				data-sap-ui-resourceroots='{
-					"[*alias*]": "exface/api/ui5/webapps/[*alias*]/"
+					"[#~page:alias#]": "api/ui5/webapps/[#~page:alias#]/"
 				}'
-				data-sap-ui-language="[[Exface? &action=`exface.ModxCmsConnector.GetLanguageCode` &facade=`exface.UI5Facade.UI5Facade`]]">
+				data-sap-ui-language="[#~session:language#]">
 		</script>
 		
-		<script type="text/javascript" src="exface/vendor/npm-asset/dexie/dist/dexie.min.js"></script>
-		<script type="text/javascript" src="exface/vendor/exface/UI5Facade/Facades/js/openui5.facade.js"></script>
+		<script type="text/javascript" src="vendor/npm-asset/dexie/dist/dexie.min.js"></script>
+		<script type="text/javascript" src="vendor/exface/UI5Facade/Facades/js/openui5.facade.js"></script>
 		
 		<script type="text/javascript">
 			// Main menu
 			function initMainMenu(oShell) {
-				var oNavMenu = new sap.tnt.NavigationList({
-					items:[
-						[!Wayfinder? &startId=`1` &level=`10` &hideSubMenus=`1`
-						 &outerTpl=`@CODE: [+wf.wrapper+]`
-						 &innerTpl=`@CODE: [+wf.wrapper+]`
-						 &rowTpl=`@CODE: 
-							 new sap.tnt.NavigationListItem({
-								 icon: "folder-blank", 
-								 text: "[+wf.linktext+]", 
-								 select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';} 
-							 }),`
-						 &activeParentRowTpl=`@CODE: 
-							 new sap.tnt.NavigationListItem({
-								 icon: "open-folder", 
-								 text: "[+wf.linktext+]", 
-								 items: [ 
-									 
-									 // BOF [+wf.linktext+] SUBMENU
-									 [+wf.wrapper+] 
-									 // EOF [+wf.linktext+] SUBMENU
-									 
-								 ], 
-								 select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';}
-							 }),`
-						 &lastRowTpl=`@CODE: 
-							 new sap.tnt.NavigationListItem({
-								 icon: "folder-blank", 
-								 text: "[+wf.linktext+]", 
-								 select: function(){sap.ui.core.BusyIndicator.show(0); window.location.href = '[+wf.link+]';} 
-							 })`
-					 	!]
-					]
-				});
+				var oNavMenu = [#~widget:NavMenu#]
 				
 				oShell.addPaneContent(oNavMenu);
 			}
@@ -112,11 +80,11 @@
 					var oShell = exfLauncher.initShell();
 					oShell.addContent(
 			    		new sap.ui.core.ComponentContainer({
-							name: "[*alias*]",
+							name: "[#~page:alias#]",
 							async: true,
 							manifest: true,
 							settings: {
-								id: "[*alias*].Component"
+								id: "[#~page:alias#].Component"
 							},
 							componentCreated: function(oEvent) {
 								var oComponent = oEvent.getParameters().component;
@@ -129,15 +97,12 @@
 					
 					setTimeout(function(){
 						oShell.getModel().setProperty('/_app', {
-							home_title: '[*pagetitle*]',
-							home_url: '[(site_url)]',
-							app_url: '[~[*id*]~]'
-						});
-						oShell.getModel().setProperty('/_user', {
-							avatar: '[!UserManagerInfo? &field=`photo`!]'
+							home_title: '[#~page:name#]',
+							home_url: '[#~url:index#]',
+							app_url: '[#~page:url#]'
 						});
 						
-						oShell.placeAt("[*id*]");
+						oShell.placeAt("[#~page:alias#]");
 					}, 1000);
 				});
 			});
@@ -145,7 +110,7 @@
 
 		
 	</head>
-	<body id="[*id*]" class="sapUiBody">
+	<body id="[#~page:alias#]" class="[#ui5:density_body_class#]">
 		<div id="exf-loader" style="width: 100%; height: 100vh; background: white; position: absolute;"><div id="exf-loader-spinner"></div></div>
 	</body>
 </html>

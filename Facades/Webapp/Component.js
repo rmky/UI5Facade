@@ -139,7 +139,7 @@ sap.ui.define([
 		 * 
 		 * @return sap.m.Dialog
 		 */
-		showErrorDialog : function(sBody, sTitle, sContentType) {console.log('error dialog');
+		showErrorDialog : function(sBody, sTitle, sContentType) {
 			var sViewName, oBody, sState = 'Error';
 			
 			sBody = sBody ? sBody.trim() : '';

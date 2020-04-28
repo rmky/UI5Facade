@@ -44,18 +44,13 @@ JS;
     {
         return <<<JS
         
-                        new sap.m.VBox({
+                        new sap.m.FlexBox({
                             height: "100%",
+                            width: "100%",
                             justifyContent: "Center",
+                            alignItems: "Center",
                             items: [
-                                new sap.m.HBox({
-                                    justifyContent: "Center",
-                                    width: "100%",
-                                    wrap: "Wrap",
-                                    items: [
-                                        {$content}
-                                    ]
-                                })
+                                {$content}
                             ]
                         })
                         

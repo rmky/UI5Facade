@@ -59,6 +59,8 @@ class Webapp implements WorkbenchDependantInterface
     
     private $viewControllerNames = [];
     
+    private $preloadPages = [];
+    
     
     public function __construct(UI5Facade $facade, string $ui5AppId, string $facadeFolder, array $config)
     {
@@ -408,11 +410,21 @@ class Webapp implements WorkbenchDependantInterface
         return $output;
     }
     
+    public function getRootPageAlias() : string
+    {
+        return $this->appId;
+    }
+    
+    /**
+     * 
+     * @throws FacadeRoutingError
+     * @return UiPageInterface
+     */
     public function getRootPage() : UiPageInterface
     {
         if ($this->rootPage === null) {
             try {
-                $appRootPage = UiPageFactory::createFromModel($this->getWorkbench(), $this->appId);
+                $appRootPage = UiPageFactory::createFromModel($this->getWorkbench(), $this->getRootPageAlias());
             } catch (\Throwable $e) {
                 throw new FacadeRoutingError('Root page for UI5 app "' . $this->appId . '" not found!', null, $e);
             }
@@ -422,15 +434,7 @@ class Webapp implements WorkbenchDependantInterface
                 $appRootPage = $pageAP->authorize($appRootPage);
             } catch (AccessPermissionDeniedError $accessError) {
                 $authError = new AuthenticationFailedError($this->getWorkbench()->getSecurity(), $accessError->getMessage(), null, $accessError);
-                $appRootPage = UiPageFactory::createBlank($this->getWorkbench(), $this->appId);
-                try {
-                    $loginPrompt = LoginPrompt::createFromException($appRootPage, $authError);
-                } catch (\Throwable $e) {
-                    throw $e;
-                    $this->getWorkbench()->getLogger()->logException($e, LoggerInterface::DEBUG);
-                    return null;
-                }
-                $appRootPage->addWidget($loginPrompt);
+                $appRootPage = $this->createLoginPage($authError, $this->getRootPageAlias());
             } 
             $this->rootPage = $appRootPage;
         }
@@ -866,5 +870,27 @@ class Webapp implements WorkbenchDependantInterface
     public function getFacade() : UI5Facade
     {
         return $this->facade;
+    }
+    
+    /**
+     * Creates a new UI page with the login prompt derived from the given exception.
+     * 
+     * @param \Throwable $authError
+     * @param string $pageAlias
+     * @return UiPageInterface
+     */
+    public function createLoginPage(\Throwable $authError, string $pageAlias) : UiPageInterface
+    {
+        $pageAlias = $pageAlias ?? $this->getRootPageAlias();
+        $loginPage = UiPageFactory::createBlank($this->getWorkbench(), $pageAlias);
+        
+        $loginPrompt = LoginPrompt::createFromException($loginPage, $authError);
+        if ($pageAlias === $this->getRootPageAlias()) {
+            $loginPrompt->setCaption($this->getWorkbench()->getConfig()->getOption('SERVER.TITLE'));
+        }
+        
+        $loginPage->addWidget($loginPrompt);
+        
+        return $loginPage;
     }
 }

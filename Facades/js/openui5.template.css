@@ -34,6 +34,11 @@ pre.sf-dump .sf-dump-private, pre.sf-dump .sf-dump-public, pre.sf-dump .sf-dump-
 .exf-page-heading-btn {margin-top: -5px; margin-left: -11px;}
 body:not(.sapUiSizeCompact) .sapFDynamicPageTitleMainHeadingInner .sapMTitle > span {line-height: 2.375rem}
 
+/* LoginPrompt */
+.exf-loginprompt-flexbox > div {max-width: 95%}
+.exf-loginprompt-panel > h2 {text-align: center;}
+.exf-loginprompt-panel > .sapMPanelContent {border-left: 1px solid #cccccc; border-right: 1px solid #cccccc;}
+
 /* sap.m.P13nDialog */
 .sapMP13nDialog > .sapMDialogResizeHandler {position: inherit}
 

@@ -42,6 +42,7 @@ use exface\Core\CommonLogic\Security\Authorization\UiPageAuthorizationPoint;
 use exface\Core\Widgets\LoginPrompt;
 use exface\Core\Interfaces\Log\LoggerInterface;
 use GuzzleHttp\Psr7\Response;
+use exface\Core\Interfaces\Exceptions\AuthenticationExceptionInterface;
 
 /**
  * Renders SAP Fiori apps using OpenUI5 or SAP UI5.
@@ -505,28 +506,47 @@ JS;
     }
     
     /**
-     *
-     * {@inheritDoc}
+     * Creates a login prompt if the request resulted in an unauthorized error.
+     * 
+     * In contrast to other facades, the UI5 facade has lot's of request variants, that all run into
+     * the Ui5WebappRouter. Not all of them will run through UI5Facade::handle() - in fact, only
+     * - The (non-AJAX) request for index.html
+     * - AJAX requests for views/controllers
+     * 
+     * Only these request's unauthorized errors are handled here! The other requests are handled in the
+     * Ui5WebappRouter!
+     * 
+     * For AJAX requests a special login-page will be created instead of the actually requested view or
+     * controller. This page exists only in the context of the current request.
+     * 
+     * TODO the AJAX logic will only work with combined view-controllers because separate view and controller
+     * requests will create different error pages...
+     * 
+     * For the index.html the regular template renderer is used, but the request gets a 401 code
+     * to tell the browser, that an error occurred, prevent caching, etc.
+     * 
      * @see \exface\Core\Facades\AbstractAjaxFacade\AbstractAjaxFacade::createResponseUnauthorized()
      */
     protected function createResponseUnauthorized(ServerRequestInterface $request, \Throwable $exception, UiPageInterface $page = null) : ?ResponseInterface
     {
         if ($page === null) {
-            $page = $this->getWebapp()->getRootPage();
+            if ($this->isRequestAjax($request)) {
+                if ($exception instanceof ErrorExceptionInterface) {
+                    $pageAlias = 'ERROR_' . $exception->getId();
+                } else {
+                    $pageAlias = 'ERROR';
+                }
+            } else {
+                $pageAlias = $this->getWebapp()->getRootPageAlias();
+            }
         }
         
-        try {
-            $loginPrompt = LoginPrompt::createFromException($page, $exception);
-        } catch (\Throwable $e) {
-            $this->getWorkbench()->getLogger()->logException($e, LoggerInterface::DEBUG);
-            return null;
-        }
+        $page = $this->getWebapp()->createLoginPage($exception, $pageAlias);
+        $loginPrompt = $page->getWidgetRoot();
         
         if ($this->isRequestAjax($request)) {
             $responseBody = $this->buildHtmlHead($loginPrompt) . "\n" . $this->buildHtmlBody($loginPrompt);
         } else {
-            $page->addWidget($loginPrompt);
-            
             $tplPath = $this->getPageTemplateFilePathForUnauthorized();
             $renderer = new UI5FacadePageTemplateRenderer($this, $tplPath, $loginPrompt);
             $responseBody = $renderer->render();   

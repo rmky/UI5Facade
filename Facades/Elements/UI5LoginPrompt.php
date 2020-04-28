@@ -11,6 +11,12 @@ class UI5LoginPrompt extends UI5Container
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
+        // Disable value binding for all inputs - otherwise common fields (like username/password) 
+        // of all forms will be filled simultanuously because of being bound to the same model.
+        foreach ($this->getWidget()->getInputWidgets() as $input) {
+            $this->getFacade()->getElement($input)->setValueBindingDisabled(true);
+        }
+        
         $iconTabBar = $this->buildJsIconTabBar($oControllerJs);
         $captionJs = json_encode($this->getCaption());
         
@@ -31,6 +37,11 @@ JS;
         }
     }
             
+    /**
+     * 
+     * @param string $oControllerJs
+     * @return string
+     */
     protected function buildJsIconTabBar(string $oControllerJs) : string
     {
         return <<<JS
@@ -44,6 +55,11 @@ JS;
 JS;
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5Container::buildJsChildrenConstructors()
+     */
     public function buildJsChildrenConstructors(string $oControllerJs = 'oController') : string
     {
         $js = '';
@@ -73,8 +89,11 @@ JS;
 JS;
     }
     
-    
-    
+    /**
+     * 
+     * @param string $content
+     * @return string
+     */
     protected function buildJsCenterWrapper(string $content) : string
     {
         return <<<JS

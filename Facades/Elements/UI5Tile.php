@@ -77,12 +77,17 @@ JS;
             }
         } 
         
+        if ($widget->isHidden()) {
+            $visible = 'visible: false,';
+        }
+        
         return <<<JS
 
 new sap.m.GenericTile("{$this->getId()}", {
     {$header}
     {$subheader}
     {$press}
+    {$visible}
     tileContent: [
         new sap.m.TileContent({
             content: [

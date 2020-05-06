@@ -375,15 +375,14 @@ class Webapp implements WorkbenchDependantInterface
     {
         try {
             $app = $this->getRootPage()->getApp();
-        } catch (\Throwable $e) {
-            $this->getWorkbench()->getLogger()->logException($e);
+        } catch (\Throwable $errRootPageApp) {
             try {
                 if ($this->getRootPage()->isEmpty() === false) {
                     $rootObj = $this->getRootPage()->getWidgetRoot()->getMetaObject();
                     $app = $rootObj->getApp();
                 }
-            } catch (\Throwable $e2) {
-                $this->getWorkbench()->getLogger()->logException($e2);
+            } catch (\Throwable $errObjectApp) {
+                // Do nothing - we will use the default locale
             }
         }
         

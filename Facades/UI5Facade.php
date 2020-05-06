@@ -405,7 +405,7 @@ JS;
      */
     protected function buildHtmlFromError(ServerRequestInterface $request, \Throwable $exception, UiPageInterface $page = null) : string
     {
-        return '';
+        return $exception->getMessage();
     }
     
     /**

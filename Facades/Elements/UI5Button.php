@@ -69,8 +69,9 @@ class UI5Button extends UI5AbstractElement
                     if (mb_stripos($includePath, '.css') !== false) {
                         $this->getController()->addExternalCss($includePath);                        
                     } else {
-                        $moduleName = str_replace('/', '.', $includePath);
-                        $varName = StringDataType::convertCaseUnderscoreToPascal(str_replace(['/', '.', '-'], '_', $includePath));
+                        $moduleName = str_replace([':', '-'], '', $includePath);
+                        $moduleName = str_replace('/', '.', $moduleName);
+                        $varName = StringDataType::convertCaseUnderscoreToPascal(str_replace(['/', '.', '-', ':'], '_', $includePath));
                         $this->getController()->addExternalModule($moduleName, $includePath, $varName);
                     }
                 }

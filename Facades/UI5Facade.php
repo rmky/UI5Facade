@@ -32,17 +32,9 @@ use exface\Core\Interfaces\DataSheets\DataSheetInterface;
 use exface\UI5Facade\Facades\Formatters\UI5TimeFormatter;
 use exface\Core\Facades\AbstractFacade\AbstractFacade;
 use exface\UI5Facade\Facades\Templates\UI5FacadePageTemplateRenderer;
-use exface\Core\CommonLogic\Model\UiPage;
-use exface\Core\CommonLogic\Selectors\UiPageSelector;
 use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
 use exface\Core\Exceptions\Facades\FacadeLogicError;
-use exface\Core\Exceptions\Security\AccessPermissionDeniedError;
-use exface\Core\Factories\UiPageFactory;
-use exface\Core\CommonLogic\Security\Authorization\UiPageAuthorizationPoint;
-use exface\Core\Widgets\LoginPrompt;
-use exface\Core\Interfaces\Log\LoggerInterface;
 use GuzzleHttp\Psr7\Response;
-use exface\Core\Interfaces\Exceptions\AuthenticationExceptionInterface;
 
 /**
  * Renders SAP Fiori apps using OpenUI5 or SAP UI5.

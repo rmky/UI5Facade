@@ -23,15 +23,14 @@ use exface\Core\Interfaces\Tasks\ResultWidgetInterface;
 use exface\Core\Interfaces\Actions\iShowWidget;
 use exface\Core\Events\Widget\OnPrefillChangePropertyEvent;
 use exface\Core\Exceptions\Facades\FacadeLogicError;
-use exface\Core\Interfaces\Exceptions\ErrorExceptionInterface;
 use exface\Core\Interfaces\Exceptions\ExceptionInterface;
 use exface\Core\Exceptions\Facades\FacadeRoutingError;
 use exface\Core\Interfaces\DataSheets\DataSheetInterface;
 use exface\Core\Events\DataSheet\OnBeforeReadDataEvent;
-use exface\Core\Exceptions\Security\AccessPermissionDeniedError;
 use exface\Core\CommonLogic\Security\Authorization\UiPageAuthorizationPoint;
 use exface\Core\Widgets\LoginPrompt;
 use exface\Core\Exceptions\Security\AuthenticationFailedError;
+use exface\Core\Interfaces\Exceptions\AuthorizationExceptionInterface;
 
 class Webapp implements WorkbenchDependantInterface
 {
@@ -431,7 +430,7 @@ class Webapp implements WorkbenchDependantInterface
             try {
                 $pageAP = $this->getWorkbench()->getSecurity()->getAuthorizationPoint(UiPageAuthorizationPoint::class);
                 $appRootPage = $pageAP->authorize($appRootPage);
-            } catch (AccessPermissionDeniedError $accessError) {
+            } catch (AuthorizationExceptionInterface $accessError) {
                 $authError = new AuthenticationFailedError($this->getWorkbench()->getSecurity(), $accessError->getMessage(), null, $accessError);
                 $appRootPage = $this->createLoginPage($authError, $this->getRootPageAlias());
             } 

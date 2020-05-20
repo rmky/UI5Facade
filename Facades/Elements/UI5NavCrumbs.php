@@ -62,6 +62,7 @@ JS;
                 if ($node->hasChildNodes()) {
                     $output .= $this->buildBreadcrumbLinks($node->getChildNodes());
                 }
+                break;
             }
         }
         return $output;

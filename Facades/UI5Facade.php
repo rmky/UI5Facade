@@ -82,6 +82,11 @@ class UI5Facade extends AbstractAjaxFacade
         $this->setClassNamespace(__NAMESPACE__);
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\AbstractAjaxFacade::handle()
+     */
     public function handle(ServerRequestInterface $request, $useCacheKey = null) : ResponseInterface
     {
         /* @var $task \exface\Core\CommonLogic\Tasks\HttpTask */
@@ -101,6 +106,25 @@ class UI5Facade extends AbstractAjaxFacade
             }
         }
         return parent::handle($request);
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\AbstractAjaxFacade::createResponseFromError($request, $exception, $page)
+     */
+    public function createResponseFromError(ServerRequestInterface $request, \Throwable $exception, UiPageInterface $page = null) : ResponseInterface 
+    {
+        // We need a webapp to create an error UI, so we must init one here if it's not there already!
+        if ($this->webapp === null) {
+            if ($page !== null) {
+                $rootPageAlias = $page->getAliasWithNamespace();
+            } else {
+                $rootPageAlias = $this->getWorkbench()->getConfig()->getOption('SERVER.INDEX_PAGE_SELECTOR');
+            }
+            $this->initWebapp($rootPageAlias);
+        }
+        return parent::createResponseFromError($request, $exception, $page);
     }
     
     /**

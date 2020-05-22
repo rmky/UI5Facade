@@ -161,8 +161,8 @@ JS;
         if ($widget->getValueWidgetLink()) {
             $targetWidget = $widget->getValueWidgetLink()->getTargetWidget();
             if ($targetWidget instanceof iHaveValue) {
-                $value = $this->escapeJsTextValue($targetWidget->getValueWithDefaults());
-                $value = '"' . str_replace("\n", '', $value) . '"';
+                $value = str_replace("\n", '', $targetWidget->getValueWithDefaults());
+                $value = '"' . $this->escapeJsTextValue($value) . '"';
             }
         } 
         

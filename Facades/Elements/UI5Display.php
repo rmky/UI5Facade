@@ -79,13 +79,13 @@ JS;
 
         // TODO #binding store values in real model
         if(! $this->isValueBoundToModel()) {
-            $value = $this->escapeJsTextValue($this->getWidget()->getValue());
-            $value = '"' . str_replace("\n", '', $value) . '"';
+            $value = str_replace("\n", '', $this->getWidget()->getValue());
+            $value = $this->escapeJsTextValue($value);
             $js .= <<<JS
 
             .setModel(function(){
                 var oModel = new sap.ui.model.json.JSONModel();
-                oModel.setProperty("/{$this->getWidget()->getDataColumnName()}", {$value});
+                oModel.setProperty("/{$this->getWidget()->getDataColumnName()}", "{$value}");
                 return oModel;
             }())
 JS;

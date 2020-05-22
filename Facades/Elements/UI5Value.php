@@ -102,8 +102,8 @@ JS;
     public function buildJsValue()
     {
         if (! $this->isValueBoundToModel()) {
-            $value = $this->escapeJsTextValue($this->getWidget()->getValue());
-            $value = '"' . str_replace("\n", '', $value) . '"';
+            $value = str_replace("\n", '', $this->getWidget()->getValue());
+            $value = '"' . $this->escapeJsTextValue($value) . '"';
         } else {
             $value = $this->buildJsValueBinding();
         }

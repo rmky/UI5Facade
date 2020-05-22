@@ -251,9 +251,17 @@ JS;
         return "setValue(" . $valueJs . ")";
     }
         
+    /**
+     * 
+     * @param mixed $text
+     * @return string
+     */
     protected function escapeJsTextValue($text)
     {
-        return str_replace(['"', '\u', "\n"], ['\"', '&#92;u', "\\n"], $text);
+        if ($text === null || $text === '') {
+            return $text;
+        }
+        return trim(json_encode(str_replace(['\u'], ['&#92;u'], $text)), "\"");
     }
     
     /**

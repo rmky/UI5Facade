@@ -1,45 +1,47 @@
 {
-    "name": "exface/UI5Facade",
-    "description": "UI-Facade for the ExFace business web-app plattform based on the SAP OpenUI5 library",
-    "type": "library",
-    "license": "GPL-3.0+",
-    "authors": [
-        {
-            "name": "Andrej Kabachnik",
-            "email": "kabachnik@gmail.com",
-            "role": "Creator"
-        }
-    ],
-    "support": {
-        "source": "https://github.com/exface/UI5Facade",
-        "docs": "https://github.com/exface/UI5Facade/blob/master/Docs",
-        "issues": "https://github.com/exface/UI5Facade/issues"
-    },
-    "require": {
-        "exface/core": "^1.0",
-        "bower-asset/font-awesome-openui5": "^v2.1",
-        "bower-asset/ui5-qrcode": "~0.9",
-        "bower-asset/jsoneditor": "^4.2",
-        "npm-asset/dexie": "^2.0.4",
-        "npm-asset/echarts": "^4.2.1",
-        "npm-asset/moment": "^2.24.0"
-    },
-    "autoload": {
-        "psr-4": {
-            "exface\\UI5Facade\\": ""
-        },
-        "exclude-from-classmap": [
-            "/Config/",
-            "/Translations/",
-            "/Model/"
-        ]
-    },
-    "extra": {
-        "app": {
-            "app_uid": "0x11e837e87a640bfd91380205857feb80",
-            "app_alias": "exface.UI5Facade",
-            "model_md5": "0b793d87d48a1138bf5c905276e18e40",
-            "model_timestamp": "2020-05-13 09:44:01"
-        }
-    }
+	"name" : "exface/UI5Facade",
+	"description" : "UI-Facade for the ExFace business web-app plattform based on the SAP OpenUI5 library",
+	"type" : "library",
+	"license" : [
+		"GPL-3.0+",
+		"proprietary"
+	],
+	"authors" : [{
+			"name" : "Andrej Kabachnik",
+			"email" : "kabachnik@gmail.com",
+			"role" : "Creator"
+		}
+	],
+	"support" : {
+		"source" : "https://github.com/exface/UI5Facade",
+		"docs" : "https://github.com/exface/UI5Facade/blob/master/Docs",
+		"issues" : "https://github.com/exface/UI5Facade/issues"
+	},
+	"require" : {
+		"exface/core" : "^1.0",
+		"bower-asset/font-awesome-openui5" : "^v2.1",
+		"bower-asset/ui5-qrcode" : "~0.9",
+		"bower-asset/jsoneditor" : "^4.2",
+		"npm-asset/dexie" : "^2.0.4",
+		"npm-asset/echarts" : "^4.2.1",
+		"npm-asset/moment" : "^2.24.0"
+	},
+	"autoload" : {
+		"psr-4" : {
+			"exface\\UI5Facade\\" : ""
+		},
+		"exclude-from-classmap" : [
+			"/Config/",
+			"/Translations/",
+			"/Model/"
+		]
+	},
+	"extra" : {
+		"app" : {
+			"app_uid" : "0x11e837e87a640bfd91380205857feb80",
+			"app_alias" : "exface.UI5Facade",
+			"model_md5" : "0b793d87d48a1138bf5c905276e18e40",
+			"model_timestamp" : "2020-05-13 09:44:01"
+		}
+	}
 }

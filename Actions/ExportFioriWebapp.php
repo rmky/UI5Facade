@@ -117,7 +117,7 @@ class ExportFioriWebapp extends AbstractActionDeferred implements iModifyData, i
             ]);
             // Do not pass the transaction to the update to force autocommit
             // FIXME updating the app for some reason does not work because the current user cannot be found. Why???
-            //$updSheet->dataUpdate(false, $transaction);
+            $updSheet->dataUpdate(false, $transaction);
             
             yield PHP_EOL . 'Exported to ' . $webappFolder;
             

@@ -42,18 +42,5 @@ class UI5FacadeApp extends App
         
         return $installer;
     }
-    
-    public function getExportFolderAbsolutePath() : string
-    {
-        if ($this->exportPath === null) {
-            $fm = $this->getWorkbench()->filemanager();
-            $path = $fm::pathJoin([$fm->getPathToBaseFolder(), $this->getConfig()->getOption('WEBAPP_EXPORT.FOLDER_RELATIVE_TO_BASE')]);
-            if (! file_exists($path)) {
-                $fm::pathConstruct($path);
-            }
-            $this->exportPath = $path;
-        }
-        return $this->exportPath;
-    }
 }
 ?>

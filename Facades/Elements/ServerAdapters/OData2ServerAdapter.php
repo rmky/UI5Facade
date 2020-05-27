@@ -22,7 +22,6 @@ use exface\Core\Actions\UpdateData;
 use exface\Core\Actions\SaveData;
 use exface\Core\Actions\CreateData;
 use exface\Core\DataTypes\TimeDataType;
-use exface\UI5Facade\Exceptions\UI5ExportUnsupportedActionException;
 use exface\Core\Interfaces\WidgetInterface;
 use exface\Core\Widgets\Data;
 use exface\UI5Facade\Exceptions\UI5ExportUnsupportedWidgetException;
@@ -30,32 +29,34 @@ use exface\Core\CommonLogic\UxonObject;
 use exface\Core\Actions\Autosuggest;
 use exface\Core\Interfaces\Widgets\iHaveColumns;
 use exface\Core\DataTypes\DateTimeDataType;
-use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
 use exface\Core\Factories\DataTypeFactory;
 use exface\Core\Interfaces\Model\CompoundAttributeInterface;
 
 
 /**
- * 
- * @author Ralf Mulansky
- * 
  * The OData2ServerAdapter performs actions by directly sending requests to an OData2 service.
+ * 
  * To do so it evaluates what actions can be performed by widgets and builds the corresponding
  * java script codes for those actions. To do so it transforms the give parameter for that action
  * to fit the OData2 services. The adapter creates a new ODataModel object for each action
  * and adds the transformed parameters to that model. Then it calls the corresponding ODataModel
  * method to the wanted action and adds the success and error handler for the server response.
  * Read request are send to the server via the ODataModel 'read' method.
+ * 
  * 'Create', 'Update', 'Delete' and 'Function Import' requests are send via the 'submitChanges' method.
  * By default each action request is send as a single server request, because the default OData2 service
  * implementation for CRUD operations does not support multiple operation requests send in a single
  * request, stacked via $batch.
- * It is possible to activate $batch requests my changing the following options in the
- * 'exface.UI5Facade.config.json' file:
  * 
+ * It is possible to activate $batch requests my changing the following options in the
+ * 'exface.UI5Facade.config.json' file. These options can also be overridden for every export project.
+ * 
+ * ```
  * "WEBAPP_EXPORT.ODATA.USE_BATCH_DELETES" : false
  * "WEBAPP_EXPORT.ODATA.USE_BATCH_WRITES" : false
  * "WEBAPP_EXPORT.ODATA.USE_BATCH_FUNCTION_IMPORTS" : false
+ * 
+ * ```
  * 
  * Changing those options to true will enable the $batch requests for 'Delete' and/or 'Create'/'Update'
  * and/or 'Function Import' actions.
@@ -72,6 +73,7 @@ use exface\Core\Interfaces\Model\CompoundAttributeInterface;
  * due to the fact, that the "read+1" pagination would significantly increase the complexity
  * of the adapter logic.
  * 
+ * @author Ralf Mulansky
  */
 class OData2ServerAdapter implements UI5ServerAdapterInterface
 {

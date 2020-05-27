@@ -34,6 +34,7 @@ use exface\Core\DataTypes\ComparatorDataType;
 use exface\Core\Exceptions\Actions\ActionRuntimeError;
 use exface\Core\Factories\TaskFactory;
 use GuzzleHttp\Psr7\ServerRequest;
+use exface\Core\DataTypes\BooleanDataType;
 
 /**
  * Generates the code for a selected Fiori Webapp project.
@@ -64,21 +65,7 @@ class ExportFioriWebapp extends AbstractActionDeferred implements iModifyData, i
         } else {
             $input = $this->getInputDataSheet($task);
         }
-        $columns = $input->getColumns();
-        $columns->addFromExpression('root_page_alias');
-        $columns->addFromExpression('export_folder');
-        $columns->addFromExpression('current_version');
-        $columns->addFromExpression('ui5_min_version');
-        $columns->addFromExpression('ui5_source');
-        $columns->addFromExpression('ui5_theme');
-        $columns->addFromExpression('ui5_app_control');
-        $columns->addFromExpression('app_id');
-        $columns->addFromExpression('app_title');
-        $columns->addFromExpression('app_subTitle');
-        $columns->addFromExpression('app_shortTitle');
-        $columns->addFromExpression('app_info');
-        $columns->addFromExpression('app_description');
-        $columns->addFromExpression('MODIFIED_ON');
+        $input->getColumns()->addFromAttributeGroup($input->getMetaObject()->getAttributes());
         
         if (! $input->isFresh()) {
             if ($input->hasUidColumn(true) === true) {
@@ -94,13 +81,26 @@ class ExportFioriWebapp extends AbstractActionDeferred implements iModifyData, i
         
         $rootPage = UiPageFactory::createFromModel($this->getWorkbench(), $row['root_page_alias']);
         $facade = FacadeFactory::createFromString($this->facadeSelectorString, $this->getWorkbench());
+        $facadeConfig = $facade->getConfig();
         
-        // Always use oData server adapter
-        $facade->getConfig()->setOption('DEFAULT_SERVER_ADAPTER_CLASS', $facade->getConfig()->getOption('WEBAPP_EXPORT.SERVER_ADAPTER_CLASS'));
+        // Modify the facade config to work with the export
+        // Server adapter
+        if ($row['odata_adapater_class']) {
+            $facadeConfig->setOption('DEFAULT_SERVER_ADAPTER_CLASS', $row['odata_adapater_class']);
+        } else {
+            $facadeConfig->setOption('DEFAULT_SERVER_ADAPTER_CLASS', $facade->getConfig()->getOption('WEBAPP_EXPORT.SERVER_ADAPTER_CLASS'));
+        }
+        // OData options
+        $facadeConfig->setOption('WEBAPP_EXPORT.ODATA.USE_BATCH_DELETES', BooleanDataType::cast($row['odata_use_batch_deletes']));
+        $facadeConfig->setOption('WEBAPP_EXPORT.ODATA.USE_BATCH_WRITES', BooleanDataType::cast($row['odata_use_batch_writes']));
+        $facadeConfig->setOption('WEBAPP_EXPORT.ODATA.USE_BATCH_FUNCTION_IMPORTS', BooleanDataType::cast($row['odata_use_batch_function_imports']));
+        $facadeConfig->setOption('WEBAPP_EXPORT.MANIFEST.DATASOURCES_USE_RELATIVE_URLS', BooleanDataType::cast($row['odata_use_relative_urls']));
+        
+        // use short Widget IDs for export
+        $facadeConfig->setOption('WIDGET.USE_SHORT_ID', true);
+        
         // Disable all global actions as they cannot be used with the oData adapter
         $facade->getWorkbench()->getConfig()->setOption('WIDGET.DATATOOLBAR.GLOBAL_ACTIONS', new UxonObject());
-        // use short Widget IDs for export
-        $facade->getConfig()->setOption('WIDGET.USE_SHORT_ID', true);
         
         $result = new ResultMessageStream($task);
         $generator = function() use ($rootPage, $facade, $row, $input, $transaction, $result) {

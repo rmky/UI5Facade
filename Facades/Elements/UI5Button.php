@@ -265,7 +265,8 @@ JS;
                                             var oDialog = oView.getContent()[0];
                                             if (oDialog instanceof sap.m.Dialog) {
                                                 oDialog.attachAfterClose(function() {
-                                                    {$this->buildJsInputRefresh($widget, $input_element)}
+                                                    {$this->buildJsInputRefresh($widget)}
+                                                    {$this->buildJsRefreshCascade($widget)}
                                                 });
                                                 oDialog.open();
                                             } else {
@@ -415,11 +416,11 @@ JS;
      * @param UI5AbstractElement $input_element
      * @return string
      */
-    protected function buildJsInputRefresh(Button $widget, $input_element)
+    protected function buildJsInputRefresh(Button $widget)
     {
         return <<<JS
     if (sap.ui.getCore().byId("{$this->getId()}") !== undefined) {
-        {$this->buildJsInputRefreshViaTrait($widget, $input_element)}
+        {$this->buildJsInputRefreshViaTrait($widget)}
     }
 
 JS;
@@ -489,7 +490,7 @@ JS;
 								
 								{$this->buildJsBusyIconHide()}
                                 {$this->buildJsCloseDialog($widget, $input_element)}
-								{$this->buildJsInputRefresh($widget, $input_element)}
+								{$this->buildJsInputRefresh($widget)}
 		                       	{$this->buildJsBusyIconHide()}
 		                       	$('#{$this->getId()}').trigger('{$action->getAliasWithNamespace()}.action.performed', [requestData, '{$input_element->getId()}']);
 								{$this->buildJsOnSuccessScript()}

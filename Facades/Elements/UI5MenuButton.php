@@ -100,5 +100,14 @@ JS;
         $widget = $this->getWidget();
         return ($widget->getIcon() ? 'icon: "' . $this->getIconSrc($widget->getIcon()) . '", ' : '');
     }
+    
+    /**
+     *
+     * {@inheritdoc}
+     * @see JqueryButtonTrait::buildJsCloseDialog()
+     */
+    protected function buildJsCloseDialog($widget, $input_element)
+    {
+        return '';
+    }
 }
-?>

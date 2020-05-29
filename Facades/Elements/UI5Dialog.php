@@ -86,6 +86,16 @@ class UI5Dialog extends UI5Form
         $widget = $this->getWidget();
         $widget_setting = $widget->isMaximized();
         if (is_null($widget_setting)) {
+            $width = $widget->getWidth();
+            if ($width->isRelative()) {
+                return false;
+            }
+            if ($width->isMax()) {
+                return true;
+            }
+            if ($width->isPercentual() && $width->getValue() === '100%') {
+                return true;
+            }
             if ($widget->hasParent() && $widget->getParent() instanceof iTriggerAction) {
                 $action = $widget->getParent()->getAction();
                 $action_setting = $this->getFacade()->getConfigMaximizeDialogByDefault($action);

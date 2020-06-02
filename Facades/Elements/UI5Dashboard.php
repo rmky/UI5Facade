@@ -68,7 +68,7 @@ class UI5Dashboard extends UI5Panel
         
         
         return <<<JS
-        new sap.m.ScrollContainer({
+        new sap.m.ScrollContainer("{$this->getId()}", {
             vertical: true,
             width: "{$width}",
             height: "{$height}",
@@ -86,16 +86,16 @@ JS;
      * Generating the correct width values for the cards is a bit tricky, because this process needs to be adapted
      * to the unit the width of the element is given in. 
      *     
-     *      If the width is given as an integer, this number is set directly into the card's 
-     *      `GridContainerItemLayoutData`'s `columns` property. The width of the widget in the card itself
-     *      is set to 100%. 
+     * If the width is given as an integer, this number is set directly into the card's 
+     * `GridContainerItemLayoutData`'s `columns` property. The width of the widget in the card itself
+     * is set to 100%. 
      * 
-     *      If the width is given as an percentage, the `columns` of the `GridContainerItemLayoutData` are getting
-     *      calulated with the function `getChildrenElementWidthUnitCount()`. The width of the widget in the card
-     *      is then set to 100%.
+     * If the width is given as an percentage, the `columns` of the `GridContainerItemLayoutData` are getting
+     * calulated with the function `getChildrenElementWidthUnitCount()`. The width of the widget in the card
+     * is then set to 100%.
      *      
-     *      If the width is given as a different value, like `px`, it gets an 1 for the `column` property, while
-     *      the width of the box itself is set to the given value.
+     * If the width is given as a different value, like `px`, it gets an 1 for the `column` property, while
+     * the width of the box itself is set to the given value.
      *      
      * @return string
      */
@@ -126,9 +126,13 @@ JS;
                 // check if there is an facade specific value given, like 'px'
                 if ($box->getWidth()->isFacadeSpecific()){
                     $widthUnits = 1;
-                } else {
+                } elseif ($box->getWidth()->isUndefined() === false) {
                     // take the number of columns straight from the widgets width
                     $widthUnits = $box->getWidth()->getValue();
+                    $box->setWidth("100%");
+                } else {
+                    // take the number of columns straight from the widgets width
+                    $widthUnits = $this->getNumberOfColumns();
                     $box->setWidth("100%");
                 }
             }

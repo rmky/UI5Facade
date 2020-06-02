@@ -56,7 +56,10 @@ class UI5Chart extends UI5AbstractElement
                     afterRendering: function(oEvent) { 
                         {$this->buildJsEChartsInit($this->getFacade()->getConfig()->getOption('LIBS.ECHARTS.THEME_NAME'))}
                         {$this->buildJsEventHandlers()}
-
+                        
+                        setTimeout(function(){
+                            {$this->buildJsEChartsResize()}
+                        }, 0);
                         sap.ui.core.ResizeHandler.register(sap.ui.getCore().byId('{$this->getId()}').getParent(), function(){
                             {$this->buildJsEChartsResize()}
                         });

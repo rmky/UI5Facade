@@ -11,6 +11,7 @@ use exface\UI5Facade\Facades\Elements\UI5SearchField;
 use exface\Core\Widgets\Input;
 use exface\Core\Interfaces\Widgets\iHaveColumns;
 use exface\Core\Interfaces\Widgets\iShowData;
+use exface\Core\Widgets\Dialog;
 
 /**
  * This trait helps wrap thrid-party data widgets (like charts, image galleries, etc.) in 
@@ -731,10 +732,11 @@ JS;
      */
     protected function isWrappedInDynamicPage()
     {
-        if ($this->getWidget()->getHideHeader() === null) {
-            return $this->getWidget()->hasParent() === false;
+        $widget = $this->getWidget();
+        if ($widget->getHideHeader() === null) {
+            return $widget->hasParent() === false || $widget->getParent() instanceof Dialog;
         } else {
-            return $this->getWidget()->getHideHeader() === false;
+            return $widget->getHideHeader() === false;
         }
     }
     
@@ -769,6 +771,9 @@ JS;
             $this->getController()->addOnInitScript($this->buildJsPrefillFiltersFromRouteParams());
         }
         
+        $top_buttons = '';
+        
+        // Add the search-button
         foreach ($this->getWidget()->getToolbarMain()->getButtonGroupForSearchActions()->getButtons() as $btn) {
             if ($btn->getAction()->isExactly('exface.Core.RefreshWidget')){
                 $btn->setShowIcon(false);
@@ -786,6 +791,7 @@ JS;
                             
 JS;
         
+        // Place the back-button next to the title if we need one
         if ($this->getDynamicPageShowBackButton() === false) {
             if ($this->getWidget()->getHideCaption() === true) {
                 $title = '';
@@ -807,8 +813,8 @@ JS;
 JS;
         }
         
+        // Build the top toolbar with title, actions, etc.
         $titleAreaShrinkRatio = '';
-        
         if ($this->getDynamicPageShowToolbar() === true) {
             $this->getQuickSearchElement()->setWidthCollapsed('200px');
             $titleCollapsed  = $this->buildJsQuickSearchConstructor($oControllerJs);
@@ -822,6 +828,21 @@ JS;
             $titleExpanded = $title;
         }
         
+        // Make sure, the filters in the header of the page use the same model as the filters
+        // in the configurator's P13nDialog would do. Otherwise the prefill of tables with
+        // page-wrappers would not work properly, as the filter's model would be the one with
+        // table rows and not the default model of the view.
+        $useConfiguratorModelForHeaderFiltersJs = <<<JS
+
+        (function(){
+            var oPage = sap.ui.getCore().byId("{$this->getIdOfDynamicPage()}");
+            var oP13nDialog = sap.ui.getCore().byId("{$this->getConfiguratorElement()->getid()}");
+            oPage.getHeader().setModel(oP13nDialog.getModel());
+        })();
+JS;
+        $this->getController()->addOnInitScript($useConfiguratorModelForHeaderFiltersJs);
+        
+        // Now build the page's code for the view
         return <<<JS
         
         new sap.f.DynamicPage("{$this->getIdOfDynamicPage()}", {
@@ -853,7 +874,7 @@ JS;
                     new sap.ui.layout.Grid({
                         defaultSpan: "XL2 L3 M4 S12",
                         content: [
-							{$this->getFacade()->getElement($this->getWidget()->getConfiguratorWidget())->buildJsFilters()}
+							{$this->getConfiguratorElement()->buildJsFilters()}
 						]
                     })
 				]
@@ -1091,7 +1112,7 @@ JS;
      */
     protected function getDynamicPageShowBackButton() : bool
     {
-        return $this->getView()->isWebAppRoot() === false;
+        return $this->getView()->isWebAppRoot() === false && ($this->getWidget()->hasParent() === false || ! ($this->getWidget()->getParent() instanceof Dialog));
     }
     
     /**

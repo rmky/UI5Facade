@@ -134,10 +134,13 @@ JS;
             // work once, because after that one time, there will be a text (value) and it won't change
             // with the model. To avoid this, the following code will empty the value of the input every
             // time the selectedKey changes to empty. This happens at least before every prefill.
+            // NOTE: without setTimeout() the oInput is sometimes not initialized yet when init() of the
+            // view is called in dialogs. In particular, this happens if the InputComboTable is a filter
+            // in a table, that is the only direct child of a dialog.
             if ($this->isValueBoundToModel() && ! $this->getView()->getModel()->hasBinding($widget, 'value_text')) {
                 $emptyValueWithKeyJs = <<<JS
 
-            (function(){
+            setTimeout(function(){
                 var oInput = sap.ui.getCore().byId('{$this->getId()}');
                 var oModel = oInput.getModel();
                 var oKeyBinding = new sap.ui.model.Binding(oModel, '{$this->getValueBindingPath()}', oModel.getContext('{$this->getValueBindingPath()}'));
@@ -146,7 +149,7 @@ JS;
                         oInput.setValue('');
                     }
                 });
-            })();
+            }, 0);
 JS;
                 $this->getController()->addOnInitScript($emptyValueWithKeyJs);
             }

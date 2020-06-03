@@ -130,15 +130,13 @@ JS;
                     // take the number of columns straight from the widgets width
                     $widthUnits = $box->getWidth()->getValue();
                     $box->setWidth("100%");
-                } else {
-                    // take the number of columns straight from the widgets width
-                    $widthUnits = $this->getNumberOfColumns();
-                    $box->setWidth("100%");
-                }
+                } 
             }
             
-            $element = $this->getFacade()->getElement($box);
-            $element->setLayoutData("new sap.f.GridContainerItemLayoutData({columns: {$widthUnits}})");
+            if ($widthUnits) {
+                $element = $this->getFacade()->getElement($box);
+                $element->setLayoutData("new sap.f.GridContainerItemLayoutData({columns: {$widthUnits}})");
+            }
             
             $js .= ($js ? ', ' : '') . $element->buildJsConstructor($oControllerJs);
         }

@@ -285,6 +285,7 @@ JS;
         new sap.m.Dialog("{$this->getId()}", {
 			{$icon}
             {$this->buildJsPropertyContentHeight()}
+            {$this->buildJsPropertyContentWidth()}
             stretch: jQuery.device.is.phone,
             title: "{$this->getCaption()}",
 			buttons : [ {$this->buildJsDialogButtons()} ],
@@ -293,20 +294,59 @@ JS;
 		});
 JS;
     }
-    
+
+    /**
+     * 
+     * @return string
+     */
     protected function buildJsPropertyContentHeight() : string
     {
-        $widget = $this->getWidget();
         $height = '';
         
+        if ($this->isLargeDialog()) {
+            $height = '"70%"';
+        }
+        
+        return $height ? 'contentHeight: ' . $height . ',' : '';
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    protected function buildJsPropertyContentWidth() : string
+    {
+        $width = '';
+        
+        if ($this->isLargeDialog()) {
+            $width = '"65rem"'; // This is the size of a P13nDialog used for data configurator
+        }
+        
+        return $width ? 'contentWidth: ' . $width . ',' : '';
+    }
+    
+    /**
+     * Returns TRUE if the dialog is non-maximized, but should be "large" - e.g. to house a table.
+     * 
+     * @return bool
+     */
+    protected function isLargeDialog() : bool
+    {
+        $widget = $this->getWidget();
         $filterCallback = function(WidgetInterface $w) {
             return $w->isHidden() === false;
         };
-        if ($widget->countWidgets($filterCallback) === 1 && $this->getFacade()->getElement($widget->getWidgetFirst($filterCallback)) instanceof UI5Tabs) {
-            $height = 'contentHeight: "70%",';
+        if ($widget->countWidgets($filterCallback) === 1) {
+            $firstEl = $this->getFacade()->getElement($widget->getWidgetFirst($filterCallback));
+            switch (true) {
+                case $firstEl instanceof UI5Tabs:
+                    // TODO Replace with interface (e.g. UI5PageControlInterface)
+                case $firstEl instanceof UI5DataTable:
+                case $firstEl instanceof UI5Chart:
+                    return true;
+            }
         }
-        
-        return $height;
+        return false;
     }
     
     /**

@@ -236,6 +236,10 @@ JS;
             // Also make sure, the view model receives route parameters despite the fact, that
             // it was not actually handled by a router. This is importat as all kinds of on-show
             // handler will use route parameters (e.g. data, prefill, etc.) for their own needs.
+            
+            // TODO add {$this->buildJsRefreshCascade($widget)} right after {$this->buildJsInputRefresh($widget)}
+            // below. However, this produces controller-not-initialized errors in nested dialogs like
+            // BDE(DRS) in the MES demo.
             $output .= <<<JS
                         var sViewName = this.getViewName('{$targetWidget->getPage()->getAliasWithNamespace()}', '{$targetWidget->getId()}'); 
                         var sViewId = this.getViewId(sViewName);
@@ -266,7 +270,6 @@ JS;
                                             if (oDialog instanceof sap.m.Dialog) {
                                                 oDialog.attachAfterClose(function() {
                                                     {$this->buildJsInputRefresh($widget)}
-                                                    {$this->buildJsRefreshCascade($widget)}
                                                 });
                                                 oDialog.open();
                                             } else {

@@ -58,14 +58,16 @@ JS;
         // Use a fake show-dialog-action to make the data getter behave as required
         $action = ActionFactory::createFromString($this->getWorkbench(), ShowDialog::class);
         $bindingScript = <<<JS
-        
-        var oTable = sap.ui.getCore().byId('{$this->getDataElement()->getId()}');
-        var oRowSelected = {$this->getDataElement()->buildJsDataGetter($action)}.rows[0];
-        var oModel = oTable.getModel();
-        var iRowIdx = oModel.getData().rows.indexOf(oRowSelected);
-        var sPath = '/rows/' + iRowIdx;
-        var oControl, oBindingInfo;
-        {$bindings}
+
+        (function() {
+            var oTable = sap.ui.getCore().byId('{$this->getDataElement()->getId()}');
+            var oRowSelected = {$this->getDataElement()->buildJsDataGetter($action)}.rows[0];
+            var oModel = oTable.getModel();
+            var iRowIdx = oModel.getData().rows.indexOf(oRowSelected);
+            var sPath = '/rows/' + iRowIdx;
+            var oControl, oBindingInfo;
+            {$bindings}
+        })();
         
 JS;
         

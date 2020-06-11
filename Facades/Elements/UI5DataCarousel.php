@@ -5,6 +5,8 @@ use exface\Core\Widgets\DataCarousel;
 use exface\Core\Interfaces\Widgets\iShowSingleAttribute;
 use exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryDataCarouselTrait;
+use exface\Core\Factories\ActionFactory;
+use exface\Core\Actions\ShowDialog;
 
 /**
  * Generates OpenUI5 data carousels
@@ -36,7 +38,11 @@ class UI5DataCarousel extends UI5Split
             }
             $childElement = $this->getFacade()->getElement($child);
             if ($childElement instanceof UI5ValueBindingInterface) {
+                $childElement->setValueBindingDisabled(false);
+            }
+            if ($childElement instanceof UI5ValueBindingInterface) {
                 $bindings .= <<<JS
+
             oControl = sap.ui.getCore().byId("{$childElement->getId()}");
             oBindingInfo = oControl.getBindingInfo("{$childElement->buildJsValueBindingPropertyName()}");
             oBindingInfo.parts[0].path = sPath + "{$childElement->getValueBindingPath()}";
@@ -46,14 +52,20 @@ JS;
             }
         }
         
+        // Determine the currently selected row and replace the binding path of each
+        // details widget with the path to the selected row in the model of the data
+        // widget. This way, they will be bound to each-other.
+        // Use a fake show-dialog-action to make the data getter behave as required
+        $action = ActionFactory::createFromString($this->getWorkbench(), ShowDialog::class);
         $bindingScript = <<<JS
         
-        var oCtxt = oEvent.getSource().getBindingContext();
-        var sPath = oEvent.getParameters().srcControl.getBindingContext().sPath;
-        var oModel = oEvent.getSource().getModel();
+        var oTable = sap.ui.getCore().byId('{$this->getDataElement()->getId()}');
+        var oRowSelected = {$this->getDataElement()->buildJsDataGetter($action)}.rows[0];
+        var oModel = oTable.getModel();
+        var iRowIdx = oModel.getData().rows.indexOf(oRowSelected);
+        var sPath = '/rows/' + iRowIdx;
         var oControl, oBindingInfo;
         {$bindings}
-        
         
 JS;
         

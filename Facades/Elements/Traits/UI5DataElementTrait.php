@@ -12,6 +12,7 @@ use exface\Core\Widgets\Input;
 use exface\Core\Interfaces\Widgets\iHaveColumns;
 use exface\Core\Interfaces\Widgets\iShowData;
 use exface\Core\Widgets\Dialog;
+use exface\Core\DataTypes\WidgetVisibilityDataType;
 
 /**
  * This trait helps wrap thrid-party data widgets (like charts, image galleries, etc.) in 
@@ -779,6 +780,7 @@ JS;
                 $btn->setShowIcon(false);
                 $btn->setHint($btn->getCaption());
                 $btn->setCaption($this->translate('WIDGET.DATATABLE.GO_BUTTON_TEXT'));
+                $btn->setVisibility(WidgetVisibilityDataType::PROMOTED);
             }
             $top_buttons .= $this->getFacade()->getElement($btn)->buildJsConstructor() . ',';
         }

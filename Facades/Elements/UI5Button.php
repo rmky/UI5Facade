@@ -9,7 +9,6 @@ use exface\Core\Widgets\Button;
 use exface\Core\Interfaces\Actions\iShowDialog;
 use exface\Core\Interfaces\Actions\iRunFacadeScript;
 use exface\Core\DataTypes\StringDataType;
-use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryDisableConditionTrait;
 use exface\Core\CommonLogic\Constants\Icons;
 use exface\Core\CommonLogic\Constants\Colors;
 use exface\Core\Exceptions\Facades\FacadeUnsupportedWidgetPropertyWarning;
@@ -447,7 +446,7 @@ JS;
     
     protected function buildJsCloseDialog($widget, $input_element)
     {
-        if ($widget->getWidgetType() == 'DialogButton' && $widget->getCloseDialogAfterActionSucceeds()) {
+        if ($widget instanceof DialogButton && $widget->getCloseDialogAfterActionSucceeds()) {
             return $this->getFacade()->getElement($widget->getDialog())->buildJsCloseDialog();
         }
         return "";

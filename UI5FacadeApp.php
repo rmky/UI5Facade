@@ -6,7 +6,9 @@ use exface\Core\Facades\AbstractHttpFacade\HttpFacadeInstaller;
 use exface\Core\CommonLogic\Model\App;
 use exface\Core\Factories\FacadeFactory;
 use exface\Core\CommonLogic\AppInstallers\MySqlDatabaseInstaller;
+use exface\Core\CommonLogic\AppInstallers\MsSqlDatabaseInstaller;
 use exface\Core\Facades\AbstractPWAFacade\ServiceWorkerInstaller;
+use exface\Core\DataConnectors\MsSqlConnector;
 
 class UI5FacadeApp extends App
 {
@@ -30,7 +32,11 @@ class UI5FacadeApp extends App
         
         // Install SQL tables for UI5 export projects
         $exportProjectsDataSource = $this->getWorkbench()->model()->getModelLoader()->getDataConnection();
-        $schema_installer = new MySqlDatabaseInstaller($this->getSelector());
+        if ($exportProjectsDataSource instanceof MsSqlConnector) {
+            $schema_installer = new MsSqlDatabaseInstaller($this->getSelector());
+        } else {
+            $schema_installer = new MySqlDatabaseInstaller($this->getSelector());
+        }
         $schema_installer
         ->setFoldersWithMigrations(['InitDB','Migrations'])
         ->setDataConnection($exportProjectsDataSource)

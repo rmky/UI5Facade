@@ -7,14 +7,12 @@ use exface\UI5Facade\Facades\Elements\UI5AbstractElement;
 use exface\Core\Exceptions\Facades\FacadeLogicError;
 use exface\UI5Facade\Facades\Interfaces\UI5ViewInterface;
 use exface\Core\Exceptions\OutOfBoundsException;
-use exface\Core\Interfaces\WidgetInterface;
 use exface\Core\Interfaces\Widgets\iTriggerAction;
 use exface\Core\Interfaces\Widgets\iCanPreloadData;
 use exface\Core\Interfaces\Actions\iShowWidget;
 use exface\UI5Facade\Facades\Elements\UI5Dialog;
 use exface\Core\Exceptions\Facades\FacadeRuntimeError;
 use exface\Core\Factories\ActionFactory;
-use exface\Core\Widgets\DataTable;
 use exface\Core\Widgets\Dialog;
 
 class UI5Controller implements UI5ControllerInterface
@@ -84,7 +82,7 @@ class UI5Controller implements UI5ControllerInterface
         if ($elementSuffix === null || $elementSuffix === '') {
             throw new FacadeLogicError('Cannot create controller method "' . $methodName . '" for widget "' . $ownerElement->getWidget()->getId() . '": the facade element does not have a unique id!');
         }
-        return $methodName . StringDataType::convertCaseUnderscoreToPascal($ownerElement->getId());
+        return $methodName . StringDataType::convertCaseUnderscoreToPascal($elementSuffix);
     }
     
     

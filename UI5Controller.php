@@ -79,9 +79,13 @@ class UI5Controller implements UI5ControllerInterface
         } else {
             $elementSuffix = $ownerElement->getWidget()->getId();
         }
+        
+        $elementSuffix = str_replace('.', '', $elementSuffix);
+        
         if ($elementSuffix === null || $elementSuffix === '') {
             throw new FacadeLogicError('Cannot create controller method "' . $methodName . '" for widget "' . $ownerElement->getWidget()->getId() . '": the facade element does not have a unique id!');
         }
+        
         return $methodName . StringDataType::convertCaseUnderscoreToPascal($elementSuffix);
     }
     

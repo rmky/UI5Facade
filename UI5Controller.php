@@ -314,7 +314,12 @@ JS;
         // See if the view requires a prefill request
         // FIXME UI5Dialog has it's own prefill logic - need to unify both approaches!
         if ($this->needsPrefill() && ! ($this->getView()->getRootElement() instanceof UI5Dialog)) {
-            $this->addOnRouteMatchedScript($this->buildJsPrefillLoader('oView', $this->getView()->getRootElement()), 'loadPrefill');
+            $script = <<<JS
+var oViewModel = oView.getModel('view');
+var oResultModel = oView.getModel();
+
+JS;
+            $this->addOnRouteMatchedScript($script . $this->buildJsPrefillLoader('oViewModel', 'oResultModel', $this->getView()->getRootElement()), 'loadPrefill');
         }
         
         // Build the view first to ensure, all view elements have contributed to the controller!
@@ -802,8 +807,11 @@ JS;
      * @param string $oViewJs
      * @return string
      */
-    protected function buildJsPrefillLoader(string $oViewJs = 'oView', UI5AbstractElement $callerElement = null, string $onModelLoadedJs = '', string $onErrorJs = '', string $onOfflineJs = '') : string
+    public function buildJsPrefillLoader(string $oViewModelJs = 'oViewModel', $oResultModelJs = 'oResultModel',  UI5AbstractElement $callerElement = null, string $onModelLoadedJs = '', string $onErrorJs = '', string $onOfflineJs = '', string $urlParamsJs = null) : string
     {
+        if ($urlParamsJs === null) {
+            $urlParamsJs = 'undefined';
+        }
         $callerElement = $callerElement ?? $this->getView()->getRootElement();
         $callerWidget = $callerElement->getWidget();
         $triggerWidget = $callerWidget->getParent() instanceof iTriggerAction ? $callerWidget->getParent() : $callerWidget;
@@ -817,7 +825,7 @@ JS;
         
         $stopJs = <<<JS
         
-                        oViewModel.setProperty('/_prefill/pending', false);
+                        {$oViewModelJs}.setProperty('/_prefill/pending', false);
                         {$callerElement->buildJsBusyIconHide()};
 JS;
         $onModelLoadedJs .= $stopJs;               
@@ -840,10 +848,13 @@ JS;
         // Load prefill data
         (function(){
             {$callerElement->buildJsBusyIconShow()}
-            var oViewModel = {$oViewJs}.getModel('view');
-            oViewModel.setProperty('/_prefill/pending', true);
+            {$oViewModelJs}.setProperty('/_prefill/pending', true);
             
-            var oRouteParams = oViewModel.getProperty('/_route/params');
+            if ({$urlParamsJs} === undefined) {
+                var oRouteParams = {$oViewModelJs}.getProperty('/_route/params');
+            } else {
+                var oRouteParams = {$urlParamsJs};
+            }
             
             $oRouteParamsCheckJs;
 
@@ -853,17 +864,17 @@ JS;
 				element: "{$triggerWidget->getId()}",
             }, oRouteParams);
             
-            var oLastRouteString = oViewModel.getProperty('/_prefill/current_data_hash');
+            var oLastRouteString = {$oViewModelJs}.getProperty('/_prefill/current_data_hash');
             var oCurrentRouteString = JSON.stringify(data);
             if (oLastRouteString === oCurrentRouteString) {
                 $stopJs
                 return;
             } else {
-                {$oViewJs}.getModel().setData({});
-                oViewModel.setProperty('/_prefill/current_data_hash', oCurrentRouteString);
+                {$oResultModelJs}.setData({});
+                {$oViewModelJs}.setProperty('/_prefill/current_data_hash', oCurrentRouteString);
             }
             
-            //var oResultModel = {$oViewJs}.getModel();
+            //var oResultModel = {$oResultModelJs};
             var oResultModel = sap.ui.getCore().byId("{$callerElement->getId()}").getModel();
             
             {$callerElement->getServerAdapter()->buildJsServerRequest(

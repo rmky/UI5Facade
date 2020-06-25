@@ -5,8 +5,8 @@ use exface\Core\Interfaces\InstallerInterface;
 use exface\Core\Facades\AbstractHttpFacade\HttpFacadeInstaller;
 use exface\Core\CommonLogic\Model\App;
 use exface\Core\Factories\FacadeFactory;
-use exface\Core\CommonLogic\AppInstallers\MySqlDatabaseInstaller;
 use exface\Core\Facades\AbstractPWAFacade\ServiceWorkerInstaller;
+use exface\Core\CommonLogic\AppInstallers\AbstractSqlDatabaseInstaller;
 
 class UI5FacadeApp extends App
 {
@@ -29,13 +29,17 @@ class UI5FacadeApp extends App
         $installer->addInstaller($tplInstaller);
         
         // Install SQL tables for UI5 export projects
-        $exportProjectsDataSource = $this->getWorkbench()->model()->getModelLoader()->getDataConnection();
-        $schema_installer = new MySqlDatabaseInstaller($this->getSelector());
-        $schema_installer
-        ->setFoldersWithMigrations(['InitDB','Migrations'])
-        ->setDataConnection($exportProjectsDataSource)
-        ->setMigrationsTableName('_migrations_ui5facade');
-        $installer->addInstaller($schema_installer);        
+        $modelLoader = $this->getWorkbench()->model()->getModelLoader();
+        $exportProjectsDataSource = $modelLoader->getDataConnection();
+        $installerClass = get_class($modelLoader->getInstaller()->getInstallers()[0]);
+        $schema_installer = new $installerClass($this->getSelector());
+        if ($schema_installer instanceof AbstractSqlDatabaseInstaller) {
+            $schema_installer
+                ->setFoldersWithMigrations(['InitDB','Migrations'])
+                ->setDataConnection($exportProjectsDataSource)
+                ->setMigrationsTableName('_migrations_ui5facade');
+        }
+        $installer->addInstaller($schema_installer); 
         
         // Install ServiceWorker
         $installer->addInstaller(ServiceWorkerInstaller::fromConfig($this->getSelector(), $this->getConfig()));

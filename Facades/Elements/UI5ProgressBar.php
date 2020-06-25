@@ -22,11 +22,15 @@ class UI5ProgressBar extends UI5Display
      */
     public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {
+        // NOTE: displayOnly:true makes the progressbar look nice inside responsive table 
+        // cells! Otherwise it has top and bottom margins and is displayed uneven with the
+        // caption.
         return <<<JS
         
         new sap.m.ProgressIndicator("{$this->getid()}", {
             showValue: true,
             state: "None",
+            displayOnly: true,
     		percentValue: {$this->buildJsValuePercent()},
             displayValue: {$this->buildJsDisplayValue()},
             {$this->buildJsProperties()}

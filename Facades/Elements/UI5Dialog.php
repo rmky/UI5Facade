@@ -44,6 +44,11 @@ use exface\Core\Factories\ActionFactory;
  */
 class UI5Dialog extends UI5Form
 {
+    const PREFILL_WITH_INPUT = 'input';
+    const PREFILL_WITH_PREFILL = 'prefill';
+    const PREFILL_WITH_CONTEXT = 'context';
+    const PREFILL_WITH_ANY = 'any';
+    
     /**
      * 
      * {@inheritDoc}
@@ -397,16 +402,20 @@ JS;
     /**
      * Returns TRUE if the dialog needs to be prefilled and FALSE otherwise.
      * 
+     * @param string $prefillType
      * @return bool
      */
-    protected function needsPrefill() : bool
+    protected function needsPrefill(string $prefillType = self::PREFILL_WITH_ANY) : bool
     {
         $widget = $this->getWidget();
         if ($widget->getParent() instanceof iTriggerAction) {
             $action = $widget->getParent()->getAction();
             if ($action instanceof iShowWidget) {
-                if($action->getPrefillWithInputData() || $action->getPrefillWithPrefillData()) {
-                    return true;
+                switch (true) {
+                    case $action->getPrefillWithInputData() && ($prefillType === self::PREFILL_WITH_ANY || $prefillType === self::PREFILL_WITH_INPUT):
+                        return true;
+                    case $action->getPrefillWithPrefillData() && ($prefillType === self::PREFILL_WITH_ANY || $prefillType === self::PREFILL_WITH_PREFILL):
+                        return true;
                 }
             }
         } 
@@ -447,6 +456,16 @@ JS;
         
         $action = ActionFactory::createFromString($this->getWorkbench(), 'exface.Core.ReadPrefill', $widget);
         
+        switch (true) {
+            case ! $this->needsPrefill(self::PREFILL_WITH_INPUT):
+                $filterRequestParams = "if (data.data !== undefined) {delete data.data}";
+                break;
+            case ! $this->needsPrefill(self::PREFILL_WITH_PREFILL):
+                $filterRequestParams = "if (data.prefill !== undefined) {delete data.prefill}";
+                break;
+            default: $filterRequestParams = '';  
+        }
+        
         // FIXME use buildJsPrefillLoaderSuccess here somewere?
         
         return <<<JS
@@ -461,6 +480,8 @@ JS;
 				resource: "{$widget->getPage()->getAliasWithNamespace()}",
 				element: "{$triggerWidget->getId()}",
             }, oRouteParams.params);
+
+            {$filterRequestParams}
             
             var oLastRouteString = oViewModel.getProperty('/_prefill/current_data_hash');
             var oCurrentRouteString = JSON.stringify(data);

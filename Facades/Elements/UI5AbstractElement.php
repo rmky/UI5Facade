@@ -15,6 +15,7 @@ use exface\UI5Facade\Facades\Interfaces\UI5ServerAdapterInterface;
 use exface\Core\Interfaces\Widgets\iCanPreloadData;
 use exface\UI5Facade\Facades\Elements\ServerAdapters\PreloadServerAdapter;
 use exface\UI5Facade\Facades\Interfaces\UI5ViewInterface;
+use exface\Core\Interfaces\Widgets\iHaveIcon;
 
 /**
  *
@@ -184,18 +185,31 @@ JS;
      */
     protected function getIconSrc($icon_name)
     {
-        if (Icons::isDefined($icon_name) === true) {
-            $path = 'sap-icon://font-awesome/';
-        } else {
-            if (StringDataType::startsWith($icon_name, 'sap-icon://', false) === false) {
-                $path = 'sap-icon://';
-            } else {
+        $widget = $this->getWidget();
+        if ($widget instanceof iHaveIcon) {
+            $iconSet = $widget->getIconSet();
+        }
+        
+        switch (true) {
+            case Icons::isDefined($icon_name) === true:
+            case $iconSet === 'fa':
+                $path = 'sap-icon://font-awesome/';
+                break;
+            case StringDataType::startsWith($icon_name, 'sap-icon://', false):
                 $path = '';
-            }
+                break;
+            case StringDataType::startsWith($iconSet, 'sap-icon://', false):
+                $path = $iconSet;
+                break;
         }
         return $path . $icon_name;
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildCssIconClass($icon)
+     */
     public function buildCssIconClass($icon)
     {
         return $icon ? $this->getIconSrc($icon) : '';

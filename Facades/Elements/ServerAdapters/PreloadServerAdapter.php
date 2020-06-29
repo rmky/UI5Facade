@@ -52,27 +52,31 @@ class PreloadServerAdapter implements UI5ServerAdapterInterface
                 if ($oParamsJs.data && $oParamsJs.data.rows && $oParamsJs.data.rows[0]) {
                     uid = $oParamsJs.data.rows[0]['{$this->getElement()->getMetaObject()->getUidAttribute()->getDataAddress()}'];
                 } else {
-                    console.error('Cannot fetch preload data: no request data rows selected!');
+                    console.warn('Cannot fetch preload data: no request data rows selected!');
                 }
 
                 if (uid === undefined || uid === '') {
-                    console.error('Cannot prefill from preload data: no UID value found in input rows!');
+                    console.warn('Cannot prefill from preload data: no UID value found in input rows!');
                 }
 
-                if ($oParamsJs.data.filters === undefined) {
-                    $oParamsJs.data.filters = {};
+                if ($oParamsJs.data !== undefined) {
+
+                    if ($oParamsJs.data.filters === undefined) {
+                        $oParamsJs.data.filters = {};
+                    }
+    
+                    if ($oParamsJs.data.filters.conditions === undefined) {
+                        $oParamsJs.data.filters.conditions = [];
+                    }     
+    
+                    $oParamsJs.data.filters.conditions.push({
+                        expression: '{$this->getElement()->getMetaObject()->getUidAttribute()->getDataAddress()}',
+                        comparator: '{$uidComp}',
+                        value: uid,
+                        object_alias: '{$this->getElement()->getMetaObject()->getAliasWithNamespace()}'
+                    });
+
                 }
-
-                if ($oParamsJs.data.filters.conditions === undefined) {
-                    $oParamsJs.data.filters.conditions = [];
-                }     
-
-                $oParamsJs.data.filters.conditions.push({
-                    expression: '{$this->getElement()->getMetaObject()->getUidAttribute()->getDataAddress()}',
-                    comparator: '{$uidComp}',
-                    value: uid,
-                    object_alias: '{$this->getElement()->getMetaObject()->getAliasWithNamespace()}'
-                });
 
                 {$this->buildJsDataLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onOfflineJs, $fallBackRequest, true)}
 

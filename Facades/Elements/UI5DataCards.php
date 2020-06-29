@@ -8,7 +8,7 @@ class UI5DataCards extends UI5DataTable
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Elements\UI5DataTable::buildJsConstructorForTable()
      */
-    protected function buildJsConstructorForControl(string $oControllerJs = 'oController') : string
+    protected function buildJsConstructorForControl($oControllerJs = 'oController') : string
     {
         $mode = $this->getWidget()->getMultiSelect() ? 'sap.m.ListMode.MultiSelect' : 'sap.m.ListMode.SingleSelectMaster';
         return <<<JS

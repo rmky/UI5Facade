@@ -231,9 +231,15 @@ JS;
     protected function buildJsPanelWrapper(string $contentConstructorsJs, string $oControllerJs = 'oController', string $toolbar = null)  : string
     {
         $toolbar = $toolbar ?? $this->buildJsToolbar($oControllerJs);
+        $hDim = $this->getWidget()->getHeight();
+        if (! $hDim->isUndefined()) {
+            $height = $this->getHeight();
+        } else {
+            $height = '100%';
+        }
         return <<<JS
         new sap.m.Panel({
-            height: "100%",
+            height: "$height",
             headerToolbar: [
                 {$toolbar}.addStyleClass("sapMTBHeader-CTX")
             ],

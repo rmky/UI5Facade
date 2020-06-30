@@ -67,11 +67,11 @@ class UI5Button extends UI5AbstractElement
                 foreach ($action->getIncludes($this->getFacade()) as $includePath) {
                     if (mb_stripos($includePath, '.css') !== false) {
                         if (StringDataType::startsWith($includePath, '<link')) {
-                            $includePath = StringDataType::substringAfter($includePath, 'href=');
-                            $includePath = substr($includePath, 0, mb_stripos($includePath, '.css')) . '.css';
-                            $includePath = trim($includePath);
-                            $includePath = trim($includePath, "'");
-                            $includePath = trim($includePath, '"');
+                            $matches = [];
+                            preg_match('/(<link.*href=[\"\'])(.*css)([\"\'].[^>]*)/i', $includePath, $matches);
+                            if ($matches[2]) {
+                                $includePath = $matches[2];
+                            }
                         }
                         $this->getController()->addExternalCss($includePath);                        
                     } else {

@@ -794,7 +794,7 @@ JS;
         $title = <<<JS
         
                             new sap.m.Title({
-                                text: "{$this->getCaption()}"
+                                text: "{$this->escapeJsTextValue($this->getCaption())}"
                             })
                             
 JS;

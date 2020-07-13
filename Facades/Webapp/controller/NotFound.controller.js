@@ -23,11 +23,19 @@ sap.ui.define([
 		 * @param oEvent
 		 */
 		onNavBack : function (oEvent){
+			var oHashChanger = HashChanger.getInstance();
+			var sHash = oHashChanger.getHash();console.log(this._oData, sHash);
 			// in some cases we could display a certain target when the back button is pressed
 			if (this._oData && this._oData.fromTarget) {
 				this.getRouter().getTargets().display(this._oData.fromTarget);
 				delete this._oData.fromTarget;
 				return;
+			} else if (this._oData && this._oData.fromHash) {
+				this._loadViewFromHash(this._oData.fromHash);
+				delete this._oData.fromHash;
+				return;
+			} else if (sHash === "") {
+				this.getRouter().getTargets().display('[#app_id#]');
 			}
 			// call the parent's onNavBack
 			BaseController.prototype.onNavBack.apply(this, arguments);
@@ -39,13 +47,13 @@ sap.ui.define([
 		 * 
 		 * @return jqXHR
 		 */
-		_loadViewFromHash: function() {
-			var oHashChanger = HashChanger.getInstance();
-			var sHash = oHashChanger.getHash();
+		_loadViewFromHash: function(sHash) {
+			sHash = sHash || HashChanger.getInstance().getHash();
 			var aHashParts = sHash.split('/', 3);
 			var sPageAlias, sWidgetId, sRouteParams, sViewName, oViewXHR;
 			var oXHRSettings = {data: {}};
 			var oController = this;
+			var oXHR;
 			
 			if (aHashParts[0]) {
 				sPageAlias = decodeURIComponent(aHashParts[0]);
@@ -72,10 +80,16 @@ sap.ui.define([
 			
 			oXHRSettings.data['_notFoundRecovered']++;
 			oController.getView().setBusyIndicatorDelay(0).setBusy(true);
-
-			return oController.navTo(sPageAlias, sWidgetId, oXHRSettings, true).fail(function() {
+			console.log('goTo', sPageAlias, sWidgetId);
+			oXHR = oController.navTo(sPageAlias, sWidgetId, oXHRSettings, true);
+			if (oXHR) {
+				oXHR.fail(function() {
+					oController.getView().setBusy(false).getContent()[0].setVisible(true);
+				});
+			} else {
 				oController.getView().setBusy(false).getContent()[0].setVisible(true);
-			});
+			}
+			return oXHR;
 		}
 	});
 });

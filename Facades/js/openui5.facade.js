@@ -195,14 +195,15 @@ const exfLauncher = {};
 																oButton.setBusy(false)
 															});
 														},
-													}),/*
+													}),
 													new sap.m.StandardListItem({
 														title: "Storage quota",
 														icon: "sap-icon://unwired",
 														type: "Active",
 														press: function(oEvent){
+															exfPreloader.showStorage();
 														},
-													}),*/
+													}),
 													new sap.m.StandardListItem({
 														title: "{i18n>WEBAPP.SHELL.PRELOAD.MENU_RESET}",
 														tooltip: "{i18n>WEBAPP.SHELL.PRELOAD.MENU_RESET_TOOLTIP}",
@@ -522,8 +523,8 @@ const exfPreloader = {};
 				var promises = [];
 				promises.push(
 					_preloadTable.update(sObjectAlias, {
-						response: data/*,
-						lastSync: (+ new Date())*/
+						response: data,
+						lastSync: (+ new Date())
 					})
 				);
 				if (aImageCols && aImageCols.length > 0) {
@@ -583,5 +584,68 @@ const exfPreloader = {};
 	
 	this.reset = function() {
 		return _db.delete();
+	};
+	
+	this.showStorage = function() {
+		console.log('Storage clicked');
+		var dialog = new sap.m.Dialog({title: "Storage quota", icon: "sap-icon://unwired"});
+		var button = new sap.m.Button({
+			icon: 'sap-icon://font-awesome/close',
+            text: "Close",
+            press: function() {dialog.close();},
+        });
+		dialog.addButton(button);
+		if (navigator.storage) {
+			navigator.storage.estimate()
+			.then(function(estimate) {				
+				var list = new sap.m.List({
+					items: [
+						new sap.m.GroupHeaderListItem({
+							title: 'Overview',
+							upperCase: false
+						}),
+						new sap.m.DisplayListItem({
+							label: "Total Space",
+							value: Number.parseFloat(estimate.quota/1024/1024).toFixed(2) + ' MB'
+						}),
+						new sap.m.DisplayListItem({
+							label: "Used Space",
+							value: Number.parseFloat(estimate.usage/1024/1024).toFixed(2) + ' MB'
+						}),
+						new sap.m.DisplayListItem({
+							label: "Percentage Used",
+							value: Number.parseFloat(100/estimate.quota*estimate.usage).toFixed(2) + ' %'
+						})
+					]
+				});
+				if (estimate.usageDetails) {
+					list.addItem(new sap.m.GroupHeaderListItem({
+							title: 'Details',
+							upperCase: false
+					}));
+					Object.keys(estimate.usageDetails).forEach(function(key) {
+						list.addItem( new sap.m.DisplayListItem({
+								label: key,
+								value: Number.parseFloat(estimate.usageDetails[key]/1024/1024).toFixed(2) + ' MB'
+							})
+						);
+					});
+				}
+				dialog.addContent(list);
+				dialog.open();
+				return;
+			})
+			.catch(error => {
+				console.error(error);
+				dialog.addContent(new sap.m.Text({width: '100%', textAlign: 'Center', text: 'Storage quota failed! See console for details.'}));
+				dialog.open();
+				return;
+			});
+			return;			
+		} else {
+			dialog.addContent(new sap.m.Text({width: '100%', textAlign: 'Center', text: 'Overview showing used storage space not possible!'}));
+			dialog.open();
+		}
+		return;
 	};
 }).apply(exfPreloader);

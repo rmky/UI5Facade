@@ -583,11 +583,29 @@ const exfPreloader = {};
 	};
 	
 	this.reset = function() {
-		return _db.delete();
+		var clear = _preloadTable.toArray()
+		.then(function(dbContent) {
+			var promises = [];
+			dbContent.forEach(function(element) {
+				promises.push(
+					_preloadTable.update(element.id, {
+						response: {},
+						lastSync: 'not synced'
+					})
+				);
+			});
+			return Promise.all(promises);
+		});
+		return clear;
 	};
 	
-	this.showStorage = function() {
+	this.showStorage = async function() {
 		console.log('Storage clicked');
+		//check if service worker supported
+		/*if (!('serviceWorker' in navigator)) {
+			exfLauncher.contextBar.getComponent().showErrorDialog('Service worker not available.', 'Storage quota failed!');
+			return;
+		}*/		
 		var dialog = new sap.m.Dialog({title: "Storage quota", icon: "sap-icon://unwired"});
 		var button = new sap.m.Button({
 			icon: 'sap-icon://font-awesome/close',
@@ -595,10 +613,12 @@ const exfPreloader = {};
             press: function() {dialog.close();},
         });
 		dialog.addButton(button);
+		list = new sap.m.List({});
+		//check if possible to acces storage (means https connection)
 		if (navigator.storage) {
-			navigator.storage.estimate()
+			var promise = navigator.storage.estimate()
 			.then(function(estimate) {				
-				var list = new sap.m.List({
+				list = new sap.m.List({
 					items: [
 						new sap.m.GroupHeaderListItem({
 							title: 'Overview',
@@ -624,28 +644,119 @@ const exfPreloader = {};
 							upperCase: false
 					}));
 					Object.keys(estimate.usageDetails).forEach(function(key) {
-						list.addItem( new sap.m.DisplayListItem({
+						list.addItem(new sap.m.DisplayListItem({
 								label: key,
 								value: Number.parseFloat(estimate.usageDetails[key]/1024/1024).toFixed(2) + ' MB'
 							})
 						);
 					});
-				}
-				dialog.addContent(list);
-				dialog.open();
-				return;
+				}				
 			})
-			.catch(error => {
+			.catch(function(error) {
 				console.error(error);
-				dialog.addContent(new sap.m.Text({width: '100%', textAlign: 'Center', text: 'Storage quota failed! See console for details.'}));
-				dialog.open();
-				return;
+				list.addItem(new sap.m.GroupHeaderListItem({
+					title: 'Storage quota failed! See console for details.',
+					upperCase: false
+				}))
 			});
-			return;			
+			//wait for the promise to resolve
+			await promise;
 		} else {
-			dialog.addContent(new sap.m.Text({width: '100%', textAlign: 'Center', text: 'Overview showing used storage space not possible!'}));
-			dialog.open();
+			list.addItem(new sap.m.GroupHeaderListItem({
+				title: 'Overview showing used storage space not possible!',
+				upperCase: false
+			}))
 		}
+		promise = _preloadTable.toArray()
+		.then(function(dbContent){
+			list.addItem(new sap.m.GroupHeaderListItem({
+				title: 'Synced content',
+				upperCase: false
+			}));
+			console.log('Content', dbContent);
+			var oTable = new sap.m.Table({
+				fixedLayout: false,
+				columns: [
+		            new sap.m.Column({
+		                header: new sap.m.Label({
+		                    text: 'ID'
+		                })
+		            }),
+		            new sap.m.Column({
+		                header: new sap.m.Label({
+		                    text: 'Object'
+		                })
+		            }),
+		            new sap.m.Column({
+		                header: new sap.m.Label({
+		                    text: 'WidgetID'
+		                })
+		            }),
+		            new sap.m.Column({
+		                header: new sap.m.Label({
+		                    text: 'Datasets'
+		                })
+		            }),
+		            ,
+		            new sap.m.Column({
+		                header: new sap.m.Label({
+		                    text: 'Last synced'
+		                })
+		            })
+		        ]
+			});
+			dbContent.forEach(function(element) {
+				oRow = new sap.m.ColumnListItem();
+				oRow.addCell(new sap.m.Text({text: element.id}));
+				oRow.addCell(new sap.m.Text({text: element.object}));
+				oRow.addCell(new sap.m.Text({text: element.widget}));
+				if (element.response && element.response.rows) {
+					oRow.addCell(new sap.m.Text({text: element.response.rows.length}));
+					oRow.addCell(new sap.m.Text({text: new Date(element.lastSync).toLocaleString()}));
+				} else {
+					oRow.addCell(new sap.m.Text({text: '0'}));
+
+					oRow.addCell(new sap.m.Text({text: 'not synced'}));
+				}
+				oTable.addItem(oRow);						
+			});
+			dialog.addContent(list);
+			dialog.addContent(oTable);	
+		})
+		.catch(function(error) {
+			console.error(error);
+			list.addItem(new sap.m.GroupHeaderListItem({
+				title: 'Overview showing db content not possbile! See console for details.',
+				upperCase: false
+			}))
+			dialog.addContent(list);				
+		})
+		//wait for the promise to resolve
+		await promise;
+		dialog.open();
 		return;
 	};
+	
+	this.addAction = function(offlineAction) {
+		_preloadTable
+		.get('offlineAction')
+		.then(item => {
+			var act = [];
+			if (item !== undefined) {
+				var act = item.actions;
+			}
+			act.push(offlineAction);
+			var data = {
+				id: 'offlineAction',
+				object: offlineAction.object,
+				actions: act
+			};
+			if (item === undefined) {
+				_preloadTable.put(data);
+			} else {
+				_preloadTable.update('offlineAction', data);
+			}
+		})
+		return _preloader;
+	}
 }).apply(exfPreloader);

@@ -79,10 +79,11 @@ const exfLauncher = {};
 													new sap.m.StandardListItem({
 														title: "{i18n>WEBAPP.SHELL.NETWORK.SYNC_MENU_QUEUE} ({/_network/queueCnt})",
 														type: "Active",
-														press: function(){
-															var oData = {
+														press: async function(){
+															
+															/*var oData = {
 																	data: [
-																		/*{
+																		{
 																			"action_alias": "exface.Core.CreateData",
 																			"caption": "Speichern",
 																			"object_alias": "alexa.RMS-demo.BBD_ALERT",
@@ -102,9 +103,11 @@ const exfLauncher = {};
 																			"object_alias": "axenox.WMS.picking_order_pos",
 																			"object_name": "Pickauftragsposition",
 																			"triggered": "2018-04-12 16:38:22"
-																		}*/
+																		}
 																	]
-															};
+															};*/
+															console.log('Show offline queue');
+															var oData = await exfPreloader.getActionQueueData();
 															
 															var oTable = new sap.m.Table({
 																fixedLayout: false,
@@ -146,7 +149,8 @@ const exfLauncher = {};
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				text: "Alias"
+																				//text: "Alias"
+																				text: 'Triggered'
 																			})
 																		],
 																		minScreenWidth: "Tablet",
@@ -158,13 +162,16 @@ const exfLauncher = {};
 																	template: new sap.m.ColumnListItem({
 																		cells: [
 																			new sap.m.Text({
-																				text: "{object_name}"
+																				//text: "{object_name}"
+																				text: "{object}"
 																			}),
 																			new sap.m.Text({
-																				text: "{caption}"
-																			}),
-																			new sap.m.Text({
+																				//text: "{caption}"
 																				text: "{action_alias}"
+																			}),
+																			new sap.m.Text({
+																				//text: "{action_alias}"
+																				text: "{triggered}"
 																			})
 																		]
 																	})
@@ -447,13 +454,15 @@ const exfPreloader = {};
 	var _db = function() {
 		var dexie = new Dexie('exf-preload');
 		dexie.version(1).stores({
-			'preloads': 'id, object'
+			'preloads': 'id, object',
+			'actionQueue': 'id, object, action'
 		});
 		dexie.open();
 		return dexie;
 	}();
 	
 	var _preloadTable = _db.table('preloads');
+	var _actionsTable = _db.table('actionQueue');
 	
 	this.addPreload = function(sAlias, aDataCols, aImageCols, sPageAlias, sWidgetId){		
 		_preloadTable
@@ -737,26 +746,40 @@ const exfPreloader = {};
 		return;
 	};
 	
-	this.addAction = function(offlineAction) {
-		_preloadTable
-		.get('offlineAction')
-		.then(item => {
-			var act = [];
-			if (item !== undefined) {
-				var act = item.actions;
-			}
-			act.push(offlineAction);
-			var data = {
-				id: 'offlineAction',
-				object: offlineAction.object,
-				actions: act
-			};
-			if (item === undefined) {
-				_preloadTable.put(data);
-			} else {
-				_preloadTable.update('offlineAction', data);
-			}
+	this.addAction = async function(offlineAction, objectAlias) {
+		var success = false;
+		var date = (+ new Date());
+		var data = {
+			id: date,
+			object: objectAlias,
+			action: offlineAction.data.action,
+			request: offlineAction,
+			triggered: new Date(date).toLocaleString()
+		};
+		if (offlineAction.headers) {
+			data.headers = offlineAction.headers
+		}
+		return _actionsTable.put(data)
+	}
+	
+	this.getActionQueueData = function() {
+		return _actionsTable.toArray()
+		.then(function(dbContent) {
+			var oData = {}
+			var data = [];
+			dbContent.forEach(function(element) {
+				item = {
+						action_alias: element.action,
+						object: element.object,
+						triggered: element.triggered
+				}
+				data.push(item);
+			})
+			oData.data = data;
+			return oData;
 		})
-		return _preloader;
+		.catch(function(error) {
+			return {data: []};
+		})
 	}
 }).apply(exfPreloader);

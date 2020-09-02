@@ -107,7 +107,7 @@ const exfLauncher = {};
 																	]
 															};*/
 															console.log('Show offline queue');
-															var oData = await exfPreloader.getActionQueueData();
+															var oData = await exfPreloader.getActionQueueData('offline');
 															
 															var oTable = new sap.m.Table({
 																fixedLayout: false,
@@ -118,6 +118,136 @@ const exfLauncher = {};
 																		content: [
 																			new sap.m.Label({
 																				text: "Wartende Online-Aktionen"
+																			}),
+																			new sap.m.ToolbarSpacer(),
+																			new sap.m.Button({
+																				text: "Abbrechen",
+																				icon: "sap-icon://cancel"
+																			}),
+																			new sap.m.Button({
+																				text: "Exportieren",
+																				icon: "sap-icon://download"
+																			}),
+																			new sap.m.Button({
+																				text: "Sync",
+																				icon: "sap-icon://synchronize",
+																				press: function(oEvent){
+																					/*if (!navigator.onLine) {
+																						_oLauncher.contextBar.getComponent().showDialog('Offline Queue', 'You are offline! Offline actions can not be send to server.', 'Error');
+																						return;
+																					}*/
+																					console.log('Offline actions sending');
+																					var oButton = oEvent.getSource();
+																					var table = oButton.getParent().getParent()
+																					var selectedItems = table.getSelectedItems();
+																					var selectedIds = [];
+																					selectedItems.forEach(function(item){
+																						var bindingObj = item.getBindingContext().getObject()
+																						selectedIds.push(bindingObj.id);
+																					})
+																					oButton.setBusyIndicatorDelay(0).setBusy(true);
+																					var updatePromises = [];
+																					exfPreloader
+																					.sendActionQueue(selectedIds)
+																					.then(function(){																						
+																						oButton.setBusy(false);
+																						_oLauncher.contextBar.getComponent().showDialog('Offline Queue', 'All Offline Actions sent!', 'Success');
+																						table.getParent().close();
+																					})
+																					.catch(function(){
+																						oButton.setBusy(false);
+																						_oLauncher.contextBar.getComponent().showDialog('Offline Queue', 'All Offline Actions sent, with errors!', 'Error');
+																						table.getParent().close();
+																					})
+																				},
+																			})																			
+																		]
+																	})
+																],
+																columns: [
+																	new sap.m.Column({
+																		visible: false
+																	}),
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
+																				text: "Objekt"
+																			})
+																		]
+																	}),
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
+																				text: "Aktion"
+																			})
+																		]
+																	}),
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
+																				//text: "Alias"
+																				text: 'Triggered'
+																			})
+																		]
+																	}),
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
+																				//text: "Alias"
+																				text: 'Status'
+																			})
+																		]
+																	}),
+																],
+																items: {
+																	path: "/data",
+																	template: new sap.m.ColumnListItem({
+																		cells: [
+																			new sap.m.Text({
+																				//text: "{object_name}"
+																				text: "{id}"
+																			}),
+																			new sap.m.Text({
+																				//text: "{object_name}"
+																				text: "{object}"
+																			}),
+																			new sap.m.Text({
+																				//text: "{caption}"
+																				text: "{action_alias}"
+																			}),
+																			new sap.m.Text({
+																				//text: "{action_alias}"
+																				text: "{triggered}"
+																			}),
+																			new sap.m.Text({
+																				//text: "{action_alias}"
+																				text: "{status}"
+																			})
+																		]
+																	})
+																}
+															}).setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
+															
+															_oLauncher.contextBar.getComponent().showDialog('Offline action queue', oTable, undefined, undefined, true);
+														},
+													}),
+													new sap.m.StandardListItem({
+														title: "{i18n>WEBAPP.SHELL.NETWORK.SYNC_MENU_ERRORS} ({/_network/syncErrorCnt})",
+														type: "Active",
+														type: "Active",
+														press: async function(){
+															console.log('Show errors sent actions');
+															var oData = await exfPreloader.getActionQueueData('error');
+															
+															var oTable = new sap.m.Table({
+																fixedLayout: false,
+																mode: sap.m.ListMode.MultiSelect,
+																headerToolbar: [
+																	new sap.m.OverflowToolbar({
+																		design: "Transparent",
+																		content: [
+																			new sap.m.Label({
+																				text: "Fehlerhafte Offline-Aktionen"
 																			}),
 																			new sap.m.ToolbarSpacer(),
 																			new sap.m.Button({
@@ -152,10 +282,24 @@ const exfLauncher = {};
 																				//text: "Alias"
 																				text: 'Triggered'
 																			})
-																		],
-																		minScreenWidth: "Tablet",
-																		demandPopin: true
+																		]
 																	}),
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
+																				//text: "Alias"
+																				text: 'Status'
+																			})
+																		]
+																	}),
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
+																				//text: "Alias"
+																				text: 'Response'
+																			})
+																		]
+																	})
 																],
 																items: {
 																	path: "/data",
@@ -172,19 +316,22 @@ const exfLauncher = {};
 																			new sap.m.Text({
 																				//text: "{action_alias}"
 																				text: "{triggered}"
+																			}),
+																			new sap.m.Text({
+																				//text: "{action_alias}"
+																				text: "{status}"
+																			}),
+																			new sap.m.Text({
+																				//text: "{action_alias}"
+																				text: "{response}"
 																			})
 																		]
 																	})
 																}
 															}).setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
 															
-															_oLauncher.contextBar.getComponent().showDialog('Sync-Puffer', oTable, undefined, undefined, true);
-														},
-													}),
-													new sap.m.StandardListItem({
-														title: "{i18n>WEBAPP.SHELL.NETWORK.SYNC_MENU_ERRORS} ({/_network/syncErrorCnt})",
-														type: "Active",
-														press: function(){},
+															_oLauncher.contextBar.getComponent().showDialog('Errors', oTable, undefined, undefined, true);
+														}
 													}),
 													new sap.m.GroupHeaderListItem({
 														title: '{i18n>WEBAPP.SHELL.PRELOAD.MENU}',
@@ -754,26 +901,36 @@ const exfPreloader = {};
 			object: objectAlias,
 			action: offlineAction.data.action,
 			request: offlineAction,
-			triggered: new Date(date).toLocaleString()
+			triggered: new Date(date).toLocaleString(),
+			status: 'offline'
 		};
 		if (offlineAction.headers) {
 			data.headers = offlineAction.headers
 		}
 		return _actionsTable.put(data)
-	}
+	};
 	
-	this.getActionQueueData = function() {
+	this.getActionQueueData = function(filter) {
 		return _actionsTable.toArray()
 		.then(function(dbContent) {
 			var oData = {}
 			var data = [];
 			dbContent.forEach(function(element) {
+				if (element.status != filter) {
+					return;
+				}
 				item = {
+						id: element.id,
 						action_alias: element.action,
 						object: element.object,
-						triggered: element.triggered
+						triggered: element.triggered,
+						status: element.status
+				}
+				if (element.response) {
+					item.response = element.response;
 				}
 				data.push(item);
+				return;
 			})
 			oData.data = data;
 			return oData;
@@ -781,5 +938,46 @@ const exfPreloader = {};
 		.catch(function(error) {
 			return {data: []};
 		})
-	}
+	};
+	
+	this.sendActionQueue = function(selectedIds) {
+		var ajaxPromises = [];
+		selectedIds.forEach(async function(id){
+			var promise = _actionsTable.get(id)
+			.then(function(element){
+				var ajaxObject = element.request;
+				ajaxObject.success = function(data, textStatus, jqXHR) {
+					console.log('Success sending');
+					var update = _actionsTable.update(element.id, {
+						status: 'success',
+						response: data
+					})
+					.then(function (updated){
+						if (updated) {
+							console.log ("Action was updated");
+						} else {
+							console.log ("Nothing was updated - there was no action with id: ", element.id);
+						}
+					});
+				}
+				ajaxObject.error = function(jqXHR, textStatus, errorThrown) {
+					console.log('Error Server response');
+					var update = _actionsTable.update(element.id, {
+						status: 'error',
+						response: jqXHR.responseText
+					})
+					.then(function (updated){
+						if (updated) {
+							console.log ("Action was updated");
+						} else {
+							console.log ("Nothing was updated - there were no action with id: ", element.id);
+						}
+					});
+				}
+				ajaxPromises.push($.ajax(ajaxObject));
+			})
+		})
+		
+		return Promise.all(ajaxPromises);
+	};
 }).apply(exfPreloader);

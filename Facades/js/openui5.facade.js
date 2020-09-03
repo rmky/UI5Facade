@@ -79,7 +79,7 @@ const exfLauncher = {};
 													new sap.m.StandardListItem({
 														title: "{i18n>WEBAPP.SHELL.NETWORK.SYNC_MENU_QUEUE} ({/_network/queueCnt})",
 														type: "Active",
-														press: async function(){
+														press: function(){
 															
 															/*var oData = {
 																	data: [
@@ -106,8 +106,7 @@ const exfLauncher = {};
 																		}
 																	]
 															};*/
-															console.log('Show offline queue');
-															var oData = await exfPreloader.getActionQueueData('offline');
+															console.log('Show offline queue');															
 															
 															var oTable = new sap.m.Table({
 																fixedLayout: false,
@@ -121,16 +120,9 @@ const exfLauncher = {};
 																			}),
 																			new sap.m.ToolbarSpacer(),
 																			new sap.m.Button({
-																				text: "Abbrechen",
-																				icon: "sap-icon://cancel"
-																			}),
-																			new sap.m.Button({
-																				text: "Exportieren",
-																				icon: "sap-icon://download"
-																			}),
-																			new sap.m.Button({
 																				text: "Sync",
 																				icon: "sap-icon://synchronize",
+																				enabled: "{ navigator.onLine > 0 ? true : false }",
 																				press: function(oEvent){
 																					/*if (!navigator.onLine) {
 																						_oLauncher.contextBar.getComponent().showDialog('Offline Queue', 'You are offline! Offline actions can not be send to server.', 'Error');
@@ -140,26 +132,84 @@ const exfLauncher = {};
 																					var oButton = oEvent.getSource();
 																					var table = oButton.getParent().getParent()
 																					var selectedItems = table.getSelectedItems();
+																					if (selectedItems.length ===0) {
+																						_oLauncher.contextBar.getComponent().showDialog('Offline Queue', 'No actions selected!', 'Error');
+																						return;
+																					}
+																					oButton.setBusyIndicatorDelay(0).setBusy(true);
+																					var selectedIds = [];
+																					selectedItems.forEach(function(item){
+																						var bindingObj = item.getBindingContext().getObject()
+																						selectedIds.push(bindingObj.id);
+																					})																					
+																					exfPreloader.syncActionAll(selectedIds)
+																					.then(function(){
+																						exfPreloader.updateQueueCount()
+																						.then(function(){
+																							oButton.setBusy(false);
+																							_oLauncher.contextBar.getComponent().showDialog('Offline Queue', 'Actions synced!', 'Success');
+																							exfPreloader.getActionQueueData('offline')
+																							.then(function(oData){
+																								oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
+																								return;
+																							})
+																							return;
+																						});
+																						return;
+																					})
+																					.catch(function(){
+																						exfPreloader.updateQueueCount()
+																						.then(function(){
+																							oButton.setBusy(false);
+																							_oLauncher.contextBar.getComponent().showDialog('Offline Queue', 'Error syncing actions!', 'Error');
+																							exfPreloader.getActionQueueData('offline')
+																							.then(function(oData){
+																								oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
+																								return;
+																							})
+																							return;
+																						});
+																						return;
+																					})
+																				},
+																			}),
+																			new sap.m.Button({
+																				text: "Abbrechen",
+																				icon: "sap-icon://cancel",
+																				press: function(oEvent){
+																					var oButton = oEvent.getSource();																					
+																					var table = oButton.getParent().getParent()
+																					var selectedItems = table.getSelectedItems();																					
+																					if (selectedItems.length ===0) {
+																						_oLauncher.contextBar.getComponent().showDialog('Offline Queue', 'No actions selected!', 'Error');
+																						return;
+																					}
+																					oButton.setBusyIndicatorDelay(0).setBusy(true);
 																					var selectedIds = [];
 																					selectedItems.forEach(function(item){
 																						var bindingObj = item.getBindingContext().getObject()
 																						selectedIds.push(bindingObj.id);
 																					})
-																					oButton.setBusyIndicatorDelay(0).setBusy(true);
-																					var updatePromises = [];
-																					exfPreloader
-																					.sendActionQueue(selectedIds)
-																					.then(function(){																						
-																						oButton.setBusy(false);
-																						_oLauncher.contextBar.getComponent().showDialog('Offline Queue', 'All Offline Actions sent!', 'Success');
-																						table.getParent().close();
+																					exfPreloader.deleteActionAll(selectedIds)
+																					.then(function(){
+																						exfPreloader.updateQueueCount()
+																						.then(function(){
+																							oButton.setBusy(false);
+																							_oLauncher.contextBar.getComponent().showDialog('Offline Queue', 'Actions deleted!', 'Success');
+																							exfPreloader.getActionQueueData('offline')
+																							.then(function(oData){
+																								oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
+																								return;
+																							})
+																							return;
+																						})
+																						return;
 																					})
-																					.catch(function(){
-																						oButton.setBusy(false);
-																						_oLauncher.contextBar.getComponent().showDialog('Offline Queue', 'All Offline Actions sent, with errors!', 'Error');
-																						table.getParent().close();
-																					})
-																				},
+																				}
+																			}),
+																			new sap.m.Button({
+																				text: "Exportieren",
+																				icon: "sap-icon://download"
 																			})																			
 																		]
 																	})
@@ -185,7 +235,6 @@ const exfLauncher = {};
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				//text: "Alias"
 																				text: 'Triggered'
 																			})
 																		]
@@ -193,51 +242,64 @@ const exfLauncher = {};
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				//text: "Alias"
 																				text: 'Status'
 																			})
 																		]
 																	}),
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
+																				text: 'Sync Versuche'
+																			})
+																		]
+																	})
 																],
 																items: {
 																	path: "/data",
 																	template: new sap.m.ColumnListItem({
 																		cells: [
 																			new sap.m.Text({
-																				//text: "{object_name}"
 																				text: "{id}"
 																			}),
 																			new sap.m.Text({
-																				//text: "{object_name}"
 																				text: "{object}"
 																			}),
 																			new sap.m.Text({
-																				//text: "{caption}"
 																				text: "{action_alias}"
 																			}),
 																			new sap.m.Text({
-																				//text: "{action_alias}"
 																				text: "{triggered}"
 																			}),
 																			new sap.m.Text({
-																				//text: "{action_alias}"
 																				text: "{status}"
+																			}),
+																			new sap.m.Text({
+																				text: "{tries}"
 																			})
 																		]
 																	})
 																}
-															}).setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
+															})
 															
-															_oLauncher.contextBar.getComponent().showDialog('Offline action queue', oTable, undefined, undefined, true);
+															exfPreloader.getActionQueueData('offline')
+															.then(function(oData){
+																oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
+																_oLauncher.contextBar.getComponent().showDialog('Offline action queue', oTable, undefined, undefined, true);
+															})
+															.catch(function(oData){
+																oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
+																_oLauncher.contextBar.getComponent().showDialog('Offline action queue', oTable, undefined, undefined, true);
+															})
+															
+															
 														},
 													}),
 													new sap.m.StandardListItem({
 														title: "{i18n>WEBAPP.SHELL.NETWORK.SYNC_MENU_ERRORS} ({/_network/syncErrorCnt})",
 														type: "Active",
 														type: "Active",
-														press: async function(){
+														press: function(){
 															console.log('Show errors sent actions');
-															var oData = await exfPreloader.getActionQueueData('error');
 															
 															var oTable = new sap.m.Table({
 																fixedLayout: false,
@@ -248,15 +310,6 @@ const exfLauncher = {};
 																		content: [
 																			new sap.m.Label({
 																				text: "Fehlerhafte Offline-Aktionen"
-																			}),
-																			new sap.m.ToolbarSpacer(),
-																			new sap.m.Button({
-																				text: "Abbrechen",
-																				icon: "sap-icon://cancel"
-																			}),
-																			new sap.m.Button({
-																				text: "Exportieren",
-																				icon: "sap-icon://download"
 																			})
 																		]
 																	})
@@ -279,7 +332,6 @@ const exfLauncher = {};
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				//text: "Alias"
 																				text: 'Triggered'
 																			})
 																		]
@@ -287,7 +339,6 @@ const exfLauncher = {};
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				//text: "Alias"
 																				text: 'Status'
 																			})
 																		]
@@ -295,7 +346,13 @@ const exfLauncher = {};
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				//text: "Alias"
+																				text: 'Sync Versuche'
+																			})
+																		]
+																	}),
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
 																				text: 'Response'
 																			})
 																		]
@@ -306,31 +363,37 @@ const exfLauncher = {};
 																	template: new sap.m.ColumnListItem({
 																		cells: [
 																			new sap.m.Text({
-																				//text: "{object_name}"
 																				text: "{object}"
 																			}),
 																			new sap.m.Text({
-																				//text: "{caption}"
 																				text: "{action_alias}"
 																			}),
 																			new sap.m.Text({
-																				//text: "{action_alias}"
 																				text: "{triggered}"
 																			}),
 																			new sap.m.Text({
-																				//text: "{action_alias}"
 																				text: "{status}"
 																			}),
 																			new sap.m.Text({
-																				//text: "{action_alias}"
+																				text: "{tries}"
+																			}),
+																			new sap.m.Text({
 																				text: "{response}"
 																			})
 																		]
 																	})
 																}
-															}).setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
+															})
 															
-															_oLauncher.contextBar.getComponent().showDialog('Errors', oTable, undefined, undefined, true);
+															exfPreloader.getActionQueueData('error')
+															.then(function(oData){
+																oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
+																_oLauncher.contextBar.getComponent().showDialog('Offline action queue', oTable, undefined, undefined, true);
+															})
+															.catch(function(oData){
+																oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
+																_oLauncher.contextBar.getComponent().showDialog('Offline action queue', oTable, undefined, undefined, true);
+															})
 														}
 													}),
 													new sap.m.GroupHeaderListItem({
@@ -404,6 +467,8 @@ const exfLauncher = {};
 				syncErrorCnt: 0
 			}
 		}));
+		
+		exfPreloader.updateQueueCount();
 		
 		return _oShell;
 	};
@@ -893,8 +958,7 @@ const exfPreloader = {};
 		return;
 	};
 	
-	this.addAction = async function(offlineAction, objectAlias) {
-		var success = false;
+	this.addAction = function(offlineAction, objectAlias) {
 		var date = (+ new Date());
 		var data = {
 			id: date,
@@ -902,12 +966,16 @@ const exfPreloader = {};
 			action: offlineAction.data.action,
 			request: offlineAction,
 			triggered: new Date(date).toLocaleString(),
-			status: 'offline'
+			status: 'offline',
+			tries: 0
 		};
 		if (offlineAction.headers) {
 			data.headers = offlineAction.headers
 		}
 		return _actionsTable.put(data)
+		.then(function(){
+			return exfPreloader.updateQueueCount();
+		});
 	};
 	
 	this.getActionQueueData = function(filter) {
@@ -924,7 +992,8 @@ const exfPreloader = {};
 						action_alias: element.action,
 						object: element.object,
 						triggered: element.triggered,
-						status: element.status
+						status: element.status,
+						tries: element.tries
 				}
 				if (element.response) {
 					item.response = element.response;
@@ -940,44 +1009,71 @@ const exfPreloader = {};
 		})
 	};
 	
-	this.sendActionQueue = function(selectedIds) {
-		var ajaxPromises = [];
-		selectedIds.forEach(async function(id){
-			var promise = _actionsTable.get(id)
-			.then(function(element){
-				var ajaxObject = element.request;
-				ajaxObject.success = function(data, textStatus, jqXHR) {
-					console.log('Success sending');
-					var update = _actionsTable.update(element.id, {
-						status: 'success',
-						response: data
-					})
-					.then(function (updated){
-						if (updated) {
-							console.log ("Action was updated");
-						} else {
-							console.log ("Nothing was updated - there was no action with id: ", element.id);
-						}
-					});
-				}
-				ajaxObject.error = function(jqXHR, textStatus, errorThrown) {
-					console.log('Error Server response');
-					var update = _actionsTable.update(element.id, {
-						status: 'error',
-						response: jqXHR.responseText
-					})
-					.then(function (updated){
-						if (updated) {
-							console.log ("Action was updated");
-						} else {
-							console.log ("Nothing was updated - there were no action with id: ", element.id);
-						}
-					});
-				}
-				ajaxPromises.push($.ajax(ajaxObject));
-			})
-		})
-		
-		return Promise.all(ajaxPromises);
+	this.syncActionAll = function(selectedIds) {
+		var promises = [];
+		selectedIds.forEach(function(id){
+			promises.push(_preloader.syncAction(id));
+		});
+		return Promise.all(promises);
 	};
+	
+	this.syncAction = function(id) {
+		return _actionsTable.get(id)
+		.then(function(element){
+			var ajaxObject = element.request;
+			ajaxObject.timeout = 5000;
+			ajaxObject.success = function(data, textStatus, jqXHR) {
+				console.log('Success sending');
+				return _actionsTable.update(element.id, {
+					status: 'success',
+					tries: element.tries + 1,
+					response: data
+				})
+				.then(function (updated){					
+					if (updated) {
+						console.log ("Action was updated");
+					} else {
+						console.log ("Nothing was updated - there was no action with id: ", element.id);
+					}
+				});
+			}
+			ajaxObject.error = function(jqXHR, textStatus, errorThrown) {
+				if (textStatus === 'timeout' || jqXHR.status === 0 || jqXHR.status >= 500) {
+					console.log('Timeout sync action');
+					return _actionsTable.update(element.id, {
+						tries: element.tries + 1,
+						response: textStatus
+					});
+				}
+				console.log('Error Server response');
+				return _actionsTable.update(element.id, {
+					status: 'error',
+					tries: element.tries + 1,
+					response: jqXHR.responseText
+				})
+			}
+			return $.ajax(ajaxObject);
+		});
+	};
+	
+	this.deleteActionAll = function(selectedIds) {
+		var promises = [];
+		selectedIds.forEach(function(id){
+			promises.push(_preloader.deleteAction(id));
+		});
+		return Promise.all(promises);
+	};
+	
+	this.deleteAction = function(id) {
+		return _actionsTable.delete(id)
+	}
+	
+	this.updateQueueCount = function() {
+		return exfPreloader.getActionQueueData('offline')
+		.then(function(oData) {
+			var count = oData.data.length;
+			exfLauncher.getShell().getModel().setProperty("/_network/queueCnt", count);
+			console.log('Queue count updated');
+		})
+	}
 }).apply(exfPreloader);

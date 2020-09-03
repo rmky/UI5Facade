@@ -393,8 +393,8 @@ class Webapp implements WorkbenchDependantInterface
             }
         }
         
-        $tplTranslator = $this->facade->getApp()->getTranslator();
-        $dict = $tplTranslator->getDictionary($locale);
+        $tplTranslator = $this->facade->getApp()->getTranslator($locale);
+        $dict = $tplTranslator->getDictionary();
         
         if ($app) {
             $dict = array_merge($dict, $app->getTranslator()->getDictionary($locale));

@@ -179,7 +179,7 @@ JS;
             
             $.ajax({
                 url: "{$this->getElement()->getAjaxUrl()}",
-                type: "POST",
+                type: "GET",
 				data: {$oParamsJs},
                 success: function(response, textStatus, jqXHR) {
                     if (Object.keys({$oModelJs}.getData()).length !== 0) {

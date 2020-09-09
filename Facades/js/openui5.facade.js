@@ -1,7 +1,32 @@
 // Toggle online/offlie icon
 window.addEventListener('online', function(){
 	exfLauncher.toggleOnlineIndicator();
-	exfLauncher.showMessageToast("Just went online! Please sync offline actions");
+	exfLauncher.showMessageToast("Just went online! Syncing offline actions");
+	exfPreloader.getActionQueueData('offline')
+	.then(function(data) {
+		var count = data.length;
+		if (count > 0){
+			var shell = exfLauncher.getShell();
+			shell.setBusy(true);
+			var ids = [];
+			data.forEach(function(item){
+				ids.push(item.id);
+			});
+			exfPreloader.syncActionAll(ids)
+			.then(function(){
+				exfPreloader.updateQueueCount()
+				.then(function(){
+					shell.setBusy(false);
+					exfLauncher.showMessageToast("Actions synced!");
+				})
+			})
+		}
+	})
+	.catch(function(error){
+		shell.setBusy(false);
+		console.log(error);
+		exfLauncher.showMessageToast("Syncing actions failed!");
+	})
 });
 window.addEventListener('offline', function(){
 	exfLauncher.toggleOnlineIndicator();
@@ -123,7 +148,9 @@ const exfLauncher = {};
 																							oButton.setBusy(false);
 																							exfLauncher.showMessageToast("Actions synced!");
 																							exfPreloader.getActionQueueData('offline')
-																							.then(function(oData){
+																							.then(function(data){
+																								var oData = {};
+																								oData.data = data;
 																								oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}(), 'queueModel');
 																								return;
 																							})
@@ -137,7 +164,9 @@ const exfLauncher = {};
 																							oButton.setBusy(false);
 																							_oLauncher.contextBar.getComponent().showDialog('Offline Queue', 'Error syncing actions!', 'Error');
 																							exfPreloader.getActionQueueData('offline')
-																							.then(function(oData){
+																							.then(function(data){
+																								var oData = {};
+																								oData.data = data;
 																								oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}(), 'queueModel');
 																								return;
 																							})
@@ -171,7 +200,9 @@ const exfLauncher = {};
 																							oButton.setBusy(false);
 																							exfLauncher.showMessageToast("Actions deleted!");
 																							exfPreloader.getActionQueueData('offline')
-																							.then(function(oData){
+																							.then(function(data){
+																								var oData = {};
+																								oData.data = data;
 																								oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}(), 'queueModel');
 																								return;
 																							})
@@ -258,11 +289,15 @@ const exfLauncher = {};
 															.setModel(oButton.getModel('i18n'), 'i18n');
 															
 															exfPreloader.getActionQueueData('offline')
-															.then(function(oData){
+															.then(function(data){
+																var oData = {};
+																oData.data = data;
 																oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}(), 'queueModel');
 																_oLauncher.contextBar.getComponent().showDialog('Offline action queue', oTable, undefined, undefined, true);
 															})
-															.catch(function(oData){
+															.catch(function(data){
+																var oData = {};
+																oData.data = data;
 																oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
 																_oLauncher.contextBar.getComponent().showDialog('Offline action queue', oTable, undefined, undefined, true);
 															})
@@ -362,11 +397,15 @@ const exfLauncher = {};
 															})
 															
 															exfPreloader.getActionQueueData('error')
-															.then(function(oData){
+															.then(function(data){
+																var oData = {};
+																oData.data = data;
 																oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
 																_oLauncher.contextBar.getComponent().showDialog('Offline action queue', oTable, undefined, undefined, true);
 															})
-															.catch(function(oData){
+															.catch(function(data){
+																var oData = {};
+																oData.data = data;
 																oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
 																_oLauncher.contextBar.getComponent().showDialog('Offline action queue', oTable, undefined, undefined, true);
 															})
@@ -634,10 +673,8 @@ const exfLauncher = {};
 	};
 	
 	this.showMessageToast = function(message){
-			sap.m.MessageToast.show(function(){var tmp = document.createElement("DIV");
-	        tmp.innerHTML = message;
-	        return tmp.textContent || tmp.innerText || "";
-	   }());
+			sap.m.MessageToast.show(message);
+			return;
 	};
 }).apply(exfLauncher);
 
@@ -984,11 +1021,11 @@ const exfPreloader = {};
 				data.push(item);
 				return;
 			})
-			oData.data = data;
-			return oData;
+			data = data;
+			return data;
 		})
 		.catch(function(error) {
-			return {data: []};
+			return [];
 		})
 	};
 	
@@ -1053,8 +1090,8 @@ const exfPreloader = {};
 	
 	this.updateQueueCount = function() {
 		return exfPreloader.getActionQueueData('offline')
-		.then(function(oData) {
-			var count = oData.data.length;
+		.then(function(data) {
+			var count = data.length;
 			exfLauncher.getShell().getModel().setProperty("/_network/queueCnt", count);
 			console.log('Queue count updated');
 		})

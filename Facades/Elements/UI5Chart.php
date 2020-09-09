@@ -3,15 +3,9 @@ namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Facades\AbstractAjaxFacade\Elements\EChartsTrait;
 use exface\Core\Widgets\Chart;
-use exface\Core\DataTypes\StringDataType;
 use exface\UI5Facade\Facades\Elements\Traits\UI5DataElementTrait;
 use exface\Core\Widgets\Data;
-use exface\Core\Widgets\DataButton;
-use exface\Core\Widgets\Button;
-use exface\Core\Widgets\ButtonGroup;
-use exface\Core\Widgets\MenuButton;
 use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
-use exface\Core\DataTypes\FilePathDataType;
 
 /**
  * 

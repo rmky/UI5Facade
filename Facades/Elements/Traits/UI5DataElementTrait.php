@@ -13,6 +13,7 @@ use exface\Core\Interfaces\Widgets\iHaveColumns;
 use exface\Core\Interfaces\Widgets\iShowData;
 use exface\Core\Widgets\Dialog;
 use exface\Core\DataTypes\WidgetVisibilityDataType;
+use exface\UI5Facade\Facades\Elements\UI5DataPaginator;
 
 /**
  * This trait helps wrap thrid-party data widgets (like charts, image galleries, etc.) in 
@@ -140,8 +141,12 @@ trait UI5DataElementTrait {
         $this->registerExternalModules($this->getController());
         
         $controller->addMethod('onUpdateFilterSummary', $this, '', $this->buildJsFilterSummaryUpdater());
-        $controller->addMethod('onLoadData', $this, 'oControlEvent, keep_page_pos', $this->buildJsDataLoader());
+        $controller->addMethod('onLoadData', $this, 'oControlEvent, bKeepPagingPos', $this->buildJsDataLoader());
         $this->initConfiguratorControl($controller);
+        
+        if ($this->hasPaginator()) {
+            $this->getPaginatorElement()->registerControllerMethods();
+        }
         
         // Reload the data every time the view is shown. This is important, because otherwise 
         // old rows may still be visible if a dialog is open, closed and then reopened for another 
@@ -476,7 +481,7 @@ JS;
      *
      * @return string
      */
-    protected function buildJsDataLoader($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'keep_page_pos')
+    protected function buildJsDataLoader($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'bKeepPagingPos')
     {
         $widget = $this->getWidget();
         if ($widget instanceof iShowData && $widget->isEditable()) {
@@ -531,7 +536,7 @@ JS;
      *
      * @return string
      */
-    protected function buildJsDataLoaderFromServer($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'keep_page_pos')
+    protected function buildJsDataLoaderFromServer($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'bKeepPagingPos')
     {
         $widget = $this->getWidget();
         
@@ -600,12 +605,44 @@ JS;
     {
         return $this->buildJsDataResetter();
     }
-                
-    protected function buildJsDataLoaderParams(string $oControlEventJsVar = 'oControlEvent', string $oParamsJs = 'params') : string
+       
+    /**
+     * Returns control-specific parameters for the data loader AJAX request.
+     * 
+     * @param string $oControlEventJsVar
+     * @param string $oParamsJs
+     * @return string
+     */
+    protected function buildJsDataLoaderParams(string $oControlEventJsVar = 'oControlEvent', string $oParamsJs = 'params', $keepPagePosJsVar = 'bKeepPagingPos') : string
     {
-        return '';
+        return $this->buildJsDataLoaderParamsPaging($oParamsJs, $keepPagePosJsVar);
     }
     
+    /**
+     * Adds pagination parameters to the JS object $oParamsJs holding the AJAX request parameters.
+     * 
+     * @param string $oParamsJs
+     * @param string $keepPagePosJsVar
+     * @return string
+     */
+    protected function buildJsDataLoaderParamsPaging(string $oParamsJs = 'params', $keepPagePosJsVar = 'bKeepPagingPos') : string
+    {
+        $paginationSwitch = $this->getDataWidget()->isPaged() ? 'true' : 'false';
+        
+        return <<<JS
+        
+        		// Add pagination
+                if ({$paginationSwitch}) {
+                    var paginator = {$this->getPaginatorElement()->buildJsGetPaginator('oController')};
+                    if (typeof {$keepPagePosJsVar} === 'undefined' || ! {$keepPagePosJsVar}) {
+                        paginator.resetAll();
+                    }
+                    {$oParamsJs}.start = paginator.start;
+                    {$oParamsJs}.length = paginator.pageSize;
+                }
+                
+JS;
+    }
     
     protected function buildJsDataLoaderOnLoaded(string $oModelJs = 'oModel') : string
     {
@@ -1283,5 +1320,23 @@ JS;
             })();
             
 JS;
+    }
+    
+    /**
+     *
+     * @return bool
+     */
+    protected function hasPaginator() : bool
+    {
+        return ($this->getDataWidget() instanceof Data) && $this->getDataWidget()->isPaged();
+    }
+    
+    /**
+     *
+     * @return UI5DataPaginator
+     */
+    protected function getPaginatorElement() : UI5DataPaginator
+    {
+        return $this->getFacade()->getElement($this->getDataWidget()->getPaginator());
     }
 }

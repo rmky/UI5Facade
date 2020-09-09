@@ -298,10 +298,19 @@ JS;
     }
     
     /**
-     * {inheritdoc}
+     * {@inheritdoc}
      * @see UI5DataElementTrait::isEditable()
      */
     protected function isEditable()
+    {
+        return false;
+    }
+    
+    /**
+     * {@inheritdoc}
+     * @see UI5DataElementTrait::hasPaginator()
+     */
+    protected function hasPaginator() : bool
     {
         return false;
     }

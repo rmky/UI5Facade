@@ -340,4 +340,31 @@ JS;
         $this->valueBindingDisabled = $value;
         return $this;
     }
+    
+    /**
+     * Returns a JS snippt to add a listener to the given binding's change-event to call the on-change-handlers.
+     * 
+     * The trouble is, that the change-event of UI5 controls only fires when changes are
+     * made by a user. If a change is caused by an update of the model, the native event
+     * does not fire. On the other hand, the binding-change-event is not triggered by
+     * manual changes, so we actually need both in most cases.
+     * 
+     * This method is meant to be used within buildJsConstructor() or similar.
+     * 
+     * @param string $bindingName
+     * @return UI5Value
+     */
+    protected function registerChangeEventOnBindingChange(string $bindingName) : UI5Value
+    {
+        if ($this->isValueBoundToModel() && $this->getUseWidgetId()) {
+            $bindChangeWatcherJs = <<<JS
+            
+                sap.ui.getCore().byId('{$this->getId()}').getBinding('{$bindingName}').attachChange(function(oEvent){
+                    {$this->getController()->buildJsEventHandler($this, self::EVENT_NAME_CHANGE, false)};
+                });
+JS;
+            $this->getController()->addOnInitScript($bindChangeWatcherJs);
+        }
+        return $this;
+    }
 }

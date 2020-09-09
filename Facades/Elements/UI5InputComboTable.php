@@ -42,7 +42,7 @@ class UI5InputComboTable extends UI5Input
             }
             $onChange = <<<JS
 
-                        var oInput = oEvent.getSource();
+                        var oInput = oEvent !== undefined ? oEvent.getSource() : sap.ui.getCore().byId('{$this->getId()}');
                         if (oInput.getValue() !== '' && $missingKeyCheckJs){
                             oInput.fireSuggest({suggestValue: {q: oInput.getValue()}});
                             oEvent.cancelBubble();

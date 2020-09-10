@@ -1,31 +1,28 @@
 <?php
 namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Widgets\InputComboTable;
-use exface\Core\Widgets\DataColumn;
-use exface\Core\Exceptions\Widgets\WidgetHasNoUidColumnError;
 use exface\Core\Exceptions\Widgets\WidgetLogicError;
-use exface\Core\Factories\DataSheetFactory;
 use exface\Core\DataTypes\UrlDataType;
 use exface\Core\Interfaces\DataTypes\DataTypeInterface;
 use exface\Core\Exceptions\Facades\FacadeLogicError;
-use exface\UI5Facade\Facades\Elements\UI5ValueHelpDialog;
 use exface\Core\Interfaces\Widgets\iShowDataColumn;
 use exface\Core\Interfaces\Widgets\iShowSingleAttribute;
-use exface\UI5Facade\UI5Controller;
-use exface\Core\CommonLogic\Model\RelationPath;
 
 /**
- * Generates OpenUI5 selects
+ * Generates sap.m.Input with tabular autosuggest and value help.
  *
- * @method InputComboTable getWidget()
+ * @method \exface\Core\Widgets\InputComboTable\InputComboTable getWidget()
  *
  * @author Andrej Kabachnik
  *        
  */
 class UI5InputComboTable extends UI5Input
 {
-    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5Value::init()
+     */
     protected function init()
     {
         parent::init();
@@ -42,7 +39,7 @@ class UI5InputComboTable extends UI5Input
             }
             $onChange = <<<JS
 
-                        var oInput = oEvent.getSource();
+                        var oInput = oEvent !== undefined ? oEvent.getSource() : sap.ui.getCore().byId('{$this->getId()}');
                         if (oInput.getValue() !== '' && $missingKeyCheckJs){
                             oInput.fireSuggest({suggestValue: {q: oInput.getValue()}});
                             oEvent.cancelBubble();

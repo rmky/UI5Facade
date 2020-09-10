@@ -60,7 +60,7 @@ JS;
         } elseif ($dim->isMax()) {
             $height = '"100%"';
         } else {
-            $height = '"' . $dim->getValue() . '"';
+            $height = '"' . $this->getHeight() . '"';
         }
         
         return $js . $height . ',';

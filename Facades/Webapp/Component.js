@@ -169,7 +169,7 @@ sap.ui.define([
 					}
 			        return this.showViewDialog(sTitle, sViewName, sBody, 'Error');
 				case 'json':
-					var sMessage, sDetails, oDetailsControl;
+					var sMessage, sDetails, oDetailsControl, oHintControl;
 					
 					try {
 						oBody = oBody ? oBody : JSON.parse(sBody);
@@ -191,6 +191,9 @@ sap.ui.define([
 						if (oError.title) {
 							sMessage += oError.title;
 							sDetails = oError.message;
+							if (oError.hint) {
+								sDetails = oError.hint + "\n\n{i18n>ERROR.EXCEPTION_MESSAGE} " + sDetails;
+							}
 						} else {
 							sMessage += oError.message;
 						}

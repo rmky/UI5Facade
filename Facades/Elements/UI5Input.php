@@ -45,7 +45,6 @@ class UI5Input extends UI5Value
     {
         $this->registerConditionalBehaviors();
         $this->registerOnChangeValidation();
-        $this->registerChangeEventOnBindingChange($this->buildJsValueBindingPropertyName());
         return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl($oControllerJs));
     }
     
@@ -249,11 +248,12 @@ JS;
     
     protected function registerConditionalBehaviors()
     {
+        parent::registerConditionalBehaviors();
         $contoller = $this->getController();
         // Register conditional reactions
         $this->registerDisableConditionAtLinkedElement();
         $contoller->addOnInitScript($this->buildJsDisableConditionInitializer());
-        
+        $this->registerLiveReferenceAtLinkedElement();
         return;
     }
     

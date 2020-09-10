@@ -18,7 +18,9 @@ use exface\Core\Widgets\Input;
  */
 class UI5Value extends UI5AbstractElement implements UI5ValueBindingInterface, UI5CompoundControlInterface
 {
-    use JqueryLiveReferenceTrait;
+    use JqueryLiveReferenceTrait {
+        registerLiveReferenceAtLinkedElement as registerLiveReferenceAtLinkedElementViaTrait;
+    }
     
     private $valueBindingPath = null;
     
@@ -29,26 +31,10 @@ class UI5Value extends UI5AbstractElement implements UI5ValueBindingInterface, U
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::init()
-     */
-    protected function init()
-    {
-        parent::init();
-        
-        // If the input's value is bound to another element via an expression, we need to make sure, that other element will
-        // change the input's value every time it changes itself. This needs to be done on init() to make sure, the other element
-        // has not generated it's JS code yet!
-        $this->registerLiveReferenceAtLinkedElement();
-    }
-    
-    /**
-     * 
-     * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsConstructor()
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
-        $this->registerChangeEventOnBindingChange($this->buildJsValueBindingPropertyName());
         return $this->buildJsConstructorForMainControl($oControllerJs);
     }
     
@@ -343,30 +329,22 @@ JS;
     }
     
     /**
-     * Returns a JS snippt to add a listener to the given binding's change-event to call the on-change-handlers.
-     * 
-     * The trouble is, that the change-event of UI5 controls only fires when changes are
-     * made by a user. If a change is caused by an update of the model, the native event
-     * does not fire. On the other hand, the binding-change-event is not triggered by
-     * manual changes, so we actually need both in most cases.
-     * 
-     * This method is meant to be used within buildJsConstructor() or similar.
-     * 
-     * @param string $bindingName
-     * @return UI5Value
+     * {@inheritdoc}
+     * @see JqueryLiveReferenceTrait::registerLiveReferenceAtLinkedElement()
      */
-    protected function registerChangeEventOnBindingChange(string $bindingName) : UI5Value
+    public function registerLiveReferenceAtLinkedElement() 
     {
-        if ($this->isValueBoundToModel() && $this->getUseWidgetId()) {
-            $bindChangeWatcherJs = <<<JS
-                setTimeout(function(){
-                    sap.ui.getCore().byId('{$this->getId()}').getBinding('{$bindingName}').attachChange(function(oEvent){
-                        {$this->getController()->buildJsEventHandler($this, self::EVENT_NAME_CHANGE, false)};
-                    });
-                },0);
-JS;
-            $this->getController()->addOnInitScript($bindChangeWatcherJs);
-        }
-        return $this;
+        $this->registerLiveReferenceAtLinkedElementViaTrait();
+        // Also refresh the live reference each time the view is prefilled!
+        $this->getController()->addOnViewPrefilledScript($this->buildJsLiveReference());
+    }
+    
+    /**
+     * @return void
+     */
+    protected function registerConditionalBehaviors()
+    {
+        $this->registerLiveReferenceAtLinkedElement();
+        return;
     }
 }

@@ -48,6 +48,7 @@ class UI5Value extends UI5AbstractElement implements UI5ValueBindingInterface, U
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
+        $this->registerChangeEventOnBindingChange($this->buildJsValueBindingPropertyName());
         return $this->buildJsConstructorForMainControl($oControllerJs);
     }
     
@@ -358,10 +359,11 @@ JS;
     {
         if ($this->isValueBoundToModel() && $this->getUseWidgetId()) {
             $bindChangeWatcherJs = <<<JS
-            
-                sap.ui.getCore().byId('{$this->getId()}').getBinding('{$bindingName}').attachChange(function(oEvent){
-                    {$this->getController()->buildJsEventHandler($this, self::EVENT_NAME_CHANGE, false)};
-                });
+                setTimeout(function(){
+                    sap.ui.getCore().byId('{$this->getId()}').getBinding('{$bindingName}').attachChange(function(oEvent){
+                        {$this->getController()->buildJsEventHandler($this, self::EVENT_NAME_CHANGE, false)};
+                    });
+                },0);
 JS;
             $this->getController()->addOnInitScript($bindChangeWatcherJs);
         }

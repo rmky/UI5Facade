@@ -294,33 +294,6 @@ JS;
     }
     
     /**
-     *
-     * @return string
-     */
-    protected function buildJsDataLoaderFromLocal($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'bKeepPagingPos')
-    {
-        $widget = $this->getWidget();
-        $data = $widget->prepareDataSheetToRead($widget->getValuesDataSheet());
-        if (! $data->isFresh()) {
-            $data->dataRead();
-        }
-        
-        // FIXME make filtering, sorting, pagination, etc. work in lazy mode too!
-        
-        return <<<JS
-        
-                try {
-        			var data = {$this->getFacade()->encodeData($this->getFacade()->buildResponseData($data, $widget))};
-        		} catch (err){
-                    console.error('Cannot load data into widget {$this->getId()}!');
-                    return;
-        		}
-                sap.ui.getCore().byId("{$this->getId()}").getModel().setData(data);
-                
-JS;
-    }
-    
-    /**
      * {@inheritdoc}
      * @see UI5DataElementTrait::buildJsDataLoaderParams()
      */

@@ -215,6 +215,12 @@ JS;
         
         $control = $widget->getMultiSelect() ? 'sap.m.MultiInput' : 'sap.m.Input';
         
+        if ($widget->isRelation()) {
+            $vhpOptions = "showValueHelp: true, valueHelpRequest: {$this->buildJsPropertyValueHelpRequest()}";
+        } else {
+            $vhpOptions = "showValueHelp: false";
+        }
+        
         return <<<JS
 
 	   new {$control}("{$this->getId()}", {
@@ -226,9 +232,7 @@ JS;
             startSuggestion: 1,
             showTableSuggestionValueHelp: false,
             filterSuggests: false,
-            showValueHelp: true,
-            valueHelpRequest: {$this->buildJsPropertyValueHelpRequest()}
-			suggest: {$this->buildJsPropertySuggest($oControllerJs)},
+            suggest: {$this->buildJsPropertySuggest($oControllerJs)},
             suggestionRows: {
                 path: "{$this->getModelNameForAutosuggest()}>/rows",
                 template: new sap.m.ColumnListItem({
@@ -240,7 +244,8 @@ JS;
             suggestionItemSelected: {$this->buildJsPropertySuggestionItemSelected($value_idx, $text_idx)}
 			suggestionColumns: [
 				{$columns}
-            ]
+            ],
+            {$vhpOptions}
         })
         .setModel(new sap.ui.model.json.JSONModel(), "{$this->getModelNameForAutosuggest()}")
         {$value_init_js}

@@ -5,6 +5,7 @@ use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryDisableConditionTrait;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryInputValidationTrait;
 use exface\Core\Interfaces\Widgets\iHaveValue;
 use exface\Core\DataTypes\BooleanDataType;
+use exface\Core\Widgets\Filter;
 
 /**
  * Generates sap.m.Input fow `Input` widgets.
@@ -264,7 +265,8 @@ JS;
      */
     public function buildJsValidationError()
     {
-        if ($this->getWidget()->isHidden() === true) {
+        $widget = $this->getWidget();
+        if ($widget->isHidden() === true && ! ($widget->hasParent() && $widget->getParent() instanceof Filter)) {
             return $this->buildJsShowError(json_encode('Error in hidden field "' . $this->getCaption() . '": ' . $this->getValidationErrorText()));
         } else {
             return "sap.ui.getCore().byId('{$this->getId()}').setValueState('Error')";

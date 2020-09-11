@@ -661,7 +661,10 @@ JS;
                 new sap.ui.unified.Menu({
                     items: [
                         {$this->buildJsContextMenuButtons($buttons)}
-                    ]
+                    ],
+                    itemSelect: function(oEvent) {
+                        oEvent.getSource().destroy();
+                    }
                 })
 JS;
     }
@@ -732,6 +735,9 @@ JS;
                         new sap.ui.unified.MenuItem({
                             icon: "{$btn_element->buildCssIconClass($button->getIcon())}",
                             text: "{$button->getCaption()}",
+                            enabled: function(){
+                                return sap.ui.getCore().byId('{$btn_element->getId()}').getEnabled();
+                            }(),
                             {$select}
                             {$startsSectionProperty}
                         })

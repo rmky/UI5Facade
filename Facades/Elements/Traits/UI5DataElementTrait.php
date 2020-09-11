@@ -1357,7 +1357,7 @@ JS;
      */
     protected function hasPaginator() : bool
     {
-        return ($this->getDataWidget() instanceof Data) && $this->getDataWidget()->isPaged();
+        return ($this->getDataWidget() instanceof Data);
     }
     
     /**

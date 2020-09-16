@@ -374,6 +374,25 @@ sap.ui.define([
                     }, 0);
                 });
             });
+		},
+		
+		preloader : function(){
+			const exfPreloaderUI5 = {};
+			(function(){
+				this.updateQueueCount = function() {
+					return exfPreloader.getActionQueueData('offline')
+					.then(function(data) {
+						var count = data.length;
+						exfLauncher.getShell().getModel().setProperty("/_network/queueCnt", count);
+						console.log('Queue count updated');
+					})
+				}
+			}).apply(exfPreloaderUI5);
+			return exfPreloaderUI5;
+		}(),
+		
+		getPreloader : function(){
+			return this.preloader;
 		}
 		
 	});

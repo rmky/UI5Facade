@@ -46,13 +46,12 @@ class UI5FacadeServerAdapter implements UI5ServerAdapterInterface
     
     protected function buildJsClickCallServerAction(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
-        $headers = ! empty($this->getElement()->getAjaxHeaders()) ? 'headers: ' . json_encode($this->getElement()->getAjaxHeaders()) . ',' : '';
-        $action->getMetaObject()->get;
-        
-        
+        $headers = ! empty($this->getElement()->getAjaxHeaders()) ? 'headers: ' . json_encode($this->getElement()->getAjaxHeaders()) . ',' : '';        
+        $controller = $this->getElement()->getController();
         return <<<JS
 
-							$oParamsJs.webapp = '{$this->getElement()->getFacade()->getWebapp()->getRootPage()->getAliasWithNamespace()}';                
+							$oParamsJs.webapp = '{$this->getElement()->getFacade()->getWebapp()->getRootPage()->getAliasWithNamespace()}';
+                            var oComponent = {$controller->buildJsComponentGetter()};                
                             if (!navigator.onLine) {
                                 if (exfPreloader) {
                                     console.log('Save offline action');
@@ -64,15 +63,17 @@ class UI5FacadeServerAdapter implements UI5ServerAdapterInterface
                                     }                                
                                     exfPreloader.addAction(actionParams, '{$action->getMetaObject()->getAliasWithNamespace()}')
                                     .then(function(key) {
-                                        var response = {success: 'Action saved in offline queue!'}                                                            
+                                        var response = {success: 'Action saved in offline queue!'};
                                         $oModelJs.setData(response);
                                         $onModelLoadedJs
                                     })
                                     .catch(function(error) {
+                                        console.error(error);
                                         var response = {error: 'Action could not be saved in offline queue!'}
                                         {$this->getElement()->buildJsShowMessageError('response.error', '"Server error"')}
                                         {$onErrorJs}
                                     })
+                                    oComponent.getPreloader().updateQueueCount();
                                 } else {
                                     {$onOfflineJs}
                                 }

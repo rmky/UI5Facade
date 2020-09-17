@@ -1,31 +1,50 @@
 // Toggle online/offlie icon
 window.addEventListener('online', function(){
 	exfLauncher.toggleOnlineIndicator();
-	/*exfPreloader.getActionQueueData('offline')
-	.then(function(data) {
-		var count = data.length;
-		if (count > 0){
-			var shell = exfLauncher.getShell();
-			shell.setBusy(true);
-			var ids = [];
-			data.forEach(function(item){
-				ids.push(item.id);
-			});
-			exfPreloader.syncActionAll(ids)
-			.then(function(){
-				exfPreloaderUI5.updateQueueCount()
+	if(!navigator.serviceWorker){
+		console.log('Syncing offline Queue');
+		exfPreloader.getActionQueueData('offline')
+		.then(function(data) {
+			var count = data.length;
+			if (count > 0){
+				var shell = exfLauncher.getShell();
+				shell.setBusy(true);
+				var ids = [];
+				data.forEach(function(item){
+					ids.push(item.id);
+				});
+				exfPreloader.syncActionAll(ids)
 				.then(function(){
-					shell.setBusy(false);
-					exfLauncher.showMessageToast("Just went online! Actions synced!");
+					exfPreloaderUI5.updateQueueCount()
+					.then(function(){
+						shell.setBusy(false);
+						exfLauncher.showMessageToast("Just went online! Actions synced!");
+					})
 				})
-			})
-		}
-	})
-	.catch(function(error){
-		shell.setBusy(false);
-		console.log(error);
-		exfLauncher.showMessageToast("Syncing actions failed!");
-	})*/
+			}
+		})
+		.catch(function(error){
+			shell.setBusy(false);
+			console.log(error);
+			exfLauncher.showMessageToast("Syncing actions failed!");
+		})
+	} else {
+		(function updateQueueCount(retry = 0){
+			setTimeout(function(){
+				exfLauncher.contextBar.getComponent().getPreloader().updateQueueCount()
+				.then(function(count){
+					if (retry === 10) {
+						exfLauncher.showMessageToast("Background sync encountered a problem. See logs for details!");
+						return;
+					}
+					if (count > 0) {
+						updateQueueCount(retry+1);
+						return;
+					}
+				})
+			}, 3000)
+		})();
+	}
 });
 window.addEventListener('offline', function(){
 	exfLauncher.toggleOnlineIndicator();
@@ -88,6 +107,7 @@ const exfLauncher = {};
 		                    text: "{/_network/queueCnt}/{/_network/syncErrorCnt}",
 		                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"}),
 		                    press: function(oEvent){
+		                    	_oLauncher.contextBar.getComponent().getPreloader().updateQueueCount();
 								var oButton = oEvent.getSource();
 								var oPopover = sap.ui.getCore().byId('exf-network-menu');
 								if (oPopover === undefined) {
@@ -137,34 +157,32 @@ const exfLauncher = {};
 																					exfPreloader.syncActionAll(selectedIds)
 																					.then(function(){
 																						_oLauncher.contextBar.getComponent().getPreloader().updateQueueCount()
-																						.then(function(){
-																							oButton.setBusy(false);
-																							_oLauncher.showMessageToast("Actions synced!");
-																							exfPreloader.getActionQueueData('offline')
-																							.then(function(data){
-																								var oData = {};
-																								oData.data = data;
-																								oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}(), 'queueModel');
-																								return;
-																							})
-																							return;
-																						});
+																					})
+																					.then(function(){
+																						oButton.setBusy(false);
+																						_oLauncher.showMessageToast("Actions synced!");
+																						return exfPreloader.getActionQueueData('offline')
+																					})
+																					.then(function(data){
+																						var oData = {};
+																						oData.data = data;
+																						oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}(), 'queueModel');
 																						return;
 																					})
 																					.catch(function(error){
+																						console.error('Sync Error: ',error.message);
 																						_oLauncher.contextBar.getComponent().getPreloader().updateQueueCount()
 																						.then(function(){
 																							oButton.setBusy(false);
 																							_oLauncher.contextBar.getComponent().showDialog('Offline Queue', 'Error syncing actions!', 'Error');
-																							exfPreloader.getActionQueueData('offline')
-																							.then(function(data){
-																								var oData = {};
-																								oData.data = data;
-																								oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}(), 'queueModel');
-																								return;
-																							})
+																							return exfPreloader.getActionQueueData('offline')
+																						})
+																						.then(function(data){
+																							var oData = {};
+																							oData.data = data;
+																							oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}(), 'queueModel');
 																							return;
-																						});
+																						})
 																						return;
 																					})
 																				},
@@ -189,18 +207,16 @@ const exfLauncher = {};
 																					exfPreloader.deleteActionAll(selectedIds)
 																					.then(function(){
 																						_oLauncher.contextBar.getComponent().getPreloader().updateQueueCount()
-																						.then(function(){
-																							oButton.setBusy(false);
-																							_oLauncher.showMessageToast("Actions deleted!");
-																							exfPreloader.getActionQueueData('offline')
-																							.then(function(data){
-																								var oData = {};
-																								oData.data = data;
-																								oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}(), 'queueModel');
-																								return;
-																							})
-																							return;
-																						})
+																					})
+																					.then(function(){
+																						oButton.setBusy(false);
+																						_oLauncher.showMessageToast("Actions deleted!");
+																						return exfPreloader.getActionQueueData('offline')
+																					})
+																					.then(function(data){
+																						var oData = {};
+																						oData.data = data;
+																						oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}(), 'queueModel');
 																						return;
 																					})
 																				}
@@ -578,6 +594,7 @@ const exfLauncher = {};
 							}).data('widget', data[id].bar_widget_id, true), 
 							iItemsIndex);
 				}
+				_oLauncher.contextBar.getComponent().getPreloader().updateQueueCount();
 			},
 
 			showMenu : function (oButton){

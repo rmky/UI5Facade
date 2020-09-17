@@ -379,12 +379,16 @@ sap.ui.define([
 		preloader : function(){
 			const exfPreloaderUI5 = {};
 			(function(){
-				this.updateQueueCount = function() {
+				this.updateQueueCount = function(){
 					return exfPreloader.getActionQueueData('offline')
-					.then(function(data) {
+					.then(function(data){
 						var count = data.length;
+						if (!exfLauncher){
+							return;
+						}
 						exfLauncher.getShell().getModel().setProperty("/_network/queueCnt", count);
 						console.log('Queue count updated');
+						return count;
 					})
 				}
 			}).apply(exfPreloaderUI5);

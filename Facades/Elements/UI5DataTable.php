@@ -121,7 +121,11 @@ class UI5DataTable extends UI5AbstractElement
                                 {$this->buildJsCellsForMTable()}
                             ]
                         }),
-            		}
+            		},
+                    contextMenu: [
+                        // A context menu is required for the contextmenu browser event to fire!
+                        new sap.ui.unified.Menu()
+                    ]
                 })
                 {$this->buildJsClickListeners('oController')}
                 {$this->buildJsPseudoEventHandlers()}
@@ -593,6 +597,10 @@ JS;
         }
         
         // Right click. Currently only supports one double click action - the first one in the list of buttons
+        // Theoretically the sap.m.ListBase has it's own support for a context menu, but that triggers
+        // the browser context menu too. Could not find a way to avoid it, so we use a custom context
+        // menu here. This requires an empty menu in the contextMenu property of the list control - 
+        // see. buildJsConstructorForMTable()
         if ($rightclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_RIGHT_CLICK)[0]) {
             $rightclick_script = $this->getFacade()->getElement($rightclick_button)->buildJsClickEventHandlerCall($oControllerJsVar);
         } else {
@@ -609,9 +617,9 @@ JS;
                 oEvent.preventDefault();
                 {$rightclick_script}
         	})
-        	
+            	
 JS;
-        }
+            }
         
         // Single click. Currently only supports one click action - the first one in the list of buttons
         if ($leftclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_LEFT_CLICK)[0]) {
@@ -663,7 +671,11 @@ JS;
                         {$this->buildJsContextMenuButtons($buttons)}
                     ],
                     itemSelect: function(oEvent) {
-                        oEvent.getSource().destroy();
+                        var oMenu = oEvent.getSource();
+                        var oItem = oEvent.getParameters().item;
+                        if (! oItem.getSubmenu()) {
+                            oMenu.destroy();
+                        }
                     }
                 })
 JS;

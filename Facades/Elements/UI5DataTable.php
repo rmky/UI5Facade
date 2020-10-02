@@ -619,7 +619,7 @@ JS;
         	})
             	
 JS;
-            }
+        }
         
         // Single click. Currently only supports one click action - the first one in the list of buttons
         if ($leftclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_LEFT_CLICK)[0]) {

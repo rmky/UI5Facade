@@ -104,7 +104,7 @@ JS;
         .{$this->buildJsSetSelectedKeyMethod($this->escapeJsTextValue($value), $widget->getValueText())}
 JS;
             }
-        } else {
+        } elseif ($widget->getValueAttribute() !== $widget->getTextAttribute()) {
             // If the value is to be taken from a model, we need to check if both - key
             // and value are there. If not, the value needs to be fetched from the server.
             $missingValueJs = <<<JS
@@ -450,7 +450,11 @@ JS;
     public function buildJsValueGetterMethod()
     {
         if ($this->getWidget()->getMultiSelect() === false) {
-            return "getSelectedKey()";
+            if ($this->getWidget()->getValueAttribute() === $this->getWidget()->getTextAttribute()) {
+                return "getValue()";
+            } else {            
+                return "getSelectedKey()";
+            }
         } else {
             $delim = $this->getWidget()->getMultiSelectTextDelimiter();
             return "getTokens().reduce(function(sList, oToken, iIdx, aTokens){ return sList + (sList !== '' ? '$delim' : '') + oToken.getKey() }, '')";

@@ -30,6 +30,7 @@ class UI5Tabs extends UI5Container
             {$this->buildJsChildrenConstructors()}
         ]
     })
+    {$this->buildJsPseudoEventHandlers()}
 JS;
     }
 }

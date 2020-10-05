@@ -90,9 +90,11 @@ class UI5Button extends UI5AbstractElement
         
         return <<<JS
 
-new sap.m.Button("{$this->getId()}", { 
-    {$this->buildJsProperties()}
-}).addStyleClass("{$this->buildCssElementClass()}")
+        new sap.m.Button("{$this->getId()}", { 
+            {$this->buildJsProperties()}
+        })
+        .addStyleClass("{$this->buildCssElementClass()}")
+        {$this->buildJsPseudoEventHandlers()}
 
 JS;
     }

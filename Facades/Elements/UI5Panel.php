@@ -195,6 +195,7 @@ JS;
                 ],
                 {$toolbar}
             })
+            {$this->buildJsPseudoEventHandlers()}
             
 JS;
     }
@@ -222,10 +223,10 @@ JS;
     
     /**
      * 
-     * @param unknown $content
+     * @param string $content
      * @return string
      */
-    protected function buildJsLayoutGrid($content)
+    protected function buildJsLayoutGrid(string $content)
     {
         return <<<JS
 
@@ -236,6 +237,7 @@ JS;
                     {$content}
 				]
             })
+            {$this->buildJsPseudoEventHandlers()}
 
 JS;
     }

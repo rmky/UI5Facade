@@ -329,6 +329,10 @@ JS;
         return "sap.ui.getCore().byId('{$this->getId()}').focus()";
     }
     
+    /**
+     * 
+     * @return string
+     */
     protected function buildJsSetFocusToNext() : string
     {
         return <<<JS
@@ -345,12 +349,27 @@ JS;
 JS;
     }
     
-    protected function buildJsPseudoEventHandlers()
+    /**
+     * 
+     * @return bool
+     */
+    public function getAdvanceFocusOnEnter() : bool
     {
         if ($facadeOptUxon = $this->getWidget()->getFacadeOptions($this->getFacade())) {
-            if (BooleanDataType::cast($facadeOptUxon->getProperty('advance_focus_on_enter')) === true) {
-                $this->addPseudoEventHandler('onsapenter', $this->buildJsSetFocusToNext());
-            }
+            return BooleanDataType::cast($facadeOptUxon->getProperty('advance_focus_on_enter'));
+        }
+        return false;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsPseudoEventHandlers()
+     */
+    protected function buildJsPseudoEventHandlers()
+    {
+        if ($this->getAdvanceFocusOnEnter()) {
+            $this->addPseudoEventHandler('onsapenter', $this->buildJsSetFocusToNext());
         }
         return parent::buildJsPseudoEventHandlers();
     }

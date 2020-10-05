@@ -66,6 +66,8 @@ class UI5Dialog extends UI5Form
             $this->getController()->addOnInitScript('this.getView().getModel("view").setProperty("/_prefill/pending", true);');
         }
         
+        $this->registerSubmitOnEnter($oControllerJs);
+        
         if ($this->isMaximized() === false) {
             $this->getController()->addMethod('closeDialog', $this, 'oEvent', "try{ this.getView().getModel('view').setProperty('/_prefill/current_data_hash', null); sap.ui.getCore().byId('{$this->getFacade()->getElement($widget)->getId()}').close(); } catch (e) { console.error('Could not close dialog: ' + e); }");
             return $this->buildJsDialog();
@@ -296,7 +298,8 @@ JS;
 			buttons : [ {$this->buildJsDialogButtons()} ],
 			content : [ {$content} ],
             {$prefill}
-		});
+		})
+        {$this->buildJsPseudoEventHandlers()}
 JS;
     }
 
@@ -396,6 +399,8 @@ JS;
             ],
             footer: {$this->buildJsFloatingToolbar()}
         })
+        {$this->buildJsPseudoEventHandlers()}
+
 JS;
     }
         

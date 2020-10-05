@@ -139,6 +139,7 @@ JS;
      */
     public function buildJsValidationError()
     {        
+        $output = $this->buildJsShowMessageError() . ';';
         foreach ($this->getWidgetsToValidate() as $child) {
             $el = $this->getFacade()->getElement($child);
             $validator = $el->buildJsValidator();

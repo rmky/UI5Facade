@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -25,7 +25,7 @@ sap.ui.define([
 	 * Applies mask support for input controls.
 	 * It should should be applied to the prototype of a <code>sap.m.InputBase</code>.
 	 *
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @private
 	 * @mixin
 	 * @alias sap.m.MaskEnabler
@@ -124,7 +124,7 @@ sap.ui.define([
 				//For the sake of MaskInput, change event is decided inside _inputCompletedHandler, the reset of the InputBase.onfocusout
 				//follows
 				this.bFocusoutDueRendering = this.bRenderingPhase;
-				this.$().toggleClass("sapMFocus", false);
+				this.removeStyleClass("sapMFocus");
 				// remove touch handler from document for mobile devices
 				jQuery(document).off('.sapMIBtouchstart');
 
@@ -1170,8 +1170,6 @@ sap.ui.define([
 
 		/**
 		 * Determines the browser specific minimal delay time for setTimeout.
-		 *
-		 * Todo: This logic is a good candidate to be implemented generally in jQuery.sap.delayedCall method.
 		 *
 		 * @private
 		 */

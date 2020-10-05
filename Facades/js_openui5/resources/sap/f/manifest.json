@@ -1,11 +1,11 @@
 {
-  "_version": "1.9.0",
+  "_version": "1.21.0",
   "sap.app": {
     "id": "sap.f",
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.73.1"
+      "version": "1.82.0"
     },
     "title": "SAPUI5 library with Fiori controls.",
     "description": "SAPUI5 library with Fiori controls.",
@@ -22,21 +22,68 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.73",
+      "minUI5Version": "1.82",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.73.1"
+          "minVersion": "1.82.0"
         },
         "sap.ui.layout": {
-          "minVersion": "1.73.1"
+          "minVersion": "1.82.0"
         },
         "sap.m": {
-          "minVersion": "1.73.1"
+          "minVersion": "1.82.0"
         }
       }
     },
     "library": {
-      "i18n": "messagebundle.properties",
+      "i18n": {
+        "bundleUrl": "messagebundle.properties",
+        "supportedLocales": [
+          "",
+          "ar",
+          "bg",
+          "ca",
+          "cs",
+          "da",
+          "de",
+          "el",
+          "en",
+          "en-US-sappsd",
+          "en-US-saptrc",
+          "es",
+          "et",
+          "fi",
+          "fr",
+          "hi",
+          "hr",
+          "hu",
+          "it",
+          "iw",
+          "ja",
+          "kk",
+          "ko",
+          "lt",
+          "lv",
+          "ms",
+          "nl",
+          "no",
+          "pl",
+          "pt",
+          "rigi",
+          "ro",
+          "ru",
+          "sh",
+          "sk",
+          "sl",
+          "sv",
+          "th",
+          "tr",
+          "uk",
+          "vi",
+          "zh-CN",
+          "zh-TW"
+        ]
+      },
       "content": {
         "controls": [
           "sap.f.Avatar",
@@ -54,6 +101,8 @@
           "sap.f.semantic.SemanticPage",
           "sap.f.GridList",
           "sap.f.GridListItem",
+          "sap.f.PlanningCalendarInCard",
+          "sap.f.PlanningCalendarInCardLegend",
           "sap.f.ProductSwitch",
           "sap.f.ProductSwitchItem",
           "sap.f.ShellBar"
@@ -61,6 +110,7 @@
         "elements": [
           "sap.f.DynamicPageAccessibleLandmarkInfo",
           "sap.f.GridContainerItemLayoutData",
+          "sap.f.PlanningCalendarInCardRow",
           "sap.f.semantic.AddAction",
           "sap.f.semantic.CloseAction",
           "sap.f.semantic.CopyAction",

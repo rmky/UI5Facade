@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([], function() {
@@ -24,9 +24,9 @@ sap.ui.define([], function() {
 	 */
 	var fnIsPlainObject = function(obj) {
 		/*
-		 * The code in this function is taken from jQuery 3.1.1 "jQuery.isPlainObject" and got modified.
+		 * The code in this function is taken from jQuery 3.5.1 "jQuery.isPlainObject" and got modified.
 		 *
-		 * jQuery JavaScript Library v3.1.1
+		 * jQuery JavaScript Library v3.5.1
 		 * http://jquery.com/
 		 *
 		 * Copyright jQuery Foundation and other contributors

@@ -1,11 +1,17 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
+// Ensure that sap.ui.unified is loaded before the module dependencies will be required.
+// Loading it synchronously is the only compatible option and doesn't harm when sap.ui.unified
+// already has been loaded asynchronously (e.g. via a dependency declared in the manifest)
+sap.ui.getCore().loadLibrary("sap.ui.unified");
+
 // Provides control sap.m.PlanningCalendarHeader.
 sap.ui.define([
+	'sap/ui/core/Element',
 	'sap/ui/core/Control',
 	'./library',
 	'./Toolbar',
@@ -26,6 +32,7 @@ sap.ui.define([
 	"./PlanningCalendarHeaderRenderer"
 ],
 function(
+	Element,
 	Control,
 	library,
 	Toolbar,
@@ -62,7 +69,7 @@ function(
 	 *
 	 * <h3>Overview</h3>
 	 *
-	 * Тhe calendar header contains the action controls which you can use to manipulate the calendar and facilitate
+	 * The calendar header contains the action controls which you can use to manipulate the calendar and facilitate
 	 * navigation.
 	 *
 	 * <b>Note:</b> The <code>PlanningCalendarHeader</code> uses parts of the <code>sap.ui.unified</code> library.
@@ -88,7 +95,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @private
@@ -267,26 +274,29 @@ function(
 			}.bind(this)
 		});
 		oCalendarPicker = new Calendar(sOPHId + "-Cal", {
-			ariaLabelledBy: InvisibleText.getStaticId("sap.ui.unified", "CALENDAR_DIALOG")
+			ariaLabelledBy: InvisibleText.getStaticId("sap.m", "PCH_RANGE_PICKER")
 		});
 		oCalendarPicker.attachEvent("select", this._handlePickerDateSelect, this);
 		oCalendarPicker.attachEvent("cancel", this._handlePickerCancelEvent, this);
+		oCalendarPicker.setPopupMode(true);
 		this.setAggregation("_calendarPicker", oCalendarPicker);
 
 		this.setAssociation("currentPicker", oCalendarPicker);
 
 		oMonthPicker = new CustomMonthPicker(sOPHId + "-MonthCal", {
-			ariaLabelledBy: InvisibleText.getStaticId("sap.ui.unified", "CALENDAR_DIALOG")
+			ariaLabelledBy: InvisibleText.getStaticId("sap.m", "PCH_RANGE_PICKER")
 		});
 		oMonthPicker.attachEvent("select", this._handlePickerDateSelect, this);
 		oMonthPicker.attachEvent("cancel", this._handlePickerCancelEvent, this);
+		oMonthPicker.setPopupMode(true);
 		this.setAggregation("_monthPicker", oMonthPicker);
 
 		oYearPicker = new CustomYearPicker(sOPHId + "-YearCal", {
-			ariaLabelledBy: InvisibleText.getStaticId("sap.ui.unified", "CALENDAR_DIALOG")
+			ariaLabelledBy: InvisibleText.getStaticId("sap.m", "PCH_RANGE_PICKER")
 		});
 		oYearPicker.attachEvent("select", this._handlePickerDateSelect, this);
 		oYearPicker.attachEvent("cancel", this._handlePickerCancelEvent, this);
+		oYearPicker.setPopupMode(true);
 		this.setAggregation("_yearPicker", oYearPicker);
 
 		this._oPickerBtn = new AccButton(sNavToolbarId + "-PickerBtn", {
@@ -294,12 +304,13 @@ function(
 			ariaHaspopup: "dialog",
 			ariaLabelledBy: InvisibleText.getStaticId("sap.m", "PCH_SELECT_RANGE"),
 			press: function () {
-				var oDate = this.getStartDate() || new Date(),
-					sCurrentPickerId = this.getAssociation("currentPicker");
-				oPicker = sap.ui.getCore().byId(sCurrentPickerId);
-				oPicker.displayDate(oDate);
-
-				this._openCalendarPickerPopup(oPicker);
+				if (this.fireEvent("_pickerButtonPress", {}, true)) {
+					var oDate = this.getStartDate() || new Date(),
+						sCurrentPickerId = this.getAssociation("currentPicker");
+					oPicker = Element.registry.get(sCurrentPickerId);
+					oPicker.displayDate(oDate);
+					this._openCalendarPickerPopup(oPicker);
+				}
 			}.bind(this)
 		});
 
@@ -462,6 +473,7 @@ function(
 	 * @private
 	 */
 	PlanningCalendarHeader.prototype._convertViewSwitchToSelect = function () {
+		this._oViewSwitch._bForcedSelectMode = true;
 		this._oViewSwitch._toSelectMode();
 	};
 
@@ -470,6 +482,7 @@ function(
 	 * @private
 	 */
 	PlanningCalendarHeader.prototype._convertViewSwitchToSegmentedButton = function () {
+		this._oViewSwitch._bForcedSelectMode = false;
 		this._oViewSwitch._toNormalMode();
 	};
 
@@ -489,7 +502,7 @@ function(
 	 */
 	PlanningCalendarHeader.prototype._handlePickerDateSelect = function () {
 		var sCurrentPickerId = this.getAssociation("currentPicker"),
-			oPicker = sap.ui.getCore().byId(sCurrentPickerId),
+			oPicker = Element.registry.get(sCurrentPickerId),
 			oSelectedDate = oPicker.getSelectedDates()[0].getStartDate();
 
 		this.setStartDate(oSelectedDate);
@@ -504,8 +517,8 @@ function(
 	 * Handler for the change event of the view switch.
 	 * @private
 	 */
-	PlanningCalendarHeader.prototype._handleViewSwitchChange = function () {
-		this.fireViewChange();
+	PlanningCalendarHeader.prototype._handleViewSwitchChange = function (oEvent) {
+		this.fireViewChange(oEvent.getParameters());
 	};
 
 
@@ -540,6 +553,9 @@ function(
 		oPopup.onsapescape = function(oEvent) {
 			this.onsapescape(oEvent);
 		}.bind(this);
+
+		oPopup.attachEvent("opened", this._handlePopupOpenedEvent, this);
+		oPopup.attachEvent("closed", this._handlePopupClosedEvent, this);
 
 		return oPopup;
 	};
@@ -577,6 +593,22 @@ function(
 		this.fireCancel();
 		this._closeCalendarPickerPopup();
 		oPickerBtnDomRef && oPickerBtnDomRef.focus();
+	};
+
+	/**
+	 * Ensures the focus is corretly set after the popup is opened
+	 * @private
+	 */
+	PlanningCalendarHeader.prototype._handlePopupOpenedEvent = function() {
+		Element.registry.get(this.getAssociation("currentPicker")).focus();
+	};
+
+	/**
+	 * Ensures that the picker mode is correct after a popup close.
+	 * @private
+	 */
+	PlanningCalendarHeader.prototype._handlePopupClosedEvent = function() {
+		this.getAggregation("_calendarPicker")._closedPickers();
 	};
 
 	/**

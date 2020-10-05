@@ -1,6 +1,6 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -9,6 +9,7 @@ sap.ui.define([
 	"sap/ui/dt/ContextMenuControl",
 	"sap/ui/dt/Util",
 	"sap/ui/dt/OverlayRegistry",
+	"sap/ui/dt/util/_createPromise",
 	"sap/ui/Device",
 	"sap/base/assert",
 	"sap/ui/events/KeyCodes",
@@ -19,6 +20,7 @@ sap.ui.define([
 	ContextMenuControl,
 	DtUtil,
 	OverlayRegistry,
+	_createPromise,
 	Device,
 	assert,
 	KeyCodes,
@@ -34,7 +36,7 @@ sap.ui.define([
 	 * @class The ContextMenu registers event handler to open the context menu. Menu entries can dynamically be added
 	 * @extends sap.ui.dt.Plugin
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @constructor
 	 * @private
 	 * @since 1.53
@@ -161,7 +163,18 @@ sap.ui.define([
 	ContextMenu.prototype.open = function (mPosition, oOverlay, bContextMenu, bIsSubMenu) {
 		this._bContextMenu = !!bContextMenu;
 
-		this.setContextElement(oOverlay.getElement());
+		var oNewContextElement = oOverlay.getElement();
+		if (this._fnCancelMenuPromise) {
+			// Menu is still opening
+			if (this.getContextElement() === oNewContextElement) {
+				// Same context element, first opening request is still valid
+				return;
+			}
+			this._fnCancelMenuPromise();
+			delete this._fnCancelMenuPromise;
+		}
+
+		this.setContextElement(oNewContextElement);
 
 		this.getDesignTime().getSelectionManager().attachChange(this._onSelectionChanged, this);
 
@@ -186,7 +199,11 @@ sap.ui.define([
 
 		var oPromise = Promise.resolve();
 		if (!bIsSubMenu) {
-			oPromise = DtUtil.waitForSynced(this.getDesignTime())()
+			var oDtSyncPromise = _createPromise(function (resolve, reject) {
+				DtUtil.waitForSynced(this.getDesignTime())().then(resolve).catch(reject);
+			}.bind(this));
+			this._fnCancelMenuPromise = oDtSyncPromise.cancel;
+			oPromise = oDtSyncPromise.promise
 				.then(function() {
 					this._aGroupedItems = [];
 					this._aSubMenus = [];
@@ -199,7 +216,12 @@ sap.ui.define([
 						}
 						aPluginItemPromises.push(vMenuItems);
 					});
-					return Promise.all(aPluginItemPromises);
+
+					var oPluginItemsPromise = _createPromise(function (resolve, reject) {
+						Promise.all(aPluginItemPromises).then(resolve).catch(reject);
+					});
+					this._fnCancelMenuPromise = oPluginItemsPromise.cancel;
+					return oPluginItemsPromise.promise;
 				}.bind(this))
 				.then(function(aPluginMenuItems) {
 					return aPluginMenuItems.reduce(function(aConcatinatedMenuItems, aMenuItems) {
@@ -218,6 +240,7 @@ sap.ui.define([
 					}.bind(this));
 
 					this._addItemGroupsToMenu(mPosition, oOverlay);
+					delete this._fnCancelMenuPromise;
 				}.bind(this));
 		}
 
@@ -301,12 +324,19 @@ sap.ui.define([
 		this._aMenuItems.some(function (mMenuItemEntry) {
 			if (sSelectedButtonId === mMenuItemEntry.menuItem.id) {
 				var oItem = mMenuItemEntry.menuItem;
-				aSelection = this.getSelectedOverlays();
+				aSelection = mMenuItemEntry.menuItem.responsible || this.getSelectedOverlays();
 				assert(aSelection.length > 0, "sap.ui.rta - Opening context menu, with empty selection - check event order");
 				var mPropertiesBag = {};
 				mPropertiesBag.eventItem = oEventItem;
 				mPropertiesBag.contextElement = oContextElement;
-				oItem.handler(aSelection, mPropertiesBag);
+				var fnHandler = oItem.handler;
+				if (this.oContextMenuControl.isPopupOpen()) {
+					this.oContextMenuControl.attachEventOnce("Closed", function() {
+						fnHandler(aSelection, mPropertiesBag);
+					});
+				} else {
+					fnHandler(aSelection, mPropertiesBag);
+				}
 				oItem = null;
 				return true;
 			}
@@ -704,9 +734,6 @@ sap.ui.define([
 					this._aGroupedItems[iIndex].aGroupedItems.forEach(function (mMenuItem) {
 						this.addMenuItem(mMenuItem, true, true);
 					}.bind(this));
-
-					mPosition.clientX = null;
-					mPosition.clientY = null;
 
 					this.oContextMenuControl.close();
 					setTimeout(function () {

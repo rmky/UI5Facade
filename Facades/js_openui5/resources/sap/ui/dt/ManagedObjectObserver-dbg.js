@@ -1,6 +1,6 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -25,7 +25,7 @@ sap.ui.define([
 	 * @class The ManagedObjectObserver observes changes of a ManagedObject and propagates them via events.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @constructor
 	 * @private
 	 * @since 1.30
@@ -134,7 +134,7 @@ sap.ui.define([
 		// Wrapper for the destroy method to recognize changes
 		this._fnOriginalDestroy = oTarget.destroy;
 		oTarget.destroy = function() {
-			this.unobserve();
+			this.unobserve(oTarget);
 			// Original destroy method was restored by unobserve() call above
 			var vOriginalReturn = oTarget.destroy.apply(oTarget, arguments);
 			this.fireDestroyed();
@@ -590,8 +590,8 @@ sap.ui.define([
 	 *
 	 * @protected
 	 */
-	ManagedObjectObserver.prototype.unobserve = function() {
-		var oTarget = this.getTargetInstance();
+	ManagedObjectObserver.prototype.unobserve = function(oTarget) {
+		oTarget = oTarget || this.getTargetInstance();
 
 		if (this._bIsObserved && oTarget) {
 			this._bIsObserved = false;
@@ -675,4 +675,4 @@ sap.ui.define([
 	};
 
 	return ManagedObjectObserver;
-}, /* bExport= */true);
+});

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,7 +20,7 @@ sap.ui.define([
 		 * This class is only for testing purposes for support tool communication.
 		 *
 		 * @extends sap.ui.core.support.Plugin
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 * @private
 		 * @alias sap.ui.core.support.plugins.MessageTest
 		 */
@@ -56,7 +56,7 @@ sap.ui.define([
 
 			var rm = sap.ui.getCore().createRenderManager();
 			rm.write("<div class='sapUiSupportToolbar'>");
-			rm.write("<input type='text' id='" + this.getId() + "-input' class='sapUiSupportTxtFld'/>");
+			rm.write("<input type='text' id='" + this.getId() + "-input' class='sapUiSupportTxtFld'>");
 			rm.write("<button id='" + this.getId() + "-send' class='sapUiSupportRoundedButton'>Send</button>");
 			rm.write("</div><div class='sapUiSupportMessageCntnt'></div>");
 			rm.flush(this.$().get(0));
@@ -68,7 +68,7 @@ sap.ui.define([
 				report(that, that.getId() + "Msg", sVal, false);
 			};
 
-			this.$("send").bind("click", this._fSendHandler);
+			this.$("send").on("click", this._fSendHandler);
 			report(this, Support.EventType.SETUP, "", true);
 		};
 
@@ -76,7 +76,7 @@ sap.ui.define([
 		MessageTest.prototype.exit = function(oSupportStub){
 			report(this, Support.EventType.TEAR_DOWN, "", true);
 			if (this._fSendHandler) {
-				this.$("send").unbind("click", this._fSendHandler);
+				this.$("send").off("click", this._fSendHandler);
 				this._fSendHandler = null;
 			}
 			Plugin.prototype.exit.apply(this, arguments);

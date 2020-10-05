@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -27,7 +27,7 @@ sap.ui.define(['./Panel', './library', 'sap/ui/core/library'],
 	 * @extends sap.ui.commons.Panel
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -35,34 +35,37 @@ sap.ui.define(['./Panel', './library', 'sap/ui/core/library'],
 	 * @alias sap.ui.commons.Tab
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
-	var Tab = Panel.extend("sap.ui.commons.Tab", /** @lends sap.ui.commons.Tab.prototype */ { metadata : {
+	var Tab = Panel.extend("sap.ui.commons.Tab", /** @lends sap.ui.commons.Tab.prototype */ {
+		metadata : {
 
-		library : "sap.ui.commons",
-		properties : {
+			library : "sap.ui.commons",
+			properties : {
 
-			/**
-			 * Specifies the vertical scrolling.
-			 */
-			verticalScrolling : {type : "sap.ui.core.Scrolling", group : "Behavior", defaultValue : Scrolling.None},
+				/**
+				 * Specifies the vertical scrolling.
+				 */
+				verticalScrolling : {type : "sap.ui.core.Scrolling", group : "Behavior", defaultValue : Scrolling.None},
 
-			/**
-			 * Specifies the horizontal scrolling.
-			 */
-			horizontalScrolling : {type : "sap.ui.core.Scrolling", group : "Behavior", defaultValue : Scrolling.None},
+				/**
+				 * Specifies the horizontal scrolling.
+				 */
+				horizontalScrolling : {type : "sap.ui.core.Scrolling", group : "Behavior", defaultValue : Scrolling.None},
 
-			/**
-			 * Specifies whether the tab contains a close button.
-			 */
-			closable : {type : "boolean", group : "Misc", defaultValue : false},
+				/**
+				 * Specifies whether the tab contains a close button.
+				 */
+				closable : {type : "boolean", group : "Misc", defaultValue : false},
 
-			/**
-			 * Defines whether the tab is the active one.
-			 * @deprecated AS of 0.17.0.
-			 * This property is not used. To identify the selected tab in a TabStrip selectedIndex is used.
-			 */
-			selected : {type : "boolean", group : "Behavior", defaultValue : false, deprecated: true}
-		}
-	}});
+				/**
+				 * Defines whether the tab is the active one.
+				 * @deprecated AS of 0.17.0.
+				 * This property is not used. To identify the selected tab in a TabStrip selectedIndex is used.
+				 */
+				selected : {type : "boolean", group : "Behavior", defaultValue : false, deprecated: true}
+			}
+		},
+		renderer: null // this control has no own renderer, it is rendered by the TabStripRenderer
+	});
 
 	/*
 	 * Initializes the Tab.

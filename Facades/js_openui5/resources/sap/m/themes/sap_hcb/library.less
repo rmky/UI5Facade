@@ -2,7 +2,7 @@
 
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -311,6 +311,7 @@ html.sap-desktop .sapMBtn:focus > .sapMFocusable:not(.sapMBtnActive) {
 
 .sapMBtnDisabled > span.sapMBtnInner.sapMBtnAccept,
 .sapMBtnDisabled > span.sapMBtnInner.sapMBtnReject,
+.sapMBtnDisabled > span.sapMBtnInner.sapMBtnAttention,
 .sapMBtnDisabled > span.sapMBtnInner.sapMBtnEmphasized {
 	border-color: @sapUiHcReducedForeground;
 	color: @sapUiContentDisabledTextColor;
@@ -791,7 +792,7 @@ html.sap-tablet .sapMGTBackgroundHvrOutln:not(.sapMGTStateDisabled):active {
 	padding: 0.125rem 0.125rem 0 0.125rem;
 }
 
-.sapMITBScrollContainer {
+.sapMITHScrollContainer {
 	/* the same padding as on the sapMITBHead is needed
 	to correct the scrolling calculations*/
 	padding: 0.125rem 0.125rem 0 0.125rem;
@@ -799,7 +800,7 @@ html.sap-tablet .sapMGTBackgroundHvrOutln:not(.sapMGTStateDisabled):active {
 
 /* Arrow */
 
-.sapMITBSelected > .sapMITBContentArrow {
+.sapMITBSelected > .sapMITBFilterWrapper > .sapMITBContentArrow {
 	border-bottom-color: @sapUiObjectHeaderBorderColor;
 }
 
@@ -812,7 +813,7 @@ html.sap-tablet .sapMGTBackgroundHvrOutln:not(.sapMGTStateDisabled):active {
 
 /* Tab Item */
 
-.sapMITBVertical > .sapMITBTab {
+.sapMITBVertical > .sapMITBFilterWrapper > .sapMITBTab {
 	position: relative;
 }
 
@@ -1315,6 +1316,8 @@ html.sap-desktop .sapMLIB-CTX:focus .sapMGrowingListTrigger {
 /* High Contrast Black theme           */
 /* =================================== */
 
+@_sap_m_ListItemBase_Highlight_InformationColor: @sapUiAccent6;
+
 html[data-sap-ui-browser='ie11'] .sapMLIBFocusable:focus {
 	outline-width: 3px;
 }
@@ -1360,7 +1363,7 @@ html.sap-desktop .sapMLIBIconDel:focus {
 	border: 1px solid @sapUiButtonBorderColor;
 	border-radius: 0.25rem;
 
-	/* TODO remove after 1.62 version */
+	/* TODO remove after the end of support for Internet Explorer */
 	// centering the content of the ::after element
 	// does not work in IE if directly set on ::after
 	// 1.5rem - 6px (1px on the button and 2px on the ::after per side)
@@ -1449,12 +1452,12 @@ html.sap-desktop .sapMLIB.sapMNLG:focus::after {
 	z-index: 2;
 }
 
-html[data-sap-ui-browser*='ie'].sap-desktop .sapMLIB.sapMNLG:focus .sapMNLI::before {// TODO remove after 1.62 version
+html[data-sap-ui-browser*='ie'].sap-desktop .sapMLIB.sapMNLG:focus .sapMNLI::before {// TODO remove after the end of support for Internet Explorer
 	border-left: none;
 	border-right: none;
 }
 
-html[data-sap-ui-browser^='ie'].sap-desktop .sapMLIB.sapMNLG:focus::before {// TODO remove after 1.62 version
+html[data-sap-ui-browser^='ie'].sap-desktop .sapMLIB.sapMNLG:focus::before {// TODO remove after the end of support for Internet Explorer
 	content: "";
 	border: 0.125rem dotted @sapUiContentFocusColor;
 	border-left-style: solid;
@@ -1467,7 +1470,7 @@ html[data-sap-ui-browser^='ie'].sap-desktop .sapMLIB.sapMNLG:focus::before {// T
 	z-index: 2;
 }
 
-html[data-sap-ui-browser^='ie'].sap-desktop .sapMLIB.sapMNLG:focus::after {// TODO remove after 1.62 version
+html[data-sap-ui-browser^='ie'].sap-desktop .sapMLIB.sapMNLG:focus::after {// TODO remove after the end of support for Internet Explorer
 	content: "";
 	border-left: 0.125rem dotted @sapUiListBackground;
 	position: absolute;
@@ -1917,12 +1920,6 @@ html.sap-phone {
 	// border is 2px in this case because
 	// there is 1px border around the whole Panel
 	border-bottom: 1px solid @sapUiGroupTitleBorderColor;
-}
-
-.sapMPanelExpandableIcon {
-	&:focus::after {
-		border-width: 2px;
-	}
 }
 /* END "Panel.less" */
 
@@ -2413,7 +2410,7 @@ html.sap-desktop .sapMRI:focus:not(.sapMRIDisabled) {
 	outline-offset: -0.125rem;
 }
 
-/* TODO remove after 1.62 version */
+/* TODO remove after the end of support for Internet Explorer */
 /* IE ignores outline-offset. Use an overlay: */
 html[data-sap-ui-browser^="ie"].sap-desktop {
 	.sapMRI:focus {
@@ -2468,7 +2465,7 @@ html[data-sap-ui-browser^="ie"].sap-desktop {
 	outline-offset: -3px;
 }
 
-/* fix for IE focus outline */// TODO remove after 1.62 version
+/* fix for IE focus outline */// TODO remove after the end of support for Internet Explorer
 html[data-sap-ui-browser^="ie"] .sapMFocus > .sapMSFF {
 	outline: none;
 
@@ -2506,7 +2503,7 @@ html[data-sap-ui-browser^="ie"] .sapMFocus > .sapMSFF {
 /* button highlight on hover/press */
 html.sap-desktop .sapMSFB:hover,
 .sapMSFB:active {
-	/* Needs repeating statements because of IE interpretation of :focus */// TODO remove after 1.62 version
+	/* Needs repeating statements because of IE interpretation of :focus */// TODO remove after the end of support for Internet Explorer
 	border-width: 0 0 0 1px;
 	background-color: @sapUiButtonHoverBackground;
 	border-left-color: @sapUiButtonHoverBorderColor;
@@ -2551,7 +2548,7 @@ html.sap-desktop .sapMSFB:hover,
 
 /* custom placeholder if not natively supported (IE9) */
 /* IE9/IE10 cleanup comment: there are still issues with IE11 and placeholders */
-/* TODO remove after 1.62 version */
+/* TODO remove after the end of support for Internet Explorer */
 .sapMSF>.sapMSFF>.sapMSFPlaceholder {
 	font-style: normal;
 }
@@ -3083,14 +3080,6 @@ html.sap-desktop .sapMST:focus:not([tabindex]) {
 	border: 0.125rem dotted @sapUiContentFocusColor;
 }
 
-.sapMITB.sapUiResponsiveContentPadding .sapMSB:focus .sapMSBInner:not(.sapMSBInnerDisabled)::after {
-	top: 0.3125rem;
-	bottom: 0.3125rem;
-	left: 0.0625rem;
-	right: 0.55rem;
-	border: 0.125rem dotted @sapUiContentFocusColor;
-}
-
 .sapMSB:focus .sapMBtnInner {
 	border-color: @sapUiButtonBackground;
 }
@@ -3309,6 +3298,12 @@ html[data-sap-ui-browser^='ed'] .sapMListTbl {
 /* table column header */
 .sapMListTbl th {
 	border-bottom: 0.125rem solid @sapUiListHeaderBorderColor;
+}
+
+// to ensure that the bottom focus outline is visible on the table header row,
+// the <th> bottom border color is made transparent
+.sapMLIBFocusable:focus > th {
+	border-bottom-color: transparent;
 }
 
 .sapMColumnHeaderActive:focus {
@@ -3604,7 +3599,7 @@ html.sap-desktop .sapMToken:focus {
 	outline-offset: -3px;
 }
 
-html[data-sap-ui-browser^="ie"].sap-desktop, /* TODO remove after 1.62 version */
+html[data-sap-ui-browser^="ie"].sap-desktop, /* TODO remove after the end of support for Internet Explorer */
 html[data-sap-ui-browser^="ed"].sap-desktop {
 	.sapMToken:focus {
 		.sapMTokenText:before {
@@ -3624,7 +3619,7 @@ html.sap-desktop .sapMTokenizer:focus{
 	outline: 0.125rem dotted @sapUiContentFocusColor;
 }
 
-html[data-sap-ui-browser^="ie"].sap-desktop, /* TODO remove after 1.62 version */
+html[data-sap-ui-browser^="ie"].sap-desktop, /* TODO remove after the end of support for Internet Explorer */
 html[data-sap-ui-browser^="ed"].sap-desktop {
 	.sapMTokenizer:focus {
 		&:before {
@@ -3831,20 +3826,20 @@ html.sap-desktop .sapUiSizeCompact .sapMTB.sapMListHdrTBar.sapMVSDFilterHeaderTo
 /* High Contrast Black theme                      */
 /* ============================================== */
 
-.sapMWizardProgressNavAnchor:focus {
+.sapMWizardProgressNavStep:focus .sapMWizardProgressNavStepContainer {
 	outline: 2px dotted @sapUiContentFocusColor;
 }
 
 .sapMWizardProgressNavStep[data-sap-ui-wpn-step-current="true"] {
-	& .sapMWizardProgressNavAnchor::after {
+	.sapMWizardProgressNavStepContainer::after {
 		background: @sapUiObjectHeaderBorderColor;
 	}
 }
 
 .sapMWizardProgressNavStep[data-sap-ui-wpn-step-active="true"] {
 
-	/* anchors in all steps after the active one have inactive style */
-	& ~ .sapMWizardProgressNavStep .sapMWizardProgressNavAnchorCircle {
+	/* all steps after the active one have inactive style */
+	& ~ .sapMWizardProgressNavStep .sapMWizardProgressNavStepCircle {
 		background: @sapUiHcReducedBackground;
 		border-color: @sapUiHcReducedAltForeground;
 		color: @sapUiHcReducedAltForeground;

@@ -1,8 +1,13 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
+
+// Ensure that sap.ui.unified is loaded before the module dependencies will be required.
+// Loading it synchronously is the only compatible option and doesn't harm when sap.ui.unified
+// already has been loaded asynchronously (e.g. via a dependency declared in the manifest)
+sap.ui.getCore().loadLibrary("sap.ui.unified");
 
 // Provides control sap.m.Menu.
 sap.ui.define([
@@ -61,60 +66,63 @@ sap.ui.define([
 		 * @implements sap.ui.core.IContextMenu
 		 *
 		 * @author SAP SE
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 *
 		 * @constructor
 		 * @public
 		 * @alias sap.m.Menu
 		 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 		 */
-		var Menu = Control.extend("sap.m.Menu", /** @lends sap.m.Menu.prototype */ { metadata : {
-			interfaces: [
-				"sap.ui.core.IContextMenu"
-			],
-			library : "sap.m",
-			properties : {
-				/**
-				 * Defines the <code>Menu</code> title.
-				 */
-				title : { type : "string", group : "Misc", defaultValue : null }
-			},
-			defaultAggregation: "items",
-			aggregations: {
-				/**
-				 * Defines the items contained within this control.
-				 */
-				items: { type: "sap.m.MenuItem", multiple: true, singularName: "item", bindable: "bindable" },
-
-				/**
-				 * Internal aggregation that contains the inner <code>sap.m.Dialog</code> for mobile.
-				 */
-				_dialog: { type: "sap.m.Dialog", multiple: false, visibility: "hidden" },
-
-				/**
-				 * Internal aggregation that contains the inner <code>sap.ui.unified.Menu</code> for desktop and tablet.
-				 */
-				_menu: { type: "sap.ui.unified.Menu", multiple: false, visibility: "hidden" }
-			},
-			events: {
-				/**
-				 * Fired when a <code>MenuItem</code> is selected.
-				 */
-				itemSelected: {
-					parameters: {
-						/**
-						 * The <code>MenuItem</code> which was selected.
-						 */
-						item : {type : "sap.m.MenuItem" }
-					}
+		var Menu = Control.extend("sap.m.Menu", /** @lends sap.m.Menu.prototype */ {
+			metadata : {
+				interfaces: [
+					"sap.ui.core.IContextMenu"
+				],
+				library : "sap.m",
+				properties : {
+					/**
+					 * Defines the <code>Menu</code> title.
+					 */
+					title : { type : "string", group : "Misc", defaultValue : null }
 				},
+				defaultAggregation: "items",
+				aggregations: {
+					/**
+					 * Defines the items contained within this control.
+					 */
+					items: { type: "sap.m.MenuItem", multiple: true, singularName: "item", bindable: "bindable" },
 
-				/**
-				 * Fired when the menu is closed.
-				 */
-				closed: {}
-			}
-		}});
+					/**
+					 * Internal aggregation that contains the inner <code>sap.m.Dialog</code> for mobile.
+					 */
+					_dialog: { type: "sap.m.Dialog", multiple: false, visibility: "hidden" },
+
+					/**
+					 * Internal aggregation that contains the inner <code>sap.ui.unified.Menu</code> for desktop and tablet.
+					 */
+					_menu: { type: "sap.ui.unified.Menu", multiple: false, visibility: "hidden" }
+				},
+				events: {
+					/**
+					 * Fired when a <code>MenuItem</code> is selected.
+					 */
+					itemSelected: {
+						parameters: {
+							/**
+							 * The <code>MenuItem</code> which was selected.
+							 */
+							item : {type : "sap.m.MenuItem" }
+						}
+					},
+
+					/**
+					 * Fired when the menu is closed.
+					 */
+					closed: {}
+				}
+			},
+			renderer: null // this is a popup control without a renderer
+		});
 
 		EnabledPropagator.call(Menu.prototype);
 
@@ -129,7 +137,7 @@ sap.ui.define([
 		/**
 		 * Map of all available properties in the sap.ui.unified.MenuItem.
 		 * Needed when syncs between sap.m.MenuItem and unified.MenuItem are performed.
-		 * @type {map}
+		 * @type {Object<string,Object>}
 		 * @private
 		 */
 		Menu.UNFIFIED_MENU_ITEMS_PROPS = UfdMenuItem.getMetadata().getAllProperties();
@@ -145,7 +153,7 @@ sap.ui.define([
 		/**
 		 * Map of all available properties in the sap.m.MenuListItem
 		 * Needed when syncs between sap.m.MenuItem and sap.m.MenuListItem are performed.
-		 * @type {map}
+		 * @type {Object<string,Object>}
 		 * @private
 		 */
 		Menu.MENU_LIST_ITEMS_PROPS = MenuListItem.getMetadata().getAllProperties();

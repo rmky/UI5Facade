@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,10 +14,10 @@ sap.ui.define([
 	"use strict";
 
 	/**
-	 * @class Class for manipulating and receiving changes of the browserhash with the hasher framework.
+	 * @class Class for manipulating and receiving changes of the browser hash with the hasher framework.
 	 *
 	 * Fires a <code>hashChanged</code> event if the browser hash changes.
-	 * @extends sap.ui.base.EventProvider
+	 * @extends sap.ui.core.routing.HashChangerBase
 	 *
 	 * @public
 	 * @alias sap.ui.core.routing.HashChanger
@@ -178,7 +178,13 @@ sap.ui.define([
 	};
 
 	/**
+	 * Reconstructs the hash
 	 *
+	 * @param {string[]} aKeys The prefixes of the RouterHashChangers which changed their hash during the last navTo call
+	 * @param {string[]} aValues The new hashes in the last navTo call
+	 * @param {string[]} aDeleteKeys The prefixes of the RouterHashChanger which are navigated away and their hashes will be deleted from the browser hash
+	 * @returns {string} The reconstructed hash
+	 * @private
 	 */
 	HashChanger.prototype._reconstructHash = function(aKeys, aValues, aDeleteKeys) {
 		var aParts = this.getHash().split("&/"),
@@ -296,7 +302,10 @@ sap.ui.define([
 	HashChanger.prototype.getRelevantEventsInfo = function() {
 		return [
 			{
-				name: "hashChanged"
+				name: "hashChanged",
+				paramMapping: {
+					fullHash: "newHash"
+				}
 			}
 		];
 	};
@@ -370,6 +379,18 @@ sap.ui.define([
 		 */
 		HashChanger.replaceHashChanger = function(oHashChanger) {
 			if (_oHashChanger && oHashChanger) {
+				var fnGetHistoryInstance = ObjectPath.get("sap.ui.core.routing.History.getInstance"),
+					oHistory;
+
+				// replace the hash changer on oHistory should occur before the replacement on router hash changer
+				// because the history direction should be determined before a router processes the hash.
+				if (fnGetHistoryInstance) {
+					oHistory = fnGetHistoryInstance();
+					// set the new hash changer to oHistory. This will also deregister the listeners from the old hash
+					// changer.
+					oHistory._setHashChanger(oHashChanger);
+				}
+
 				if (_oHashChanger._oRouterHashChanger) {
 					_oHashChanger._oRouterHashChanger.detachEvent("hashSet", _oHashChanger._onHashModified, _oHashChanger);
 					_oHashChanger._oRouterHashChanger.detachEvent("hashReplaced", _oHashChanger._onHashModified, _oHashChanger);
@@ -384,22 +405,8 @@ sap.ui.define([
 					oHashChanger._registerListenerToRelevantEvents();
 				}
 
-				var fnGetHistoryInstance = ObjectPath.get("sap.ui.core.routing.History.getInstance"),
-					oHistory;
-
-				if (fnGetHistoryInstance) {
-					oHistory = fnGetHistoryInstance();
-					// unregister the hashChanger so the events don't get fired twice
-					oHistory._unRegisterHashChanger();
-				}
-
 				extendHashChangerEvents(oHashChanger);
 				_oHashChanger.destroy();
-
-				if (oHistory) {
-					// check if the history got loaded yet - if not there is no need to replace its hashchanger since it will ask for the global one
-					oHistory._setHashChanger(oHashChanger);
-				}
 			}
 
 			_oHashChanger = oHashChanger;

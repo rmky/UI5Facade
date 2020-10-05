@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -8,16 +8,14 @@ sap.ui.define([
 	'sap/ui/core/routing/async/TargetCache',
 	'sap/ui/core/routing/sync/TargetCache',
 	"sap/base/assert",
-	"sap/base/Log",
-	"sap/ui/thirdparty/jquery"
+	"sap/base/Log"
 ],
 	function (
 		EventProvider,
 		asyncCache,
 		syncCache,
 		assert,
-		Log,
-		jQuery
+		Log
 	) {
 		"use strict";
 
@@ -27,14 +25,14 @@ sap.ui.define([
 		 * If it is destroyed, all the views and components which it created are destroyed. If the views or components are still being loaded,
 		 * they will be destroyed after they are loaded.
 		 *
-		 * This class is currectly private and shouldn't be used out of the sap.ui.core.routing scope.
+		 * This class is currently private and shouldn't be used out of the sap.ui.core.routing scope.
 		 *
 		 * @class
 		 * @extends sap.ui.base.EventProvider
 		 * @private
 		 * @param {object} [oOptions]
 		 * @param {sap.ui.core.UIComponent} [oOptions.component] the owner of all the views that will be created by this Instance.
-		 * @param {boolean} [oOptions.async=true] Whether the views and components which are created through this class are loaded asyncly.
+		 * @param {boolean} [oOptions.async=true] Whether the views and components which are created through this class are loaded asynchronously.
 		 * This option can be set only when TargetCache is used standalone without the involvement of a Router.
 		 * Otherwise the async option is inherited from the Router.
 		 * @alias sap.ui.core.routing.TargetCache
@@ -274,8 +272,9 @@ sap.ui.define([
 
 			/**
 			 * Hook for retrieving views synchronous way since Targets and router are not doing this yet
-			 * @param oOptions
-			 * @returns {*}
+			 * @param {object} oOptions The options to determine the view
+			 * @param {boolean} bGlobalId True, if a global id should be generated
+			 * @returns {*} the view
 			 * @private
 			 */
 			_getView : function (oOptions, bGlobalId) {
@@ -296,7 +295,7 @@ sap.ui.define([
 
 			_createId: function (oOptions) {
 				if (this._oComponent && oOptions.id) {
-					oOptions = jQuery.extend({}, oOptions, { id : this._oComponent.createId(oOptions.id) });
+					oOptions = Object.assign({}, oOptions, { id : this._oComponent.createId(oOptions.id) });
 				}
 				return oOptions;
 			},

@@ -2,7 +2,7 @@
 
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -82,18 +82,15 @@
 
 .sapFDynamicPage {
 	/* DynamicPageTitle and Toggle Header Visual Indicator hover state */
-	html.sap-desktop & {
-		&.sapFDynamicPageTitleClickEnabled {
-			.sapFDynamicPageTitle:hover,
-			&.sapFDynamicPageTitleForceHovered .sapFDynamicPageTitle {
-				background: @sapUiHighlight;
-				box-shadow: @sapUiShadowHeader;
-			}
-			&.sapFDynamicPageTitleForceHovered {
-				.sapFDynamicPageToggleHeaderIndicator {
-					.sapMBtnInner {
-						background-color: @sapUiHighlight;
-					}
+	&.sapFDynamicPageTitleClickEnabled {
+		&.sapFDynamicPageTitleForceHovered .sapFDynamicPageTitle {
+			background: @sapUiHighlight;
+			box-shadow: @sapUiShadowHeader;
+		}
+		&.sapFDynamicPageTitleForceHovered {
+			.sapFDynamicPageToggleHeaderIndicator {
+				.sapMBtnInner {
+					background-color: @sapUiHighlight;
 				}
 			}
 		}
@@ -136,7 +133,7 @@ html.sap-desktop .sapFDynamicPageTitle.sapFDynamicPageTitleFocus {
 }
 
 /* IE and Edge ignores outline-offset. Use an overlay: */
-/* TODO remove after 1.62 version */
+/* TODO remove after the end of support for Internet Explorer */
 html[data-sap-ui-browser^="ie"].sap-desktop,
 html[data-sap-ui-browser^="ed"].sap-desktop {
 	.sapFDynamicPageTitle.sapFDynamicPageTitleFocus {
@@ -232,32 +229,38 @@ html[data-sap-ui-browser^="ff"].sap-desktop {
 /* END "FlexibleColumnLayout.less" */
 
 /* START "Card.less" */
-/* ============================= */
-/* CSS for control sap.f/Card  */
-/* High Contrast White theme     */
-/* ============================= */
+/* ================================ */
+/* CSS for control sap.f/Card       */
+/* Belize High Contrast White theme */
+/* ================================ */
 
-@_sap_f_Card_HeaderHoverColor: @sapUiTileHoverBackground;
-@_sap_f_Card_HeaderActiveColor: @sapUiTileActiveBackground;
+@_sap_f_Card_BoxShadow: none;
+@_sap_f_Card_HeaderBorder: 1px solid @sapUiTileBorderColor;
+@_sap_f_Card_HeaderIconColor: @sapUiContentIconColor;
 
-.sapFCard .sapFCardHeader {
-  border-bottom: 1px solid @sapUiTileBorderColor;
-
-  .sapFCardHeaderMainIndicator  {
-	.sapMNCValue,
-	.sapMNCIndicator,
-	.sapMNCScale {
-	  color: @sapUiContentContrastTextColor;
+.sapFCard .sapFCardHeader.sapFCardClickable {
+	&:hover {
+		.sapFCardHeaderMainIndicator {
+			.sapMNCValue,
+			.sapMNCIndicator,
+			.sapMNCScale,
+			.sapMNCIndIcon {
+				color: @sapUiContentContrastTextColor;
+			}
+		}
 	}
-  }
 
-  .sapFCardIcon.sapFAvatar{
-	.sapUiIcon {
-	  color: @sapUiContentIconColor;
+	&:active {
+		.sapFCardHeaderMainIndicator {
+			.sapMNCValue,
+			.sapMNCIndicator,
+			.sapMNCScale,
+			.sapMNCIndIcon {
+				color: @sapUiContentContrastTextColor;
+			}
+		}
 	}
-  }
 }
-
 /* END "Card.less" */
 
 /* START "ShellBar.less" */

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -8,13 +8,13 @@
  * Initialization Code and shared classes of library sap.m.
  */
 sap.ui.define([
-	'sap/ui/Device',
-	'sap/ui/base/DataType',
-	'sap/ui/base/EventProvider',
-	'sap/ui/core/Control',
-	'sap/base/util/ObjectPath',
+	"sap/ui/Device",
+	"sap/ui/base/DataType",
+	"sap/ui/base/EventProvider",
+	"sap/ui/core/Control",
+	"sap/base/util/ObjectPath",
 	// library dependency
-	'sap/ui/core/library',
+	"sap/ui/core/library",
 	"sap/base/strings/capitalize",
 	"sap/ui/thirdparty/jquery",
 	"sap/base/assert",
@@ -27,7 +27,7 @@ sap.ui.define([
 	"./AvatarColor",
 	"./AvatarImageFitType",
 	// referenced here to enable the Support feature
-	'./Support'
+	"./Support"
 ],
 	function(
 	Device,
@@ -55,7 +55,7 @@ sap.ui.define([
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.m",
-		version: "1.73.1",
+		version: "1.82.0",
 		dependencies : ["sap.ui.core"],
 		designtime: "sap/m/designtime/library.designtime",
 		types: [
@@ -65,6 +65,7 @@ sap.ui.define([
 			"sap.m.AvatarType",
 			"sap.m.AvatarColor",
 			"sap.m.BackgroundDesign",
+			"sap.m.BadgeState",
 			"sap.m.BarDesign",
 			"sap.m.BreadcrumbsSeparatorStyle",
 			"sap.m.ButtonType",
@@ -112,6 +113,7 @@ sap.ui.define([
 			"sap.m.ObjectMarkerVisibility",
 			"sap.m.OverflowToolbarPriority",
 			"sap.m.P13nPanelType",
+			"sap.m.P13nConditionOperation",
 			"sap.m.PageBackgroundDesign",
 			"sap.m.PanelAccessibleRole",
 			"sap.m.PDFViewerDisplayType",
@@ -138,6 +140,7 @@ sap.ui.define([
 			"sap.m.TileSizeBehavior",
 			"sap.m.TimePickerMaskMode",
 			"sap.m.TitleAlignment",
+			"sap.m.TokenizerRenderMode",
 			"sap.m.ToolbarDesign",
 			"sap.m.ToolbarStyle",
 			"sap.m.UploadState",
@@ -149,6 +152,7 @@ sap.ui.define([
 		],
 		interfaces: [
 			"sap.m.IBar",
+			"sap.m.IBadge",
 			"sap.m.IBreadcrumbs",
 			"sap.m.IconTab",
 			"sap.m.IScale",
@@ -333,6 +337,7 @@ sap.ui.define([
 			"sap.m.semantic.MasterPage"
 		],
 		elements: [
+			"sap.m.BadgeCustomData",
 			"sap.m.Column",
 			"sap.m.ColumnPopoverActionItem",
 			"sap.m.ColumnPopoverCustomItem",
@@ -364,6 +369,7 @@ sap.ui.define([
 			"sap.m.SelectionDetailsItem",
 			"sap.m.SelectionDetailsItemLine",
 			"sap.m.SinglePlanningCalendarDayView",
+			"sap.m.SinglePlanningCalendarMonthView",
 			"sap.m.SinglePlanningCalendarWeekView",
 			"sap.m.SinglePlanningCalendarWorkWeekView",
 			"sap.m.SinglePlanningCalendarView",
@@ -416,6 +422,7 @@ sap.ui.define([
 				"sap.m.ActionSheet": {
 					"moveControls": "default"
 				},
+				"sap.m.Avatar": "sap/m/flexibility/Avatar",
 				"sap.m.Bar": "sap/m/flexibility/Bar",
 				"sap.m.Button": "sap/m/flexibility/Button",
 				"sap.m.CheckBox": "sap/m/flexibility/CheckBox",
@@ -486,6 +493,7 @@ sap.ui.define([
 				},
 				"sap.m.MenuButton": "sap/m/flexibility/MenuButton",
 				"sap.m.OverflowToolbar":"sap/m/flexibility/OverflowToolbar",
+				"sap.m.OverflowToolbarButton": "sap/m/flexibility/OverflowToolbarButton",
 				"sap.m.Page": "sap/m/flexibility/Page",
 				"sap.m.Panel": "sap/m/flexibility/Panel",
 				"sap.m.Popover": "sap/m/flexibility/Popover",
@@ -537,7 +545,7 @@ sap.ui.define([
 	 * @namespace
 	 * @alias sap.m
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @public
 	 */
 	var thisLib = sap.m;
@@ -573,6 +581,59 @@ sap.ui.define([
 
 	};
 
+	/**
+	 * Types of state of {@link sap.m.BadgeEnabler} to expose its current state.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @since 1.81
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	thisLib.BadgeState = {
+
+		/**
+		 * Informing interested parties that the badge has been updated.
+		 * @public
+		 */
+		Updated : "Updated",
+
+		/**
+		 * Informing interested parties that the badge has appeared.
+		 * @public
+		 */
+		Appear : "Appear",
+
+		/**
+		 * Informing interested parties that the badge has disappeared.
+		 * @public
+		 */
+		Disappear : "Disappear"
+
+	};
+
+
+	/**
+	 * Types of badge rendering style.
+	 *
+	 * @enum {string}
+	 * @private
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	thisLib.BadgeStyle = {
+		/**
+		 * Default style. Use for badges which contain text or numbers.
+		 *
+		 * @private
+		 */
+		Default: "Default",
+
+		/**
+		 * Attention style. This badge is rendered as a single dot meant to grab attention.
+		 *
+		 * @private
+		 */
+		Attention: "Attention"
+	};
 
 	/**
 	 * Types of the Bar design.
@@ -665,7 +726,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * Different types for a button (predefined types).
+	 * Different predefined button types for the {@link sap.m.Button sap.m.Button}.
 	 *
 	 * @enum {string}
 	 * @public
@@ -729,6 +790,11 @@ sap.ui.define([
 
 		/**
 		 * Critical type
+		 *
+		 * <b>Note:</b> To be used only in controls of type <code>sap.m.Button</code>. When the
+		 * button opens a <code>sap.m.MessagePopover</code> list, use this <code>ButtonType</code>
+		 * if the message with the highest severity is <code>Warning</code> type.
+		 *
 		 * @public
 		 * @since 1.73
 		 */
@@ -736,6 +802,11 @@ sap.ui.define([
 
 		/**
 		 * Negative type
+		 *
+		 * <b>Note:</b> To be used only in controls of type <code>sap.m.Button</code>. When the
+		 * button opens a <code>sap.m.MessagePopover</code> list, use this <code>ButtonType</code>
+		 * if the message with the highest severity is <code>Error</code> type.
+		 *
 		 * @public
 		 * @since 1.73
 		 */
@@ -743,6 +814,11 @@ sap.ui.define([
 
 		/**
 		 * Success type
+		 *
+		 * <b>Note:</b> To be used only in controls of type <code>sap.m.Button</code>. When the
+		 * button opens a <code>sap.m.MessagePopover</code> list, use this <code>ButtonType</code>
+		 * if the message with the highest severity is <code>Success</code> type.
+		 *
 		 * @public
 		 * @since 1.73
 		 */
@@ -750,10 +826,60 @@ sap.ui.define([
 
 		/**
 		 * Neutral type
+		 *
+		 * <b>Note:</b> To be used only in controls of type <code>sap.m.Button</code>. When the
+		 * button opens a <code>sap.m.MessagePopover</code> list, use this <code>ButtonType</code>
+		 * if the message with the highest severity is <code>Information</code> type.
+		 *
 		 * @public
 		 * @since 1.73
 		 */
-		Neutral : "Neutral"
+		Neutral : "Neutral",
+
+		/**
+		 * Attention type
+		 *
+		 * @public
+		 * @since 1.77
+		 */
+		Attention : "Attention"
+	};
+
+	/**
+	 * Different predefined accessibility types for the {@link sap.m.Button}.
+	 *
+	 * @enum {string}
+	 * @private
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	thisLib.ButtonAccessibilityType = {
+		/**
+		 * Default type
+		 *
+		 * @private
+		 */
+		Default: "Default",
+
+		/**
+		 * Labelled type
+		 *
+		 * @private
+		 */
+		Labelled: "Labelled",
+
+		/**
+		 * Described type
+		 *
+		 * @private
+		 */
+		Described: "Described",
+
+		/**
+		 * Combined type
+		 *
+		 * @private
+		 */
+		Combined: "Combined"
 	};
 
 	/**
@@ -1074,7 +1200,7 @@ sap.ui.define([
 		Center : "Center",
 
 		/**
-		 * If the flex item's inline axes are the same as the cross axis, this value is identical to "Start".
+		 * If the flex item`s inline axes are the same as the cross axis, this value is identical to "Start".
 		 *
 		 * Otherwise, it participates in baseline alignment: all participating box items on the line are aligned
 		 * such that their baselines align, and the item with the largest distance between its baseline and
@@ -1562,7 +1688,19 @@ sap.ui.define([
 		 * Action scope (Possible footer and Error State information is overlaid, "Remove" and "More" icons are added to the tile).
 		 * @public
 		 */
-		Actions: "Actions"
+		Actions: "Actions",
+		/**
+		 * More action scope (Only the More icon is added to the tile)
+		 * @since 1.76
+		 * @public
+		 */
+		ActionMore: "ActionMore",
+		/**
+		 * Remove action scope (Only the Remove icon is added to the tile)
+		 * @since 1.76
+		 * @public
+		 */
+		ActionRemove: "ActionRemove"
 	};
 
 	/**
@@ -1642,6 +1780,16 @@ sap.ui.define([
 	 *
 	 * @since 1.22
 	 * @name sap.m.IBar
+	 * @interface
+	 * @public
+	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
+	 */
+
+	/**
+	 * Interface for controls which implement the notification badge concept.
+	 *
+	 * @since 1.80
+	 * @name sap.m.IBadge
 	 * @interface
 	 * @public
 	 * @ui5-metamodel This interface also will be described in the UI5 (legacy) designtime metamodel
@@ -1904,7 +2052,7 @@ sap.ui.define([
 	 * Gets the map of texts to be hyphenated and rendered.
 	 * For example, for <code>sap.m.Text</code> this would be the <code>text</code> property.
 	 *
-	 * @returns {map} The texts map which should be hyphenated
+	 * @returns {Object<string,string>} The texts map which should be hyphenated
 	 *
 	 * @function
 	 * @name sap.m.IHyphenation.getTextsToBeHyphenated
@@ -2120,7 +2268,7 @@ sap.ui.define([
 	 * @public
 	 * @ui5-metamodel This simple type also will be described in the UI5 (legacy) designtime metamodel
 	 */
-	thisLib.ValueCSSColor = DataType.createType('sap.m.ValueCSSColor', {
+	thisLib.ValueCSSColor = DataType.createType("sap.m.ValueCSSColor", {
 		isValid : function (vValue) {
 			var bResult = thisLib.ValueColor.hasOwnProperty(vValue);
 			if (bResult) {
@@ -2135,7 +2283,7 @@ sap.ui.define([
 				}
 			}
 		}
-	}, DataType.getType('string'));
+	}, DataType.getType("string"));
 
 	/**
 	 * A subset of input types that fits to a simple API returning one string.
@@ -2687,6 +2835,40 @@ sap.ui.define([
 
 	};
 
+	/**
+	 * @enum {string}
+	 * @public
+	 * @experimental since version 1.26 !!! THIS TYPE IS ONLY FOR INTERNAL USE !!!
+	 */
+	thisLib.P13nConditionOperation = {
+		// filter operations
+		BT: "BT",
+		EQ: "EQ",
+		Contains: "Contains",
+		StartsWith: "StartsWith",
+		EndsWith: "EndsWith",
+		LT: "LT",
+		LE: "LE",
+		GT: "GT",
+		GE: "GE",
+		Initial: "Initial",
+		Empty: "Empty",
+		NotEmpty: "NotEmpty",
+
+		// sort operations
+		Ascending: "Ascending",
+		Descending: "Descending",
+
+		// group operations
+		GroupAscending: "GroupAscending",
+		GroupDescending: "GroupDescending",
+		//
+		// calculation operations
+		Total: "Total",
+		Average: "Average",
+		Minimum: "Minimum",
+		Maximum: "Maximum"
+	};
 
 	/**
 	 * Available Page Background Design.
@@ -3513,6 +3695,29 @@ sap.ui.define([
 
 	};
 
+	/**
+	 * Types of the <code>sap.m.Tokenizer</code> responsive modes.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @since 1.80
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	thisLib.TokenizerRenderMode = {
+
+		/**
+		 * In <code>Loose</code> mode, the <code>sap.m.Tokenizer</code> will show all its tokens, even if this means that scrolling needs to be used.
+		 * @public
+		 */
+		Loose : "Loose",
+
+		/**
+		 * In  <code>Narrow</code> mode, the <code>sap.m.Tokenizer</code> will show as many tokens as its width allows, as well as an n-More indicator with the count of the hidden tokens. The rest tokens will be hidden.
+		 * @public
+		 */
+		Narrow : "Narrow"
+	};
+
 
 	/**
 	 * Types of the Toolbar Design.
@@ -3752,7 +3957,7 @@ sap.ui.define([
 	};
 
 	/**
-	 * States of the upload process for {@link sap.m.UploadCollectionItem}.
+	 * States of the upload process of {@link sap.m.UploadCollectionItem}.
 	 *
 	 * @enum {string}
 	 * @public
@@ -3760,7 +3965,7 @@ sap.ui.define([
 	 */
 	thisLib.UploadState = {
 		/**
-		 * The file has been uploaded successfuly.
+		 * The file has been uploaded successfully.
 		 * @public
 		 */
 		Complete: "Complete",
@@ -3871,7 +4076,6 @@ sap.ui.define([
 	thisLib.AvatarColor = AvatarColor;
 	thisLib.AvatarImageFitType = AvatarImageFitType;
 
-
 		//lazy imports for MessageToast
 	sap.ui.lazyRequire("sap.m.MessageToast", "show");
 
@@ -3964,12 +4168,11 @@ sap.ui.define([
 		return value && Object.prototype.toString.call(value) == "[object Date]" && !isNaN(value);
 	};
 
-
 	/**
 	 * Search given control's parents and try to find iScroll.
 	 *
 	 * @param {sap.ui.core.Control} oControl Control to start the search at
-	 * @returns {iScroll|undefined} iScroll reference or undefined if cannot find
+	 * @returns {Object|undefined} iScroll reference or undefined if cannot find
 	 * @public
 	 * @since 1.11
 	 */
@@ -4016,7 +4219,7 @@ sap.ui.define([
 		/*eslint-disable no-cond-assign */
 		for (var parent = oControl; parent = doGetParent(parent);) {
 			if (parent && typeof parent.getScrollDelegate == "function") {
-				return parent.getScrollDelegate();
+				return parent.getScrollDelegate(oControl);
 			}
 		}
 		/*eslint-enable no-cond-assign */
@@ -4098,7 +4301,7 @@ sap.ui.define([
 		if (oTouch && typeof oTouch.identifier !== "undefined") {
 			oTouch = oTouch.identifier;
 		} else if (typeof oTouch !== "number") {
-			assert(false, 'sap.m.touch.find(): oTouch must be a touch object or a number');
+			assert(false, "sap.m.touch.find(): oTouch must be a touch object or a number");
 			return;
 		}
 
@@ -4139,7 +4342,7 @@ sap.ui.define([
 		} else if (typeof vElement === "string") {
 			vElement = jQuery(document.getElementById(vElement));
 		} else if (!(vElement instanceof jQuery)) {
-			assert(false, 'sap.m.touch.countContained(): vElement must be a jQuery object or Element reference or a string');
+			assert(false, "sap.m.touch.countContained(): vElement must be a jQuery object or Element reference or a string");
 			return 0;
 		}
 
@@ -4376,18 +4579,18 @@ sap.ui.define([
 		 * @protected
 		 */
 		addBackgroundColorStyles: function(rm, sBgColor, sBgImgUrl, sCustomBGClass) {
-			rm.addClass(sCustomBGClass || "sapUiGlobalBackgroundColor");
+			rm.class(sCustomBGClass || "sapUiGlobalBackgroundColor");
 
 			if (sBgColor && !DataType.getType("sap.ui.core.CSSColor").isValid(sBgColor)) {
 				Log.warning(sBgColor + " is not a valid sap.ui.core.CSSColor type");
 				sBgColor = "";
 			}
 			if (sBgColor || sBgImgUrl) { // when an image or color is configured, the gradient needs to be removed, so the color can be seen behind the image
-				rm.addStyle("background-image", "none");
-				rm.addStyle("filter", "none");
+				rm.style("background-image", "none");
+				rm.style("filter", "none");
 			}
 			if (sBgColor) {
-				rm.addStyle("background-color", sBgColor);
+				rm.style("background-color", sBgColor);
 			}
 		},
 
@@ -4424,28 +4627,28 @@ sap.ui.define([
 		 * @protected
 		 */
 		renderBackgroundImageTag: function(rm, oControl, vCssClass, sBgImgUrl, bRepeat, fOpacity) {
-			rm.write("<div id='" + oControl.getId() + "-BG' ");
+			rm.openStart("div", oControl.getId() + "-BG");
 
 			if (Array.isArray(vCssClass)) {
 				for (var i = 0; i < vCssClass.length; i++) {
-					rm.addClass(vCssClass[i]);
+					rm.class(vCssClass[i]);
 				}
 			} else {
-				rm.addClass(vCssClass);
+				rm.class(vCssClass);
 			}
 
-			rm.addClass("sapUiGlobalBackgroundImage"); // this adds the background image from the theme
+			rm.class("sapUiGlobalBackgroundImage"); // this adds the background image from the theme
 
 			if (sBgImgUrl) { // use the settings only if a background image is configured
-				rm.addStyle("display", "block"); // enforce visibility even if a parent has also a background image
-				rm.addStyle("background-image", "url(" + encodeCSS(sBgImgUrl) + ")");
+				rm.style("display", "block"); // enforce visibility even if a parent has also a background image
+				rm.style("background-image", "url(" + encodeCSS(sBgImgUrl) + ")");
 
-				rm.addStyle("background-repeat", bRepeat ? "repeat" : "no-repeat");
+				rm.style("background-repeat", bRepeat ? "repeat" : "no-repeat");
 				if (!bRepeat) {
-					rm.addStyle("background-size", "cover");
-					rm.addStyle("background-position", "center");
+					rm.style("background-size", "cover");
+					rm.style("background-position", "center");
 				} else { // repeat
-					rm.addStyle("background-position", "left top");
+					rm.style("background-position", "left top");
 				}
 
 			} //else {
@@ -4456,14 +4659,13 @@ sap.ui.define([
 				if (fOpacity > 1) { // greater than 1 enforces 1
 					fOpacity = 1;
 				}
-				rm.addStyle("opacity", fOpacity);
+				rm.style("opacity", fOpacity);
 			}
 
 			// no custom class from the control's custom class
 			// If a class is added using addStyleClass, this class will be output to this background image div without the 'false' param.
-			rm.writeClasses(false);
-			rm.writeStyles();
-			rm.write("></div>");
+			rm.openEnd();
+			rm.close("div");
 		}
 	};
 
@@ -4485,7 +4687,7 @@ sap.ui.define([
 		 */
 		function checkAndSetProperty(oControl, property, value) {
 			if (value !== undefined) {
-				var fSetter = oControl['set' + capitalize(property)];
+				var fSetter = oControl["set" + capitalize(property)];
 				if (typeof (fSetter) === "function") {
 					fSetter.call(oControl, value);
 					return true;
@@ -4501,12 +4703,12 @@ sap.ui.define([
 			 * @param {string} sImgId UD of the image to be dealt with.
 			 * @param {sap.m.Image} oImageControl The image to update. If undefined, a new image will be created.
 			 * @param {sap.ui.core.Control} oParent oImageControl's parentControl.
-			 * @param {Map} mProperties Map object that contains key value pairs if image properties; the <code>src</code> property
-			 * MUST be contained; the keys of the map must be names of image properties
-			 * @param {Array} aCssClassesToAdd Array of CSS classes which will be added if the image needs to be created.
-			 * @param {Array} aCssClassesToRemove All CSS classes that oImageControl has and which are contained in this array
+			 * @param {object} mProperties Settings for the image control; the <code>src</code> property
+			 * MUST be contained; the keys of the object must be valid names of image settings
+			 * @param {string[]} aCssClassesToAdd Array of CSS classes which will be added if the image needs to be created.
+			 * @param {string[]} aCssClassesToRemove All CSS classes that oImageControl has and which are contained in this array
 			 * are removed before adding the CSS classes listed in aCssClassesToAdd.
-			 * @returns the new or updated image control
+			 * @returns {sap.m.Image|sap.ui.core.Icon} The new or updated image control or icon
 			 *
 			 * @protected
 			 */
@@ -4648,7 +4850,7 @@ sap.ui.define([
 			if (!oAnnotation) {
 				return false;
 			}
-			var sProperty = sPath.substr(sPath.lastIndexOf('/') + 1);
+			var sProperty = sPath.substr(sPath.lastIndexOf("/") + 1);
 			mValueListAnnotation.inProperty = sProperty;
 
 			jQuery.each(oAnnotation.record, function(i, aPropertyValues){
@@ -4776,7 +4978,7 @@ sap.ui.define([
 						if (sSearchFocus) {
 							oCustomParams["search-focus"] = sSearchFocus;
 						} else {
-							assert(false, 'no search-focus defined');
+							assert(false, "no search-focus defined");
 						}
 					}
 
@@ -4785,7 +4987,7 @@ sap.ui.define([
 						length: iLength,
 						filters: aFilters,
 						parameters: {
-							select: mValueListAnnotation.selection.join(','),
+							select: mValueListAnnotation.selection.join(","),
 							custom: oCustomParams
 						},
 						events: {
@@ -4812,7 +5014,7 @@ sap.ui.define([
 						template: mValueListAnnotation.listItem,
 						length: iLength,
 						parameters: {
-							select: mValueListAnnotation.selection.join(',')
+							select: mValueListAnnotation.selection.join(",")
 						},
 						events: {
 							dataReceived: _fnButtonHandler
@@ -4834,7 +5036,7 @@ sap.ui.define([
 			var that = this;
 			var _createButton = function(Button){
 				var oButton = new Button(sId, {type: thisLib.ButtonType.Transparent});
-				oButton.attachEvent('press', fnPressFunction, that); // attach event this way to have the right this-reference in handler
+				oButton.attachEvent("press", fnPressFunction, that); // attach event this way to have the right this-reference in handler
 				fnCallback.call(that, oButton);
 			};
 			var fnButtonClass = sap.ui.require("sap/m/Button");
@@ -4862,6 +5064,19 @@ sap.ui.define([
 				oToolbar.setDesign(sap.m.ToolbarDesign.Transparent, true);
 			}
 			return oToolbar;
+		},
+		getToolbarTitle: function(oToolbar) {
+			// determine Title to point aria-label on this. As Fallback use the whole Toolbar
+			if (oToolbar) {
+				var aContent = oToolbar.getContent();
+				for (var i = 0; i < aContent.length; i++) {
+					var oContent = aContent[i];
+					if (oContent.isA("sap.m.Title")) {
+						return oContent.getId();
+					}
+				}
+				return oToolbar.getId(); // fallback
+			}
 		},
 		bArrowKeySupport: false, /* disables the keyboard support for arrow keys */
 		bFinal: true

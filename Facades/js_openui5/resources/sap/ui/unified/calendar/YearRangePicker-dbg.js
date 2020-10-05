@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -8,7 +8,7 @@
 sap.ui.define([
 	"sap/ui/core/Renderer",
 	"./YearPicker",
-	"./YearPickerRenderer",
+	"./YearRangePickerRenderer",
 	"./CalendarDate",
 	"sap/ui/core/date/UniversalDate",
 	"./CalendarUtils",
@@ -17,7 +17,7 @@ sap.ui.define([
 	function(
 		Renderer,
 		YearPicker,
-		YearPickerRenderer,
+		YearRangePickerRenderer,
 		CalendarDate,
 		UniversalDate,
 		CalendarUtils,
@@ -49,11 +49,11 @@ sap.ui.define([
 	 * @extends sap.ui.unified.calendar.YearPicker
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @private
-	 * @since 1.69.0
+	 * @since 1.74.0
 	 * @alias sap.ui.unified.calendar.YearRangePicker
 	 */
 	var YearRangePicker = YearPicker.extend("sap.ui.unified.calendar.YearRangePicker", /** @lends sap.ui.unified.calendar.YearRangePicker.prototype */  { metadata: {
@@ -77,29 +77,28 @@ sap.ui.define([
 				 */
 				rangeSize: {type : "int", group : "Appearance", defaultValue: 20}
 			}
-		},
-		renderer: Renderer.extend(YearPickerRenderer)
+		}
 	});
 
-	/*
+	/**
 	 * Sets a date.
-	 * @param {oDateInMiddleRange} oDateInMiddleRange a JavaScript date
+	 * @param {object} oRangeMidDate a JavaScript date
 	 * @return {sap.ui.unified.calendar.YearRangePicker} <code>this</code> for method chaining
 	 */
-	YearRangePicker.prototype.setDate = function(oDateInMiddleRange){
+	YearRangePicker.prototype.setDate = function(oRangeMidDate){
 		var oCalDate, iYear, iYears, oFirstDate;
 
 		// check the given object if it's a JS Date object
 		// null is a default value so it should not throw error but set it instead
-		oDateInMiddleRange && CalendarUtils._checkJSDateObject(oDateInMiddleRange);
+		oRangeMidDate && CalendarUtils._checkJSDateObject(oRangeMidDate);
 
-		iYear = oDateInMiddleRange.getFullYear();
+		iYear = oRangeMidDate.getFullYear();
 		CalendarUtils._checkYearInValidRange(iYear);
 
-		oCalDate = CalendarDate.fromLocalJSDate(oDateInMiddleRange, this.getPrimaryCalendarType());
+		oCalDate = CalendarDate.fromLocalJSDate(oRangeMidDate, this.getPrimaryCalendarType());
 		oCalDate.setMonth(0, 1);
 
-		this.setProperty("date", oDateInMiddleRange, true);
+		this.setProperty("date", oRangeMidDate, true);
 		this.setProperty("year", oCalDate.getYear(), true);
 		this._oDate = oCalDate;
 
@@ -171,6 +170,18 @@ sap.ui.define([
 		}
 	};
 
+	YearRangePicker.prototype._checkDateEnabled = function(oFirstDate, oSecondDate){
+
+		if (CalendarUtils._isBetween(this._oMinDate, oFirstDate, oSecondDate, true) ||
+			CalendarUtils._isBetween(this._oMaxDate, oFirstDate, oSecondDate, true) ||
+			this._oMinDate.isBefore(oFirstDate) && this._oMaxDate.isAfter(oSecondDate)) {
+			return true;
+		}
+
+		return false;
+
+	};
+
 	/**
 	* @param {sap.ui.unified.calendar.CalendarDate} oFirstDate
 	* @param {int} iSelectedIndex
@@ -201,20 +212,11 @@ sap.ui.define([
 			$DomRef.text(sFirstYear + " - " + sSecondYear);
 			$DomRef.attr("data-sap-year-start", sYyyymmdd);
 
-			// Remove the selected state out of the YearRangePicker as there is no selected state
-			// concept in the YearRangePicker but YearRangePicker uses YearPicker renderer
-			if ($DomRef.hasClass("sapUiCalItemSel")) {
-				$DomRef.removeClass("sapUiCalItemSel");
-			}
-			$DomRef.removeAttr("aria-selected");
-
 			if (CalendarUtils._isBetween(oSelectedDate, oFirstDate, oSecondDate, true)) {
 				iSelectedIndex = i;
 			}
 
-			if (CalendarUtils._isBetween(this._oMinDate, oFirstDate, oSecondDate, true) ||
-				CalendarUtils._isBetween(this._oMaxDate, oFirstDate, oSecondDate, true) ||
-				this._oMinDate.isBefore(oFirstDate) && this._oMaxDate.isAfter(oSecondDate)) {
+			if (this._checkDateEnabled(oFirstDate, oSecondDate)) {
 				$DomRef.removeClass("sapUiCalItemDsbl");
 				$DomRef.removeAttr("aria-disabled");
 			} else {

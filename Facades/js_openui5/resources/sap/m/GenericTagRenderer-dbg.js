@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -83,9 +83,8 @@ sap.ui.define([
 	};
 
 	GenericTagRenderer.renderText = function (oRm, oControl) {
-		oRm.openStart("span");
+		oRm.openStart("span", oControl.getId() + "-text");
 		oRm.class("sapMGenericTagText");
-		oRm.attr("id", oControl.getId() + "-text");
 		oRm.openEnd();
 		oRm.text(oControl.getText());
 		oRm.close("span");
@@ -97,9 +96,8 @@ sap.ui.define([
 			return;
 		}
 
-		oRm.openStart("span");
+		oRm.openStart("span", oControl.getId() + "-status");
 		oRm.class("sapUiInvisibleText");
-		oRm.attr("id", oControl.getId() + "-status");
 		oRm.attr("aria-hidden", "true");
 		oRm.openEnd();
 

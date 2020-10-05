@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,9 +10,9 @@ sap.ui.define([
 	"./_ColumnUtils",
 	"./_MenuUtils",
 	"./_BindingUtils",
+	"./_HookUtils",
 	"../library",
 	"sap/ui/base/Object",
-	"sap/ui/core/Control",
 	"sap/ui/core/ResizeHandler",
 	"sap/ui/core/library",
 	"sap/ui/core/theming/Parameters",
@@ -23,9 +23,9 @@ sap.ui.define([
 	ColumnUtils,
 	MenuUtils,
 	BindingUtils,
+	HookUtils,
 	library,
 	BaseObject,
-	Control,
 	ResizeHandler,
 	coreLibrary,
 	ThemeParameters,
@@ -41,7 +41,7 @@ sap.ui.define([
 
 	/**
 	 * The resource bundle of the sap.ui.table library.
-	 * @type {jQuery.sap.util.ResourceBundle}
+	 * @type {module:sap/base/i18n/ResourceBundle}
 	 */
 	var oResourceBundle;
 	var iBaseFontSize = null;
@@ -207,7 +207,7 @@ sap.ui.define([
 	 * Static collection of utility functions related to the sap.ui.table.Table, ...
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @namespace
 	 * @alias sap.ui.table.utils.TableUtils
 	 * @private
@@ -218,6 +218,7 @@ sap.ui.define([
 		Column: ColumnUtils,
 		Menu: MenuUtils,
 		Binding: BindingUtils,
+		Hook: HookUtils,
 
 		CELLTYPE: CELLTYPE,
 		BaseSize: mBaseSize,
@@ -296,17 +297,6 @@ sap.ui.define([
 		},
 
 		/**
-		 * Returns the number of row actions in case the table has a row action column, <code>0</code> otherwise.
-		 *
-		 * @param {sap.ui.table.Table} oTable Instance of the table.
-		 * @returns {int} The number of row actions.
-		 */
-		getRowActionCount: function(oTable) {
-			var oTemplate = oTable ? oTable.getRowActionTemplate() : null;
-			return oTemplate ? oTemplate._getCount() : 0;
-		},
-
-		/**
 		 * Returns whether the table has a row action column.
 		 *
 		 * @param {sap.ui.table.Table} oTable Instance of the table.
@@ -317,7 +307,7 @@ sap.ui.define([
 
 			return oRowActionTemplate != null
 				   && (oRowActionTemplate.isBound("visible") || oRowActionTemplate.getVisible())
-				   && TableUtils.getRowActionCount(oTable) > 0;
+				   && oTable.getRowActionCount() > 0;
 		},
 
 		/**
@@ -360,19 +350,16 @@ sap.ui.define([
 			return iSelectableRowCount > 0 && iSelectableRowCount === iSelectedRowCount;
 		},
 
-		/**
-		 * Returns whether the no data text is currently shown or not
-		 * If true, also CSS class sapUiTableEmpty is set on the table root element.
+        /**
+		 * Checks whether the "no data text" is shown. Pure API check, the actual DOM is not considered.
+		 * The "no data text" is shown if the table has no visible columns, or if the <code>showNoData</code> property is <code>true</code> and the
+		 * table has no data.
 		 *
 		 * @param {sap.ui.table.Table} oTable Instance of the table.
 		 * @returns {boolean} Whether the no data text is shown.
 		 */
 		isNoDataVisible: function(oTable) {
-			if (!oTable.getShowNoData()) {
-				return false;
-			}
-
-			return !TableUtils.hasData(oTable);
+			return oTable.getShowNoData() && !TableUtils.hasData(oTable) || TableUtils.getVisibleColumnCount(oTable) === 0;
 		},
 
 		/**
@@ -530,7 +517,7 @@ sap.ui.define([
 				var oCellInfo = TableUtils.getCellInfo($Cell[0]);
 				var bIsRowSelectionAllowed = TableUtils.isRowSelectionAllowed(oTable);
 
-				if (!TableUtils.Grouping.isInGroupingRow($Cell[0])
+				if (!TableUtils.Grouping.isInGroupHeaderRow($Cell[0])
 					&& ((oCellInfo.isOfType(TableUtils.CELLTYPE.DATACELL | TableUtils.CELLTYPE.ROWACTION) && bIsRowSelectionAllowed)
 						|| (oCellInfo.isOfType(TableUtils.CELLTYPE.ROWHEADER) && TableUtils.isRowSelectorSelectionAllowed(oTable)))) {
 
@@ -543,19 +530,24 @@ sap.ui.define([
 			}
 		},
 
-		/**
-		 * Returns the text to be displayed as no data message.
-		 * If a custom noData control is set null is returned.
+        /**
+		 * Gets the text to be displayed as the "no data text".
+		 * If a control is set for the <code>noData</code> aggregation, <code>null</code> is returned.
 		 *
 		 * @param {sap.ui.table.Table} oTable Instance of the table.
-		 * @returns {String | string | null} The no data text.
+		 * @returns {string | null} The no data text.
 		 */
 		getNoDataText: function(oTable) {
-			var oNoData = oTable.getNoData();
-			if (oNoData instanceof Control) {
+			if (TableUtils.getVisibleColumnCount(oTable) === 0) {
+				return TableUtils.getResourceText("TBL_NO_COLUMNS");
+			}
+
+			var vNoData = oTable.getNoData();
+
+			if (TableUtils.isA(vNoData, "sap.ui.core.Control")) {
 				return null;
-			} else if (typeof oNoData === "string" || oTable.getNoData() instanceof String) {
-				return oNoData;
+			} else if (typeof vNoData === "string") {
+				return vNoData;
 			} else {
 				return TableUtils.getResourceText("TBL_NO_DATA");
 			}
@@ -1162,10 +1154,10 @@ sap.ui.define([
 		 * Gets the resource bundle of the sap.ui.table library. The bundle will be loaded if it is not already loaded or if it should be reloaded.
 		 * After the bundle is loaded, {@link sap.ui.table.utils.TableUtils.getResourceText} can be used to get texts.
 		 *
-		 * @param {Object} [mOptions] Configuration options
+		 * @param {object} [mOptions] Configuration options
 		 * @param {boolean} [mOptions.async=false] Whether to load the bundle asynchronously.
 		 * @param {boolean} [mOptions.reload=false] Whether to reload the bundle, if it already was loaded.
-		 * @returns {jQuery.sap.util.ResourceBundle | Promise} The resource bundle, or a Promise if the bundle is loaded asynchronously.
+		 * @returns {module:sap/base/i18n/ResourceBundle | Promise} The resource bundle, or a Promise if the bundle is loaded asynchronously.
 		 */
 		getResourceBundle: function(mOptions) {
 			mOptions = jQuery.extend({async: false, reload: false}, mOptions);
@@ -1208,7 +1200,7 @@ sap.ui.define([
 		 *
 		 * @param {function():T | T} vObject The object, or a function returning the object, on which methods will be called.
 		 * @param {function(this:U, T) | Object<string, Array.<*>>} vCall Called if <code>vObject</code> is, or returns an object.
-		 * @param {U} [oThis] Context in the function calls, or in the callback if <code>vCall</code>is a function. Default is <code>vObject</code>.
+		 * @param {U} [oThis] Context in the function calls, or in the callback if <code>vCall</code> is a function. Default is <code>vObject</code>.
 		 * @returns {undefined | Array.<*>} If <code>vCall</code> is a map, the return values of the calls are returned. In case of multiple calls, an
 		 *                                  array of return values is returned.
 		 * @template T, U
@@ -1563,7 +1555,7 @@ sap.ui.define([
 		},
 
 		/**
-		 * Adds a delegate that listens to the events that are fired on an element.
+		 * Adds a delegate that listens to the events of an element.
 		 *
 		 * @param {sap.ui.core.Element} oElement The element to add the delegate to.
 		 * @param {object} oDelegate The delegate object.
@@ -1593,6 +1585,7 @@ sap.ui.define([
 	ColumnUtils.TableUtils = TableUtils;
 	MenuUtils.TableUtils = TableUtils;
 	BindingUtils.TableUtils = TableUtils;
+	HookUtils.TableUtils = TableUtils;
 
 	return TableUtils;
 

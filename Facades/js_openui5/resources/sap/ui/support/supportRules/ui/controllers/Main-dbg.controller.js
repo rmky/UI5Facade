@@ -1,20 +1,21 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/ui/support/supportRules/ui/controllers/BaseController",
 	"sap/ui/model/json/JSONModel",
-	"sap/ui/support/supportRules/WindowCommunicationBus",
+	"sap/ui/support/supportRules/CommunicationBus",
 	"sap/ui/support/supportRules/ui/models/SharedModel",
 	"sap/ui/support/supportRules/WCBChannels",
 	"sap/ui/support/supportRules/Constants",
 	"sap/ui/support/supportRules/Storage",
 	"sap/ui/thirdparty/URI",
-	"sap/ui/support/supportRules/ui/models/Documentation"
-], function (BaseController, JSONModel, CommunicationBus, SharedModel, channelNames, constants, storage, URI, Documentation) {
+	"sap/ui/support/supportRules/ui/models/Documentation",
+	"sap/ui/VersionInfo"
+], function (BaseController, JSONModel, CommunicationBus, SharedModel, channelNames, constants, storage, URI, Documentation, VersionInfo) {
 	"use strict";
 
 	return BaseController.extend("sap.ui.support.supportRules.ui.controllers.Main", {
@@ -65,9 +66,11 @@ sap.ui.define([
 		},
 
 		onAfterRendering: function () {
-			CommunicationBus.publish(channelNames.POST_UI_INFORMATION, {
-				version: sap.ui.getVersionInfo(),
-				location: new URI(jQuery.sap.getModulePath("sap.ui.support"), window.location.origin + window.location.pathname).toString()
+			VersionInfo.load({ library: "sap.ui.core" }).then(function (oCoreLibInfo) {
+				CommunicationBus.publish(channelNames.POST_UI_INFORMATION, {
+					version: oCoreLibInfo,
+					location: new URI(jQuery.sap.getModulePath("sap.ui.support"), window.location.origin + window.location.pathname).toString()
+				});
 			});
 		},
 
@@ -187,18 +190,6 @@ sap.ui.define([
 
 		goToWiki: function () {
 			Documentation.openTopic("57ccd7d7103640e3a187ed55e1d2c163");
-		},
-
-		setRulesLabel: function (libs) {
-			var selectedCounter = 0;
-			if (libs === null) {
-				return "Rules (" + selectedCounter + ")";
-			} else {
-				libs.forEach(function (lib, libIndex) {
-					selectedCounter += lib.rules.length;
-				});
-				return "Rules (" + selectedCounter + ")";
-			}
 		},
 
 		updateShowButton: function () {

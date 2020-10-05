@@ -1,19 +1,21 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define(['sap/ui/thirdparty/URI', "sap/ui/thirdparty/jquery"], function(URI, jQueryDOM) {
+sap.ui.define([
+	'sap/ui/thirdparty/URI',
+	"sap/ui/thirdparty/jquery"
+], function(URI, jQueryDOM) {
 	"use strict";
-
-	var oUriParams = new URI().search(true);
-	var bForceResolveStackTrace = ["false", undefined].indexOf(oUriParams.opaFrameIEStackTrace) < 0;
 
 	function resolveStackTrace() {
 		var oError = new Error();
-
 		var sStack = "No stack trace available";
+		var oUriParams = new URI().search(true);
+		var bForceResolveStackTrace = ["false", undefined].indexOf(oUriParams.opaFrameIEStackTrace) < 0;
+
 		if (oError.stack) {
 			sStack = oError.stack;
 		} else if (bForceResolveStackTrace) {

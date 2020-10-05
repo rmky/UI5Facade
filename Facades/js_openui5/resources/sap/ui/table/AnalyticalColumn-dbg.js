@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -46,12 +46,11 @@ sap.ui.define([
 	 * @extends sap.ui.table.Column
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
 	 * @experimental Since version 1.21.
-	 * The AnalyticalColumn will be productized soon. Some attributes will be added to Column.
 	 * @alias sap.ui.table.AnalyticalColumn
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
@@ -86,10 +85,6 @@ sap.ui.define([
 			groupHeaderFormatter : {type : "any", group : "Behavior", defaultValue : null}
 		}
 	}});
-
-	AnalyticalColumn.prototype.init = function() {
-		Column.prototype.init.apply(this, arguments);
-	};
 
 	/**
 	 * map of filtertypes for re-use in getFilterType
@@ -274,15 +269,29 @@ sap.ui.define([
 	};
 
 	AnalyticalColumn.prototype.getTooltip_AsString = function() {
-		var sTooltip = Element.prototype.getTooltip_AsString.apply(this);
-		var oParent = this.getParent();
-		if (!sTooltip && isInstanceOfAnalyticalTable(oParent)) {
-			var oBinding = oParent.getBinding("rows");
-			if (oBinding && this.getLeadingProperty()) {
-				sTooltip = oBinding.getPropertyQuickInfo(this.getLeadingProperty());
-			}
+		if (!this.getTooltip()) { // No tooltip at all, neither string nor TooltipBase
+			return this._getDefaultTooltip();
+		}
+		return Element.prototype.getTooltip_AsString.apply(this);
+	};
+
+	AnalyticalColumn.prototype.getTooltip_Text = function() {
+		var sTooltip = Element.prototype.getTooltip_Text.apply(this);
+		if (!this.getTooltip() || !sTooltip) { // No tooltip at all, neither string nor TooltipBase, or no text in TooltipBase
+			sTooltip = this._getDefaultTooltip();
 		}
 		return sTooltip;
+	};
+
+	AnalyticalColumn.prototype._getDefaultTooltip = function() {
+		var oParent = this.getParent();
+		if (isInstanceOfAnalyticalTable(oParent)) {
+			var oBinding = oParent.getBinding("rows");
+			if (oBinding && this.getLeadingProperty()) {
+				return oBinding.getPropertyQuickInfo(this.getLeadingProperty());
+			}
+		}
+		return null;
 	};
 
 	/**

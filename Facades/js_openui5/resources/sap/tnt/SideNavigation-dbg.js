@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -40,7 +40,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 *
 		 * @constructor
 		 * @public
@@ -267,19 +267,14 @@ sap.ui.define([
 		SideNavigation.prototype.setSelectedKey = function (selectedKey) {
 
 			var selectedItem,
-				navigationList,
-				fixedNavigationList;
+				navigationList = this.getItem(),
+				fixedNavigationList = this.getFixedItem();
 
-			if (selectedKey) {
-				navigationList = this.getAggregation('item');
+			if (selectedKey && navigationList) {
+				selectedItem = navigationList._findItemByKey(selectedKey);
 
-				if (navigationList) {
-					selectedItem = navigationList._findItemByKey(selectedKey);
-
-					if (!selectedItem) {
-						fixedNavigationList = this.getAggregation('fixedItem');
-						selectedItem = fixedNavigationList._findItemByKey(selectedKey);
-					}
+				if (!selectedItem && fixedNavigationList) {
+					selectedItem = fixedNavigationList._findItemByKey(selectedKey);
 				}
 			}
 
@@ -328,13 +323,15 @@ sap.ui.define([
 			if (selectedInFlexibleList) {
 				navigationList.setSelectedItem(listItemToSelect);
 				if (fixedNavigationList) {
-					fixedNavigationList.setSelectedItem(null);
+					fixedNavigationList.setSelectedKey(null);
 				}
 			}
 
 			if (selectedInFixedList) {
 				fixedNavigationList.setSelectedItem(listItemToSelect);
-				navigationList.setSelectedItem(null);
+				if (navigationList) {
+					navigationList.setSelectedKey(null);
+				}
 			}
 
 			return Control.prototype.setAssociation.call(this, 'selectedItem', listItemToSelect, true);

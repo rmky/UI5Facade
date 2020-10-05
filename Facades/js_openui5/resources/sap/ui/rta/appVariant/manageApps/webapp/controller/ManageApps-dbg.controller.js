@@ -1,29 +1,31 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
 	"sap/ui/core/mvc/Controller",
+	"sap/ui/fl/Layer",
 	"sap/ui/rta/appVariant/manageApps/webapp/model/models",
+	"sap/ui/rta/appVariant/AppVariantUtils",
 	"sap/ui/rta/appVariant/Utils",
 	"sap/m/MessageBox",
 	"sap/ui/rta/Utils",
 	"sap/ui/rta/appVariant/Feature",
 	"sap/ui/rta/RuntimeAuthoring",
 	"sap/ui/core/BusyIndicator",
-	"sap/ui/rta/appVariant/AppVariantUtils",
 	"sap/base/i18n/ResourceBundle"
 ], function(
 	Controller,
+	Layer,
 	Model,
+	AppVariantUtils,
 	AppVariantOverviewUtils,
 	MessageBox,
 	RtaUtils,
 	RtaAppVariantFeature,
 	RuntimeAuthoring,
 	BusyIndicator,
-	AppVariantUtils,
 	ResourceBundle
 ) {
 	"use strict";
@@ -72,10 +74,9 @@ sap.ui.define([
 		},
 
 		_showMessageWhenNoAppVariantsExist: function() {
-			return RtaUtils._showMessageBox(
-				MessageBox.Icon.INFORMATION,
-				"TITLE_APP_VARIANT_OVERVIEW_SAP_DEVELOPER",
-				"MSG_APP_VARIANT_OVERVIEW_SAP_DEVELOPER");
+			return RtaUtils.showMessageBox(MessageBox.Icon.INFORMATION, "MSG_APP_VARIANT_OVERVIEW_SAP_DEVELOPER", {
+				titleKey: "TITLE_APP_VARIANT_OVERVIEW_SAP_DEVELOPER"
+			});
 		},
 
 		_highlightNewCreatedAppVariant: function(aAppVariantOverviewAttributes) {
@@ -148,10 +149,41 @@ sap.ui.define([
 		},
 
 		formatDelButtonTooltip: function(bDelAppVarButtonEnabled, bIsS4HanaCloud) {
+			if (!oI18n) {
+				this._createResourceBundle();
+			}
 			if (!bDelAppVarButtonEnabled && !bIsS4HanaCloud) {
 				return oI18n.getText("TOOLTIP_DELETE_APP_VAR");
 			}
 			return undefined;
+		},
+
+		formatAdaptUIButtonTooltip: function(bAdaptUIButtonEnabled, sAppVarStatus) {
+			if (!oI18n) {
+				this._createResourceBundle();
+			}
+			if (!bAdaptUIButtonEnabled) {
+				switch (sAppVarStatus) {
+					case 'R':
+						// For S4/Hana Cloud systems
+						return oI18n.getText("TOOLTIP_ADAPTUI_STATUS_RUNNING");
+					case 'U':
+						return oI18n.getText("TOOLTIP_ADAPTUI_STATUS_UNPBLSHD_ERROR");
+					case 'E':
+						return oI18n.getText("TOOLTIP_ADAPTUI_STATUS_UNPBLSHD_ERROR");
+					case 'P':
+						return oI18n.getText("TOOLTIP_ADAPTUI_STATUS_PUBLISHED");
+					case undefined:
+						// For S4/Hana onPrem systems
+						return oI18n.getText("TOOLTIP_ADAPTUI_ON_PREMISE");
+					default:
+						// Do nothing
+				}
+			}
+		},
+
+		formatAdaptUIButtonVisibility: function(bVisible, bKeyUser) {
+			return bVisible && bKeyUser;
 		},
 
 		getModelProperty : function(sModelPropName, sBindingContext) {
@@ -204,7 +236,7 @@ sap.ui.define([
 					writeHistory : false
 				};
 
-				RuntimeAuthoring.enableRestart("CUSTOMER");
+				RuntimeAuthoring.enableRestart(Layer.CUSTOMER);
 
 				oNavigationService.toExternal(oNavigationParams);
 

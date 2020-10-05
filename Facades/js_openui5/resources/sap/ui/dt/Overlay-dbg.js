@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -46,7 +46,7 @@ function (
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @private
@@ -175,7 +175,20 @@ function (
 				/**
 				 * Event fired before geometryChanged event is fired
 				 */
-				beforeGeometryChanged : {}
+				beforeGeometryChanged : {},
+				/**
+				 * Event fired when the styles applying is required
+				 */
+				applyStylesRequired: {
+					parameters: {
+						type: {
+							type : "string"
+						},
+						targetOverlay: {
+							type : "sap.ui.dt.ElementOverlay"
+						}
+					}
+				}
 			}
 		},
 		constructor: function () {
@@ -280,7 +293,7 @@ function (
 	 */
 	Overlay.getOverlayContainer = function() {
 		if (!$OverlayContainer) {
-			$OverlayContainer = jQuery("<div/>").attr('id', OVERLAY_CONTAINER_ID).appendTo("body");
+			$OverlayContainer = jQuery("<div></div>").attr('id', OVERLAY_CONTAINER_ID).appendTo("body");
 		}
 		return $OverlayContainer;
 	};
@@ -353,9 +366,9 @@ function (
 			return this.getDomRef();
 		}
 
-		this._$DomRef = jQuery('<div/>').attr(this._getAttributes());
+		this._$DomRef = jQuery('<div></div>').attr(this._getAttributes());
 
-		this._$Children = jQuery('<div/>').attr({
+		this._$Children = jQuery('<div></div>').attr({
 			"class": "sapUiDtOverlayChildren"
 		}).appendTo(this._$DomRef);
 
@@ -520,7 +533,7 @@ function (
 	};
 
 	Overlay.prototype.focus = function() {
-		this.$().focus();
+		this.$().trigger("focus");
 	};
 
 	/**
@@ -567,9 +580,10 @@ function (
 		this.fireBeforeGeometryChanged();
 
 		if (!this.isRendered() || this._bIsBeingDestroyed || this.getShouldBeDestroyed()) {
-			return;
+			return Promise.resolve();
 		}
 
+		var oGeometryChangedPromise = Promise.resolve();
 		if (this.isVisible()) {
 			var oGeometry = this.getGeometry(true);
 
@@ -579,25 +593,25 @@ function (
 
 				if (!this.isRoot()) {
 					var aPromises = [];
-					this.getParent()._oScrollbarSynchronizers.forEach(function(oShr) {
-						if (oShr._bSyncing) {
+					this.getParent()._oScrollbarSynchronizers.forEach(function(oScrollbarSynchronizer) {
+						if (oScrollbarSynchronizer.isSyncing()) {
 							aPromises.push(
 								new Promise(function (fnResolve) {
-									oShr.attachEventOnce('synced', fnResolve);
+									oScrollbarSynchronizer.attachEventOnce('synced', fnResolve);
+									oScrollbarSynchronizer.attachEventOnce('destroyed', fnResolve);
 								})
 							);
 						}
 					});
 					if (aPromises.length) {
-						Promise.all(aPromises).then(function () {
-							this._applySizes(oGeometry, $RenderingParent, bForceScrollbarSync);
-							this.fireGeometryChanged();
+						oGeometryChangedPromise = Promise.all(aPromises).then(function () {
+							return this._applySizes(oGeometry, $RenderingParent, bForceScrollbarSync);
 						}.bind(this));
 					} else {
-						this._applySizes(oGeometry, $RenderingParent, bForceScrollbarSync);
+						oGeometryChangedPromise = this._applySizes(oGeometry, $RenderingParent, bForceScrollbarSync);
 					}
 				} else {
-					this._applySizes(oGeometry, $RenderingParent, bForceScrollbarSync);
+					oGeometryChangedPromise = this._applySizes(oGeometry, $RenderingParent, bForceScrollbarSync);
 				}
 			} else {
 				this.$().css("display", "none");
@@ -607,9 +621,16 @@ function (
 		}
 
 		// TODO: refactor geometryChanged event
-		if (!aPromises || !aPromises.length) {
-			this.fireGeometryChanged();
-		}
+		return oGeometryChangedPromise
+			.catch(function (vError) {
+				Log.error(Util.createError(
+					'Overlay#applyStyles',
+					'Error occured during applySizes calculation: ' + vError
+				));
+			})
+			.then(function () {
+				this.fireGeometryChanged();
+			}.bind(this));
 	};
 
 	Overlay.prototype._applySizes = function (oGeometry, $RenderingParent, bForceScrollbarSync) {
@@ -617,10 +638,20 @@ function (
 		if (oGeometry.domRef) {
 			this._setZIndex(oGeometry, this.$());
 		}
-
-		this.getChildren().forEach(function(oChild) {
-			oChild.applyStyles(bForceScrollbarSync);
-		});
+		// We need to know when all our children have correct positions
+		var aPromises = this.getChildren()
+			.filter(function (oChild) {
+				return oChild.isRendered();
+			})
+			.map(function(oChild) {
+				var mParameters = {};
+				mParameters.bForceScrollbarSync = bForceScrollbarSync;
+				return new Promise(function (fnResolve) {
+					oChild.attachEventOnce('geometryChanged', fnResolve);
+					oChild.fireApplyStylesRequired(mParameters);
+				});
+			});
+		return Promise.all(aPromises);
 	};
 
 	/**
@@ -674,7 +705,7 @@ function (
 	Overlay.prototype.attachBrowserEvent = function(sEventType, fnHandler, oListener) {
 		if (sEventType && (typeof (sEventType) === "string")) { // do nothing if the first parameter is empty or not a string
 			if (typeof fnHandler === "function") {   // also do nothing if the second parameter is not a function
-				// store the parameters for bind()
+				// store the parameters for on()
 				if (!this._aBindParameters) {
 					this._aBindParameters = [];
 				}
@@ -690,7 +721,7 @@ function (
 					fnProxy : fnProxy
 				});
 
-				// if control is rendered, directly call bind()
+				// if control is rendered, directly call on()
 				this.$().on(sEventType, fnProxy);
 			}
 		}
@@ -722,8 +753,8 @@ function (
 						oParamSet = this._aBindParameters[i];
 						if (oParamSet.sEventType === sEventType && oParamSet.fnHandler === fnHandler && oParamSet.oListener === oListener) {
 							this._aBindParameters.splice(i, 1);
-							// if control is rendered, directly call unbind()
-							$.unbind(sEventType, oParamSet.fnProxy);
+							// if control is rendered, directly call off()
+							$.off(sEventType, oParamSet.fnProxy);
 						}
 					}
 				}
@@ -784,7 +815,7 @@ function (
 			var oDummyScrollContainer = $TargetDomRef.find("> .sapUiDtDummyScrollContainer");
 			var oScrollbarSynchronizer;
 			if (!oDummyScrollContainer.length) {
-				oDummyScrollContainer = jQuery("<div/>", {
+				oDummyScrollContainer = jQuery("<div></div>", {
 					css: {
 						height: iScrollHeight + "px",
 						width: iScrollWidth + "px"

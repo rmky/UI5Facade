@@ -1,36 +1,48 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
-	"sap/base/util/isPlainObject"
+	"sap/base/util/isPlainObject",
+	"sap/base/util/each"
 ], function (
-	isPlainObject
+	isPlainObject,
+	each
 ) {
 	"use strict";
 
 	/**
-	* Escapes a special parameter of a set of arguments.
-	* @param {object} oArguments - Object with a set of arguments.
-	* @param {string} sParameterName - Name of the parameter which has to be escaped.
-	* @returns {Array} Array of arguments where the given parameter is escaped.
+	* Escapes object literals (plain objects) which are passed as settings map to a ManagedObject
+	* @param {object} oArguments - Array-like object with a set of arguments
+	* @param {function} [fnValidator] - Validator function. The validator is invoked with 2 arguments: (sKey, oValue).
+	*                                   When <code>true</code> is returned, then object will be escaped.
+	* @returns {Array} Array of arguments with escaped object literals
 	* @function
 	* @experimental
 	* @private
 	*/
-	return function (oArguments, sParameterName) {
+	return function (oArguments, fnValidator) {
+		fnValidator = fnValidator || function () { return true; };
 		var aArguments = Array.from(oArguments);
-		var iSettingsPosition = typeof aArguments[0] !== 'string' && aArguments[0] !== undefined ? 0 : 1;
+		var iSettingsPosition = typeof aArguments[0] !== "string" && aArguments[0] !== undefined ? 0 : 1;
+
 
 		if (isPlainObject(aArguments[iSettingsPosition])) {
 			var mSettings = Object.assign({}, aArguments[iSettingsPosition]);
-			if (isPlainObject(mSettings[sParameterName])) {
-				mSettings[sParameterName] = Object.assign({}, mSettings[sParameterName], {
-					ui5object: true
-				});
-				aArguments[iSettingsPosition] = mSettings;
-			}
+
+			each(mSettings, function (sKey, vValue) {
+				if (
+					isPlainObject(vValue)
+					&& fnValidator(vValue, sKey)
+				) {
+					mSettings[sKey] = Object.assign({}, vValue, {
+						ui5object: true
+					});
+				}
+			});
+
+			aArguments[iSettingsPosition] = mSettings;
 		}
 
 		return aArguments;

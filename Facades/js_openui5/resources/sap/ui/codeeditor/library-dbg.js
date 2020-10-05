@@ -1,16 +1,17 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 /**
  * Initialization Code and shared classes of library sap.ui.codeeditor.
  */
-sap.ui.define(['sap/ui/core/Core', 'sap/ui/core/library'],
-	function(Core) {
+sap.ui.define([
+	"sap/ui/core/Core", // provides sap.ui.getCore()
+	"sap/ui/core/library" // library dependency
+], function () {
 	"use strict";
-
 
 	/**
 	 * UI5 library: sap.ui.codeeditor.
@@ -33,10 +34,8 @@ sap.ui.define(['sap/ui/core/Core', 'sap/ui/core/library'],
 		],
 		elements: [],
 		noLibraryCSS: false,
-		version: "1.73.1"
+		version: "1.82.0"
 	});
 
-
 	return sap.ui.codeeditor;
-
 });

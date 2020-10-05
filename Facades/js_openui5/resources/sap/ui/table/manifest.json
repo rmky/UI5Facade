@@ -1,11 +1,11 @@
 {
-  "_version": "1.9.0",
+  "_version": "1.21.0",
   "sap.app": {
     "id": "sap.ui.table",
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.73.1"
+      "version": "1.82.0"
     },
     "title": "Table-like controls, mainly for desktop scenarios.",
     "description": "Table-like controls, mainly for desktop scenarios.",
@@ -22,18 +22,65 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.73",
+      "minUI5Version": "1.82",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.73.1"
+          "minVersion": "1.82.0"
         },
         "sap.ui.unified": {
-          "minVersion": "1.73.1"
+          "minVersion": "1.82.0"
         }
       }
     },
     "library": {
-      "i18n": "messagebundle.properties",
+      "i18n": {
+        "bundleUrl": "messagebundle.properties",
+        "supportedLocales": [
+          "",
+          "ar",
+          "bg",
+          "ca",
+          "cs",
+          "da",
+          "de",
+          "el",
+          "en",
+          "en-US-sappsd",
+          "en-US-saptrc",
+          "es",
+          "et",
+          "fi",
+          "fr",
+          "hi",
+          "hr",
+          "hu",
+          "it",
+          "iw",
+          "ja",
+          "kk",
+          "ko",
+          "lt",
+          "lv",
+          "ms",
+          "nl",
+          "no",
+          "pl",
+          "pt",
+          "rigi",
+          "ro",
+          "ru",
+          "sh",
+          "sk",
+          "sl",
+          "sv",
+          "th",
+          "tr",
+          "uk",
+          "vi",
+          "zh-CN",
+          "zh-TW"
+        ]
+      },
       "content": {
         "controls": [
           "sap.ui.table.AnalyticalColumnMenu",

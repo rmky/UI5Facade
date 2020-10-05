@@ -1,34 +1,22 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
-	'sap/f/library',
-	'sap/ui/core/Control',
-	"sap/f/cards/CardActions",
-	'sap/m/NumericContent',
-	'sap/m/Text',
-	'sap/ui/model/json/JSONModel',
-	"sap/f/cards/NumericSideIndicator",
+	"sap/ui/core/Control",
+	"sap/m/NumericContent",
+	"sap/m/Text",
 	"sap/f/cards/NumericHeaderRenderer",
-	"sap/f/cards/BindingHelper",
-	"sap/base/strings/formatMessage"
+	"sap/ui/core/Core"
 ], function (
-		library,
-		Control,
-		CardActions,
-		NumericContent,
-		Text,
-		JSONModel,
-		NumericSideIndicator,
-		NumericHeaderRenderer,
-		BindingHelper,
-		formatMessage
-	) {
-		"use strict";
-
-	var AreaType = library.cards.AreaType;
+	Control,
+	NumericContent,
+	Text,
+	NumericHeaderRenderer,
+	Core
+) {
+	"use strict";
 
 	/**
 	 * Constructor for a new <code>NumericHeader</code>.
@@ -38,7 +26,7 @@ sap.ui.define([
 	 *
 	 * @class
 	 * Displays general information in the header of the {@link sap.f.Card} and allows the
-	 * configuration of a numeric value visualization..
+	 * configuration of a numeric value visualization.
 	 *
 	 * You can configure the title, subtitle, status text and icon, using the provided properties.
 	 * To add more side number indicators, use the <code>sideIndicators</code> aggregation.
@@ -53,7 +41,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -120,6 +108,13 @@ sap.ui.define([
 			aggregations: {
 
 				/**
+				 * Defines the toolbar.
+				 * @experimental Since 1.75
+				 * @since 1.75
+				 */
+				toolbar: { type: "sap.ui.core.Control", multiple: false },
+
+				/**
 				 * Additional side number indicators. For example "Deviation" and "Target". Not more than two side indicators should be used.
 				 */
 				sideIndicators: { type: "sap.f.cards.NumericSideIndicator", multiple: true },
@@ -156,7 +151,8 @@ sap.ui.define([
 				 */
 				press: {}
 			}
-		}
+		},
+		renderer: NumericHeaderRenderer
 	});
 
 	/**
@@ -164,55 +160,21 @@ sap.ui.define([
 	 * @private
 	 */
 	NumericHeader.prototype.init = function () {
-		this._aReadyPromises = [];
-		this._bReady = false;
+		this._oRb = Core.getLibraryResourceBundle("sap.f");
 
-		// So far the ready event will be fired when the data is ready. But this can change in the future.
-		this._awaitEvent("_dataReady");
-
-		Promise.all(this._aReadyPromises).then(function () {
-			this._bReady = true;
-			this.fireEvent("_ready");
-		}.bind(this));
-
-		this.setBusyIndicatorDelay(0);
+		this.data("sap-ui-fastnavgroup", "true", true); // Define group for F6 handling
 	};
 
 	NumericHeader.prototype.exit = function () {
-		this._oServiceManager = null;
-		this._oDataProviderFactory = null;
-
-		if (this._oDataProvider) {
-			this._oDataProvider.destroy();
-			this._oDataProvider = null;
-		}
-
-		if (this._oActions) {
-			this._oActions.destroy();
-			this._oActions = null;
-		}
+		this._oRb = null;
 	};
 
 	/**
-	 * Await for an event which controls the overall "ready" state of the header.
-	 *
+	 * Called before the control is rendered.
 	 * @private
-	 * @param {string} sEvent The name of the event
 	 */
-	NumericHeader.prototype._awaitEvent = function (sEvent) {
-		this._aReadyPromises.push(new Promise(function (resolve) {
-			this.attachEventOnce(sEvent, function () {
-				resolve();
-			});
-		}.bind(this)));
-	};
-
-	/**
-	 * @public
-	 * @returns {boolean} If the header is ready or not.
-	 */
-	NumericHeader.prototype.isReady = function () {
-		return this._bReady;
+	NumericHeader.prototype.onBeforeRendering = function () {
+		this._setAccessibilityAttributes();
 	};
 
 	/**
@@ -424,169 +386,23 @@ sap.ui.define([
 		return oControl;
 	};
 
-	NumericHeader.prototype.ontap = function () {
+	/**
+	 * Fires the <code>sap.f.cards.NumericHeader</code> press event.
+	 */
+	NumericHeader.prototype.ontap = function (oEvent) {
+		var srcControl = oEvent.srcControl;
+		if (srcControl && srcControl.getId().indexOf("overflowButton") > -1) { // better way?
+			return;
+		}
+
 		this.firePress();
 	};
 
 	/**
-	 * Creates an instance of NumericHeader with the given options.
-	 *
-	 * @private
-	 * @static
-	 * @param {map} mConfiguration A map containing the header configuration options, which are already parsed.
-	 * @param {Object} oServiceManager A service manager instance to handle services.
-	 * @param {Object} oDataProviderFactory A DataProviderFactory instance.
-	 * @param {string} sAppId The sap.app/id from the manifest.
-	 * @return {sap.f.cards.NumericHeader} The created NumericHeader
+	 * Fires the <code>sap.f.cards.NumericHeader</code> press event.
 	 */
-	NumericHeader.create = function (mConfiguration, oServiceManager, oDataProviderFactory, sAppId) {
-		var mSettings = {
-			title: mConfiguration.title,
-			subtitle: mConfiguration.subTitle,
-			unitOfMeasurement: mConfiguration.unitOfMeasurement,
-			details: mConfiguration.details,
-			sideIndicators: mConfiguration.sideIndicators
-		};
-
-		if (mConfiguration.mainIndicator) {
-			mSettings.number = mConfiguration.mainIndicator.number;
-			mSettings.scale = mConfiguration.mainIndicator.unit;
-			mSettings.trend = mConfiguration.mainIndicator.trend;
-			mSettings.state = mConfiguration.mainIndicator.state; // TODO convert ValueState to ValueColor
-		}
-
-		if (mConfiguration.status && typeof mConfiguration.status.text === "string") {
-			mSettings.statusText = mConfiguration.status.text;
-		}
-
-		mSettings = BindingHelper.createBindingInfos(mSettings);
-
-		if (mConfiguration.sideIndicators) {
-			mSettings.sideIndicators = mSettings.sideIndicators.map(function (mIndicator) { // TODO validate that it is an array and with no more than 2 elements
-				return new NumericSideIndicator(mIndicator);
-			});
-		}
-
-		var oHeader = new NumericHeader(mSettings);
-
-		oHeader._sAppId = sAppId;
-
-		if (mConfiguration.status && mConfiguration.status.text && mConfiguration.status.text.format) {
-			NumericHeader._bindStatusText(mConfiguration.status.text.format, oHeader);
-		}
-
-		oHeader.setServiceManager(oServiceManager);
-		oHeader.setDataProviderFactory(oDataProviderFactory);
-		oHeader._setData(mConfiguration.data);
-
-		var oActions = new CardActions({
-			areaType: AreaType.Header
-		});
-		oActions.attach(mConfiguration, oHeader);
-		oHeader._oActions = oActions;
-
-		return oHeader;
-	};
-
-	/**
-	 * Binds the statusText of a header to the provided format configuration.
-	 *
-	 * @private
-	 * @static
-	 * @param {Object} mFormat The formatting configuration.
-	 * @param {sap.f.cards.Header} oHeader The header instance.
-	 */
-	NumericHeader._bindStatusText = function (mFormat, oHeader) {
-
-		if (mFormat.parts && mFormat.translationKey && mFormat.parts.length === 2) {
-			var oBindingInfo = {
-				parts: [
-					mFormat.translationKey,
-					mFormat.parts[0].toString(),
-					mFormat.parts[1].toString()
-				],
-				formatter: function (sText, vParam1, vParam2) {
-					var sParam1 = vParam1 || mFormat.parts[0];
-					var sParam2 = vParam2 || mFormat.parts[1];
-
-					if (Array.isArray(vParam1)) {
-						sParam1 = vParam1.length;
-					}
-					if (Array.isArray(vParam2)) {
-						sParam2 = vParam2.length;
-					}
-
-					var iParam1 = parseFloat(sParam1) || 0;
-					var iParam2 = parseFloat(sParam2) || 0;
-
-					return formatMessage(sText, [iParam1, iParam2]);
-				}
-			};
-
-			oHeader.bindProperty("statusText", oBindingInfo);
-		}
-	};
-
-	NumericHeader.prototype.setServiceManager = function (oServiceManager) {
-		this._oServiceManager = oServiceManager;
-		return this;
-	};
-
-	NumericHeader.prototype.setDataProviderFactory = function (oDataProviderFactory) {
-		this._oDataProviderFactory = oDataProviderFactory;
-		return this;
-	};
-
-	/**
-	 * Sets a data provider to the header.
-	 *
-	 * @private
-	 * @param {object} oDataSettings The data settings
-	 */
-	NumericHeader.prototype._setData = function (oDataSettings) {
-		var sPath = "/";
-		if (oDataSettings && oDataSettings.path) {
-			sPath = oDataSettings.path;
-		}
-
-		this.bindObject(sPath);
-
-		if (this._oDataProvider) {
-			this._oDataProvider.destroy();
-		}
-
-		this._oDataProvider = this._oDataProviderFactory.create(oDataSettings, this._oServiceManager);
-
-		if (this._oDataProvider) {
-			this.setBusy(true);
-
-			// If a data provider is created use an own model. Otherwise bind to the one propagated from the card.
-			this.setModel(new JSONModel());
-
-			this._oDataProvider.attachDataChanged(function (oEvent) {
-				this._updateModel(oEvent.getParameter("data"));
-				this.setBusy(false);
-			}.bind(this));
-
-			this._oDataProvider.attachError(function (oEvent) {
-				this._handleError(oEvent.getParameter("message"));
-				this.setBusy(false);
-			}.bind(this));
-
-			this._oDataProvider.triggerDataUpdate().then(function () {
-				this.fireEvent("_dataReady");
-			}.bind(this));
-		} else {
-			this.fireEvent("_dataReady");
-		}
-	};
-
-	NumericHeader.prototype._updateModel = function (oData) {
-		this.getModel().setData(oData);
-	};
-
-	NumericHeader.prototype._handleError = function (sLogMessage) {
-		this.fireEvent("_error", { logMessage: sLogMessage });
+	NumericHeader.prototype.onsapselect = function () {
+		this.firePress();
 	};
 
 	/**
@@ -598,12 +414,30 @@ sap.ui.define([
 	NumericHeader.prototype._getHeaderAccessibility = function () {
 		var sTitleId = this._getTitle() ? this._getTitle().getId() : "",
 			sSubtitleId = this._getSubtitle() ? this._getSubtitle().getId() : "",
+			sStatusTextId = this.getStatusText() ? this.getId() + "-status" : "",
 			sUnitOfMeasureId = this._getUnitOfMeasurement() ? this._getUnitOfMeasurement().getId() : "",
 			sSideIndicatorsId = this.getSideIndicators() ? this._getSideIndicatorIds() : "",
 			sDetailsId = this._getDetails() ? this._getDetails().getId() : "",
 			sMainIndicatorId = this._getMainIndicator() ? this._getMainIndicator().getId() : "";
 
-			return sTitleId + " " + sSubtitleId + " " + sUnitOfMeasureId + " " + sMainIndicatorId + sSideIndicatorsId + " " + sDetailsId;
+			return sTitleId + " " + sSubtitleId + " " + sStatusTextId + " " + sUnitOfMeasureId + " " + sMainIndicatorId + sSideIndicatorsId + " " + sDetailsId;
+	};
+
+	/**
+	 * Sets accessibility to the header to the header.
+	 *
+	 * @private
+	 */
+	NumericHeader.prototype._setAccessibilityAttributes = function () {
+		if (this.hasListeners("press")) {
+			this._sAriaRole = "button";
+			this._sAriaHeadingLevel = undefined;
+			this._sAriaRoleDescritoion = this._oRb.getText("ARIA_ROLEDESCRIPTION_INTERACTIVE_CARD_HEADER");
+		} else {
+			this._sAriaRole = "heading";
+			this._sAriaHeadingLevel = "3";
+			this._sAriaRoleDescritoion = this._oRb.getText("ARIA_ROLEDESCRIPTION_CARD_HEADER");
+		}
 	};
 
 	/**
@@ -619,6 +453,32 @@ sap.ui.define([
 		});
 
 		return sSideIndicatorIds;
+	};
+
+	NumericHeader.prototype.isLoading = function () {
+		return false;
+	};
+
+	NumericHeader.prototype.attachPress = function () {
+		var aMyArgs = Array.prototype.slice.apply(arguments);
+		aMyArgs.unshift("press");
+
+		Control.prototype.attachEvent.apply(this, aMyArgs);
+
+		this.invalidate();
+
+		return this;
+	};
+
+	NumericHeader.prototype.detachPress = function() {
+		var aMyArgs = Array.prototype.slice.apply(arguments);
+		aMyArgs.unshift("press");
+
+		Control.prototype.detachEvent.apply(this, aMyArgs);
+
+		this.invalidate();
+
+		return this;
 	};
 
 	return NumericHeader;

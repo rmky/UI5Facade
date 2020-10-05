@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -29,7 +29,7 @@ sap.ui.define(["sap/ui/base/DataType",
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.f",
-		version: "1.73.1",
+		version: "1.82.0",
 		dependencies : ["sap.ui.core", "sap.m", "sap.ui.layout"],
 		designtime: "sap/f/designtime/library.designtime",
 		interfaces: [
@@ -67,6 +67,8 @@ sap.ui.define(["sap/ui/base/DataType",
 			"sap.f.semantic.SemanticPage",
 			"sap.f.GridList",
 			"sap.f.GridListItem",
+			"sap.f.PlanningCalendarInCard",
+			"sap.f.PlanningCalendarInCardLegend",
 			"sap.f.ProductSwitch",
 			"sap.f.ProductSwitchItem",
 			"sap.f.ShellBar"
@@ -74,6 +76,7 @@ sap.ui.define(["sap/ui/base/DataType",
 		elements: [
 			"sap.f.DynamicPageAccessibleLandmarkInfo",
 			"sap.f.GridContainerItemLayoutData",
+			"sap.f.PlanningCalendarInCardRow",
 			"sap.f.semantic.AddAction",
 			"sap.f.semantic.CloseAction",
 			"sap.f.semantic.CopyAction",
@@ -101,6 +104,7 @@ sap.ui.define(["sap/ui/base/DataType",
 		],
 		extensions: {
 			flChangeHandlers: {
+				"sap.f.Avatar" : "sap/f/flexibility/Avatar",
 				"sap.f.DynamicPageHeader" : {
 					"hideControl": "default",
 					"unhideControl": "default",
@@ -125,7 +129,7 @@ sap.ui.define(["sap/ui/base/DataType",
 	 * @namespace
 	 * @alias sap.f
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @public
 	 */
 	var thisLib = sap.f;
@@ -136,7 +140,8 @@ sap.ui.define(["sap/ui/base/DataType",
 	* @enum {string}
 	* @public
 	* @since 1.50
-	* @deprecated Since version 1.54
+	* @deprecated Since version 1.54. Consumers of the {@link sap.f.DynamicPageTitle} control should now use
+	*   the <code>areaShrinkRatio</code> property instead of the <code>primaryArea</code> property.
 	* @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
 	*/
 	thisLib.DynamicPageTitleArea = {
@@ -522,18 +527,6 @@ sap.ui.define(["sap/ui/base/DataType",
 		 * @public
 		 */
 		Bottom: "Bottom"
-	};
-
-	/*
-	 * Specifies different card area types.
-	 *
-	 * @private
-	 */
-	thisLib.cards.AreaType = {
-		None: 'None',
-		ContentItem: 'ContentItem',
-		Content: 'Content',
-		Header: 'Header'
 	};
 
 	return thisLib;

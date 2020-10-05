@@ -1,8 +1,10 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
+
+/* globals Map */
 
 // Provides class sap.ui.core.ResizeHandler
 sap.ui.define([
@@ -32,7 +34,7 @@ sap.ui.define([
 	 * @alias sap.ui.core.ResizeHandler
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @public
 	 */
 
@@ -46,12 +48,13 @@ sap.ui.define([
 			this.aResizeListeners = [];
 			this.aSuspendedDomRefs = [];
 			this.bRegistered = false;
+			this.mCallbacks = new Map();
 
 			this.iIdCounter = 0;
 
 			this.fDestroyHandler = this.destroy.bind(this);
 
-			jQuery(window).bind("unload", this.fDestroyHandler);
+			jQuery(window).on("unload", this.fDestroyHandler);
 
 			ActivityDetection.attachActivate(initListener, this);
 		}
@@ -81,7 +84,7 @@ sap.ui.define([
 	 */
 	ResizeHandler.prototype.destroy = function(oEvent) {
 		ActivityDetection.detachActivate(initListener, this);
-		jQuery(window).unbind("unload", this.fDestroyHandler);
+		jQuery(window).off("unload", this.fDestroyHandler);
 		oCoreRef = null;
 		this.aResizeListeners = [];
 		this.aSuspendedDomRefs = [];
@@ -98,6 +101,7 @@ sap.ui.define([
 	 */
 	ResizeHandler.prototype.attachListener = function(oRef, fHandler){
 		var bIsControl = BaseObject.isA(oRef, 'sap.ui.core.Control'),
+			bIsJQuery = oRef instanceof jQuery, // actually, jQuery objects are not allowed as oRef, as per the API documentation. But this happens in the wild.
 			oDom = bIsControl ? oRef.getDomRef() : oRef,
 			iWidth = oDom ? oDom.offsetWidth : 0,
 			iHeight = oDom ? oDom.offsetHeight : 0,
@@ -112,7 +116,7 @@ sap.ui.define([
 			dbg = String(oRef);
 		}
 
-		this.aResizeListeners.push({sId: sId, oDomRef: bIsControl ? null : oRef, oControl: bIsControl ? oRef : null, fHandler: fHandler, iWidth: iWidth, iHeight: iHeight, dbg: dbg});
+		this.aResizeListeners.push({sId: sId, oDomRef: bIsControl ? null : oRef, oControl: bIsControl ? oRef : null, bIsJQuery: bIsJQuery, fHandler: fHandler, iWidth: iWidth, iHeight: iHeight, dbg: dbg});
 		log.debug("registered " + dbg);
 
 		initListener.call(this);
@@ -157,7 +161,9 @@ sap.ui.define([
 				var bCtrl = !!oResizeListener.oControl,
 					oDomRef = bCtrl ? oResizeListener.oControl.getDomRef() : oResizeListener.oDomRef;
 
-				if ( oDomRef && jQuery.contains(document.documentElement, oDomRef) && !this._isSuspended(oDomRef)) { //check that domref is still active and not suspended
+				oDomRef = oResizeListener.bIsJQuery ? oDomRef[0] : oDomRef;
+
+				if (oDomRef && document.documentElement.contains(oDomRef) && !this._isSuspended(oDomRef)) { //check that domref is still active and not suspended
 
 					var iOldWidth = oResizeListener.iWidth,
 						iOldHeight = oResizeListener.iHeight,
@@ -276,7 +282,7 @@ sap.ui.define([
 		}
 
 		// Check if the dom ref is valid within the document
-		if (!oDomRef || !jQuery.contains(document.documentElement, oDomRef)) {
+		if (!document.documentElement.contains(oDomRef)) {
 			return false;
 		}
 
@@ -311,11 +317,22 @@ sap.ui.define([
 		// Remove the dom ref and execute listeners again
 		oResizeHandler.aSuspendedDomRefs.splice(iIndex, 1);
 		oResizeHandler.checkSizes();
+
+		// inform interested parties
+		var aCallbacks = oResizeHandler.mCallbacks.get(oDomRef);
+		if (aCallbacks) {
+			for (var i = 0; i < aCallbacks.length; i++) {
+				aCallbacks[i]();
+			}
+			oResizeHandler.mCallbacks.delete(oDomRef);
+		}
+
 		return true;
 	};
 
 	/**
-	 * Checks if the given DOM reference is a child (or exact match) of a DOM area that is suspended from observation for resize changes
+	 * Checks if the given DOM reference is a child (or exact match) of a DOM area that is suspended from observation for size changes.
+	 * This instance method is an internal shortcut.
 	 * @param {Element} oDomRef the DOM reference
 	 * @return {boolean} Whether the <code>oDomRef</code> is suspended
 	 * @private
@@ -325,11 +342,40 @@ sap.ui.define([
 			oNextSuspendedDomRef;
 		for (var i = 0; i < aSuspendedDomRefs.length; i++) {
 			oNextSuspendedDomRef = aSuspendedDomRefs[i];
-			if (oNextSuspendedDomRef === oDomRef || jQuery.contains(oNextSuspendedDomRef, oDomRef)) {
-				return true;
+			if (oNextSuspendedDomRef.contains(oDomRef)) {
+				return oNextSuspendedDomRef;
 			}
 		}
 		return false;
+	};
+
+	/**
+	 * Checks if the given DOM reference is a child (or exact match) of a DOM area that is suspended from observation for size changes
+	 *
+	 * @param {Element} oDomRef the DOM reference.
+	 * @param {function} [fnCallback] a callback function to be called once the DOM node is resumed which was found to be the primary
+	 *        reason for oDomRef to be suspended. Note that isSuspended() may still be true when other DOM nodes are still suspended.
+	 *        Also note that each isSuspended() call registers the callback, but only if it was not found to be already registered.
+	 * @return {boolean} Whether the <code>oDomRef</code> is suspended
+	 * @private
+	 */
+	ResizeHandler.isSuspended = function(oDomRef, fnCallback) {
+		if (!oCoreRef || !oCoreRef.oResizeHandler) {
+			return false;
+		}
+		var oHandler = oCoreRef.oResizeHandler;
+		var vSuspended = oHandler._isSuspended(oDomRef);
+		if (fnCallback && vSuspended) { // DOM node causing the suspension
+			var aCallbacks = oHandler.mCallbacks.get(vSuspended);
+			if (!aCallbacks) {
+				aCallbacks = [];
+				oHandler.mCallbacks.set(vSuspended, aCallbacks);
+			}
+			if (aCallbacks.indexOf(fnCallback) === -1) {
+				aCallbacks.push(fnCallback);
+			}
+		}
+		return !!vSuspended;
 	};
 
 	return ResizeHandler;

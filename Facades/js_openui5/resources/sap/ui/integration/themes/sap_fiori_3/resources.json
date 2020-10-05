@@ -3,38 +3,61 @@
 	"resources": [
 		{
 			"name": ".theming",
+			"size": 90,
 			"theme": "sap_fiori_3"
 		},
 		{
-			"name": "library-RTL-dbg.css",
-			"isDebug": true,
+			"name": "css_variables.css",
+			"size": 267,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "css_variables.less",
+			"size": 83814,
+			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "css_variables.source.less",
+			"size": 83446,
+			"designtime": true,
 			"theme": "sap_fiori_3"
 		},
 		{
 			"name": "library-RTL.css",
-			"theme": "sap_fiori_3"
-		},
-		{
-			"name": "library-dbg.css",
-			"isDebug": true,
+			"size": 2933,
 			"theme": "sap_fiori_3"
 		},
 		{
 			"name": "library-parameters.json",
+			"size": 67,
 			"theme": "sap_fiori_3"
 		},
 		{
 			"name": "library.css",
+			"size": 2936,
 			"theme": "sap_fiori_3"
 		},
 		{
 			"name": "library.less",
+			"size": 513,
 			"designtime": true,
 			"theme": "sap_fiori_3"
 		},
 		{
 			"name": "library.source.less",
+			"size": 326,
 			"designtime": true,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "library_skeleton-RTL.css",
+			"size": 3000,
+			"theme": "sap_fiori_3"
+		},
+		{
+			"name": "library_skeleton.css",
+			"size": 3003,
 			"theme": "sap_fiori_3"
 		}
 	]

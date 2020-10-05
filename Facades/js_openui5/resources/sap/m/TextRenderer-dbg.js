@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -56,6 +56,9 @@ sap.ui.define([
 			oRm.openStart("span", oText);
 			oRm.class("sapMText");
 			oRm.class("sapUiSelectable");
+			if (oText.hasMaxLines()) {
+				oRm.class("sapMTextMaxLineWrapper");
+			}
 
 			// set classes for wrapping
 			if (!bWrapping || nMaxLines == 1) {
@@ -108,8 +111,7 @@ sap.ui.define([
 		 * @param {sap.m.Text} oText An object representation of the control that should be rendered
 		 */
 		TextRenderer.renderMaxLines = function(oRm, oText) {
-			oRm.openStart("span");
-			oRm.attr("id", oText.getId() + "-inner");
+			oRm.openStart("span", oText.getId() + "-inner");
 			oRm.class("sapMTextMaxLine");
 
 			// check native line clamp support

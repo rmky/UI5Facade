@@ -1,17 +1,17 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	"sap/ui/rta/plugin/Plugin",
+	"sap/ui/rta/plugin/BaseCreate",
 	"sap/ui/fl/Utils",
 	"sap/ui/rta/Utils",
 	"sap/ui/dt/Util",
 	"sap/base/util/uid"
 ], function(
-	Plugin,
+	BaseCreate,
 	FlexUtils,
 	RtaUtils,
 	DtUtil,
@@ -25,16 +25,16 @@ sap.ui.define([
 	 * @param {string} [sId] id for the new object, generated automatically if no id is given
 	 * @param {object} [mSettings] initial settings for the new object
 	 * @class The CreateContainer allows trigger CreateContainer operations on the overlay
-	 * @extends sap.ui.rta.plugin.Plugin
+	 * @extends sap.ui.rta.plugin.BaseCreate
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @constructor
 	 * @private
 	 * @since 1.34
 	 * @alias sap.ui.rta.plugin.CreateContainer
 	 * @experimental Since 1.34. This class is experimental and provides only limited functionality. Also the API might be changed in future.
 	 */
-	var CreateContainer = Plugin.extend("sap.ui.rta.plugin.CreateContainer", /** @lends sap.ui.rta.plugin.CreateContainer.prototype */ {
+	var CreateContainer = BaseCreate.extend("sap.ui.rta.plugin.CreateContainer", /** @lends sap.ui.rta.plugin.CreateContainer.prototype */ {
 		metadata: {
 			library: "sap.ui.rta",
 			properties: {},
@@ -44,117 +44,16 @@ sap.ui.define([
 	});
 
 	/**
-	 * This function gets called on startup. It checks if the Overlay is editable by this plugin.
-	 * @param {sap.ui.dt.Overlay} oOverlay - overlay to be checked
-	 * @returns {object} Returns object with editable boolean values for "asChild" and "asSibling"
-	 * @private
+	 * Returns true if create container action is enabled for the selected element overlays
+	 * @param {boolean} bSibling Indicator for a sibling action
+	 * @param {sap.ui.dt.ElementOverlay[]} aElementOverlays Array of selected element overlays
+	 * @return {boolean} Indicates if action is enabled
+	 * @override
 	 */
-	CreateContainer.prototype._isEditable = function (oOverlay) {
-		return Promise.all([this._isEditableCheck(oOverlay, true), this._isEditableCheck(oOverlay, false)])
-		.then(function(aPromiseValues) {
-			return {
-				asSibling: aPromiseValues[0],
-				asChild: aPromiseValues[1]
-			};
-		});
-	};
-
-	CreateContainer.prototype._isEditableCheck = function (oOverlay, bOverlayIsSibling) {
-		var	oParentOverlay = this._getParentOverlay(bOverlayIsSibling, oOverlay);
-		var sAggregationName;
-
-		if (!oParentOverlay || !oParentOverlay.getParentElementOverlay()) {
-			//root element is not editable as parent and as sibling
-			return Promise.resolve(false);
-		}
-
-		if (bOverlayIsSibling) {
-			sAggregationName = oOverlay.getParentAggregationOverlay().getAggregationName();
-		}
-
-		return this.checkAggregationsOnSelf(oParentOverlay, "createContainer", sAggregationName)
-			.then(function(bEditableCheck) {
-				if (bEditableCheck) {
-					// If ids are created within fragments or controller code,
-					// the id of the parent view might not be part of the control id.
-					// In these cases the control might have a stable id (this.hasStableId()), but the view doesn't.
-					// As the view is needed create the id for the newly created container it
-					// has to be stable, otherwise the new id will not be stable.
-					var oParentView = FlexUtils.getViewForControl(oParentOverlay.getElement());
-					return this.hasStableId(oOverlay) && FlexUtils.checkControlId(oParentView);
-				}
-				return false;
-			}.bind(this));
-	};
-
-	CreateContainer.prototype._getParentOverlay = function (bSibling, oOverlay) {
-		var oParentOverlay;
-		if (bSibling) {
-			oParentOverlay = oOverlay.getParentElementOverlay();
-		} else {
-			oParentOverlay = oOverlay;
-		}
-		return oParentOverlay;
-	};
-
-	CreateContainer.prototype.getCreateAction = function (bSibling, oOverlay) {
-		var oParentOverlay = this._getParentOverlay(bSibling, oOverlay);
-		var oDesignTimeMetadata = oParentOverlay.getDesignTimeMetadata();
-		var aActions = oDesignTimeMetadata.getActionDataFromAggregations("createContainer", oOverlay.getElement());
-		return aActions[0];
-	};
-
-	CreateContainer.prototype.isAvailable = function (bSibling, aElementOverlays) {
-		return this._isEditableByPlugin(aElementOverlays[0], bSibling);
-	};
-
-	CreateContainer.prototype.isEnabled = function (bSibling, aElementOverlays) {
+	CreateContainer.prototype.isEnabled = function(bSibling, aElementOverlays) {
 		var oElementOverlay = aElementOverlays[0];
-		var vAction = this.getCreateAction(bSibling, oElementOverlay);
-		if (!vAction) {
-			return false;
-		}
-
-		if (vAction.isEnabled && typeof vAction.isEnabled === "function") {
-			var fnIsEnabled = vAction.isEnabled;
-			var oParentOverlay = this._getParentOverlay(bSibling, oElementOverlay);
-			return fnIsEnabled(oParentOverlay.getElement());
-		}
-
-		return true;
-	};
-
-	/**
-	 * Returns the id of a newly created container using the function
-	 * defined in the control designtime metadata to retrieve the correct value
-	 * @param  {object} vAction       create container action from designtime metadata
-	 * @param  {string} sNewControlID id of the new control
-	 * @return {string}	              Returns the id of the created control
-	 */
-	CreateContainer.prototype.getCreatedContainerId = function (vAction, sNewControlID) {
-		var sId = sNewControlID;
-		if (vAction.getCreatedContainerId && typeof vAction.getCreatedContainerId === "function") {
-			var fnMapToRelevantControlID = vAction.getCreatedContainerId;
-			sId = fnMapToRelevantControlID(sNewControlID);
-		}
-		return sId;
-	};
-
-	CreateContainer.prototype._determineIndex = function (oParentElement, oSiblingElement, sAggregationName, fnGetIndex) {
-		return RtaUtils.getIndex(oParentElement, oSiblingElement, sAggregationName, fnGetIndex);
-	};
-
-	CreateContainer.prototype._getText = function (vAction, oElement, oDesignTimeMetadata, sText) {
-		if (!vAction) {
-			return sText;
-		}
-		var oAggregationDescription = oDesignTimeMetadata.getAggregationDescription(vAction.aggregation, oElement);
-		if (!oAggregationDescription) {
-			return sText;
-		}
-		var sContainerTitle = oAggregationDescription.singular;
-		var oTextResources = sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta");
-		return oTextResources.getText(sText, sContainerTitle);
+		var oAction = this.getCreateAction(bSibling, oElementOverlay);
+		return this.isActionEnabled(oAction, bSibling, oElementOverlay);
 	};
 
 	CreateContainer.prototype.getCreateContainerText = function(bSibling, oOverlay) {
@@ -223,11 +122,10 @@ sap.ui.define([
 		var aMenuItems = [];
 		for (var i = 0; i < 2; i++) {
 			if (this.isAvailable(bOverlayIsSibling, aElementOverlays)) {
-				var sMenuItemText = this.getCreateContainerText.bind(this, bOverlayIsSibling);
 				aMenuItems.push({
 					id: sPluginId,
-					text: sMenuItemText,
-					handler: this.handler.bind(this, bOverlayIsSibling),
+					text: this.getCreateContainerText.bind(this, bOverlayIsSibling),
+					handler: this.handleCreate.bind(this, bOverlayIsSibling, aElementOverlays[0]),
 					enabled: this.isEnabled.bind(this, bOverlayIsSibling),
 					icon: "sap-icon://add-folder",
 					rank: iRank
@@ -248,14 +146,5 @@ sap.ui.define([
 		return "createContainer";
 	};
 
-	/**
-	 * Trigger the plugin execution.
-	 * @param {boolean} bOverlayIsSibling True if the overlay is sibling
-	 * @param {sap.ui.dt.ElementOverlay[]} aElementOverlays - Target overlays
-	 */
-	CreateContainer.prototype.handler = function (bOverlayIsSibling, aElementOverlays) {
-		this.handleCreate(bOverlayIsSibling, aElementOverlays[0]);
-	};
-
 	return CreateContainer;
-}, /* bExport= */true);
+});

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -9,18 +9,22 @@ sap.ui.define([
 	"sap/ui/dt/ElementOverlay",
 	"sap/ui/dt/AggregationOverlay",
 	"sap/ui/dt/Util",
+	"sap/ui/fl/write/api/ExtensionPointRegistryAPI",
 	"sap/base/util/deepEqual",
 	"sap/base/util/merge",
 	"sap/base/util/restricted/_omit",
+	"sap/base/util/restricted/_pick",
 	"sap/ui/thirdparty/jquery"
 ], function(
 	OverlayRegistry,
 	ElementOverlay,
 	AggregationOverlay,
 	DtUtil,
+	ExtensionPointRegistryAPI,
 	deepEqual,
 	merge,
 	_omit,
+	_pick,
 	jQuery
 ) {
 	"use strict";
@@ -34,10 +38,20 @@ sap.ui.define([
 	 * @author SAP SE
 	 * @experimental Since 1.56
 	 * @since 1.56
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @private
 	 * @ui5-restricted
 	*/
+
+	/**
+	 * Object containing an outline of available nodes.
+	 *
+	 * @typedef {object} sap.ui.rta.service.Outline.ExtensionPointInfo
+	 * @since 1.77
+	 * @private
+	 * @ui5-restricted
+	 * @property {string[]} defaultContent - List of control IDs that belong to the default content of an extension point
+	 */
 
 	/**
 	 * Object containing an outline of available nodes.
@@ -54,11 +68,20 @@ sap.ui.define([
 	 * @property {string} [icon] - Icon path for the node
 	 * @property {string} type - Type of node
 	 * @property {boolean} [visible] - Visibility of node of type <code>element</code>
+	 * @property {sap.ui.rta.service.Outline.ExtensionPointInfo} [extensionPointInfo] - In case of an extension point additional extension point information is given.
 	 * @property {sap.ui.rta.service.Outline.OutlineObject[]} elements - Outline data for child nodes
 	 */
 
 	return function(oRta, fnPublish) {
 		var oOutline = {};
+
+		oOutline.mExtensionPointMetadata = {
+			palette: {
+				icons: {
+					svg: "sap/ui/core/designtime/Icon.icon.svg"
+				}
+			}
+		};
 
 		/**
 		 * Returns the given outline model data that can be used by tools to display an outline.
@@ -102,6 +125,44 @@ sap.ui.define([
 			return oResponse;
 		};
 
+		oOutline._getExtensionPoints = function (oData) {
+			var sParentId = oData.id;
+			var sAggregationName = oData.technicalName;
+			return ExtensionPointRegistryAPI.getExtensionPointInfoByParentId({parentId: sParentId})
+				.filter(function (mExtenstionPoint) {
+					return mExtenstionPoint.aggregationName === sAggregationName;
+				});
+		};
+
+		oOutline._getExtensionPointData = function (mExtensionPoint) {
+			return {
+				id: mExtensionPoint.targetControl.getId(),
+				name: mExtensionPoint.name,
+				technicalName: "sap.ui.extensionpoint",
+				type: "extensionPoint",
+				icon: this.mExtensionPointMetadata.palette.icons.svg,
+				extensionPointInfo: {
+					defaultContent: mExtensionPoint.defaultContent.map(function (oControl) {
+						return oControl.getId();
+					})
+				}
+			};
+		};
+
+		oOutline._enrichExtensionPointData = function (oData) {
+			var bIsDesignMode = sap.ui.getCore().getConfiguration().getDesignMode();
+			if (oData.type === "aggregation" && bIsDesignMode) {
+				var aExtensionPoints = this._getExtensionPoints(oData)
+					.sort(function (mExtensionPointA, mExtensionPointB) {
+						return mExtensionPointB.index - mExtensionPointA.index;
+					});
+				aExtensionPoints.forEach(function (mExtensionPoint) {
+					var mExtensionPointData = this._getExtensionPointData(mExtensionPoint);
+					oData.elements.splice(mExtensionPoint.index, 0, mExtensionPointData);
+				}.bind(this));
+			}
+		};
+
 		/**
 		 * Returns outline model data including the children until max depth (<code>this.iDepth</code> or last child is reached).
 		 * During execution, the <code>fnFilter</code> is used to determine whether node data should be added.
@@ -140,6 +201,9 @@ sap.ui.define([
 					.filter(function (oChildNode) {
 						return !jQuery.isEmptyObject(oChildNode);
 					});
+
+				//get extension point information if available
+				this._enrichExtensionPointData(oData);
 			}
 
 			return oData;

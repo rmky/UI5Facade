@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -32,7 +32,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -331,7 +331,7 @@ sap.ui.define([
 		if (oCurrentSection.id == this.getSections()[0].getId()) {
 			oNextFocusableElement = jQuery(oCurrentSection).find("div.sapUiAcdSectionHdr");
 			if (oNextFocusableElement) {
-				oNextFocusableElement.focus();
+				oNextFocusableElement.trigger("focus");
 			}
 		}
 
@@ -346,7 +346,7 @@ sap.ui.define([
 			if (oPreviousSection) {
 				oNextFocusableElement = jQuery(oPreviousSection).find("div.sapUiAcdSectionHdr");
 				if (oNextFocusableElement) {
-					oNextFocusableElement.focus();
+					oNextFocusableElement.trigger("focus");
 				}
 			}
 		}
@@ -382,7 +382,7 @@ sap.ui.define([
 			if (oNextSection) {
 				var oNextFocusableElement = jQuery(oNextSection).find("div.sapUiAcdSectionHdr");
 				if (oNextFocusableElement) {
-					oNextFocusableElement.focus();
+					oNextFocusableElement.trigger("focus");
 				}
 			}
 		}
@@ -415,7 +415,7 @@ sap.ui.define([
 		if (oFocusableSection) {
 			var oNextFocusableElement = jQuery(oFocusableSection).find("div.sapUiAcdSectionHdr");
 			if (oNextFocusableElement) {
-				oNextFocusableElement.focus();
+				oNextFocusableElement.trigger("focus");
 			}
 		}
 
@@ -448,7 +448,7 @@ sap.ui.define([
 		if (oFocusableSection) {
 			var oNextFocusableElement = jQuery(oFocusableSection).find("div.sapUiAcdSectionHdr");
 			if (oNextFocusableElement) {
-				oNextFocusableElement.focus();
+				oNextFocusableElement.trigger("focus");
 			}
 		}
 

@@ -1,6 +1,6 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,8 +10,8 @@ sap.ui.define([
 	'sap/ui/base/ManagedObject',
 	'sap/ui/base/EventProvider',
 	"sap/base/util/array/uniqueSort",
-	"sap/ui/thirdparty/jquery"
-], function(BaseObject, ManagedObject, EventProvider, uniqueSort, jQuery) {
+	'sap/base/util/deepExtend'
+], function(BaseObject, ManagedObject, EventProvider, uniqueSort, deepExtend) {
 	"use strict";
 
 	/**
@@ -379,7 +379,7 @@ sap.ui.define([
 	/**
 	 * Called from sap.ui.base.ManagedObject if a binding changed for a property or aggregation.
 	 *
-	 * @param {string} sName the name of the the name property or aggregation of which the binding is changed
+	 * @param {string} sName The name of the property or aggregation of which the binding is changed
 	 * @param {string} sMutation "prepared", "ready", "removed"
 	 * @param {object} oBindingInfo the binding info
 	 * @param {string} sMemberType 'aggregation' or 'property'
@@ -470,7 +470,7 @@ sap.ui.define([
 			var iIndex = oTargetConfig.listeners.indexOf(oListener);
 			if (iIndex >= 0) {
 				//return the current configuration
-				var oConfiguration = jQuery.extend(true,{}, oTargetConfig.configurations[iIndex]);
+				var oConfiguration = deepExtend({}, oTargetConfig.configurations[iIndex]);
 				return oConfiguration;
 			}
 		}

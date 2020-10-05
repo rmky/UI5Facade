@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -27,11 +27,10 @@ sap.ui.define([
 	'sap/m/StandardListItem',
 	'sap/m/Table',
 	'sap/m/Title',
-	'sap/m/Text',
 	'sap/ui/core/IconPool',
-	'sap/m/SimpleFixFlex',
 	"sap/base/security/encodeXML",
-	"sap/ui/events/KeyCodes"
+	"sap/ui/events/KeyCodes",
+	"sap/m/ValueStateHeader"
 ], function (
 	Device,
 	EventProvider,
@@ -55,11 +54,10 @@ sap.ui.define([
 	StandardListItem,
 	Table,
 	Title,
-	Text,
 	IconPool,
-	SimpleFixFlex,
 	encodeXML,
-	KeyCodes
+	KeyCodes,
+	ValueStateHeader
 ) {
 	"use strict";
 
@@ -92,7 +90,7 @@ sap.ui.define([
 	 * @alias sap.m.SuggestionsPopover
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 */
 	var SuggestionsPopover = EventProvider.extend("sap.m.SuggestionsPopover", /** @lends sap.m.SuggestionsPopover.prototype */ {
 
@@ -130,10 +128,14 @@ sap.ui.define([
 			// adds event delegate for the arrow keys
 			this._oInput.addEventDelegate({
 				onsapup: function(oEvent) {
-					this._onsaparrowkey(oEvent, "up", 1);
+					if (!this._oInput.isComposingCharacter()){
+						this._onsaparrowkey(oEvent, "up", 1);
+					}
 				},
 				onsapdown: function(oEvent) {
-					this._onsaparrowkey(oEvent, "down", 1);
+					if (!this._oInput.isComposingCharacter()){
+						this._onsaparrowkey(oEvent, "down", 1);
+					}
 				},
 				onsappageup: function(oEvent) {
 					this._onsaparrowkey(oEvent, "up", 5);
@@ -142,8 +144,10 @@ sap.ui.define([
 					this._onsaparrowkey(oEvent, "down", 5);
 				},
 				onsaphome: function(oEvent) {
+					var iItems;
 					if (this._oList) {
-						this._onsaparrowkey(oEvent, "up", this._oList.getItems().length);
+						iItems = this._oList.getItems().length ? this._oList.getItems().length - 1 : 0;
+						this._onsaparrowkey(oEvent, "up", iItems);
 					}
 				},
 				onsapend: function(oEvent) {
@@ -151,7 +155,9 @@ sap.ui.define([
 						this._onsaparrowkey(oEvent, "down", this._oList.getItems().length);
 					}
 				},
-				onsapright: this._onsapright
+				onsapright: this._onsapright,
+				onsaptabnext: this._handleValueStateLinkNav,
+				onsaptabprevious: this._handleValueStateLinkNav
 			}, this);
 		},
 
@@ -169,6 +175,7 @@ sap.ui.define([
 
 			this._oProposedItem = null;
 			this._oInputDelegate = null;
+			this._oValueStateHeader = null; // The value state header is destroyed by the Popover
 
 			if (this._oPickerValueStateText) {
 				this._oPickerValueStateText.destroy();
@@ -272,10 +279,7 @@ sap.ui.define([
 	 * @private
 	 */
 	SuggestionsPopover.prototype._getScrollableContent = function () {
-		var oSimpleFixFlexDomRef = this._oSimpleFixFlex && this._oSimpleFixFlex.getDomRef(),
-			oScrollableContentDomRef = oSimpleFixFlexDomRef && oSimpleFixFlexDomRef.querySelector('.sapUiSimpleFixFlexFlexContent');
-
-		return oScrollableContentDomRef;
+		return this._oPopover && this._oPopover.getDomRef("scroll");
 	};
 
 	/**
@@ -340,6 +344,7 @@ sap.ui.define([
 	SuggestionsPopover.prototype.getCancelButton = function() {
 		var oButton = this._oPopover
 			&& this._oPopover.getCustomHeader()
+			&& this._oPopover.getCustomHeader().getContentRight
 			&& this._oPopover.getCustomHeader().getContentRight()[0];
 
 		return oButton || null;
@@ -386,9 +391,16 @@ sap.ui.define([
 			(new Popover(oInput.getId() + "-popup", {
 				showArrow: false,
 				placement: PlacementType.VerticalPreferredBottom,
-				showHeader: false,
+				showHeader: true,
 				initialFocus: oInput,
-				horizontalScrolling: true
+				horizontalScrolling: true,
+				beforeClose: function() {
+					// If the popover is closed while the pseudo focus is on value state header containing links
+					if (that.bMessageValueStateActive) {
+						that._getValueStateHeader().removeStyleClass("sapMPseudoFocus");
+						this.bMessageValueStateActive = false;
+					}
+				}
 			}))
 			:
 			(new Dialog(oInput.getId() + "-popup", {
@@ -481,24 +493,40 @@ sap.ui.define([
 			this._oList = this._oInput._getSuggestionsTable();
 		}
 
-		this._oSimpleFixFlex = this._createSimpleFixFlex();
-
 		if (this._oPopover) {
 			if (this._bUseDialog) {
 				// this._oList needs to be manually rendered otherwise it triggers a rerendering of the whole
 				// dialog and may close the opened on screen keyboard
-				this._oPopover.addAggregation("content", this._oSimpleFixFlex, true);
+				this._oPopover.addAggregation("content", this._oList, true);
 				var oRenderTarget = this._oPopover.$("scrollCont")[0];
 				if (oRenderTarget) {
 					var rm = sap.ui.getCore().createRenderManager();
-					rm.renderControl(this._oSimpleFixFlex);
+					rm.renderControl(this._oList);
 					rm.flush(oRenderTarget);
 					rm.destroy();
 				}
 			} else {
-				this._oPopover.addContent(this._oSimpleFixFlex);
+				this._oPopover.addContent(this._oList);
 			}
 		}
+	};
+
+	SuggestionsPopover.prototype._getValueStateHeader = function () {
+		if (!this._oValueStateHeader) {
+			this._oValueStateHeader = new ValueStateHeader();
+
+			if (this._oPopover.isA("sap.m.Popover")) {
+				// when we are using the Popover the value state header is shown in the header of the Popover
+				this._oPopover.setCustomHeader(this._oValueStateHeader);
+			} else {
+				// on mobile the content is used and sticky position is set on the header
+				this._oPopover.insertContent(this._oValueStateHeader, 0);
+			}
+
+			this._oValueStateHeader.setPopup(this._oPopover);
+		}
+
+		return this._oValueStateHeader;
 	};
 
 	/**
@@ -524,6 +552,11 @@ sap.ui.define([
 		if (this._oPickerValueStateText) {
 			this._oPickerValueStateText.destroy();
 			this._oPickerValueStateText = null;
+		}
+
+		if (this._oValueStateHeader) {
+			this._oValueStateHeader.destroy();
+			this._oValueStateHeader = null;
 		}
 
 		this._getInput().removeEventDelegate(this._oInputDelegate, this);
@@ -594,6 +627,94 @@ sap.ui.define([
 	};
 
 	/**
+	 * Close the control when tab is pressed while the focus is on the last link
+	 *
+	 * @private
+	 */
+	SuggestionsPopover.prototype._closePopoverDelegate = {
+		onsaptabnext: function(oEvent) {
+			this.bMessageValueStateActive = false;
+			this._oInput.onsapfocusleave(oEvent);
+			this._oPopover.close();
+
+			/* By default the value state message popup is opened when the suggestion popover
+			is closed. We don't want that in this case because the focus will move on to the next object.
+			The popup must be closed with setTimeout() because it is opened with one. */
+			setTimeout(function() {
+				this._oInput.closeValueStateMessage();
+			}.bind(this), 0);
+		}
+	};
+
+	/**
+	 * Moves the real focus to the input and the visual focus to the value state header
+	 * when saptabprevious is fired on the first link in a value state message
+	 * @private
+	 */
+	SuggestionsPopover.prototype._focusValueStateHeader = {
+		onsaptabprevious: function(oEvent) {
+			oEvent.preventDefault();
+			this._oInput.getFocusDomRef().focus();
+			this._getValueStateHeader().addStyleClass("sapMPseudoFocus");
+			this._oInput.removeStyleClass("sapMFocus");
+		}
+	};
+
+	/**
+	 * Event delegate that handles the arrow navigation of the links in the <code>sap.m.ValueStateHeader</code>.
+	 * Moves the real focus to the input and the visual focus to the first suggested item
+	 *
+	 * @private
+	 */
+	SuggestionsPopover.prototype._valueStateLinkArrowNav = {
+		onsapup: function(oEvent) {
+			this._oInput.getFocusDomRef().focus();
+			this._onsaparrowkey(oEvent, "up", 1);
+		},
+		onsapdown: function(oEvent) {
+			this._oInput.getFocusDomRef().focus();
+			this._onsaparrowkey(oEvent, "down", 1);
+		}
+	};
+
+	/**
+	 * Handles value state link navigation
+	 *
+	 * @param {jQuery.Event} oEvent The event object
+	 * @private
+	 */
+	SuggestionsPopover.prototype._handleValueStateLinkNav = function(oEvent) {
+		// The Input & MultiInput use a boolean flag to indicate whether or not the
+		// visual focus is on the ValueStateHeader, the ComboBox has a private property for that
+		this.bMessageValueStateActive = this._oInput.getFormattedTextFocused ? this._oInput.getFormattedTextFocused() : this.bMessageValueStateActive;
+
+		if ((!this.bMessageValueStateActive || !this.getValueStateLinks().length) || (this.bMessageValueStateActive && document.activeElement.tagName === "A")) {
+			return;
+		}
+
+		var aValueStateLinks = this.getValueStateLinks(),
+			oLastValueStateLink = aValueStateLinks[aValueStateLinks.length - 1];
+
+		// Prevent from closing right away
+		oEvent.preventDefault();
+		this._iPopupListSelectedIndex = -1;
+
+		// Move the real focus on the first link and remove the pseudo one from the
+		// Formatted Text value state header
+		aValueStateLinks[0].focus();
+		this._getValueStateHeader().removeStyleClass("sapMPseudoFocus");
+
+		aValueStateLinks.forEach(function(oLink) {
+			oLink.addDelegate(this._valueStateLinkArrowNav, this);
+		}, this);
+
+		// If saptabnext is fired on the last link of the value state - close the control
+		oLastValueStateLink.addDelegate(this._closePopoverDelegate	, this);
+		// If saptabprevious is fired on the first link move real focus on the input and the visual one back to the value state header
+		aValueStateLinks[0].addDelegate(this._focusValueStateHeader, this);
+	};
+
+	/**
 	 * Keyboard handler helper.
 	 *
 	 * @private
@@ -605,10 +726,6 @@ sap.ui.define([
 		var oInput = this._oInput,
 			oListItem,
 			oInnerRef = oInput.$("inner");
-
-		if (oEvent.isMarked()) {
-			return;
-		}
 
 		if (oEvent.isMarked()) {
 			return;
@@ -634,17 +751,28 @@ sap.ui.define([
 		var bFirst = false,
 			oList = this._oList,
 			aListItems = oList.getItems(),
+			oSelectedItem = oList.getSelectedItem(),
 			iSelectedIndex = this._iPopupListSelectedIndex,
 			sNewValue,
+			oValueStateHeader = this._getValueStateHeader(),
+			oFormattedText = oValueStateHeader.getFormattedText(),
+			oPseudoFocusedElement = Device.browser.msie ? oFormattedText : oValueStateHeader,
 			iOldIndex = iSelectedIndex;
 
-		if (sDir === "up" && iSelectedIndex === 0) {
-			// if key is 'up' and selected Item is first -> do nothing
-			return;
-		}
 		if (sDir == "down" && iSelectedIndex === aListItems.length - 1) {
 			//if key is 'down' and selected Item is last -> do nothing
 			return;
+		}
+
+		// If Value State Header contains links and it is focused - move the visual focus to the last item when on sapend
+		if (this.getValueStateLinks().length && this.bMessageValueStateActive && oEvent.type === "sapend") {
+			oPseudoFocusedElement.removeStyleClass("sapMPseudoFocus");
+			this._oList.addStyleClass("sapMListFocus");
+			// If the visual focus is on the value state header then the last selected suggested item was the first one
+			iOldIndex = 0;
+			iSelectedIndex = aListItems.length - 1;
+			aListItems[iSelectedIndex].addStyleClass("sapMLIBFocused");
+			this.bMessageValueStateActive = false;
 		}
 
 		var iStopIndex;
@@ -654,18 +782,23 @@ sap.ui.define([
 				sDir = "up";
 				iItems = 1;
 				aListItems[iSelectedIndex].setSelected(false);
+				aListItems[iSelectedIndex].removeStyleClass("sapMLIBFocused");
 				iStopIndex = iSelectedIndex;
 				iSelectedIndex = aListItems.length - 1;
 				bFirst = true;
-			} else if (sDir == "up" && iSelectedIndex - iItems < 0){
+			} else if (sDir == "up" && iSelectedIndex - iItems < 0 && iSelectedIndex >= 0) {
 				sDir = "down";
 				iItems = 1;
 				aListItems[iSelectedIndex].setSelected(false);
+				aListItems[iSelectedIndex].removeStyleClass("sapMLIBFocused");
 				iStopIndex = iSelectedIndex;
 				iSelectedIndex = 0;
 				bFirst = true;
 			}
 		}
+
+		oInput.removeStyleClass("sapMFocus");
+		this._oList.addStyleClass("sapMListFocus");
 
 		// always select the first item from top when nothing is selected so far
 		if (iSelectedIndex === -1) {
@@ -683,6 +816,7 @@ sap.ui.define([
 		if (sDir === "down") {
 			while (iSelectedIndex < aListItems.length - 1 && (!bFirst || !this._isSuggestionItemSelectable(aListItems[iSelectedIndex]))) {
 				aListItems[iSelectedIndex].setSelected(false);
+				aListItems[iSelectedIndex].removeStyleClass("sapMLIBFocused");
 				iSelectedIndex = iSelectedIndex + iItems;
 				bFirst = true;
 				iItems = 1; // if wanted item is not selectable just search the next one
@@ -693,6 +827,7 @@ sap.ui.define([
 		} else {
 			while (iSelectedIndex > 0 && (!bFirst || !aListItems[iSelectedIndex].getVisible() || !this._isSuggestionItemSelectable(aListItems[iSelectedIndex]))) {
 				aListItems[iSelectedIndex].setSelected(false);
+				aListItems[iSelectedIndex].removeStyleClass("sapMLIBFocused");
 				iSelectedIndex = iSelectedIndex - iItems;
 				bFirst = true;
 				iItems = 1; // if wanted item is not selectable just search the next one
@@ -702,22 +837,41 @@ sap.ui.define([
 			}
 		}
 
+		if ((this.getValueStateLinks().length && !this.bMessageValueStateActive && oEvent.type !== "sapend") &&
+			((sDir === "up" && (!this._isSuggestionItemSelectable(aListItems[iSelectedIndex]) || iOldIndex === 0)) || oEvent.type === "saphome")) {
+			/* If there is a formatted text with link in value state header and the "focused" item
+			is the first selectable item (if no further visible item can be found) - move the focus to the value state header on arrow up.
+			In case of saphome move the focus to the Value State Header, no matter the position of the old selected item */
+			oPseudoFocusedElement.addStyleClass(("sapMPseudoFocus"));
+			this._oList.removeStyleClass("sapMListFocus");
+			oInnerRef.attr("aria-activedescendant", oFormattedText.getId());
+			this.bMessageValueStateActive = true;
+			this._iPopupListSelectedIndex = -1;
+			this._scrollToItem(0);
+			return;
+		}
+
+		// Remove the visual focus of the Value State Header, if links are present and arrow up/down is pressed
+		if ((this.getValueStateLinks().length && this.bMessageValueStateActive) && (sDir === "up" && iSelectedIndex === 0 || sDir === "down")) {
+			oPseudoFocusedElement.removeStyleClass("sapMPseudoFocus");
+			this._oList.addStyleClass("sapMListFocus");
+			this.bMessageValueStateActive = false;
+		}
+
 		if (!this._isSuggestionItemSelectable(aListItems[iSelectedIndex])) {
-			// if no further visible item can be found -> do nothing (e.g. set the old item as selected again)
+			// If no further visible item can be found and there are no links in the value state header -> do nothing (e.g. set the old item as selected again)
 			if (iOldIndex >= 0) {
 				aListItems[iOldIndex].setSelected(true).updateAccessibilityState();
 				oInnerRef.attr("aria-activedescendant", aListItems[iOldIndex].getId());
+				aListItems[iOldIndex].addStyleClass("sapMLIBFocused");
 			}
 			return;
 		} else {
 			oListItem = aListItems[iSelectedIndex];
 			oListItem.setSelected(true).updateAccessibilityState();
+			oListItem.addStyleClass("sapMLIBFocused");
 
-			if (oListItem.isA("sap.m.GroupHeaderListItem")) {
-				oInnerRef.removeAttr("aria-activedescendant");
-			} else {
-				oInnerRef.attr("aria-activedescendant", aListItems[iSelectedIndex].getId());
-			}
+			oInnerRef.attr("aria-activedescendant", aListItems[iSelectedIndex].getId());
 		}
 
 		if (Device.system.desktop) {
@@ -733,6 +887,7 @@ sap.ui.define([
 			if (aListItems[iSelectedIndex].isA("sap.m.GroupHeaderListItem")) {
 				sNewValue = "";
 				aListItems[iSelectedIndex].addStyleClass("sapMInputFocusedHeaderGroup");
+				oSelectedItem && oSelectedItem.setSelected(false);
 				this._oLastSelectedHeader = aListItems[iSelectedIndex];
 			} else if (aListItems[iSelectedIndex] instanceof DisplayListItem) {
 				// for two value suggestions we use the item label
@@ -748,6 +903,20 @@ sap.ui.define([
 		this._bSuggestionItemChanged = true;
 
 		this.fireEvent(SuggestionsPopover.M_EVENTS.SELECTION_CHANGE, {newValue: sNewValue});
+	};
+
+	/**
+	 * Helper method for keyboard navigation in suggestion items.
+	 *
+	 * @returns {array} Links in value state <code>sap.m.FormattedText</code> message.
+	 * @private
+	 */
+	SuggestionsPopover.prototype.getValueStateLinks = function() {
+		var oHeaderCache = this._getValueStateHeader(),
+			oFormattedText = oHeaderCache && typeof oHeaderCache.getFormattedText === "function" && oHeaderCache.getFormattedText(),
+			aLinks = oFormattedText && typeof oFormattedText.getControls === "function" && oFormattedText.getControls();
+
+		return aLinks || [];
 	};
 
 	/**
@@ -837,7 +1006,7 @@ sap.ui.define([
 	 */
 	SuggestionsPopover.prototype._createHighlightedText = function (oItemDomRef, sInputValue, bWordMode) {
 		var sDomRefLowerText, iStartHighlightingIndex, iInputLength, iNextSpaceIndex, sChunk,
-			sText = oItemDomRef ? oItemDomRef.innerText : "",
+			sText = oItemDomRef ? oItemDomRef.textContent : "",
 			sFormattedText = "";
 
 		if (!SuggestionsPopover._wordStartsWithValue(sText, sInputValue)) {
@@ -890,22 +1059,6 @@ sap.ui.define([
 	};
 
 	/**
-	 * Creates SimpleFixFlex control.
-	 *
-	 * @private
-	 * @returns {sap.m.SimpleFixFlex} Created sap.m.SimpleFixFlex control.
-	 */
-	SuggestionsPopover.prototype._createSimpleFixFlex = function () {
-		var sSimpleFixFlexId = this._oInput.getId() + "-simplefixflex";
-
-		return new SimpleFixFlex({
-			id: sSimpleFixFlexId,
-			fixContent: this._getPickerValueStateText(),
-			flexContent: this._oList
-		});
-	};
-
-	/**
 	 * Highlights text in DOM items.
 	 *
 	 * @param {Array<HTMLElement>} aItemsDomRef DOM elements on which formatting would be applied
@@ -921,8 +1074,14 @@ sap.ui.define([
 			return;
 		}
 
+		var highlightedTexts = [];
+
 		for (i = 0; i < aItemsDomRef.length; i++) {
-			aItemsDomRef[i].innerHTML = this._createHighlightedText(aItemsDomRef[i], sInputValue, bWordMode);
+			highlightedTexts.push(this._createHighlightedText(aItemsDomRef[i], sInputValue, bWordMode));
+		}
+
+		for (i = 0; i < aItemsDomRef.length; i++) {
+			aItemsDomRef[i].innerHTML = highlightedTexts[i];
 		}
 	};
 
@@ -956,7 +1115,8 @@ sap.ui.define([
 
 		this._oInputDelegate = {
 			onkeydown: function (oEvent) {
-				this._bDoTypeAhead = this._bAutocompleteEnabled && (oEvent.which !== KeyCodes.BACKSPACE) && (oEvent.which !== KeyCodes.DELETE);
+				// disable the typeahead feature for android devices due to an issue on android soft keyboard, which always returns keyCode 229
+				this._bDoTypeAhead = !Device.os.android && this._bAutocompleteEnabled && (oEvent.which !== KeyCodes.BACKSPACE) && (oEvent.which !== KeyCodes.DELETE);
 			},
 			oninput: this._handleTypeAhead
 		};
@@ -1144,40 +1304,33 @@ sap.ui.define([
 		}
 	};
 
-	/*
-	* Updates the value state displayed in the popover.
-	*
-	* @internal
-	*/
-	SuggestionsPopover.prototype.updateValueState = function(sValueState, sValueStateText, bShowValueStateMessage) {
+	/**
+	 *
+	 * Updates the value state displayed in the popover.
+	 *
+	 * @param {string} sValueState Value state of the control
+	 * @param {(string|object)} vValueStateText Value state message text of the control.
+	 * @param {boolean} bShowValueStateMessage Whether or not a value state message should be displayed.
+	 *
+	 * @private
+	 */
+	SuggestionsPopover.prototype.updateValueState = function(sValueState, vValueStateText, bShowValueStateMessage) {
 		var bShow = bShowValueStateMessage && sValueState !== ValueState.None;
-		sValueStateText = sValueStateText || ValueStateSupport.getAdditionalText(sValueState);
+		vValueStateText = vValueStateText || ValueStateSupport.getAdditionalText(sValueState);
+		if (!this._oPopover) {
+			return this;
+		}
 
 		if (this._oPopupInput) {
 			this._oPopupInput.setValueState(sValueState);
 		}
 
-		this._setValueStateText(sValueStateText);
-
-		this._showValueStateText(bShow);
-
+		this._getValueStateHeader().setValueState(sValueState);
+		this._setValueStateHeaderText(vValueStateText);
+		this._showValueStateHeader(bShow);
 		this._alignValueStateStyles(sValueState);
+
 		return this;
-	};
-
-	/*
-	 * Gets the picker value state message object.
-	 *
-	 * @returns {sap.m.Text}
-	 * @private
-	 * @since 1.46
-	 */
-	SuggestionsPopover.prototype._getPickerValueStateText = function() {
-		if (!this._oPickerValueStateText) {
-			this._oPickerValueStateText = new Text({ width: "100%" });
-		}
-
-		return this._oPickerValueStateText;
 	};
 
 	/**
@@ -1185,9 +1338,9 @@ sap.ui.define([
 	 *
 	 * @private
 	 */
-	SuggestionsPopover.prototype._showValueStateText = function(bShow) {
-		if (this._oPickerValueStateText) {
-			this._oPickerValueStateText.setVisible(bShow);
+	SuggestionsPopover.prototype._showValueStateHeader = function(bShow) {
+		if (this._oValueStateHeader) {
+			this._oValueStateHeader.setVisible(bShow);
 		}
 	};
 
@@ -1196,16 +1349,11 @@ sap.ui.define([
 	 *
 	 * @private
 	 */
-	SuggestionsPopover.prototype._setValueStateText = function(sText) {
-		var oValueStateText;
-
-		oValueStateText = this._getPickerValueStateText();
-		if (oValueStateText) {
-			oValueStateText.setText(sText);
-
-			if (this._oSimpleFixFlex) {
-				this._oSimpleFixFlex.setFixContent(this._oPickerValueStateText);
-			}
+	SuggestionsPopover.prototype._setValueStateHeaderText = function(vText) {
+		if (this._oValueStateHeader && typeof vText === "string") {
+			this._oValueStateHeader.setText(vText);
+		} else if (this._oValueStateHeader && typeof vText === "object") {
+			this._oValueStateHeader.setFormattedText(vText);
 		}
 	};
 
@@ -1219,11 +1367,10 @@ sap.ui.define([
 			sOldCssClass = CSS_CLASS_SUGGESTIONS_POPOVER + this._sOldValueState + "State",
 			sCssClass = CSS_CLASS_SUGGESTIONS_POPOVER + sValueState + "State";
 
-		if (this._oPickerValueStateText) {
-			this._oPickerValueStateText.addStyleClass(sPickerWithState);
-			this._oPickerValueStateText.removeStyleClass(sOldCssClass);
-			this._oPickerValueStateText.addStyleClass(sCssClass);
-		}
+		this._oPopover.addStyleClass(sPickerWithState);
+		this._oPopover.removeStyleClass(sOldCssClass);
+		this._oPopover.addStyleClass(sCssClass);
+
 		this._sOldValueState = sValueState;
 	};
 
@@ -1233,10 +1380,8 @@ sap.ui.define([
 	 * @param {sap.m.Control} oControl Control to be added
 	 * @protected
 	 */
-	SuggestionsPopover.prototype.addFlexContent = function(oControl) {
-		if (this._oSimpleFixFlex) {
-			this._oSimpleFixFlex.addFlexContent(oControl);
-		}
+	SuggestionsPopover.prototype.addContent = function(oControl) {
+		this._oPopover.addContent(oControl);
 	};
 
 	return SuggestionsPopover;

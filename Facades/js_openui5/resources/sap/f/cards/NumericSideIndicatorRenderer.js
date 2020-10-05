@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define([],function(){"use strict";var N={};N.render=function(r,c){r.write("<div");r.writeControlData(c);r.addClass("sapFCardHeaderSideIndicator");r.writeClasses();r.writeStyles();r.write(">");var t=c.getAggregation("_title");if(t){t.addStyleClass("sapFCardHeaderSITitle");r.renderControl(t);}r.write("<div");r.addClass("sapFCardHeaderSINumber");r.writeClasses();r.write(">");var n=c.getAggregation("_number");if(n){r.renderControl(n);}var u=c.getAggregation("_unit");if(u){r.renderControl(u);}r.write("</div>");r.write("</div>");};return N;},true);
+sap.ui.define([],function(){"use strict";var N={apiVersion:2};N.render=function(r,n){var b=n.mBindingInfos;r.openStart("div",n).class("sapFCardHeaderSideIndicator");if(b.title||b.number||b.unit){r.class("sapFCardHeaderItemBinded");}r.openEnd();var t=n.getAggregation("_title");if(t){t.addStyleClass("sapFCardHeaderSITitle");r.renderControl(t);}r.openStart("div").class("sapFCardHeaderSINumber");if(b.title||b.number||b.unit){r.class("sapFCardHeaderItemBinded");}r.openEnd();var o=n.getAggregation("_number");if(o){r.renderControl(o);}var u=n.getAggregation("_unit");if(u){r.renderControl(u);}r.close("div");r.close("div");};return N;},true);

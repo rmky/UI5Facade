@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -82,7 +82,7 @@ function(
 	 * @extends sap.m.InputBase
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -220,6 +220,7 @@ function(
 		InputBase.prototype.exit.call(this);
 		jQuery(window).off("resize.sapMTextAreaGrowing");
 		this._detachResizeHandler();
+		this._deregisterEvents();
 	};
 
 	TextArea.prototype.onBeforeRendering = function() {
@@ -229,6 +230,12 @@ function(
 			oCounter.setVisible(false);
 		}
 		this._detachResizeHandler();
+
+		if (this.getGrowing()) {
+			jQuery(window).on("resize.sapMTextAreaGrowing", this._updateOverflow.bind(this));
+		} else {
+			jQuery(window).off("resize.sapMTextAreaGrowing");
+		}
 	};
 
 	// Attach listeners on after rendering and find iscroll
@@ -269,6 +276,22 @@ function(
 				}
 			});
 		}
+	};
+
+	/**
+	 * Removes the <code>touchstart</code> and <code>touchmove</code> custom events
+	 * binded to the textarea in <code>.onAfterRendering</code>.
+	 *
+	 * The semantic renderer does NOT remove DOM structure from the DOM tree;
+	 * therefore all custom events, including the ones that are registered
+	 * with jQuery, must be deregistered correctly at the <code>.onBeforeRendering</code>
+	 * and exit hooks.
+	 *
+	 * @private
+	 *
+	 */
+	TextArea.prototype._deregisterEvents = function() {
+		this.$("inner").off("touchstart").off("touchmove");
 	};
 
 	/**
@@ -405,7 +428,7 @@ function(
 	TextArea.prototype.oninput = function(oEvent) {
 		InputBase.prototype.oninput.call(this, oEvent);
 
-		/* TODO remove after 1.62 version */
+		/* TODO remove after the end of support for Internet Explorer */
 		// Handles paste. This is before checking for "invalid" because in IE after paste the event is set as "invalid"
 		if (this._bPasteIsTriggered) {
 			this._bPasteIsTriggered = false;
@@ -461,16 +484,6 @@ function(
 		if (this.getShowExceededText()) {
 			this._bPasteIsTriggered = true;
 		}
-	};
-
-	TextArea.prototype.setGrowing = function(bGrowing) {
-		this.setProperty("growing", bGrowing);
-		if (this.getGrowing()) {
-			jQuery(window).on("resize.sapMTextAreaGrowing", this._updateOverflow.bind(this));
-		} else {
-			jQuery(window).off("resize.sapMTextAreaGrowing");
-		}
-		return this;
 	};
 
 	TextArea.prototype._adjustContainerDimensions = function() {

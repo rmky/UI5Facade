@@ -1,8 +1,13 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
+
+// Ensure that sap.ui.unified is loaded before the module dependencies will be required.
+// Loading it synchronously is the only compatible option and doesn't harm when sap.ui.unified
+// already has been loaded asynchronously (e.g. via a dependency declared in the manifest)
+sap.ui.getCore().loadLibrary("sap.ui.unified");
 
 sap.ui.define([
 	"sap/ui/core/Control",
@@ -38,7 +43,7 @@ sap.ui.define([
 	 * and requests, unified behavior of instant and deferred uploads, as well as improved progress indication.
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @constructor
 	 * @public
 	 * @since 1.62
@@ -350,10 +355,10 @@ sap.ui.define([
 		if (this._oEditedItem) {
 			oInput = this._oEditedItem._getFileNameEdit().$("inner");
 			if (oInput) {
-				oInput.focus(function () {
+				oInput.on("focus", function () {
 					oInput.selectText(0, oInput.val().length);
 				});
-				oInput.focus();
+				oInput.trigger("focus");
 			}
 		}
 
@@ -391,7 +396,9 @@ sap.ui.define([
 				this._handleItemEditCancelation(oEvent, oItem);
 				break;
 			case KeyCodes.DELETE:
-				this._handleItemDelete(oEvent, oItem);
+				if (!oItem.$("fileNameEdit").hasClass("sapMInputFocused")) {
+					this._handleItemDelete(oEvent, oItem);
+				}
 				break;
 			case KeyCodes.ENTER:
 				if (oItem === this._oEditedItem) {
@@ -429,7 +436,7 @@ sap.ui.define([
 
 	UploadSet.prototype.getNoDataDescription = function () {
 		var sNoDataDescription = this.getProperty("noDataDescription");
-		sNoDataDescription = sNoDataDescription || this._oRb.getText("UPLOAD_SET_NO_DATA_DESCRIPTION");
+		sNoDataDescription = sNoDataDescription || this._oRb.getText("UPLOADCOLLECTION_NO_DATA_DESCRIPTION");
 		return sNoDataDescription;
 	};
 
@@ -626,15 +633,15 @@ sap.ui.define([
 	 * @public
 	 */
 	UploadSet.prototype.getDefaultFileUploader = function () {
-		var sTooltip;
+		var sTooltip = this._oRb.getText("UPLOADCOLLECTION_UPLOAD");
 		if (!this._oFileUploader) {
 			this._oFileUploader = new FileUploader(this.getId() + "-uploader", {
 				buttonOnly: true,
 				buttonText: sTooltip,
 				tooltip: sTooltip,
-				iconOnly: true,
+				iconOnly: false,
 				enabled: this.getUploadEnabled(),
-				icon: "sap-icon://add",
+				icon: "",
 				iconFirst: false,
 				style: "Transparent",
 				name: "uploadSetFileUploader",
@@ -864,13 +871,13 @@ sap.ui.define([
 	};
 
 	UploadSet.prototype._onDragEnterSet = function (oEvent) {
-		if (oEvent.target === this._$DragDropArea[0]) {
+		if (oEvent.target === this._$DragDropArea[0] && this.getUploadEnabled()) {
 			this._$DragDropArea.addClass("sapMUCDropIndicator");
 		}
 	};
 
 	UploadSet.prototype._onDragLeaveSet = function (oEvent) {
-		if (oEvent.target === this._$DragDropArea[0]) {
+		if (oEvent.target === this._$DragDropArea[0] && this.getUploadEnabled()) {
 			this._$DragDropArea.removeClass("sapMUCDropIndicator");
 		}
 	};
@@ -883,7 +890,7 @@ sap.ui.define([
 		var oFiles;
 
 		oEvent.preventDefault();
-		if (oEvent.target === this._$DragDropArea[0]) {
+		if (oEvent.target === this._$DragDropArea[0] && this.getUploadEnabled()) {
 			this._$DragDropArea.removeClass("sapMUCDropIndicator");
 			this._$DragDropArea.addClass("sapMUCDragDropOverlayHide");
 
@@ -893,23 +900,29 @@ sap.ui.define([
 	};
 
 	UploadSet.prototype._onDragEnterBody = function (oEvent) {
-		this._oLastEnteredTarget = oEvent.target;
-		this._$DragDropArea.removeClass("sapMUCDragDropOverlayHide");
+		if (this.getUploadEnabled()) {
+			this._oLastEnteredTarget = oEvent.target;
+			this._$DragDropArea.removeClass("sapMUCDragDropOverlayHide");
+		}
 	};
 
 	UploadSet.prototype._onDragLeaveBody = function (oEvent) {
-		if (this._oLastEnteredTarget === oEvent.target) {
+		if (this._oLastEnteredTarget === oEvent.target && this.getUploadEnabled()) {
 			this._$DragDropArea.addClass("sapMUCDragDropOverlayHide");
 		}
 	};
 
 	UploadSet.prototype._onDragOverBody = function (oEvent) {
 		oEvent.preventDefault();
-		this._$DragDropArea.removeClass("sapMUCDragDropOverlayHide");
+		if (this.getUploadEnabled()) {
+			this._$DragDropArea.removeClass("sapMUCDragDropOverlayHide");
+		}
 	};
 
 	UploadSet.prototype._onDropOnBody = function (oEvent) {
-		this._$DragDropArea.addClass("sapMUCDragDropOverlayHide");
+		if (this.getUploadEnabled()) {
+			this._$DragDropArea.addClass("sapMUCDragDropOverlayHide");
+		}
 	};
 
 	/* =============== */
@@ -952,10 +965,10 @@ sap.ui.define([
 
 		aFiles.forEach(function (oFile) {
 			oItem = new UploadSetItem({
-				fileName: oFile.name,
 				uploadState: UploadState.Ready
 			});
 			oItem._setFileObject(oFile);
+			oItem.setFileName(oFile.name);//For handling curly braces in file name we have to use setter.Otherwise it will be treated as binding.
 
 			if (!this.fireBeforeItemAdded({item: oItem})) {
 				return;

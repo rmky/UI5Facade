@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -175,7 +175,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @param {sap.ui.core.Core} oCore internal API of the <core>Core</code> that manages this UIArea
 	 * @param {object} [oRootNode] reference to the DOM element that should be 'hosting' the UI Area.
 	 * @public
@@ -203,7 +203,7 @@ sap.ui.define([
 			if (oRootNode != null) {
 				this.setRootNode(oRootNode);
 				// Figure out whether UI Area is pre-rendered (server-side JS rendering)!
-				this.bNeedsRerendering = this.bNeedsRerendering && !((oRootNode.id + "-Init" ? window.document.getElementById(oRootNode.id + "-Init") : null));
+				this.bNeedsRerendering = this.bNeedsRerendering && !document.getElementById(oRootNode.id + "-Init");
 			}
 			this.mInvalidatedControls = {};
 
@@ -229,6 +229,27 @@ sap.ui.define([
 				 */
 				dependents : {name : "dependents", type : "sap.ui.core.Control", multiple : true}
 			}
+		},
+
+		// make 'dependents' a non-invalidating aggregation
+		insertDependent: function(oElement, iIndex) {
+			return this.insertAggregation("dependents", oElement, iIndex, true);
+		},
+
+		addDependent: function(oElement) {
+			return this.addAggregation("dependents", oElement, true);
+		},
+
+		removeDependent: function(vElement) {
+			return this.removeAggregation("dependents", vElement, true);
+		},
+
+		removeAllDependents: function() {
+			return this.removeAllAggregation("dependents", true);
+		},
+
+		destroyDependents: function() {
+			return this.destroyAggregation("dependents", true);
 		}
 	});
 
@@ -484,7 +505,7 @@ sap.ui.define([
 	 * @protected
 	 */
 	UIArea.prototype.isActive = function() {
-		return ((this.getId() ? window.document.getElementById(this.getId()) : null)) != null;
+		return !!this.getId() && document.getElementById(this.getId()) != null;
 	};
 
 	/**
@@ -736,7 +757,7 @@ sap.ui.define([
 			oDomRef = oControl.getDomRef();
 			if (!oDomRef || RenderManager.isPreservedContent(oDomRef) ) {
 				// In case no old DOM node was found or only preserved DOM, search for an 'invisible' placeholder
-				oDomRef = (RenderManager.RenderPrefixes.Invisible + oControl.getId() ? window.document.getElementById(RenderManager.RenderPrefixes.Invisible + oControl.getId()) : null);
+				oDomRef = document.getElementById(RenderManager.RenderPrefixes.Invisible + oControl.getId());
 			}
 		}
 
@@ -745,7 +766,7 @@ sap.ui.define([
 			var uiArea = oControl.getUIArea();
 			var rm = uiArea ? uiArea.oCore.oRenderManager : sap.ui.getCore().createRenderManager();
 			oRenderLog.debug("Rerender Control '" + oControl.getId() + "'" + (uiArea ? "" : " (using a temp. RenderManager)"));
-			RenderManager.preserveContent(oDomRef, /* bPreserveRoot */ true, /* bPreserveNodesWithId */ false);
+			RenderManager.preserveContent(oDomRef, /* bPreserveRoot */ true, /* bPreserveNodesWithId */ false, oControl /* oControlBeforeRerender */);
 			rm.render(oControl, oParentDomRef);
 		} else {
 			var uiArea = oControl.getUIArea();
@@ -913,40 +934,49 @@ sap.ui.define([
 
 		// dispatch the event to the controls (callback methods: onXXX)
 		while (oElement instanceof Element && oElement.isActive() && !oEvent.isPropagationStopped()) {
+			var sScopeCheckId = oEvent.getMark("scopeCheckId"),
+				oScopeCheckDOM = sScopeCheckId && window.document.getElementById(sScopeCheckId),
+				oDomRef = oElement.getDomRef();
 
-			// for each event type call the callback method
-			// if the execution should be stopped immediately
-			// then no further callback method will be executed
-			for (var i = 0, is = aEventTypes.length; i < is; i++) {
-				var sType = aEventTypes[i];
-				oEvent.type = sType;
-				// ensure currenTarget is the DomRef of the handling Control
-				oEvent.currentTarget = oElement.getDomRef();
-				oElement._handleEvent(oEvent);
-				if (oEvent.isImmediatePropagationStopped()) {
+			// for events which are dependent on the scope DOM (the DOM on which the 'mousedown' event is fired), the
+			// event is dispatched to the element only when the element's root DOM contains or equals the scope check
+			// DOM, so that the simulated 'touchmove' and 'touchend' event is only dispatched to the element when the
+			// 'touchstart' also occurred on the same element
+			if (!oScopeCheckDOM || containsOrEquals(oDomRef, oScopeCheckDOM)) {
+				// for each event type call the callback method
+				// if the execution should be stopped immediately
+				// then no further callback method will be executed
+				for (var i = 0, is = aEventTypes.length; i < is; i++) {
+					var sType = aEventTypes[i];
+					oEvent.type = sType;
+					// ensure currenTarget is the DomRef of the handling Control
+					oEvent.currentTarget = oElement.getDomRef();
+					oElement._handleEvent(oEvent);
+					if (oEvent.isImmediatePropagationStopped()) {
+						break;
+					}
+				}
+				if (!bGroupChanged && !oEvent.isMarked("enterKeyConsumedAsContent")) {
+					bGroupChanged = this._handleGroupChange(oEvent,oElement);
+				}
+
+				// if the propagation is stopped do not bubble up further
+				if (oEvent.isPropagationStopped()) {
 					break;
 				}
-			}
-			if (!bGroupChanged && !oEvent.isMarked("enterKeyConsumedAsContent")) {
-				bGroupChanged = this._handleGroupChange(oEvent,oElement);
-			}
 
-			// if the propagation is stopped do not bubble up further
-			if (oEvent.isPropagationStopped()) {
-				break;
-			}
+				// Secret property on the element to allow to cancel bubbling of all events.
+				// This is a very special case, so there is no API method for this in the control.
+				if (oElement.bStopEventBubbling) {
+					break;
+				}
 
-			// Secret property on the element to allow to cancel bubbling of all events.
-			// This is a very special case, so there is no API method for this in the control.
-			if (oElement.bStopEventBubbling) {
-				break;
-			}
-
-			// This is the (not that common) situation that the element was deleted in its own event handler.
-			// i.e. the Element became 'inactive' (see Element#isActive())
-			var oDomRef = oElement.getDomRef();
-			if (!oDomRef) {
-				break;
+				// This is the (not that common) situation that the element was deleted in its own event handler.
+				// i.e. the Element became 'inactive' (see Element#isActive())
+				oDomRef = oElement.getDomRef();
+				if (!oDomRef) {
+					break;
+				}
 			}
 
 			// bubble up to the parent
@@ -1061,7 +1091,7 @@ sap.ui.define([
 		}
 
 		// mark the DOM as UIArea and bind the required events
-		jQuery(oDomRef).attr("data-sap-ui-area", oDomRef.id).bind(ControlEvents.events.join(" "), this._handleEvent.bind(this));
+		jQuery(oDomRef).attr("data-sap-ui-area", oDomRef.id).on(ControlEvents.events.join(" "), this._handleEvent.bind(this));
 
 	};
 
@@ -1078,18 +1108,18 @@ sap.ui.define([
 		}
 
 		// remove UIArea marker and unregister all event handlers of the control
-		jQuery(oDomRef).removeAttr("data-sap-ui-area").unbind();
+		jQuery(oDomRef).removeAttr("data-sap-ui-area").off();
 
 		// TODO: when optimizing the events => take care to unbind only the
 		//       required. additionally consider not to remove other event handlers.
 	//	var ojQRef = jQuery(oDomRef);
 	//	if (this.sEvents) {
-	//		ojQRef.unbind(this.sEvents, this._handleEvent);
+	//		ojQRef.off(this.sEvents, this._handleEvent);
 	//	}
 	//
 	//	var oFH = this.oCore.oFocusHandler;
-	//	ojQRef.unbind("focus",oFH.onfocusin);
-	//	ojQRef.unbind("blur", oFH.onfocusout);
+	//	ojQRef.off("focus",oFH.onfocusin);
+	//	ojQRef.off("blur", oFH.onfocusout);
 
 	};
 

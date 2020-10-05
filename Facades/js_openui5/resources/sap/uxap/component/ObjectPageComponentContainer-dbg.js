@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -34,7 +34,7 @@ sap.ui.define(['sap/ui/core/ComponentContainer', "sap/base/Log", 'sap/ui/core/Co
 			 * unlike the standard ComponentContainer, this ones exposes properties to the outside world and pass them on to the underlying component
 			 */
 			onBeforeRendering: function () {
-				this._oComponent = sap.ui.component("sap.uxap");
+				this._oComponent || (this._oComponent = sap.ui.component("sap.uxap"));
 				if (!this._oComponent) {
 					this._oComponent = sap.ui.component({
 						name: this.getName(),

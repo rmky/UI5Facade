@@ -2,7 +2,7 @@
 
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -43,8 +43,8 @@ html.sap-phone *, html.sap-tablet:not(.sap-desktop) * {   /* FIXME!!! (star rule
 	-webkit-user-drag: none;
 }
 
-html.sap-phone input, html.sap-phone textarea, html.sap-phone [contenteditable=true], html.sap-phone [contenteditable=true] > div, html.sap-phone .sapUiSelectable,
-html.sap-tablet:not(.sap-desktop) input, html.sap-tablet:not(.sap-desktop) textarea, html.sap-tablet:not(.sap-desktop) [contenteditable=true], html.sap-tablet:not(.sap-desktop) [contenteditable=true] > div , html.sap-tablet:not(.sap-desktop) .sapUiSelectable {
+html.sap-phone input, html.sap-phone textarea, html.sap-phone [contenteditable=true], html.sap-phone [contenteditable=true] > *, html.sap-phone .sapUiSelectable,
+html.sap-tablet:not(.sap-desktop) input, html.sap-tablet:not(.sap-desktop) textarea, html.sap-tablet:not(.sap-desktop) [contenteditable=true], html.sap-tablet:not(.sap-desktop) [contenteditable=true] > *, html.sap-tablet:not(.sap-desktop) .sapUiSelectable {
 	-webkit-user-select: text;
 	-moz-user-select: text;
 	-ms-user-select: text;
@@ -447,33 +447,11 @@ html.sapUiSuppressBackgroundStyles .sapUiBody:before {
 /* BlueCrystal theme                             */
 /* ============================================= */
 
-/****** IE ******/
-
-html[data-sap-ui-browser*="ie"] .sapUiBody {
-	scrollbar-face-color: @sapUiScrollBarFaceColor;
-	scrollbar-highlight-color: @sapUiScrollBarFaceColor;
-	scrollbar-shadow-color: @sapUiScrollBarFaceColor;
-	scrollbar-track-color: @sapUiScrollBarTrackColor;
-}
-
 /****** Safari + Chrome on Desktop ******/
 
 html.sap-desktop ::-webkit-scrollbar {
 	width: 16px;
 	height: 16px;
-	background-color: @sapUiScrollBarTrackColor;
-}
-
-html.sap-desktop ::-webkit-scrollbar-thumb {
-	background-color: @sapUiScrollBarFaceColor;
-}
-
-html.sap-desktop ::-webkit-scrollbar-thumb:hover {
-	background-color: @sapUiScrollBarHoverFaceColor;
-}
-
-html.sap-desktop ::-webkit-scrollbar-corner {
-	background-color: @sapUiScrollBarTrackColor;
 }
 /* END "BrowserScrollbar.less" */
 
@@ -498,50 +476,10 @@ html.sap-desktop ::-webkit-scrollbar-corner {
 /* BlueCrystal theme                 */
 /* ================================= */
 
-.sapUiIcon:focus {
-	outline-color: @sapUiKeyboardFocus;
-}
-
 .sapMTB-Info-CTX > .sapUiIcon {
 	width: 1rem;
 	font-size: 1rem;
 	color: @sapUiInvertedElement;
-}
-
-.sapUiIconColorNeutral {
-	color: @sapUiNeutral;
-}
-
-.sapUiIconColorCritical {
-	color: @sapUiCritical;
-}
-
-.sapUiIconColorPositive {
-	color: @sapUiPositive;
-}
-
-.sapUiIconColorNegative {
-	color: @sapUiNegative;
-}
-
-.sapUiIconBGColorNeutral {
-	background-color: @sapUiNeutral;
-}
-
-.sapUiIconBGColorCritical {
-	background-color: @sapUiCritical;
-}
-
-.sapUiIconBGColorPositive {
-	background-color: @sapUiPositive;
-}
-
-.sapUiIconBGColorNegative {
-	background-color: @sapUiNegative;
-}
-
-.sapUiIconBGColorContrast {
-	background-color: @sapUiHighlight;
 }
 
 /* END "Icon.less" */

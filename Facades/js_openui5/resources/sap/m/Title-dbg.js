@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -65,7 +65,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IShrinkable
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @since 1.27.0
 	 *
 	 * @constructor
@@ -240,7 +240,7 @@ sap.ui.define([
 	 * Gets a map of texts which should be hyphenated.
 	 *
 	 * @private
-	 * @returns {map} The texts to be hyphenated.
+	 * @returns {Object<string,string>} The texts to be hyphenated.
 	 */
 	Title.prototype.getTextsToBeHyphenated = function () {
 		var oTitleAssociation = this._getTitle();
@@ -263,6 +263,22 @@ sap.ui.define([
 			};
 		}
 		return oDomRefs;
+	};
+
+	/**
+	 * Turns property <code>titleStyle</code> to aria level. If it is not set, the default level is 2.
+	 * @private
+	 * @returns {int} The aria level.
+	 */
+	Title.prototype._getAriaLevel = function () {
+		var iLevel = 2,
+			LEVEL_POSITION = 1;
+
+		if (this.getTitleStyle() !== TitleLevel.Auto) {
+			iLevel = parseInt(this.getTitleStyle()[LEVEL_POSITION]);
+		}
+
+		return iLevel;
 	};
 
 	// Add hyphenation to Title functionality

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -34,10 +34,6 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/InvisibleRenderer"],
 			sTooltip,
 			sButtonWidth,
 			sButtonTextDirection;
-
-		if (aVisibleButtons.length) {
-			aVisibleButtons[aVisibleButtons.length - 1].addStyleClass("sapMSegBtnLastVisibleButton");
-		}
 
 		// Select representation mockup
 		if (oControl._bInOverflow) {
@@ -79,7 +75,6 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/InvisibleRenderer"],
 					oImage;
 
 				++iVisibleButtonPos;
-
 				if (oButtonIcon) {
 					oImage = oButton._getImage((oButton.getId() + "-img"), oButtonIcon);
 					if (oImage instanceof sap.m.Image) {
@@ -95,6 +90,9 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/InvisibleRenderer"],
 				oRM.attr("aria-posinset", iVisibleButtonPos);
 				oRM.attr("aria-setsize", aVisibleButtons.length);
 				oRM.class("sapMSegBBtn");
+				if (oButton.getId() === aVisibleButtons[aVisibleButtons.length - 1].getId()) {
+					oRM.class("sapMSegBtnLastVisibleButton");
+				}
 				if (oButton.aCustomStyleClasses !== undefined && oButton.aCustomStyleClasses instanceof Array) {
 					for (var j = 0; j < oButton.aCustomStyleClasses.length; j++) {
 						oRM.class(oButton.aCustomStyleClasses[j]);

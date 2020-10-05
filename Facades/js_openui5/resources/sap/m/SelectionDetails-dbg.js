@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 // Provides control sap.m.SelectionDetails.
@@ -39,7 +39,7 @@ function(
 	 * <b><i>Note:</i></b>It is protected and should only be used within the framework itself.
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @extends sap.ui.core.Control
 	 * @constructor
@@ -496,10 +496,12 @@ function(
 			sText = this._oRb.getText("SELECTIONDETAILS_BUTTON_TEXT_WITH_NUMBER", [ iCount ]);
 			oButton.setProperty("text", sText, true);
 			oButton.setProperty("enabled", true, true);
+			oButton.setAggregation("tooltip", sText, true);
 		} else {
 			sText = this._oRb.getText("SELECTIONDETAILS_BUTTON_TEXT");
 			oButton.setProperty("text", sText, true);
 			oButton.setProperty("enabled", false, true);
+			oButton.setAggregation("tooltip", sText, true);
 		}
 	};
 
@@ -906,7 +908,7 @@ function(
 	 */
 	SelectionDetails.prototype._handleSelectionChange = function(oEvent) {
 		var oEventParams = oEvent.getParameter("data");
-		if (jQuery.type(oEventParams) === "array") {
+		if (Array.isArray(oEventParams)) {
 			this._oSelectionData = oEventParams;
 			this._updateButton();
 			this.getAggregation("_button").rerender();
@@ -950,15 +952,15 @@ function(
 	 * @returns {sap.m.SelectionDetails} this to allow method chaining
 	 */
 	SelectionDetails.prototype.attachSelectionHandler = function(eventId, listener) {
-		if (this._oChangeHandler || jQuery.type(eventId) !== "String" && (jQuery.type(listener) !== "object" || jQuery.type(listener.attachEvent) !== "function")) {
-			return this;
-		} else {
+		// only create change handler once + check for argument validity
+		if (!this._oChangeHandler && typeof eventId === "string" && listener && typeof listener.attachEvent === "function") {
 			this._oChangeHandler = {
 				eventId: eventId,
 				listener: listener
 			};
 			listener.attachEvent(eventId, this._handleSelectionChange, this);
 		}
+
 		return this;
 	};
 

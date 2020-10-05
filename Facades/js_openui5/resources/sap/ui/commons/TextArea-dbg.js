@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -21,7 +21,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', './TextField', './library', './TextAr
 	 * @class
 	 * Control to enter or display multible row text.
 	 * @extends sap.ui.commons.TextField
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -73,10 +73,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', './TextField', './library', './TextAr
 		}
 	}});
 
-	///**
-	// * This file defines the control behavior.
-	// */
-	//.TextArea.prototype.init = function(){
+	//TextArea.prototype.init = function() {
 	//   // do something for initialization...
 	//};
 
@@ -109,7 +106,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', './TextField', './library', './TextAr
 	 */
 	TextArea.prototype._attachEventHandler = function() {
 		var $this = this.$();
-		this.proChHandlerId = $this.bind('propertychange', jQuery.proxy(this.oninput, this)); // for IE
+		this.proChHandlerId = $this.on('propertychange', jQuery.proxy(this.oninput, this)); // for IE
 	};
 
 	/**
@@ -119,7 +116,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', './TextField', './library', './TextAr
 		// Unbind events
 		var $this = this.$();
 		if (this.proChHandlerId) {
-			$this.unbind('propertychange', this.oninput);
+			$this.off('propertychange', this.oninput);
 			this.proChHandlerId = null;
 		}
 	};

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -318,8 +318,13 @@ sap.ui.define([
 	};
 
 	ObjectPageSection.prototype._updateShowHideState = function (bHide) {
+		if (this._getIsHidden() === bHide) {
+			return this;
+		}
+
 		this._updateShowHideButton(bHide);
 		this._getShowHideAllButton().setVisible(this._getShouldDisplayShowHideAllButton());
+
 		return ObjectPageSectionBase.prototype._updateShowHideState.call(this, bHide);
 	};
 

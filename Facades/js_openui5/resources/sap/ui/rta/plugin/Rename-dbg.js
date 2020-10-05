@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -28,7 +28,7 @@ sap.ui.define([
 	 * @extends sap.ui.rta.plugin.Plugin
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @private
@@ -91,6 +91,7 @@ sap.ui.define([
 	};
 
 	Rename.prototype.handler = function (aElementOverlays) {
+		aElementOverlays = this.getSelectedOverlays() || aElementOverlays;
 		this.startEdit(aElementOverlays[0]);
 	};
 
@@ -119,25 +120,25 @@ sap.ui.define([
 		if (aElementOverlays.length > 1) {
 			return false;
 		}
-
-		var oOverlay = aElementOverlays[0];
+		var oTargetOverlay = aElementOverlays[0];
+		var oResponsibleElementOverlay = this.getResponsibleElementOverlay(oTargetOverlay);
 		var bIsEnabled = true;
-		var oAction = this.getAction(oOverlay);
-		if (!oAction) {
+		if (!this.getAction(oResponsibleElementOverlay)) {
 			bIsEnabled = false;
 		}
 
-		if (bIsEnabled && typeof oAction.isEnabled !== "undefined") {
-			if (typeof oAction.isEnabled === "function") {
-				bIsEnabled = oAction.isEnabled(oOverlay.getElement());
+		var oTargetOverlayAction = this.getAction(oTargetOverlay);
+		if (bIsEnabled && typeof oTargetOverlayAction.isEnabled !== "undefined") {
+			if (typeof oTargetOverlayAction.isEnabled === "function") {
+				bIsEnabled = oTargetOverlayAction.isEnabled(oTargetOverlay.getElement());
 			} else {
-				bIsEnabled = oAction.isEnabled;
+				bIsEnabled = oTargetOverlayAction.isEnabled;
 			}
 		}
 
 		if (bIsEnabled) {
-			var oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
-			if (!oDesignTimeMetadata.getAssociatedDomRef(oOverlay.getElement(), oAction.domRef)) {
+			var oDesignTimeMetadata = oTargetOverlay.getDesignTimeMetadata();
+			if (!oDesignTimeMetadata.getAssociatedDomRef(oTargetOverlay.getElement(), oTargetOverlayAction.domRef)) {
 				bIsEnabled = false;
 			}
 		}
@@ -198,9 +199,10 @@ sap.ui.define([
 			return Promise.resolve(this._oEditedOverlay)
 
 			.then(function(oEditedOverlay) {
-				var oRenamedElement = oEditedOverlay.getElement();
-				var oDesignTimeMetadata = oEditedOverlay.getDesignTimeMetadata();
-				var sVariantManagementReference = this.getVariantManagementReference(oEditedOverlay);
+				var oResponsibleElementOverlay = this.getResponsibleElementOverlay(oEditedOverlay);
+				var oRenamedElement = oResponsibleElementOverlay.getElement();
+				var oDesignTimeMetadata = oResponsibleElementOverlay.getDesignTimeMetadata();
+				var sVariantManagementReference = this.getVariantManagementReference(oResponsibleElementOverlay);
 
 				return this.getCommandFactory().getCommandFor(oRenamedElement, "rename", {
 					renamedElement : oRenamedElement,
@@ -239,4 +241,4 @@ sap.ui.define([
 	};
 
 	return Rename;
-}, /* bExport= */true);
+});

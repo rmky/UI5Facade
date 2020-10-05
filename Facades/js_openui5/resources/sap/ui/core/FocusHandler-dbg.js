@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -55,8 +55,8 @@ sap.ui.define([
 					oRootRef.addEventListener("focus", this.fEventHandler, true);
 					oRootRef.addEventListener("blur", this.fEventHandler, true);
 				} else { //IE
-					jQuery(oRootRef).bind("activate", this.fEventHandler);
-					jQuery(oRootRef).bind("deactivate", this.fEventHandler);
+					jQuery(oRootRef).on("activate", this.fEventHandler);
+					jQuery(oRootRef).on("deactivate", this.fEventHandler);
 				}
 				Log.debug("FocusHandler setup on Root " + oRootRef.type + (oRootRef.id ? ": " + oRootRef.id : ""), null, "sap.ui.core.FocusHandler");
 			}
@@ -202,8 +202,8 @@ sap.ui.define([
 					oRootRef.removeEventListener("focus", this.fEventHandler, true);
 					oRootRef.removeEventListener("blur", this.fEventHandler, true);
 				} else { //IE
-					jQuery(oRootRef).unbind("activate", this.fEventHandler);
-					jQuery(oRootRef).unbind("deactivate", this.fEventHandler);
+					jQuery(oRootRef).off("activate", this.fEventHandler);
+					jQuery(oRootRef).off("deactivate", this.fEventHandler);
 				}
 			}
 			this.oCore = null;
@@ -371,7 +371,7 @@ sap.ui.define([
 		 * @returns {boolean} whether the passed DOM reference is nested in the active DOM of the document
 		 */
 		/*function isInActiveDom(oDomRef) {
-			jQuery.sap.assert(oDomRef != null);
+			assert(oDomRef != null);
 			var oCurrDomRef = oDomRef;
 			while(oCurrDomRef) {
 				if(oCurrDomRef === document) return true;

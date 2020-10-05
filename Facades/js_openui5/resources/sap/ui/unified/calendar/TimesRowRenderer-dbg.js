@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -89,6 +89,7 @@ sap.ui.define(['sap/ui/unified/calendar/CalendarUtils', 'sap/ui/core/date/Univer
 		// time items
 		oRm.openStart("div", sId + "-times"); // extra DIV around the times to allow rerendering only it's content
 		oRm.class("sapUiCalItems");
+		oRm.attr("role", "row");
 		oRm.openEnd();
 		this.renderTimes(oRm, oTimesRow, oDate);
 		oRm.close("div");
@@ -273,6 +274,17 @@ sap.ui.define(['sap/ui/unified/calendar/CalendarUtils', 'sap/ui/core/date/Univer
 
 		oRm.accessibilityState(null, mAccProps);
 		oRm.openEnd();
+
+		if (oType && oType.type != CalendarDayType.None){ //if there's a special date, render it
+			oRm.openStart("div");
+			oRm.class("sapUiCalSpecialDate");
+			if (oType.color) { // if there's a custom color, render it
+				oRm.style("background-color", oType.color);
+			}
+			oRm.openEnd(); // div
+			oRm.close("div");
+		}
+
 		oRm.openStart("span");
 		oRm.class("sapUiCalItemText");
 		oRm.openEnd();

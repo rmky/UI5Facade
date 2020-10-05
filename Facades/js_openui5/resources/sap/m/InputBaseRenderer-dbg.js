@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -106,8 +106,6 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/core/Label
 			this.addValueStateClasses(oRm, oControl);
 		}
 
-		// some controls need to have accessibility attributes applied one level up than the input
-		this.writeAccAttributes(oRm, oControl);
 		this.addWrapperStyles(oRm, oControl);
 
 		oRm.openEnd();
@@ -141,10 +139,6 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/core/Label
 		} else if (!oControl.getEditable()) {
 			oRm.attr("readonly", "readonly");
 
-		}
-
-		if (LabelEnablement.isRequired(oControl)) {
-			oRm.attr("required", "required");
 		}
 
 		// check if textDirection property is not set to default "Inherit" and add "dir" attribute
@@ -253,12 +247,12 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/core/Label
 	InputBaseRenderer.renderAriaLabelledBy = function(oRm, oControl) {
 		var sAnnouncement = this.getLabelledByAnnouncement(oControl);
 		if (sAnnouncement) {
-			oRm.openStart("span", oControl.getId() + "-labelledby");
-			oRm.attr("aria-hidden", "true");
-			oRm.class("sapUiInvisibleText");
-			oRm.openEnd();
-			oRm.text(sAnnouncement.trim());
-			oRm.close("span");
+			oRm.openStart("span", oControl.getId() + "-labelledby")
+				.attr("aria-hidden", "true")
+				.class("sapUiInvisibleText")
+				.openEnd()
+				.text(sAnnouncement.trim())
+				.close("span");
 		}
 	};
 
@@ -296,12 +290,12 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/core/Label
 	InputBaseRenderer.renderAriaDescribedBy = function(oRm, oControl) {
 		var sAnnouncement = this.getDescribedByAnnouncement(oControl);
 		if (sAnnouncement) {
-			oRm.openStart("span", oControl.getId() + "-describedby");
-			oRm.attr("aria-hidden", "true");
-			oRm.class("sapUiInvisibleText");
-			oRm.openEnd();
-			oRm.text(sAnnouncement.trim());
-			oRm.close("span");
+			oRm.openStart("span", oControl.getId() + "-describedby")
+				.attr("aria-hidden", "true")
+				.class("sapUiInvisibleText")
+				.openEnd()
+				.text(sAnnouncement.trim())
+				.close("span");
 		}
 	};
 
@@ -341,7 +335,6 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/core/Label
 		}
 		mAccessibilityState.disabled = null;
 		mAccessibilityState.readonly = null;
-		mAccessibilityState.required = null;
 
 		return mAccessibilityState;
 	};
@@ -445,14 +438,6 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/core/Label
 	InputBaseRenderer.writeOuterAttributes = function(oRm, oControl) {};
 
 	/**
-	 * This method is reserved for derived class to add extra attributes for the container one level upper of input.
-	 *
-	 * @param {sap.ui.core.RenderManager} oRm The RenderManager that can be used for writing to the render output buffer.
-	 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered.
-	 */
-	InputBaseRenderer.writeAccAttributes = function(oRm, oControl) {};
-
-	/**
 	 * This method is reserved for derived classes to add extra styles for input element.
 	 *
 	 * @param {sap.ui.core.RenderManager} oRm The RenderManager that can be used for writing to the render output buffer.
@@ -510,10 +495,10 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library', 'sap/ui/core/Label
 	 * @param {string} sPosition An aggregation from which the icon should be rendered - begin or end.
 	 */
 	InputBaseRenderer.writeIcons = function (oRm, aIcons) {
-		oRm.openStart("div");
-		oRm.attr("tabindex", "-1");
-		oRm.class("sapMInputBaseIconContainer");
-		oRm.openEnd();
+		oRm.openStart("div")
+			.attr("tabindex", "-1")
+			.class("sapMInputBaseIconContainer")
+			.openEnd();
 		aIcons.forEach(oRm.renderControl, oRm);
 		oRm.close("div");
 	};

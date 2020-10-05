@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -59,7 +59,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IContextMenu
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @since 1.21.0
 	 *
 	 * @constructor
@@ -209,7 +209,7 @@ sap.ui.define([
 
 		ControlEvents.unbindAnyEvent(this.fAnyEventHandlerProxy);
 		if (this._bOrientationChangeBound) {
-			jQuery(window).unbind("orientationchange", this.fOrientationChangeHandler);
+			jQuery(window).off("orientationchange", this.fOrientationChangeHandler);
 			this._bOrientationChangeBound = false;
 		}
 
@@ -237,7 +237,7 @@ sap.ui.define([
 	 */
 	Menu.prototype.onBeforeRendering = function() {
 		this._resetDelayedRerenderItems();
-		this.$().unbind("mousemove");
+		this.$().off("mousemove");
 	};
 
 	/**
@@ -264,7 +264,7 @@ sap.ui.define([
 		}
 
 		checkAndLimitHeight(this);
-		this.$().bind("mousemove", this._focusMenuItem.bind(this));
+		this.$().on("mousemove", this._focusMenuItem.bind(this));
 	};
 
 	/**
@@ -303,10 +303,6 @@ sap.ui.define([
 
 
 	//****** API Methods ******
-
-	Menu.prototype.setPageSize = function(iSize){
-		return this.setProperty("pageSize", iSize, true); /*No rerendering required*/
-	};
 
 	Menu.prototype.addItem = function(oItem){
 		this.addAggregation("items", oItem, !!this.getDomRef());
@@ -444,7 +440,7 @@ sap.ui.define([
 
 		ControlEvents.bindAnyEvent(this.fAnyEventHandlerProxy);
 		if (Device.support.orientation && this.getRootMenu() === this) {
-			jQuery(window).bind("orientationchange", this.fOrientationChangeHandler);
+			jQuery(window).on("orientationchange", this.fOrientationChangeHandler);
 			this._bOrientationChangeBound = true;
 		}
 	};
@@ -532,7 +528,7 @@ sap.ui.define([
 		// set the flag to initial state as same menu could be used as a context menu or a normal menu
 		this._bOpenedAsContextMenu = false;
 
-		bRecalculate && this.oPopup.setPosition("begin top", "begin top", $Window, iCalcedX + " " + iCalcedY, "flip");
+		bRecalculate && this.oPopup.setPosition("begin top", "begin top", $Window, iCalcedX + " " + iCalcedY, "flipfit");
 	};
 
 	/**
@@ -556,7 +552,7 @@ sap.ui.define([
 
 		ControlEvents.unbindAnyEvent(this.fAnyEventHandlerProxy);
 		if (this._bOrientationChangeBound) {
-			jQuery(window).unbind("orientationchange", this.fOrientationChangeHandler);
+			jQuery(window).off("orientationchange", this.fOrientationChangeHandler);
 			this._bOrientationChangeBound = false;
 		}
 
@@ -754,7 +750,7 @@ sap.ui.define([
 		// focus menuItems
 		if (this.oHoveredItem && (jQuery(oEvent.target).prop("tagName") != "INPUT")) {
 			var oDomRef = this.oHoveredItem.getDomRef();
-			jQuery(oDomRef).focus();
+			jQuery(oDomRef).trigger("focus");
 		}
 
 		//like sapselect but on keyup:
@@ -828,12 +824,12 @@ sap.ui.define([
 		}
 
 		if (checkMouseEnterOrLeave(oEvent, this.getDomRef())) {
-			if (!this.oOpenedSubMenu || !(this.oOpenedSubMenu.getParent() === this.oHoveredItem)) {
-				this.setHoveredItem(null);
-				this.focus();
-			}
-			this._discardOpenSubMenuDelayed();
+			this.setHoveredItem(null);
+		} else {
+			this.setHoveredItem(this.oHoveredItem);
 		}
+
+		this._discardOpenSubMenuDelayed();
 	};
 
 	/**
@@ -920,10 +916,11 @@ sap.ui.define([
 		}
 
 		var oSubMenu = oItem.getSubmenu();
-
 		if (!oSubMenu) {
 			// This is a normal item -> Close all menus and fire event.
-			this.getRootMenu().close();
+			// Call Menu.prototype.close with argument value equal to "true"
+			// in order not to ignore the opener DOM reference
+			this.getRootMenu().close(true);
 		} else {
 			if (!Device.system.desktop && this.oOpenedSubMenu === oSubMenu) {
 				this.closeSubmenu();

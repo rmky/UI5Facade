@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -30,7 +30,7 @@ function (
 	 * @author SAP SE
 	 * @experimental Since 1.58
 	 * @since 1.58
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @private
 	 * @ui5-restricted
 	*/
@@ -89,7 +89,11 @@ function (
 					var oView = sap.ui.getCore().byId(sViewId);
 					var oAppComponent = FlexUtils.getAppComponentForControl(oView);
 					var sControllerName = oView.getControllerName && oView.getControllerName() || oView.getController() && oView.getController().getMetadata().getName();
-
+					//Calculate moduleName for code extension
+					var sReference = FlexUtils.getComponentClassName(oAppComponent);
+					var sModuleName = sReference.replace(/\.Component/g, "").replace(/\./g, "/");
+					sModuleName += "/changes/";
+					sModuleName += sCodeRef.replace(/\.js/g, "");
 					var oChangeSpecificData = {
 						content: {
 							codeRef: sCodeRef
@@ -100,7 +104,8 @@ function (
 						changeType: "codeExt",
 						namespace: oFlexSettings.namespace,
 						developerMode: oFlexSettings.developerMode,
-						scenario: oFlexSettings.scenario
+						scenario: oFlexSettings.scenario,
+						moduleName: sModuleName
 					};
 
 					var oPreparedChange = ChangesWriteAPI.create({changeSpecificData: oChangeSpecificData, selector: oAppComponent});

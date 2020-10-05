@@ -1,6 +1,6 @@
 /*!
 * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
 */
 
@@ -14,7 +14,10 @@ sap.ui.define([
 	"./FormattedText",
 	"sap/ui/core/library",
 	"./MessageStripRenderer",
-	"sap/base/Log"
+	"sap/base/Log",
+	"sap/m/Button",
+	"sap/ui/core/Core",
+	"sap/ui/core/InvisibleText"
 ], function(
 	library,
 	Control,
@@ -24,12 +27,18 @@ sap.ui.define([
 	FormattedText,
 	coreLibrary,
 	MessageStripRenderer,
-	Log
+	Log,
+	Button,
+	Core,
+	InvisibleText
 ) {
 	"use strict";
 
 	// shortcut for sap.ui.core.MessageType
 	var MessageType = coreLibrary.MessageType;
+
+	// shortcut for sap.m.ButtonType
+	var ButtonType = library.ButtonType;
 
 	/**
 	 * Constructor for a new MessageStrip.
@@ -51,6 +60,12 @@ sap.ui.define([
 	 * <li>&lt;strong&gt;</li>
 	 * <li>&lt;u&gt;</li>
 	 * </ul>
+	 *
+	 * <h3>Dynamically generated Message Strip</h3>
+	 * To meet the accessibility requirements when using dynamically generated Message Strip you must implement it alongside <code>sap.ui.core.InvisibleMessage</code>.
+	 * This will allow screen readers to announce it in real time. We suggest such dynamically generated message strips to be announced as Information Bar,
+	 * as shown in our “Dynamic Message Strip Generator sample.”
+	 *
 	 * <h3>Usage</h3>
 	 * <h4>When to use</h4>
 	 * <ul>
@@ -63,7 +78,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -119,6 +134,8 @@ sap.ui.define([
 				 *	<li><code>strong</code></li>
 				 *	<li><code>u</code></li>
 				 * </ul>
+				 *
+				 * @since 1.50
 				 */
 				enableFormattedText: { type: "boolean", group: "Appearance", defaultValue: false }
 			},
@@ -139,7 +156,12 @@ sap.ui.define([
 				/**
 				 * Hidden aggregation which is used to transform the string message into sap.m.Text control.
 				 */
-				_text: { type: "sap.m.Text", multiple: false, visibility: "hidden" }
+				_text: { type: "sap.m.Text", multiple: false, visibility: "hidden" },
+
+				/**
+				 * Hidden aggregation which is used to create the close button with sap.m.Button control.
+				 */
+				_closeButton: { type: "sap.m.Button", multiple: false, visibility: "hidden" }
 			},
 			events: {
 
@@ -155,6 +177,7 @@ sap.ui.define([
 	MessageStrip.prototype.init = function () {
 		this.data("sap-ui-fastnavgroup", "true", true);
 		this.setAggregation("_text", new Text());
+		this._initCloseButton();
 	};
 
 	/**
@@ -185,12 +208,35 @@ sap.ui.define([
 	 * @returns {sap.m.MessageStrip} this to allow method chaining
 	 */
 	MessageStrip.prototype.setType = function (sType) {
-		if (sType === MessageType.None) {
+		if (!sType || sType === MessageType.None) {
 			Log.warning(MSUtils.MESSAGES.TYPE_NOT_SUPPORTED);
 			sType = MessageType.Information;
 		}
 
+		this.getType() !== sType && this._setButtonAriaLabelledBy(sType);
+
 		return this.setProperty("type", sType);
+	};
+
+
+	/**
+	 * Closes the MessageStrip.
+	 * This method sets the visible property of the MessageStrip to false.
+	 * The MessageStrip can be shown again by setting the visible property to true.
+	 * @public
+	 */
+	MessageStrip.prototype.close = function () {
+		var fnClosed = function () {
+			this.setVisible(false);
+			this.fireClose();
+		}.bind(this);
+
+		if (!Core.getConfiguration().getAnimation()) {
+			fnClosed();
+			return;
+		}
+
+		MSUtils.closeTransitionWithCSS.call(this, fnClosed);
 	};
 
 	MessageStrip.prototype.setEnableFormattedText = function (bEnable) {
@@ -211,7 +257,7 @@ sap.ui.define([
 
 	MessageStrip.prototype.setAggregation = function (sName, oControl, bSupressInvalidate) {
 		if (sName === "link" && oControl instanceof Link) {
-			oControl.addAriaLabelledBy(this.getId());
+			oControl.addAriaDescribedBy(this.getId());
 		}
 
 		Control.prototype.setAggregation.call(this, sName, oControl, bSupressInvalidate);
@@ -225,34 +271,17 @@ sap.ui.define([
 	 */
 	MessageStripRenderer.getAccessibilityState = function () {
 		var mAccessibilityState = MSUtils.getAccessibilityState.call(this),
-			oLink = this.getLink();
+			oLink = this.getLink(),
+			oResourceBundle = Core.getLibraryResourceBundle("sap.m");
+
 
 		if (!oLink) {
 			mAccessibilityState.labelledby = this.getId();
 		}
+
+		mAccessibilityState.roledescription = oResourceBundle.getText("MESSAGE_STRIP_ARIA_ROLE_DESCRIPTION");
 		return mAccessibilityState;
 	};
-
-	/**
-	 * Handles tap/click
-	 * @returns void
-	 * @private
-	 */
-	MessageStrip.prototype.ontap = MSUtils.handleMSCloseButtonInteraction;
-
-	/**
-	 * Handles enter key
-	 * @returns void
-	 * @private
-	 */
-	MessageStrip.prototype.onsapenter = MSUtils.handleMSCloseButtonInteraction;
-
-	/**
-	 * Handles space key
-	 * @returns void
-	 * @private
-	 */
-	MessageStrip.prototype.onsapspace = MSUtils.handleMSCloseButtonInteraction;
 
 	/**
 	 * Handles mobile touch events
@@ -265,24 +294,57 @@ sap.ui.define([
 	};
 
 	/**
-	 * Closes the MessageStrip.
-	 * This method sets the visible property of the MessageStrip to false.
-	 * The MessageStrip can be shown again by setting the visible property to true.
-	 * @public
+	 * Initialize close button.
 	 */
-	MessageStrip.prototype.close = function () {
-		var fnClosed = function () {
-			this.fireClose();
-			this.setVisible(false);
-		}.bind(this);
+	MessageStrip.prototype._initCloseButton = function () {
+		var oRb = Core.getLibraryResourceBundle("sap.m"),
+			oCloseButton = this.getAggregation("_closeButton");
 
-		if (!sap.ui.getCore().getConfiguration().getAnimation()) {
-			fnClosed();
-			return;
+			if (!oCloseButton) {
+
+				var oButton = new Button({
+					type: ButtonType.Transparent,
+					tooltip: oRb.getText("MESSAGE_STRIP_TITLE"),
+					icon: "sap-icon://decline",
+					press: this.close.bind(this)
+				}).addStyleClass(MSUtils.CLASSES.CLOSE_BUTTON).addStyleClass("sapUiSizeCompact");
+
+				this.setAggregation("_closeButton", oButton);
+				this._setButtonAriaLabelledBy(this.getType());
+		}
+	};
+
+	/**
+	 * Set Arialabelledby to the close button.
+	 * @param {sap.ui.core.MessageType} sType The Message type
+	 */
+	MessageStrip.prototype._setButtonAriaLabelledBy = function (sType) {
+		var oCloseButton = this.getAggregation("_closeButton"),
+			oRb = Core.getLibraryResourceBundle("sap.m"),
+			sText = oRb.getText("MESSAGE_STRIP_" + sType.toUpperCase() + "_CLOSE_BUTTON");
+
+		if (!this._oInvisibleText) {
+			this._oInvisibleText = new InvisibleText({
+				text: sText
+			}).toStatic();
+		} else {
+			this._oInvisibleText.setText(sText);
 		}
 
-		MSUtils.closeTransitionWithCSS.call(this, fnClosed);
+		if (oCloseButton) {
+			oCloseButton.removeAllAriaLabelledBy();
+			oCloseButton.addAriaLabelledBy(this._oInvisibleText.getId());
+		}
 	};
+
+	MessageStrip.prototype.exit = function () {
+		if (this._oInvisibleText) {
+			this._oInvisibleText.destroy();
+			this._oInvisibleText = null;
+		}
+	};
+
+
 
 	return MessageStrip;
 

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -122,7 +122,7 @@ sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/library'],
 			//In order to make readonly checkbox unresponsive, we need to apply 'disabled' property - only affects HCB theme
 			rm.write(" disabled='disabled'");
 		}
-		rm.write(" />"); // close checkbox-input-element
+		rm.write(">"); // close checkbox-input-element
 
 
 		// Write the checkbox label which also holds the background image

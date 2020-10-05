@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -34,11 +34,11 @@
 			bShouldHaveOwnLabelledBy = oControl._determineSelfReferencePresence(),
 			sHref = oControl.getHref(),
 			oAccAttributes =  {
-				role: sHref ? "" : "button",
 				labelledby: bShouldHaveOwnLabelledBy ? {value: oControl.getId(), append: true } : undefined
 			},
 			bIsValid = sHref && oControl._isHrefValid(sHref),
-			bEnabled = oControl.getEnabled();
+			bEnabled = oControl.getEnabled(),
+			sTypeSemanticInfo = "";
 
 		// Link is rendered as a "<a>" element
 		oRm.openStart("a", oControl);
@@ -46,34 +46,21 @@
 		oRm.class("sapMLnk");
 		if (oControl.getSubtle()) {
 			oRm.class("sapMLnkSubtle");
-
-			//Add aria-describedby for the SUBTLE announcement
-			if (oAccAttributes.describedby) {
-				oAccAttributes.describedby += " " + oControl._sAriaLinkSubtleId;
-			} else {
-				oAccAttributes.describedby = oControl._sAriaLinkSubtleId;
-			}
+			sTypeSemanticInfo += oControl._sAriaLinkSubtleId;
 		}
 
 		if (oControl.getEmphasized()) {
 			oRm.class("sapMLnkEmphasized");
-
-			//Add aria-describedby for the EMPHASIZED announcement
-			if (oAccAttributes.describedby) {
-				oAccAttributes.describedby += " " + oControl._sAriaLinkEmphasizedId;
-			} else {
-				oAccAttributes.describedby = oControl._sAriaLinkEmphasizedId;
-			}
+			sTypeSemanticInfo += " " + oControl._sAriaLinkEmphasizedId;
 		}
+
+		oAccAttributes.describedby = sTypeSemanticInfo ? {value: sTypeSemanticInfo.trim(), append: true} : undefined;
 
 		if (!bEnabled) {
 			oRm.class("sapMLnkDsbl");
-			oRm.attr("disabled", "true");
-			// no need for aria-disabled if a "disabled" attribute is in the DOM
-			oAccAttributes.disabled = null;
-		} else {
-			oRm.attr("tabindex", oControl._getTabindex());
+			oRm.attr("aria-disabled", "true");
 		}
+		oRm.attr("tabindex", oControl._getTabindex());
 
 		if (oControl.getWrapping()) {
 			oRm.class("sapMLnkWrapping");
@@ -86,6 +73,9 @@
 		/* set href only if link is enabled - BCP incident 1570020625 */
 		if (bIsValid && bEnabled) {
 			oRm.attr("href", sHref);
+		} else if (oControl.getText()) {
+			// Add href only if there's text. Otherwise virtual cursor would stop on the empty link. BCP 2070055617
+			oRm.attr("href", "");
 		}
 
 		if (oControl.getTarget()) {
@@ -106,6 +96,12 @@
 		if (sTextDir !== TextDirection.Inherit) {
 			oRm.attr("dir", sTextDir.toLowerCase());
 		}
+
+		oControl.getDragDropConfig().forEach(function (oDNDConfig) {
+			if (!oDNDConfig.getEnabled()) {
+				oRm.attr("draggable", false);
+			}
+		});
 
 		oRm.accessibilityState(oControl, oAccAttributes);
 		// opening <a> tag

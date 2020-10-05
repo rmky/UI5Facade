@@ -1,13 +1,15 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/ui/thirdparty/jquery",
-	"sap/ui/base/Metadata",
+	"sap/ui/base/Object",
+	"sap/ui/core/Core",
 	"sap/ui/core/CustomData",
+	"sap/ui/core/Configuration",
 	"sap/ui/base/ManagedObjectObserver",
 	"./AnchorBar",
 	"sap/m/Button",
@@ -15,22 +17,39 @@ sap.ui.define([
 	"sap/m/Menu",
 	"sap/m/MenuItem",
 	"sap/ui/core/IconPool"
-], function (jQuery, Metadata, CustomData, ManagedObjectObserver, AnchorBar, Button, MenuButton, Menu, MenuItem, IconPool) {
+], function (jQuery, BaseObject, Core, CustomData, Configuration, ManagedObjectObserver, AnchorBar, Button, MenuButton, Menu, MenuItem, IconPool) {
 	"use strict";
 
-	var ABHelper = Metadata.createClass("sap.uxap._helpers.AB", {
+	var ABHelper = BaseObject.extend("sap.uxap._helpers.AB", {
 		/**
 		 * @private
 		 * @param {sap.uxap.ObjectPageLayout} oObjectPageLayout Object Page layout instance
 		 */
 		constructor: function (oObjectPageLayout) {
 			this._oObjectPageLayout = oObjectPageLayout;
-			this._iScrollDuration = oObjectPageLayout._iScrollToSectionDuration;
-			this._iFocusMoveDelay = this._iScrollDuration - 100;
 			this._oObserver = new ManagedObjectObserver(this._proxyStateChanges.bind(this));
 			this._aMenusWithAttachPressHandler = [];
+		},
+		getInterface: function() {
+			return this; // no facade
 		}
 	});
+
+	/** STATIC MEMBERS **/
+
+	/**
+	 * @static
+	 * @param {sap.uxap.ObjectPageSectionBase} oSection the section or subsection to be focused
+	 * @param {object} oParams a params object to be passed to the focus call
+	 * @private
+	 */
+	ABHelper._focusSection = function (oSection, oParams) {
+		var oSectionDomRef = oSection.getDomRef();
+
+		if (oSectionDomRef) {
+			oSectionDomRef.focus(oParams);
+		}
+	};
 
 	ABHelper.prototype.getObjectPageLayout = function () {
 		return this._oObjectPageLayout;
@@ -87,12 +106,38 @@ sap.ui.define([
 		return oAnchorBar;
 	};
 
+	ABHelper.prototype._setCustomData = function (oButtonForSectionBase, oSectionBase, oObjectPageLayout, bIsSection) {
+			//update the section info
+		oObjectPageLayout._oSectionInfo[oSectionBase.getId()].buttonId = oButtonForSectionBase.getId();
+
+		//the AnchorBar needs to know the sectionId for automatic horizontal scrolling
+		oButtonForSectionBase.addCustomData(new CustomData({
+			key: "sectionId",
+			value: oSectionBase.getId()
+		}));
+
+		//the AnchorBar needs to know whether the title is actually displayed or not (so the AnchorBar is really reflecting the ObjectPage layout state)
+		oButtonForSectionBase.addCustomData(new CustomData({
+			key: "bTitleVisible",
+			value: oSectionBase._getInternalTitleVisible()
+		}));
+
+		if (!bIsSection) {
+			//the AnchorBar needs to know that this is a second section because it will handle responsive scenarios
+			oButtonForSectionBase.addCustomData(new CustomData({
+				key: "secondLevel",
+				value: true
+			}));
+		}
+	};
+
 	/**
 	 * build the anchorBar and all the anchorBar buttons
 	 * @private
 	 */
 	ABHelper.prototype._buildAnchorBar = function () {
-		var aSections = this.getObjectPageLayout().getSections() || [],
+		var oObjectPageLayout = this.getObjectPageLayout(),
+			aSections = oObjectPageLayout.getSections() || [],
 			oAnchorBar = this._getAnchorBar(),
 			fnPressHandler = jQuery.proxy(oAnchorBar._handleDirectScroll, oAnchorBar),
 			sButtonTitle,
@@ -122,8 +167,7 @@ sap.ui.define([
 					oAnchorBar.addContent(oButtonClone);
 
 					if (oButtonClone instanceof MenuButton) {
-						var oMenu = new Menu({}),
-							oRb = sap.ui.getCore().getLibraryResourceBundle("sap.uxap");
+						var oMenu = new Menu({});
 
 						// the focus goes to the internal SplitButton, so we need to enhance its accessibility properties also
 						oButtonClone.enhanceAccessibilityState = function (oElement, mAriaProps) {
@@ -131,8 +175,7 @@ sap.ui.define([
 								iIndex = oContent.indexOf(oElement.getParent());
 
 							if (iIndex !== -1) {
-								mAriaProps.role = "menuitemradio";
-								mAriaProps.roledescription = oRb.getText("ANCHOR_BAR_MENUITEM");
+								mAriaProps.role = "option";
 								mAriaProps.setsize = oContent.length;
 								mAriaProps.posinset = iIndex + 1;
 							}
@@ -152,7 +195,8 @@ sap.ui.define([
 							return;
 						}
 
-						var oSecondLevelButtonClone = this._buildAnchorBarButton(oSubSection, false);
+						var oSecondLevelButtonClone = this._buildAnchorBarButton(oSubSection, false),
+							sId = oAnchorBar.getId() + "-" + oSubSection.getId() + "-anchor";
 
 						if (oSecondLevelButtonClone) {
 							oAnchorBar.addContent(oSecondLevelButtonClone);
@@ -169,7 +213,7 @@ sap.ui.define([
 								sButtonIcon = '';
 							}
 
-							oMenuItem = new MenuItem({"text": sButtonTitle , "icon": sButtonIcon});
+							oMenuItem = new MenuItem(sId, {"text": sButtonTitle , "icon": sButtonIcon});
 
 							oMenuItem.addCustomData(new CustomData({
 								key: "sectionId",
@@ -177,6 +221,7 @@ sap.ui.define([
 							}));
 
 							oMenuItem.attachPress(fnPressHandler);
+							this._setCustomData(oMenuItem, oSubSection, oObjectPageLayout, false);
 
 							oButtonClone.getMenu().addItem(oMenuItem);
 						}
@@ -195,40 +240,50 @@ sap.ui.define([
 	 */
 	ABHelper.prototype._moveFocusOnSection = function (oSourceControl) {
 		var oSourceData = oSourceControl.data(),
-			oSection = sap.ui.getCore().byId(oSourceData.sectionId),
-			oObjectPage = this.getObjectPageLayout(),
-			bIsSubSection = oSection.isA("sap.uxap.ObjectPageSubSection"),
-			bAllowFocusMove = (oSection && !oObjectPage.getUseIconTabBar()) || (oObjectPage.getUseIconTabBar() && bIsSubSection),
-			iFocusMoveDelay = this._iFocusMoveDelay;
+			oSectionBase = sap.ui.getCore().byId(oSourceData.sectionId),
+			oFocusParams = { preventScroll: true },
+			oDelegate;
 
-		if (bAllowFocusMove) {
-			setTimeout(oSection.$()["focus"].bind(oSection.$()), iFocusMoveDelay);
-		}
+		if (oSectionBase) {
+			if (oSectionBase.isActive()) {
+				ABHelper._focusSection(oSectionBase, oFocusParams);
+			} else {
+				// with IconTabBar section may not be rendered
+				oDelegate = {
+					"onAfterRendering": function () {
+						oSectionBase.removeEventDelegate(oDelegate);
+						ABHelper._focusSection(oSectionBase, oFocusParams);
+					}
+				};
 
-		// Handle the case of SubSection first rendering in IconTabBar mode
-		if (oObjectPage.getUseIconTabBar() && bIsSubSection) {
-			var oDelegate = {"onAfterRendering": function () {
-				this.removeEventDelegate(oDelegate);
-				setTimeout(this.$()["focus"].bind(this.$()), iFocusMoveDelay);
-			}.bind(oSection)};
-
-			oSection.addEventDelegate(oDelegate);
+				oSectionBase.addEventDelegate(oDelegate);
+			}
 		}
 	};
 
 	ABHelper.prototype._instantiateAnchorBarButton = function (bIsMenuButton, sAriaDescribedBy, sId) {
-		var oButton = bIsMenuButton ? new MenuButton({
+		var fnClass, oSettings;
+
+		if (bIsMenuButton) {
+			fnClass = MenuButton;
+			oSettings = {
 				type: "Transparent",
 				buttonMode: "Split",
 				useDefaultActionOnly: true,
-				ariaDescribedBy: sAriaDescribedBy,
-				id: sId
-			}) : new Button({
-				ariaDescribedBy: sAriaDescribedBy,
-				id: sId
-			});
+				ariaDescribedBy: sAriaDescribedBy
+			};
+		} else {
+			fnClass = Button;
+			oSettings = {
+				ariaDescribedBy: sAriaDescribedBy
+			};
+		}
 
-		return oButton;
+		if (sId) {
+			oSettings.id = sId;
+		}
+
+		return new fnClass(oSettings);
 	};
 
 	/**
@@ -245,6 +300,7 @@ sap.ui.define([
 			oButton,
 			oAnchorBar = this._getAnchorBar(),
 			sId,
+			sSubId,
 			bHasSubMenu,
 			iVisibleSubSections,
 			aSubSections = oSectionBase.getAggregation("subSections"),
@@ -293,12 +349,15 @@ sap.ui.define([
 						key: "bHasSubMenu",
 						value: true
 					}));
-				} else {
+				} else if (bIsSection){
 					oButtonClone = this._instantiateAnchorBarButton(false, oSectionBase, sId);
-					oButtonClone.attachPress(fnPressHandler);
 					oButtonClone.attachPress(function (oEvent) {
 						this._moveFocusOnSection(oEvent.getSource());
 					}, this);
+					oButtonClone.attachPress(fnPressHandler);
+				} else {
+					sSubId = oAnchorBar.getId() + "-" + oSectionBase.getId() + "-sub-anchor";
+					oButtonClone = this._instantiateAnchorBarButton(false, oSectionBase, sSubId);
 				}
 
 				//has a ux rule been applied that we need to reflect here?
@@ -306,37 +365,15 @@ sap.ui.define([
 				oButtonClone.setText(sTitle);
 			} else {
 				oButtonClone = oButton.clone(); //keep original button parent control hierarchy
-				oButtonClone.attachPress(fnPressHandler);
 				oButtonClone.attachPress(function (oEvent) {
 					this._moveFocusOnSection(oEvent.getSource());
 				}, this);
+				oButtonClone.attachPress(fnPressHandler);
 				this._oObserver.observe(oButton, {
 					properties: true
 				});
 			}
-
-			//update the section info
-			oObjectPageLayout._oSectionInfo[oSectionBase.getId()].buttonId = oButtonClone.getId();
-
-			//the anchorBar needs to know the sectionId for automatic horizontal scrolling
-			oButtonClone.addCustomData(new CustomData({
-				key: "sectionId",
-				value: oSectionBase.getId()
-			}));
-
-			//the anchorBar needs to know whether the title is actually displayed or not (so the anchorBar is really reflecting the objactPage layout state)
-			oButtonClone.addCustomData(new CustomData({
-				key: "bTitleVisible",
-				value: oSectionBase._getInternalTitleVisible()
-			}));
-
-			if (!bIsSection) {
-				//the anchorBar needs to know that this is a second section because it will handle responsive scenarios
-				oButtonClone.addCustomData(new CustomData({
-					key: "secondLevel",
-					value: true
-				}));
-			}
+			this._setCustomData(oButtonClone, oSectionBase, oObjectPageLayout, bIsSection);
 		}
 
 		return oButtonClone;
@@ -348,4 +385,4 @@ sap.ui.define([
 
 	return ABHelper;
 
-}, /* bExport= */ false);
+});

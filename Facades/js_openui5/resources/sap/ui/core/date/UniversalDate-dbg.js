@@ -1,12 +1,12 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides class sap.ui.core.date.UniversalDate
-sap.ui.define(['sap/ui/base/Object', 'sap/ui/core/LocaleData'],
-	function(BaseObject, LocaleData) {
+sap.ui.define(['sap/ui/base/Object', 'sap/ui/core/LocaleData', './_Calendars'],
+	function(BaseObject, LocaleData, _Calendars) {
 	"use strict";
 
 
@@ -17,7 +17,7 @@ sap.ui.define(['sap/ui/base/Object', 'sap/ui/core/LocaleData'],
 	 * The UniversalDate is the base class of calendar date instances. It contains the static methods to create calendar
 	 * specific instances.
 	 *
-	 * The member variable <code>this.oData</code> contains the JS Date object, which is the source value of the date information.
+	 * The member variable <code>this.oDate</code> contains the JS Date object, which is the source value of the date information.
 	 * The prototype is containing getters and setters of the JS Date and is delegating them to the internal date object.
 	 * Implementations for specific calendars may override methods needed for their specific calendar (e.g. getYear
 	 * and getEra for Japanese emperor calendar);
@@ -59,15 +59,19 @@ sap.ui.define(['sap/ui/base/Object', 'sap/ui/core/LocaleData'],
 	 * Returns an instance of Date, based on the calendar type from the configuration, or as explicitly
 	 * defined by parameter. The object provides all methods also known on the JavaScript Date object.
 	 *
-	 * @param {Date} oDate A JavaScript date object
-	 * @param {sap.ui.core.CalendarType} sCalendarType A calendar type
-	 * @returns {sap.ui.core.date.UniversalDate} A date instance
+	 * Note: Prefer this method over calling <code>new UniversalDate</code> with an instance of <code>Date</code>
+	 *
+	 * @param {Date} [oDate] JavaScript date object, defaults to <code>new Date()</code>
+	 * @param {sap.ui.core.CalendarType} [sCalendarType] The calendar type, defaults to <code>sap.ui.getCore().getConfiguration().getCalendarType()</code>
+	 * @returns {sap.ui.core.date.UniversalDate} The date instance
 	 * @public
 	 */
 	UniversalDate.getInstance = function(oDate, sCalendarType) {
 		var clDate, oInstance;
 		if (oDate instanceof UniversalDate) {
 			oDate = oDate.getJSDate();
+		} else if (!oDate) {
+			oDate = new Date();
 		}
 		if (!sCalendarType) {
 			sCalendarType = sap.ui.getCore().getConfiguration().getCalendarType();
@@ -90,7 +94,7 @@ sap.ui.define(['sap/ui/base/Object', 'sap/ui/core/LocaleData'],
 		if (!sCalendarType) {
 			sCalendarType = sap.ui.getCore().getConfiguration().getCalendarType();
 		}
-		return sap.ui.requireSync("sap/ui/core/date/" + sCalendarType);
+		return _Calendars.get(sCalendarType);
 	};
 
 	/*

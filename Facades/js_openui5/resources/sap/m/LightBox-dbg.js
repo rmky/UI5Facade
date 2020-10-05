@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,7 +20,8 @@ sap.ui.define([
 	'./LightBoxRenderer',
 	'sap/m/BusyIndicator',
 	"sap/ui/thirdparty/jquery",
-	'sap/ui/core/Core'
+	'sap/ui/core/Core',
+	'sap/ui/dom/units/Rem'
 ],
 	function(
 		library,
@@ -38,7 +39,8 @@ sap.ui.define([
 		LightBoxRenderer,
 		BusyIndicator,
 		jQuery,
-		Core
+		Core,
+		DomUnitsRem
 	) {
 
 		'use strict';
@@ -99,7 +101,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 *
 		 * @constructor
 		 * @public
@@ -510,8 +512,7 @@ sap.ui.define([
 				lightBoxContainer = this.getDomRef(),
 				lightBoxWidth,
 				lightBoxHeight,
-				minimumOffset = calculateOffset(),
-				hcbBorderSize = 2;
+				minimumOffset = calculateOffset();
 
 			if (oImageContent._getImageState() === LightBoxLoadingStates.Loaded) {
 				this._calculateSizes(oImageContent._getNativeImage());
@@ -536,10 +537,6 @@ sap.ui.define([
 				marginTop = Math.round(-lightBoxHeight / 2);
 			}
 
-			if (sap.ui.getCore().getConfiguration().getTheme() === 'sap_hcb') {
-				marginTop -= hcbBorderSize;
-				marginLeft -= hcbBorderSize;
-			}
 
 			this._$lightBox.css({
 				'top' : top,
@@ -578,20 +575,20 @@ sap.ui.define([
 		 * @returns {int} The height of the footer.
 		 */
 		LightBox.prototype._calculateFooterHeightInPx = function () {
-			var compact = this.$().parents().hasClass('sapUiSizeCompact');
-			var subtitle = this._getImageContent().getSubtitle();
+			var bCompact = this.$().parents().hasClass('sapUiSizeCompact');
+			var oSubtitle = this._getImageContent().getSubtitle();
 
-			var footerHeightRem = 2.5; // base height of the footer in rem
+			var iFooterHeightRem = 3; // base height of the footer in rem
 
-			if (!compact) {
-			    footerHeightRem += 0.5;
+			if (bCompact && !oSubtitle) {
+				iFooterHeightRem -= 0.5;
 			}
 
-			if (subtitle) {
-			    footerHeightRem += 1.5;
+			if (oSubtitle) {
+				iFooterHeightRem += 0.5;
 			}
 
-			return footerHeightRem * 16; // 1rem == 16px
+			return DomUnitsRem.toPx(iFooterHeightRem); // 1rem * iFooterHeightRem
 		};
 
 		/**
@@ -726,6 +723,10 @@ sap.ui.define([
 
 			if (system.tablet) {
 				return 2 /*rem*/ * 16 /*px*/;
+			}
+
+			if (system.phone && Device.resize.width > 320) {
+				return 1 /*rem*/ * 16 /*px*/;
 			}
 
 			return 0;

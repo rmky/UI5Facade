@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -89,7 +89,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 *
 		 * @constructor
 		 * @public
@@ -104,6 +104,7 @@ function(
 				properties: {
 					/**
 					 * Callback function for resolving a promise after description has been asynchronously loaded inside this function.
+					 * You can use this function in order to validate the description before displaying it.
 					 * @callback sap.m.MessagePopover~asyncDescriptionHandler
 					 * @param {object} config A single parameter object
 					 * @param {MessagePopoverItem} config.item Reference to respective MessagePopoverItem instance
@@ -115,6 +116,7 @@ function(
 
 					/**
 					 * Callback function for resolving a promise after a link has been asynchronously validated inside this function.
+					 * You can use this function in order to validate URLs before displaying them inside the description.
 					 * @callback sap.m.MessagePopover~asyncURLHandler
 					 * @param {object} config A single parameter object
 					 * @param {string} config.url URL to validate
@@ -407,6 +409,7 @@ function(
 			if (this.getDependents().indexOf(this._oPopover) === -1) {
 				this.addDependent(this._oPopover);
 			}
+			this._oPopover.setPlacement(this.getPlacement());
 		};
 
 		/**
@@ -423,7 +426,7 @@ function(
 			}*/
 
 			// Update MV only if 'items' aggregation is changed
-			if (this._bItemsChanged) {
+			if (this._oMessageView && this._bItemsChanged) {
 				var items = this.getItems();
 				var that = this;
 
@@ -454,6 +457,8 @@ function(
 			if (this._oOpenByControl && !this._oOpenByControl.getVisible()) {
 				this._oPopover.close();
 			}
+
+			this._syncMessageView();
 		};
 
 		/**
@@ -575,21 +580,6 @@ function(
 			return this;
 		};
 
-		/**
-		 * The method sets the placement position of the MessagePopover. Only accepted Values are:
-		 * sap.m.PlacementType.Top, sap.m.PlacementType.Bottom and sap.m.PlacementType.Vertical
-		 *
-		 * @param {sap.m.PlacementType} sPlacement Placement type
-		 * @returns {sap.m.MessagePopover} Reference to the 'this' for chaining purposes
-		 * @public
-		 */
-		MessagePopover.prototype.setPlacement = function (sPlacement) {
-			this.setProperty("placement", sPlacement, true);
-			this._oPopover.setPlacement(sPlacement);
-
-			return this;
-		};
-
 		MessagePopover.prototype.getDomRef = function (sSuffix) {
 			return this._oPopover && this._oPopover.getAggregation("_popup").getDomRef(sSuffix);
 		};
@@ -660,7 +650,7 @@ function(
 		 * @private
 		 */
 		MessagePopover.prototype._restoreExpansionDefaults = function () {
-			if (!this.getInitiallyExpanded() && this.getItems().length != 1) {
+			if (this._oMessageView && !this.getInitiallyExpanded() && this.getItems().length != 1) {
 				this._collapseMsgPopover();
 				this._oMessageView._oSegmentedButton.setSelectedButton("none");
 			} else {
@@ -721,11 +711,19 @@ function(
 		 * @private
 		 */
 		MessagePopover.prototype._setInitialFocus = function () {
-			if (this._oMessageView._isListPage() && this.getInitiallyExpanded()) {
+			if (this._oMessageView && this._oMessageView._isListPage() && this.getInitiallyExpanded()) {
 				// if the controls state is "InitiallyExpanded: true" and
 				// if current page is the list page - set initial focus to the list.
 				// otherwise use default functionality built-in the popover
 				this._oPopover.setInitialFocus(this._oMessageView._oLists[this._sCurrentList || 'all']);
+			}
+		};
+
+		MessagePopover.prototype._syncMessageView = function () {
+			if (this._oMessageView) {
+				this._oMessageView.setProperty('asyncDescriptionHandler', this.getAsyncDescriptionHandler(), true);
+				this._oMessageView.setProperty('asyncURLHandler', this.getAsyncURLHandler(), true);
+				this._oMessageView.setProperty("groupItems", this.getGroupItems(), false);
 			}
 		};
 
@@ -736,44 +734,16 @@ function(
 		 * =========================================
 		 */
 
-		MessagePopover.prototype.setAsyncDescriptionHandler = function (asyncDescriptionHandler) {
-			// MessagePopover is just a proxy to the MessageView
-			this.setProperty('asyncDescriptionHandler', asyncDescriptionHandler, true);
-			this._oMessageView.setProperty('asyncDescriptionHandler', asyncDescriptionHandler, true);
-
-			return this;
-		};
-
-		MessagePopover.prototype.setAsyncURLHandler = function (asyncURLHandler) {
-			// MessagePopover is just a proxy to the MessageView
-			this.setProperty('asyncURLHandler', asyncURLHandler, true);
-			this._oMessageView.setProperty('asyncURLHandler', asyncURLHandler, true);
-
-			return this;
-		};
-
 		MessagePopover.prototype.setModel = function(oModel, sName) {
-			/* When a model is set to the MessagePopover it is propagated to all its aggregation
+			/* 	When a model is set to the MessagePopover it is propagated to all its aggregation
 				Unfortunately the MessageView is not an aggregation of the MessagePopover (due to some rendering issues)
 				Furthermore the MessageView is actually child of a ResponsivePopover
 				Therefore once the developer set a model to the MessagePopover we need to forward it to the internal MessageView */
-			this._oMessageView.setModel(oModel, sName);
+			if (this._oMessageView) {
+				this._oMessageView.setModel(oModel, sName);
+			}
 
 			return Control.prototype.setModel.apply(this, arguments);
-		};
-
-		/**
-		 * Sets the value of the <code>groupItems</code> property.
-		 * @param {boolean} bValue A boolean indicating whether items should be grouped or not.
-		 * @returns {sap.m.MessagePopover} Reference to the 'this' for chaining purposes
-		 * @public
-		 */
-		MessagePopover.prototype.setGroupItems = function (bValue) {
-			// MessagePopover is just a proxy to the MessageView
-			this.setProperty('groupItems', bValue, false);
-			this._oMessageView.setProperty("groupItems", bValue, false);
-
-			return this;
 		};
 
 		/**
@@ -783,7 +753,9 @@ function(
 		 */
 		MessagePopover.prototype.navigateBack = function () {
 			// MessagePopover is just a proxy to the MessageView
-			this._oMessageView.navigateBack();
+			if (this._oMessageView) {
+				this._oMessageView.navigateBack();
+			}
 		};
 
 		["invalidate", "addStyleClass", "removeStyleClass", "toggleStyleClass", "hasStyleClass", "getBusyIndicatorDelay",

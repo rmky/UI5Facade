@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -32,7 +32,7 @@ sap.ui.define([
 	 * @class
 	 * Provides navigation between pages within a list of numbered pages.
 	 * @extends sap.ui.core.Control
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -310,7 +310,7 @@ sap.ui.define([
 			}
 			oNextElement = aFocusableElements[iNextIndex];
 			if (oNextElement) {
-				jQuery(oNextElement).focus();
+				jQuery(oNextElement).trigger("focus");
 				oEvent.preventDefault();
 				oEvent.stopPropagation();
 			}
@@ -322,7 +322,7 @@ sap.ui.define([
 				oNextElement = aFocusableElements[iNextIndex - 1];
 			}
 			if (oNextElement) {
-				jQuery(oNextElement).focus();
+				jQuery(oNextElement).trigger("focus");
 				oEvent.preventDefault();
 				oEvent.stopPropagation();
 			}
@@ -344,7 +344,7 @@ sap.ui.define([
 
 		//Tabbing --> Focus the last active element then let the browser focus the next active element
 		if (!shiftKeyPressed) {
-			jQuery(aFocusableElements[aFocusableElements.length - 1]).focus();
+			jQuery(aFocusableElements[aFocusableElements.length - 1]).trigger("focus");
 		} else { //Shift/Tab keys pressed --> Focus the 2nd active element then let the browser focus the first active element
 
 			//Which element triggered the event
@@ -352,7 +352,7 @@ sap.ui.define([
 
 			//If the focus is already on the first active element, let the browser move the focus
 			if (iCurrentIndex != 0) {
-				jQuery(aFocusableElements[0]).focus();
+				jQuery(aFocusableElements[0]).trigger("focus");
 			}
 		}
 	};
@@ -368,7 +368,7 @@ sap.ui.define([
 
 	Paginator.prototype.applyFocusInfo = function(mFocusInfo) {
 		if (mFocusInfo && mFocusInfo.customId) {
-			this.$().find("#" + mFocusInfo.customId).focus();
+			this.$().find("#" + mFocusInfo.customId).trigger("focus");
 		} else {
 			Control.prototype.getFocusInfo.apply(this, arguments);
 		}

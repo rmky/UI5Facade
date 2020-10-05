@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,14 +14,12 @@ sap.ui.define([
 	'./TitleAlignmentMixin',
 	'sap/ui/core/Control',
 	'sap/ui/Device',
-	'sap/ui/base/ManagedObject',
 	'sap/m/Toolbar',
 	'sap/m/Label',
 	'sap/m/BusyIndicator',
 	'sap/m/Bar',
 	'sap/m/Title',
 	'sap/ui/core/theming/Parameters',
-	'./SelectDialogRenderer',
 	"sap/base/Log"
 ],
 function(
@@ -33,14 +31,12 @@ function(
 	TitleAlignmentMixin,
 	Control,
 	Device,
-	ManagedObject,
 	Toolbar,
 	Label,
 	BusyIndicator,
 	Bar,
 	Title,
 	Parameters,
-	SelectDialogRenderer,
 	Log
 	) {
 	"use strict";
@@ -85,7 +81,7 @@ function(
 	 * make sure the binding mode is set to <code>OneWay</code> and that you update the selection model manually with
 	 * the items passed in the <code>confirm</code> event. </li>
 	 * <li> In the multi-select mode of the select dialog, checkboxes are provided for choosing multiple entries. </li>
-	 * <li> You can set <code>rememberSelections</code> to true to store the current selection and load this state
+	 * <li> You can set <code>rememberSelections</code> to <code>true</code> to store the current selection and load this state
 	 * when the dialog is opened again. </li>
 	 * <li> When cancelling the selection, the event <code>change</code> will be fired and the selection is restored
 	 * to the state when the dialog was opened. </li>
@@ -105,19 +101,20 @@ function(
 	 * <li> You need to be able to add your own values to an existing list. Use a {@link sap.m.Dialog dialog} instead. </li>
 	 * </ul>
 	 * <h4>Note:</h4>
-	 * The property <code>growing</code> determines the progressive loading. If it's set to true (the default value), the
-	 * <code>selected count</code> in info bar and search  will work only for the currently loaded items.
-	 * To make sure that all items in the list are loaded at once and the above feature works properly,
-	 * we recommend setting the <code>growing</code> property to false.
+	 * The property <code>growing</code> determines the progressive loading. If it's set to <code>true</code> (the default value), the
+	 * selected count (if present) and search, will work for currently loaded items only.
+	 * To make sure that all items in the list are loaded at once and the above features works properly,
+	 * we recommend setting the <code>growing</code> property to <code>false</code>.
 	 * <h3>Responsive Behavior</h3>
 	 * <ul>
 	 * <li> On phones, the select dialog takes up the whole screen. </li>
 	 * <li> On desktop and tablet devices, the select dialog appears as a popover. </li>
 	 * </ul>
+	 * When using the <code>sap.m.SelectDialog</code> in SAP Quartz themes, the breakpoints and layout paddings could be determined by the dialog's width. To enable this concept and add responsive paddings to an element of the control, you have to add the following classes depending on your use case: <code>sapUiResponsivePadding--header</code>, <code>sapUiResponsivePadding--subHeader</code>, <code>sapUiResponsivePadding--content</code>, <code>sapUiResponsivePadding--footer</code>.
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -155,6 +152,8 @@ function(
 			 * If set to <code>true</code>, enables the growing feature of the control to load more items by requesting from the bound model (progressive loading).
 			 * <b>Note:</b> This feature only works when an <code>items</code> aggregation is bound.
 			 * <b>Note:</b> Growing property, must not be used together with two-way binding.
+			 * <b>Note:</b> If the property is set to <code>true</code>, selected count (if present) and search, will work for currently loaded items only.
+				 * To make sure that all items in the table are loaded at once and the above features work properly, we recommend setting the <code>growing</code> property to false.
 			 * @since 1.56
 			 */
 			growing : {type : "boolean", group : "Behavior", defaultValue : true},
@@ -166,7 +165,7 @@ function(
 			contentWidth : {type : "sap.ui.core.CSSSize", group : "Dimension", defaultValue : null},
 
 			/**
-			 * This flag controls whether the dialog clears the selection after the confirm event has been fired. If the dialog needs to be opened multiple times in the same context to allow for corrections of previous user inputs, set this flag to "true".
+			 * This flag controls whether the dialog clears the selection after the confirm event has been fired. If the dialog needs to be opened multiple times in the same context to allow for corrections of previous user inputs, set this flag to <code>true</code>.
 			 *
 			 * <b>Note:</b> The sap.m.SelectDialog uses {@link sap.m.ListBase#rememberSelections this} property of the ListBase and therefore its limitations also apply here.
 			 * @since 1.18
@@ -248,7 +247,7 @@ function(
 					selectedItems : {type : "sap.m.StandardListItem[]"},
 
 					/**
-					 * Returns the binding contexts of the selected items including the non-visible items. See {@link sap.m.ListBase#getSelectedContexts getSelectedContexts} of <code>sap.m.ListBase</code>.
+					 * Returns the binding contexts of the selected items including the non-visible items, but excluding the not loaded items. See {@link sap.m.ListBase#getSelectedContexts getSelectedContexts} of <code>sap.m.ListBase</code>.
 					 * NOTE: In contrast to the parameter "selectedItems", this parameter will also include the selected but NOT visible items (e.g. due to list filtering). An empty array will be set for this parameter if no data binding is used.
 					 * NOTE: When the list binding is pre-filtered and there are items in the selection that are not visible upon opening the dialog, these contexts are not loaded. Therefore, these items will not be included in the selectedContexts array unless they are displayed at least once.
 					 */
@@ -304,7 +303,12 @@ function(
 			 */
 			cancel : {}
 		}
-	}});
+	},
+	renderer: {
+		apiVersion: 2,
+		render: function () {}
+	}
+});
 
 
 	/* =========================================================== */
@@ -317,8 +321,7 @@ function(
 	 */
 	SelectDialog.prototype.init = function () {
 		var that = this,
-			iLiveChangeTimer = 0,
-			fnDialogEscape = null;
+			iLiveChangeTimer = 0;
 
 		this._bAppendedToUIArea = false;
 		this._bInitBusy = false;
@@ -415,22 +418,19 @@ function(
 			leftButton: this._getCancelButton(),
 			initialFocus: (Device.system.desktop ? this._oSearchField : null),
 			draggable: this.getDraggable() && Device.system.desktop,
-			resizable: this.getResizable() && Device.system.desktop
-		}).addStyleClass("sapMSelectDialog", true);
+			resizable: this.getResizable() && Device.system.desktop,
+			escapeHandler: function (oPromiseWrapper) {
+				//CSN# 3863876/2013: ESC key should also cancel dialog, not only close it
+				that._onCancel();
+				oPromiseWrapper.resolve();
+			}
+		}).addStyleClass("sapMSelectDialog");
+
+		this._oDialog.addAriaLabelledBy(this._oList.getInfoToolbar());
+
 		// for downward compatibility reasons
 		this._dialog = this._oDialog;
 		this.setAggregation("_dialog", this._oDialog);
-
-		//CSN# 3863876/2013: ESC key should also cancel dialog, not only close it
-		fnDialogEscape = this._oDialog.onsapescape;
-		this._oDialog.onsapescape = function (oEvent) {
-			// call original escape function of the dialog
-			if (fnDialogEscape) {
-				fnDialogEscape.call(that._oDialog, oEvent);
-			}
-			// execute cancel action
-			that._onCancel();
-		};
 
 		// internally set top and bottom margin of the dialog to 4rem respectively
 		// CSN# 333642/2014: in base theme the parameter sapUiFontSize is "medium", implement a fallback
@@ -841,7 +841,7 @@ function(
 	 * Forward method to the inner dialog: hasStyleClass
 	 * @public
 	 * @override
-	 * @returns {boolean} true if the class is set, false otherwise
+	 * @returns {boolean} <code>true</code> if the class is set, <code>false</code> otherwise
 	 */
 	SelectDialog.prototype.hasStyleClass = function () {
 		return this._oDialog.hasStyleClass.apply(this._oDialog, arguments);
@@ -1084,6 +1084,17 @@ function(
 			fnOKAfterClose = null;
 
 		fnOKAfterClose = function () {
+			//after searching we need all the items
+			var oBindings = that._oList.getBinding("items");
+			if (oBindings && oBindings.aFilters && oBindings.aFilters.length) {
+
+				// When reset the filter, the selected items might go outside
+				// the currently visible items (outside the current growing number).
+				// Set the growing to false to prevent this.
+				that._oList.setGrowing(false);
+				oBindings.filter([]);
+				that._oList.setGrowing(that.getGrowing());
+			}
 			that._oSelectedItem = that._oList.getSelectedItem();
 			that._aSelectedItems = that._oList.getSelectedItems();
 
@@ -1177,13 +1188,23 @@ function(
 	 */
 	SelectDialog.prototype._updateSelectionIndicator = function () {
 		var iSelectedContexts = this._oList.getSelectedContextPaths(true).length,
-			oInfoBar = this._oList.getInfoToolbar();
+			oInfoBar = this._oList.getInfoToolbar(),
+			bVisible = !!iSelectedContexts && this.getMultiSelect();
 
 		if (this.getShowClearButton() && this._oClearButton) {
 			this._oClearButton.setEnabled(iSelectedContexts > 0);
 		}
 		// update the selection label
-		oInfoBar.setVisible(!!iSelectedContexts && this.getMultiSelect());
+		if (oInfoBar.getVisible() !== bVisible) {
+			oInfoBar.setVisible(bVisible);
+
+			if (bVisible) {
+				// force immediate rerendering, so JAWS can read the text inside,
+				// when it become visible
+				oInfoBar.rerender();
+			}
+		}
+
 		oInfoBar.getContent()[0].setText(this._oRb.getText("TABLESELECTDIALOG_SELECTEDITEMS", [iSelectedContexts]));
 	};
 
@@ -1305,6 +1326,10 @@ function(
 		var fnEventDelegate = function (oEvent) {
 			if (oEvent && oEvent.isDefaultPrevented && oEvent.isMarked &&
 				(oEvent.isDefaultPrevented() || oEvent.isMarked("preventSelectionChange"))) {
+				return;
+			}
+
+			if (oEvent && oEvent.srcControl.isA("sap.m.GroupHeaderListItem")){
 				return;
 			}
 

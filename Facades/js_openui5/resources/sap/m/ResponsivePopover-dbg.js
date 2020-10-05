@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -67,7 +67,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -481,11 +481,6 @@ sap.ui.define([
 		return this;
 	};
 
-	/**
-	 * Creates a new instance of ResponsivePopover with the same settings as the ResponsivePopover on which the method is called
-	 * @returns {sap.m.ResponsivePopover} New instance of ResponsivePopover
-	 * @public
-	 */
 	ResponsivePopover.prototype.clone = function(){
 		var oClone = Control.prototype.clone.apply(this, arguments),
 			aContent = this.getAggregation('_popup').getContent();
@@ -749,7 +744,7 @@ sap.ui.define([
 			ResponsivePopover.prototype[sName] = function(){
 				var iLastUpperCase = this._lastIndexOfUpperCaseLetter(sName),
 					sMethodName, res;
-				if (jQuery.type(arguments[0]) === "string") {
+				if (typeof arguments[0] === "string") {
 					if (iLastUpperCase !== -1) {
 						sMethodName = sName.substring(0, iLastUpperCase) + this._firstLetterUpperCase(arguments[0]);
 						//_oControl can be already destroyed in exit method
@@ -768,7 +763,7 @@ sap.ui.define([
 
 	// forward the other necessary methods to the inner instance, but do not check the existence of generated methods like (addItem)
 	["invalidate", "close", "isOpen", "addStyleClass", "removeStyleClass", "toggleStyleClass", "hasStyleClass",
-		"getDomRef", "setBusy", "getBusy", "setBusyIndicatorDelay", "getBusyIndicatorDelay", "addEventDelegate", "_setAriaModal"].forEach(function(sName){
+		"getDomRef", "setBusy", "getBusy", "setBusyIndicatorDelay", "getBusyIndicatorDelay", "addEventDelegate", "_setAriaModal", "_setAriaRoleApplication"].forEach(function(sName){
 			ResponsivePopover.prototype[sName] = function() {
 				if (this._oControl && this._oControl[sName]) {
 

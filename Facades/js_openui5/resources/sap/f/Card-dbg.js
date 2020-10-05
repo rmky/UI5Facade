@@ -1,20 +1,32 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
 	"sap/ui/core/Control",
 	"sap/f/CardRenderer",
-	"sap/f/library"
+	"sap/f/library",
+	"sap/m/library",
+	"sap/ui/core/InvisibleText",
+	"sap/ui/core/Core",
+	"sap/m/BadgeEnabler"
 ], function (
 	Control,
 	CardRenderer,
-	library
+	library,
+	mLibrary,
+	InvisibleText,
+	Core,
+	BadgeEnabler
 ) {
 	"use strict";
 
 	var HeaderPosition = library.cards.HeaderPosition;
+
+	var BadgeState = mLibrary.BadgeState;
+
+	var BADGE_AUTOHIDE_TIME = 3000;
 
 	/**
 	 * Constructor for a new <code>Card</code>.
@@ -71,7 +83,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -117,6 +129,43 @@ sap.ui.define([
 		renderer: CardRenderer
 	});
 
+	BadgeEnabler.call(Card.prototype);
+
+	/**
+	 * Initialization hook.
+	 *
+	 *
+	 * @private
+	 */
+	Card.prototype.init = function () {
+		this._oRb  = Core.getLibraryResourceBundle("sap.f");
+
+		this._ariaText = new InvisibleText({id: this.getId() + "-ariaText"});
+		this._ariaText.setText(this._oRb.getText("ARIA_ROLEDESCRIPTION_CARD"));
+
+		this._ariaContentText = new InvisibleText({id: this.getId() + "-ariaContentText"});
+		this._ariaContentText.setText(this._oRb.getText("ARIA_LABEL_CARD_CONTENT"));
+
+		this.initBadgeEnablement({
+			accentColor: "AccentColor6"
+		});
+	};
+
+	Card.prototype.exit = function () {
+
+		this._oRb = null;
+
+		if (this._ariaText) {
+			this._ariaText.destroy();
+			this._ariaText = null;
+		}
+
+		if (this._ariaContentText) {
+			this._ariaContentText.destroy();
+			this._ariaContentText = null;
+		}
+	};
+
 	/**
 	 * Implements sap.f.ICard interface.
 	 *
@@ -146,6 +195,72 @@ sap.ui.define([
 	 */
 	Card.prototype.getCardContent = function () {
 		return this.getContent();
+	};
+
+	/**
+	 * Returns the DOM Element that should get the focus.
+	 *
+	 * @return {Element} Returns the DOM Element that should get the focus
+	 * @protected
+	 */
+	Card.prototype.getFocusDomRef = function () {
+		return this.getCardHeader() ? this.getCardHeader().getDomRef() : this.getDomRef() ;
+	};
+
+	Card.prototype.onfocusin = function () {
+		this._startBadgeHiding();
+	};
+
+	Card.prototype._startBadgeHiding = function () {
+		if (this._iHideBadgeTimeout) {
+			return;
+		}
+
+		this._iHideBadgeTimeout = setTimeout(this._hideBadge.bind(this), BADGE_AUTOHIDE_TIME);
+	};
+
+	Card.prototype._hideBadge = function () {
+
+		var oBadgeCustomData = this.getBadgeCustomData();
+		if (oBadgeCustomData) {
+			oBadgeCustomData.setVisible(false);
+		}
+
+		this._iHideBadgeTimeout = null;
+	};
+
+	Card.prototype.onBadgeUpdate = function (sValue, sState, sBadgeId) {
+
+		var oHeader = this.getCardHeader(),
+			oDomRef,
+			sAriaLabelledBy;
+
+		if (oHeader) {
+			oDomRef = oHeader.getDomRef();
+		} else {
+			oDomRef = this.getDomRef("contentSection");
+		}
+
+		if (!oDomRef) {
+			return;
+		}
+
+		sAriaLabelledBy = oDomRef.getAttribute("aria-labelledby") || "";
+
+		switch (sState) {
+			case BadgeState.Appear:
+				sAriaLabelledBy = sBadgeId + " " + sAriaLabelledBy;
+				oDomRef.setAttribute("aria-labelledby", sAriaLabelledBy);
+				break;
+			case BadgeState.Disappear:
+				sAriaLabelledBy =  sAriaLabelledBy.replace(sBadgeId, "").trim();
+				oDomRef.setAttribute("aria-labelledby", sAriaLabelledBy);
+				break;
+		}
+	};
+
+	Card.prototype.getAriaLabelBadgeText = function () {
+		return this.getBadgeCustomData().getValue();
 	};
 
 	return Card;

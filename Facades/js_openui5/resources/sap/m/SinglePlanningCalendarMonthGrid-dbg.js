@@ -1,8 +1,13 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
+
+// Ensure that sap.ui.unified is loaded before the module dependencies will be required.
+// Loading it synchronously is the only compatible option and doesn't harm when sap.ui.unified
+// already has been loaded asynchronously (e.g. via a dependency declared in the manifest)
+sap.ui.getCore().loadLibrary("sap.ui.unified");
 
 // Provides control sap.m.SinglePlanningCalendarMonthGrid.
 sap.ui.define([
@@ -10,6 +15,8 @@ sap.ui.define([
 	'sap/ui/core/format/DateFormat',
 	'sap/ui/unified/calendar/CalendarDate',
 	'sap/ui/unified/calendar/CalendarUtils',
+	'sap/ui/unified/DateTypeRange',
+	'sap/ui/unified/library',
 	'sap/ui/core/LocaleData',
 	'sap/ui/core/Locale',
 	'sap/ui/core/delegate/ItemNavigation',
@@ -27,6 +34,8 @@ sap.ui.define([
 		DateFormat,
 		CalendarDate,
 		CalendarUtils,
+		DateTypeRange,
+		unifiedLibrary,
 		LocaleData,
 		Locale,
 		ItemNavigation,
@@ -72,7 +81,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 *
 		 * @constructor
 		 * @private
@@ -314,16 +323,16 @@ sap.ui.define([
 		 * @param {jQuery.Event} oEvent The event object.
 		 */
 		SinglePlanningCalendarMonthGrid.prototype._fireSelectionEvent = function (oEvent) {
-			var oTarget = oEvent.srcControl,
-				$target = jQuery(oEvent.target).eq(0),
-				$cell = $target.closest('.sapMSPCMonthDay').eq(0),
-				bIsLink = $target.length && $target[0].classList.contains("sapMLnk"),
+			var oSrcControl = oEvent.srcControl,
+				oTarget = oEvent.target,
+				bIsCell = oTarget && oTarget.classList.contains("sapMSPCMonthDay"),
+				bIsLink = oTarget && oTarget.classList.contains("sapMLnk"),
 				iTimestamp,
 				oStartDate,
 				oEndDate;
 
-			if (oTarget && oTarget.isA("sap.m.SinglePlanningCalendarMonthGrid") && $cell && !bIsLink) {
-				iTimestamp = parseInt($cell.attr("sap-ui-date"));
+			if (oSrcControl && oSrcControl.isA("sap.m.SinglePlanningCalendarMonthGrid") && bIsCell && !bIsLink) {
+				iTimestamp = parseInt(oTarget.getAttribute("sap-ui-date"));
 
 				oStartDate = new Date(iTimestamp);
 				oStartDate = new Date(oStartDate.getFullYear(), oStartDate.getMonth(), oStartDate.getDate());
@@ -336,10 +345,10 @@ sap.ui.define([
 					appointment: undefined,
 					appointments: this._toggleAppointmentSelection(undefined, true)
 				});
-			} else if (oTarget && oTarget.isA("sap.ui.unified.CalendarAppointment")) {
+			} else if (oSrcControl && oSrcControl.isA("sap.ui.unified.CalendarAppointment")) {
 				this.fireAppointmentSelect({
-					appointment: oTarget,
-					appointments: this._toggleAppointmentSelection(oTarget, !(oEvent.ctrlKey || oEvent.metaKey))
+					appointment: oSrcControl,
+					appointments: this._toggleAppointmentSelection(oSrcControl, !(oEvent.ctrlKey || oEvent.metaKey))
 				});
 			}
 		};
@@ -366,25 +375,15 @@ sap.ui.define([
 					// Deselecting all selected appointments if a grid cell is focused or
 					// all selected appointments different than the currently focused appointment
 					if ( (!oAppointment || aAppointments[i].getId() !== oAppointment.getId()) && aAppointments[i].getSelected()) {
-						aAppointments[i].setProperty("selected", false, true); // do not invalidate
+						aAppointments[i].setProperty("selected", false);
 						aChangedApps.push(aAppointments[i]);
-						// Get appointment element(s) (it might be rendered in several columns)
-						// remove its selection class and set aria-selected attribute to false
-						jQuery('[data-sap-ui=' + aAppointments[i].getId() + ']')
-							.attr("aria-selected", "false")
-							.find(".sapUiCalendarApp").removeClass("sapUiCalendarAppSel");
 					}
 				}
 			}
 
 			if (oAppointment) {
-				oAppointment.setProperty("selected", !oAppointment.getSelected(), true); // do not invalidate
+				oAppointment.setProperty("selected", !oAppointment.getSelected());
 				aChangedApps.push(oAppointment);
-
-				// Get appointment element(s) and toggle its selection class and aria-selected attribute
-				jQuery('[data-sap-ui=' + oAppointment.getId() + ']')
-					.attr("aria-selected", oAppointment.getSelected())
-					.find(".sapUiCalendarApp").toggleClass("sapUiCalendarAppSel", oAppointment.getSelected());
 			}
 
 			return aChangedApps;
@@ -516,8 +515,10 @@ sap.ui.define([
 					};
 					// get only the visible appointments
 				}).filter(function(app) {
-					return CalendarUtils._isBetween(app.start, oFirstVisibleDay, oLastVisibleDay, true)
-						|| CalendarUtils._isBetween(app.end, oFirstVisibleDay, oLastVisibleDay, true);
+					return CalendarUtils._isBetween(app.start, oFirstVisibleDay, oLastVisibleDay, true) // app starts in the current view port
+						|| CalendarUtils._isBetween(app.end, oFirstVisibleDay, oLastVisibleDay, true) // app ends in the current view port
+						|| (CalendarUtils._isBetween(oFirstVisibleDay, app.start, oLastVisibleDay, true) // app starts before the view port...
+							&& CalendarUtils._isBetween(oLastVisibleDay, oFirstVisibleDay, app.end,true)); // ...and ends after the view port
 					// sort by start date
 				}).sort(function compare(a, b) {
 					return a.start.valueOf() - b.start.valueOf();
@@ -810,6 +811,24 @@ sap.ui.define([
 			}
 
 			return false;
+		};
+
+		SinglePlanningCalendarMonthGrid.prototype._getSpecialDates = function(){
+			var specialDates = this.getSpecialDates();
+			for (var i = 0; i < specialDates.length; i++) {
+				var bNeedsSecondTypeAdding = specialDates[i].getSecondaryType() === unifiedLibrary.CalendarDayType.NonWorking
+					&& specialDates[i].getType() !== unifiedLibrary.CalendarDayType.NonWorking;
+				if (bNeedsSecondTypeAdding) {
+					var newSpecialDate = new DateTypeRange();
+					newSpecialDate.setType(unifiedLibrary.CalendarDayType.NonWorking);
+					newSpecialDate.setStartDate(specialDates[i].getStartDate());
+					if (specialDates[i].getEndDate()) {
+						newSpecialDate.setEndDate(specialDates[i].getEndDate());
+					}
+					specialDates.push(newSpecialDate);
+				}
+			}
+			return specialDates;
 		};
 
 		return SinglePlanningCalendarMonthGrid;

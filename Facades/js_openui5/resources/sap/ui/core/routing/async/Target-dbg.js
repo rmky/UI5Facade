@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -24,8 +24,11 @@ sap.ui.define([
 		/**
 		 * Creates a view and puts it in an aggregation of a control that has been defined in the {@link #constructor}.
 		 *
-		 * @param {*} [vData] an object that will be passed to the display event in the data property. If the target has parents, the data will also be passed to them.
-		 * @return {Promise} resolves with {name: *, view: *, control: *} if the target can be successfully displayed otherwise it rejects with error information
+		 * This method can be used to display a target without changing the browser hash. If the browser hash should be changed,
+		 *  the {@link sap.ui.core.routing.Router#navTo} method should be used instead
+		 *
+		 * @param {*} [vData] An object that will be passed to the display event in the data property. If the target has parents, the data will also be passed to them.
+		 * @return {Promise} Resolves with {name: *, view: *, control: *} if the target can be successfully displayed otherwise it rejects with error information
 		 * @private
 		 */
 		display: function (vData) {
@@ -35,6 +38,12 @@ sap.ui.define([
 		},
 
 		/**
+		 * Creates a view and puts it in an aggregation of a control that has been defined in the {@link #constructor}.
+		 *
+		 * @param {*} [vData] An object that will be passed to the display event in the data property. If the target has parents, the data will also be passed to them.
+		 * @param {Promise} oSequencePromise Promise chain for resolution in the correct order
+		 * @param {object} [oTargetCreateInfo] Additional information  for the component creation. Currently the object only contains the prefix for the routerHashChanger
+		 * @returns {Promise} Resolves with {name: *, view: *, control: *} if the target can be successfully displayed otherwise it rejects with error information
 		 * @private
 		 */
 		_display: function (vData, oSequencePromise, oTargetCreateInfo) {
@@ -58,6 +67,10 @@ sap.ui.define([
 		 * @private
 		 */
 		suspend: function() {
+			if (this._oParent) {
+				this._oParent.suspend();
+			}
+
 			if (this._isLoaded()) {
 				var oObject = this._get(),
 					oRouter;
@@ -164,6 +177,7 @@ sap.ui.define([
 		 * @param {object} [vData] an object that will be passed to the display event in the data property. If the
 		 * 		target has parents, the data will also be passed to them.
 		 * @param {Promise} oSequencePromise Promise chain for resolution in the correct order
+		 * @param {object} oTargetCreateInfo Additional information  for the component creation. Currently the object only contains the prefix for the routerHashChanger
 		 * @return {Promise} resolves with {name: *, view: *, control: *} if the target can be successfully displayed otherwise it rejects with an error message
 		 * @private
 		 */
@@ -176,40 +190,76 @@ sap.ui.define([
 
 			var oOptions = this._oOptions,
 				that = this,
-				oObject, sErrorMessage, pLoaded;
+				oObject, sErrorMessage, pLoaded,
+				bInstantResolve = true,
+				fnResolve,
+				pNestedRouteMatched;
 
 			if ((oOptions.name || oOptions.usage) && oOptions.type) {
-				pLoaded = this._load(oTargetCreateInfo);
+				pNestedRouteMatched = new Promise(function(resolve) {
+					fnResolve = resolve;
+				});
+				pLoaded = this._load(oTargetCreateInfo).then(function (oObject) {
+					if (oObject.isA("sap.ui.core.UIComponent")) {
+						var oRouter = oObject.getRouter();
+						if (oRouter) {
+							var sHash = oRouter.getHashChanger().getHash();
+							var oRoute = oRouter.getRouteByHash(sHash);
+
+							if (!oRouter._oConfig.async){
+								throw new Error("The router of component '" + oObject.getId() + "' which is loaded via the target '" + that._oOptions._name + "' is defined as synchronous which is not supported using as a nested component.");
+							}
+
+							if (oRouter._oOwner) {
+								// update the flag once the component is displayed again after it's already loaded
+								oRouter._oOwner._bRoutingPropagateTitle = oTargetCreateInfo.propagateTitle;
+							}
+
+							// TODO: offer getter for target info
+							if (oRoute && oRoute._oConfig.target) {
+								bInstantResolve = false;
+								oRouter.attachRouteMatched(fnResolve);
+							}
+							if (oRouter.isStopped()) {
+								// initialize the router in nested component
+								// if it has been previously stopped
+								oRouter.initialize();
+							}
+						}
+					}
+
+					if (bInstantResolve) {
+						fnResolve();
+					}
+					return oObject;
+				});
 				// when target information is given
 				oSequencePromise = oSequencePromise
 					.then(function(oParentInfo) {
-						return pLoaded
-							.then(function (oObject) {
-								if (oObject.isA("sap.ui.core.UIComponent")) {
-									var oRouter = oObject.getRouter();
-									if (oRouter && oRouter.isStopped()) {
-										// initialize the router in nested component
-										// if it has been previously stopped
-										oRouter.initialize();
-									}
-								}
-								return {
-									object: oObject,
-									parentInfo: oParentInfo || {}
-								};
-							});
+						return pLoaded.then(function(oObject) {
+							return {
+								object: oObject,
+								parentInfo: oParentInfo || {}
+							};
+						});
 					})
 					.then(function(oViewInfo) {
 						// loaded and do placement
-						var vValid = that._isValid(oViewInfo.parentInfo);
+						var vValid = that._isValid(oViewInfo.parentInfo),
+						 oView, oRootControl;
 
 						oObject = oViewInfo.object;
-
-						// TODO: check how to handle the title change for the loaded component
-						if (oObject.isA("sap.ui.core.mvc.View")) {
-							that._bindTitleInTitleProvider(oObject);
-							that._addTitleProviderAsDependent(oObject);
+						if (oObject.isA("sap.ui.core.UIComponent")) {
+							oRootControl = oObject.getRootControl();
+							if (oRootControl && oRootControl.isA("sap.ui.core.mvc.View")) {
+								oView = oRootControl;
+							}
+						} else {
+							oView = oObject;
 						}
+
+						that._bindTitleInTitleProvider(oView);
+						that._addTitleProviderAsDependent(oView);
 
 						// validate config and log errors if necessary
 						if (vValid !== true) {
@@ -271,7 +321,7 @@ sap.ui.define([
 					.then(function(oContainerControl) {
 						var oComponent,
 							sComponentContainerId,
-							fnOriginalExit;
+							fnOriginalDestroy;
 
 						if (oObject.isA("sap.ui.core.UIComponent")) {
 							oComponent = oObject;
@@ -289,10 +339,10 @@ sap.ui.define([
 
 								oObject = new ComponentContainer(sComponentContainerId, oContainerOptions);
 
-								fnOriginalExit = oComponent.exit;
-								oComponent.exit = function () {
-									if (fnOriginalExit) {
-										fnOriginalExit.apply(this);
+								fnOriginalDestroy = oComponent.destroy;
+								oComponent.destroy = function () {
+									if (fnOriginalDestroy) {
+										fnOriginalDestroy.apply(this);
 									}
 
 									// destroy the component container when the component is destroyed
@@ -323,14 +373,6 @@ sap.ui.define([
 						Log.info("Did place the " + oOptions.type.toLowerCase() + " target '" + (oOptions.name ? that._getEffectiveObjectName(oOptions.name) : oOptions.usage) + "' with the id '" + oObject.getId() + "' into the aggregation '" + oOptions.controlAggregation + "' of a control with the id '" + oContainerControl.getId() + "'", that);
 						oContainerControl[oAggregationInfo._sMutator](oObject);
 
-						that.fireDisplay({
-							view : oObject.isA("sap.ui.core.mvc.View") ? oObject : undefined,
-							object: oObject,
-							control : oContainerControl,
-							config : that._oOptions,
-							data: vData
-						});
-
 						return {
 							name: oOptions._name,
 							view: oObject,
@@ -345,13 +387,26 @@ sap.ui.define([
 				});
 			}
 
-			return oSequencePromise;
+			return Promise.all([oSequencePromise, pNestedRouteMatched]).then(function(aObjects) {
+				var oContainerControl = aObjects[0].control;
+				var oObject = aObjects[0].view;
+				if (oContainerControl && oObject) {
+					that.fireDisplay({
+						view : oObject.isA("sap.ui.core.mvc.View") ? oObject : undefined,
+						object: oObject,
+						control : oContainerControl,
+						config : that._oOptions,
+						data: vData
+					});
+				}
+				return aObjects[0];
+			});
 		},
 
 		/**
 		 * Validates the target options, will also be called from the route but route will not log errors
 		 *
-		 * @param oParentInfo
+		 * @param {object} oParentInfo The parent info {name: *, view: *, control: *}
 		 * @returns {boolean|string} returns true if it's valid otherwise the error message
 		 * @private
 		 */
@@ -380,6 +435,11 @@ sap.ui.define([
 		},
 
 		/**
+		 * Refuses the target with the name <code>sName</code> by throwing an error asynchronously
+		 *
+		 * @param {string} sName The name of the target
+		 * @param {string} sMessage The error message with more insights why the target is invalid
+		 * @returns {Promise} The rejected promise
 		 * @private
 		 */
 		_refuseInvalidTarget : function(sName, sMessage) {

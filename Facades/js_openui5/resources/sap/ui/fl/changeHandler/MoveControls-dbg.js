@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -17,7 +17,7 @@ function(
 	 *
 	 * @alias sap.ui.fl.changeHandler.MoveControls
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @experimental Since 1.46
 	 */
 	var MoveControls = { };
@@ -302,6 +302,32 @@ function(
 		}), MoveControls.MOVED_ELEMENTS_ALIAS, mPropertyBag);
 	};
 
+	/**
+	 * Retrieves the condenser-specific information.
+	 *
+	 * @param {sap.ui.fl.Change} oChange - Change object with instructions to be applied on the control map
+	 * @returns {object} - Condenser-specific information
+	 * @public
+	 */
+	MoveControls.getCondenserInfo = function(oChange) {
+		var oChangeContent = oChange.getContent();
+		var oRevertData = oChange.getRevertData()[0];
+		return {
+			affectedControl: oChangeContent.movedElements[0].selector,
+			classification: sap.ui.fl.condenser.Classification.Move,
+			sourceContainer: oRevertData.sourceParent,
+			targetContainer: oChangeContent.target.selector,
+			sourceIndex: oRevertData.index,
+			sourceAggregation: oRevertData.aggregation,
+			targetAggregation: oChangeContent.target.selector.aggregation,
+			setTargetIndex: function(oChange, iNewTargetIndex) {
+				oChange.getContent().movedElements[0].targetIndex = iNewTargetIndex;
+			},
+			getTargetIndex: function(oChange) {
+				return oChange.getContent().movedElements[0].targetIndex;
+			}
+		};
+	};
 	return MoveControls;
 },
 /* bExport= */true);

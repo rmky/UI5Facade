@@ -1,6 +1,6 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -90,6 +90,9 @@ sap.ui.define([
 	// shortcut for sap.m.OverflowToolbarPriority
 	var OverflowToolbarPriority = library.OverflowToolbarPriority;
 
+	// shortcut for sap.m.P13nConditionOperation
+	var P13nConditionOperation = library.P13nConditionOperation;
+
 	// lazy dependency to sap.ui.layout.Grid
 	var Grid;
 	// lazy dependency to sap.ui.layout.GridData
@@ -106,7 +109,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] initial settings for the new control
 	 * @class The ConditionPanel Control will be used to implement the Sorting, Filtering and Grouping panel of the new Personalization dialog.
 	 * @extends sap.ui.core.Control
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @constructor
 	 * @public
 	 * @since 1.26.0
@@ -253,30 +256,22 @@ sap.ui.define([
 				dataChange: {}
 			}
 		},
-		renderer: function(oRm, oControl) {
-			// start ConditionPanel
-			oRm.write("<section");
-			oRm.writeControlData(oControl);
-			oRm.addClass("sapMConditionPanel");
-			oRm.writeClasses();
-			oRm.writeStyles();
-			oRm.write(">");
-
-			// render content
-			oRm.write("<div");
-			oRm.addClass("sapMConditionPanelContent");
-			oRm.addClass("sapMConditionPanelBG");
-
-			oRm.writeClasses();
-			oRm.write(">");
-			var aChildren = oControl.getAggregation("content");
-			var iLength = aChildren.length;
-			for (var i = 0; i < iLength; i++) {
-				oRm.renderControl(aChildren[i]);
+		renderer:{
+			apiVersion: 2,
+			render: function(oRm, oControl){
+				oRm.openStart("section", oControl);
+				oRm.class("sapMConditionPanel");
+				oRm.openEnd();
+				oRm.openStart("div");
+				oRm.class("sapMConditionPanelContent");
+				oRm.class("sapMConditionPanelBG");
+				oRm.openEnd();
+				oControl.getAggregation("content").forEach(function(oChildren){
+					oRm.renderControl(oChildren);
+				});
+				oRm.close("div");
+				oRm.close("section");
 			}
-			oRm.write("</div>");
-
-			oRm.write("</section>");
 		}
 	});
 
@@ -1803,6 +1798,10 @@ sap.ui.define([
 
 				var oConditionGrid = oEvent.srcControl.getParent();
 				var aSeparatedText = sOriginalText.split(/\r\n|\r|\n/g);
+				if (aSeparatedText && aSeparatedText[aSeparatedText.length - 1].trim() === "" ) {
+					//ignore the last empty array item
+					aSeparatedText.pop();
+				}
 
 				var oOperation = oConditionGrid.operation;
 				var op = oOperation.getSelectedKey();
@@ -1841,6 +1840,7 @@ sap.ui.define([
 								}
 
 								var oCondition = {
+									"index": that._iConditions,
 									"key": that._createConditionKey(),
 									"exclude": that.getExclude(),
 									"operation": oOperation.getSelectedKey(),
@@ -2408,9 +2408,9 @@ sap.ui.define([
 			if (oControl.getDateValue && !(oControl.isA("sap.m.TimePicker")) && oType.getName() !== "sap.ui.comp.odata.type.StringDate") {
 				oValue = oControl.getDateValue();
 				if (oType && oValue) {
-					if (oEvent && oEvent.getParameter("valid")){
+					if ((oEvent && oEvent.getParameter("valid")) || oControl.isValidValue()) {
 						sValue = oType.formatValue(oValue, "string");
-					}else {
+					} else {
 						sValue = "";
 					}
 				}
@@ -2854,42 +2854,6 @@ sap.ui.define([
 		return sConditionText;
 	};
 
-	/**
-	 * @enum {string}
-	 * @public
-	 * @experimental since version 1.26 !!! THIS TYPE IS ONLY FOR INTERNAL USE !!!
-	 */
-	// TODO: move to library.js
-	var P13nConditionOperation = sap.m.P13nConditionOperation = {
-		// filter operations
-		BT: "BT",
-		EQ: "EQ",
-		Contains: "Contains",
-		StartsWith: "StartsWith",
-		EndsWith: "EndsWith",
-		LT: "LT",
-		LE: "LE",
-		GT: "GT",
-		GE: "GE",
-		Initial: "Initial",
-		Empty: "Empty",
-		NotEmpty: "NotEmpty",
-
-		// sort operations
-		Ascending: "Ascending",
-		Descending: "Descending",
-
-		// group operations
-		GroupAscending: "GroupAscending",
-		GroupDescending: "GroupDescending",
-
-		// calculation operations
-		Total: "Total",
-		Average: "Average",
-		Minimum: "Minimum",
-		Maximum: "Maximum"
-	};
-
 	P13nConditionPanel._oConditionMap = {
 		"EQ": "=$0",
 		"GT": ">$0",
@@ -2945,14 +2909,14 @@ sap.ui.define([
 			case P13nConditionOperation.Contains:
 			case P13nConditionOperation.StartsWith:
 			case P13nConditionOperation.EndsWith:
-				if (sValue1 !== "" && sValue1 !== undefined) {
+				if (sValue1 !== "" && sValue1 !== undefined && sValue1 !== null) {
 					sConditionText = P13nConditionPanel._templateReplace(P13nConditionPanel._oConditionMap[sOperation], [sValue1]);
 				}
 				break;
 
 			case P13nConditionOperation.BT:
-				if (sValue1 !== "" && sValue1 !== undefined) {
-					if (sValue2 !== "" && sValue2 !== undefined) {
+				if (sValue1 !== "" && sValue1 !== undefined && sValue1 !== null) {
+					if (sValue2 !== "" && sValue2 !== undefined && sValue2 !== null) {
 						sConditionText = P13nConditionPanel._templateReplace(P13nConditionPanel._oConditionMap[sOperation], [sValue1, sValue2]);
 					}
 				}

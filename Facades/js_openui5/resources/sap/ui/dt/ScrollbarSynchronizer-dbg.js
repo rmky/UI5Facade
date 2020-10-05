@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -24,7 +24,7 @@ function(
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @private
@@ -48,7 +48,8 @@ function(
 				}
 			},
 			events: {
-				synced: {}
+				synced: {},
+				destroyed: {}
 			}
 		},
 		_bSyncing: false,
@@ -150,21 +151,28 @@ function(
 			this.setScrollTop(oSourceDomNode.scrollTop);
 			this.setScrollLeft(oSourceDomNode.scrollLeft);
 
-			if (!this._bSyncing) {
-				this._bSyncing = true;
-				this.animationFrame = window.requestAnimationFrame(function () {
-					this.getTargets()
-						.filter(function (oDomNode) {
-							return oSourceDomNode !== oDomNode;
-						})
-						.forEach(function (oDomNode) {
-							DOMUtil.syncScroll(oSourceDomNode, oDomNode);
-						});
-					this.fireSynced();
-					this._bSyncing = false;
-				}.bind(this));
+			if (this._bSyncing) {
+				this._abortSync();
 			}
+
+			this._bSyncing = true;
+			this.animationFrame = window.requestAnimationFrame(function () {
+				this.getTargets()
+					.filter(function (oDomNode) {
+						return oSourceDomNode !== oDomNode;
+					})
+					.forEach(function (oDomNode) {
+						DOMUtil.syncScroll(oSourceDomNode, oDomNode);
+					});
+				this._bSyncing = false;
+				this.fireSynced();
+			}.bind(this));
 		}
+	};
+
+	ScrollbarSynchronizer.prototype._abortSync = function () {
+		window.cancelAnimationFrame(this.animationFrame);
+		this._bSyncing = false;
 	};
 
 	/**
@@ -174,12 +182,21 @@ function(
 		this.getTargets().forEach(function (oDomNode) {
 			this.removeTarget(oDomNode);
 		}, this);
+		this._abortSync();
+		this.fireDestroyed();
 
 		ManagedObject.prototype.destroy.apply(this, arguments);
 	};
 
 	ScrollbarSynchronizer.prototype.isSyncing = function () {
 		return this._bSyncing;
+	};
+
+	ScrollbarSynchronizer.prototype.refreshListeners = function () {
+		this.getTargets().forEach(function (oDomNode) {
+			this._detachScrollEvent(oDomNode);
+			this._attachScrollEvent(oDomNode);
+		}, this);
 	};
 
 	return ScrollbarSynchronizer;

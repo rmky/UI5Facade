@@ -1,19 +1,19 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.P13nFilterPanel.
 sap.ui.define([
-	'./P13nConditionPanel', './P13nPanel', './library', 'sap/m/Panel', './P13nFilterItem'
-], function(P13nConditionPanel, P13nPanel, library, Panel, P13nFilterItem) {
+	'./P13nConditionPanel', './P13nPanel', './library', 'sap/m/Panel', './P13nFilterItem', './P13nOperationsHelper'
+], function(P13nConditionPanel, P13nPanel, library, Panel, P13nFilterItem, P13nOperationsHelper) {
 	"use strict";
 
 	// shortcut for sap.m.P13nPanelType
 	var P13nPanelType = library.P13nPanelType;
 
-	// shortcut for sap.m.P13nConditionOperation TODO: use enum in library.js or official API
+	// shortcut for sap.m.P13nConditionOperation
 	var P13nConditionOperation = library.P13nConditionOperation;
 
 	/**
@@ -23,7 +23,7 @@ sap.ui.define([
 	 * @param {object} [mSettings] initial settings for the new control
 	 * @class The P13nFilterPanel control is used to define filter-specific settings for table personalization.
 	 * @extends sap.m.P13nPanel
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @constructor
 	 * @public
 	 * @since 1.26.0
@@ -103,6 +103,14 @@ sap.ui.define([
 					multiple: true,
 					singularName: "filterItem",
 					bindable: "bindable"
+				},
+
+				/**
+				 * Defines an optional message strip to be displayed in the content area
+				 */
+				messageStrip: {
+					type: "sap.m.MessageStrip",
+					multiple: false
 				}
 			},
 			events: {
@@ -150,32 +158,25 @@ sap.ui.define([
 				}
 			}
 		},
-		renderer: function(oRm, oControl) {
-			// start ConditionPanel
-			oRm.write("<section");
-			oRm.writeControlData(oControl);
-			oRm.addClass("sapMFilterPanel");
-			// oRm.addStyle("width", oControl.getWidth());
-			// oRm.addStyle("height", oControl.getHeight());
-			oRm.writeClasses();
-			oRm.writeStyles();
-			oRm.write(">");
+		renderer: {
+			apiVersion: 2,
+			render: function(oRm, oControl){
+				oRm.openStart("section", oControl);
+				oRm.class("sapMFilterPanel");
+				oRm.openEnd();
 
-			// render content
-			oRm.write("<div");
-			oRm.addClass("sapMFilterPanelContent");
-			oRm.addClass("sapMFilterPanelBG");
+				oRm.openStart("div");
+				oRm.class("sapMFilterPanelContent");
+				oRm.class("sapMFilterPanelBG");
+				oRm.openEnd();
 
-			oRm.writeClasses();
-			oRm.write(">");
-			var aChildren = oControl.getAggregation("content");
-			var iLength = aChildren.length;
-			for (var i = 0; i < iLength; i++) {
-				oRm.renderControl(aChildren[i]);
+				oControl.getAggregation("content").forEach(function(oChildren){
+					oRm.renderControl(oChildren);
+				});
+
+				oRm.close("div");
+				oRm.close("section");
 			}
-			oRm.write("</div>");
-
-			oRm.write("</section>");
 		}
 	});
 
@@ -426,56 +427,7 @@ sap.ui.define([
 		this._oRb = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 
 		this._aIncludeOperations = {};
-
-		if (!this._aIncludeOperations["default"]) {
-			this.setIncludeOperations([
-				P13nConditionOperation.EQ, P13nConditionOperation.BT, P13nConditionOperation.LT, P13nConditionOperation.LE, P13nConditionOperation.GT, P13nConditionOperation.GE
-			]);
-		}
-
-		if (!this._aIncludeOperations["string"]) {
-			this.setIncludeOperations([
-				P13nConditionOperation.Contains, P13nConditionOperation.EQ, P13nConditionOperation.BT, P13nConditionOperation.StartsWith, P13nConditionOperation.EndsWith, P13nConditionOperation.LT, P13nConditionOperation.LE, P13nConditionOperation.GT, P13nConditionOperation.GE
-			], "string");
-		}
-		if (!this._aIncludeOperations["date"]) {
-			this.setIncludeOperations([
-				P13nConditionOperation.EQ, P13nConditionOperation.BT, P13nConditionOperation.LT, P13nConditionOperation.LE, P13nConditionOperation.GT, P13nConditionOperation.GE
-			], "date");
-		}
-		if (!this._aIncludeOperations["time"]) {
-			this.setIncludeOperations([
-				P13nConditionOperation.EQ, P13nConditionOperation.BT, P13nConditionOperation.LT, P13nConditionOperation.LE, P13nConditionOperation.GT, P13nConditionOperation.GE
-			], "time");
-		}
-		if (!this._aIncludeOperations["datetime"]) {
-			this.setIncludeOperations([
-				P13nConditionOperation.EQ, P13nConditionOperation.BT, P13nConditionOperation.LT, P13nConditionOperation.LE, P13nConditionOperation.GT, P13nConditionOperation.GE
-			], "datetime");
-		}
-		if (!this._aIncludeOperations["numeric"]) {
-			this.setIncludeOperations([
-				P13nConditionOperation.EQ, P13nConditionOperation.BT, P13nConditionOperation.LT, P13nConditionOperation.LE, P13nConditionOperation.GT, P13nConditionOperation.GE
-			], "numeric");
-		}
-		if (!this._aIncludeOperations["numc"]) {
-			this.setIncludeOperations([
-				P13nConditionOperation.Contains, P13nConditionOperation.EQ, P13nConditionOperation.BT, P13nConditionOperation.EndsWith, P13nConditionOperation.LT, P13nConditionOperation.LE, P13nConditionOperation.GT, P13nConditionOperation.GE
-			], "numc");
-		}
-		if (!this._aIncludeOperations["boolean"]) {
-			this.setIncludeOperations([
-				P13nConditionOperation.EQ
-			], "boolean");
-		}
-
 		this._aExcludeOperations = {};
-
-		if (!this._aExcludeOperations["default"]) {
-			this.setExcludeOperations([
-				P13nConditionOperation.EQ
-			]);
-		}
 
 		this._oIncludePanel = new Panel({
 			expanded: true,
@@ -491,10 +443,6 @@ sap.ui.define([
 			dataChange: this._handleDataChange()
 		});
 		this._oIncludeFilterPanel._sAddRemoveIconTooltipKey = "FILTER";
-
-		for (var sType in this._aIncludeOperations) {
-			this._oIncludeFilterPanel.setOperations(this._aIncludeOperations[sType], sType);
-		}
 
 		this._oIncludePanel.addContent(this._oIncludeFilterPanel);
 
@@ -516,8 +464,18 @@ sap.ui.define([
 		});
 		this._oExcludeFilterPanel._sAddRemoveIconTooltipKey = "FILTER";
 
-		for (var sType in this._aExcludeOperations) {
+		if (!this._oOperationsHelper) {
+			this._oOperationsHelper = new P13nOperationsHelper();
+		}
+		this._updateOperations();
+
+		var sType;
+		for (sType in this._aExcludeOperations) {
 			this._oExcludeFilterPanel.setOperations(this._aExcludeOperations[sType], sType);
+		}
+
+		for (sType in this._aIncludeOperations) {
+			this._oIncludeFilterPanel.setOperations(this._aIncludeOperations[sType], sType);
 		}
 
 		this._oExcludePanel.addContent(this._oExcludeFilterPanel);
@@ -536,6 +494,7 @@ sap.ui.define([
 			return null;
 		};
 
+		this._oOperationsHelper = destroyHelper(this._oOperationsHelper);
 		this._aKeyFields = destroyHelper(this._aKeyFields);
 		this._aIncludeOperations = destroyHelper(this._aIncludeOperations);
 		this._aExcludeOperations = destroyHelper(this._aExcludeOperations);
@@ -551,6 +510,12 @@ sap.ui.define([
 
 		if (this._bUpdateRequired) {
 			this._bUpdateRequired = false;
+
+			var oMessageStrip = this.getMessageStrip();
+			if (oMessageStrip) {
+				oMessageStrip.addStyleClass("sapUiResponsiveMargin");
+				this.insertAggregation("content", oMessageStrip, 0);
+			}
 
 			aKeyFields = [];
 			sModelName = (this.getBindingInfo("items") || {}).model;
@@ -632,6 +597,34 @@ sap.ui.define([
 			});
 			this.setConditions(aConditions);
 		}
+	};
+
+	/**
+	 * Update the operations list
+	 * @private
+	 */
+	P13nFilterPanel.prototype._updateOperations = function () {
+		// Include
+		this._oOperationsHelper.getIncludeTypes().forEach(function (sType) {
+			this.setIncludeOperations(this._oOperationsHelper.getIncludeOperationsByType(sType), sType);
+		}.bind(this));
+
+		// Exclude
+		this._oOperationsHelper.getExcludeTypes().forEach(function (sType) {
+			this.setExcludeOperations(this._oOperationsHelper.getExcludeOperationsByType(sType), sType);
+		}.bind(this));
+	};
+
+	/**
+	 * Enables extended exclude operations
+	 * @ui5-restricted sap.ui.comp.ValueHelpDialog, sap.ui.comp.personalization.FilterController
+	 * @private
+	 */
+	P13nFilterPanel.prototype._enableEnhancedExcludeOperations = function () {
+		if (this._oOperationsHelper) {
+			this._oOperationsHelper.setUseExcludeOperationsExtended();
+		}
+		this._updateOperations();
 	};
 
 	/**
@@ -758,6 +751,24 @@ sap.ui.define([
 		if (sReason === "change" && !this._bIgnoreBindCalls) {
 			this._bUpdateRequired = true;
 			this.invalidate();
+		}
+	};
+
+	P13nFilterPanel.prototype.setMessageStrip = function(oMessageStrip) {
+		this.setAggregation("messageStrip", oMessageStrip, true);
+
+		if (!this._bIgnoreBindCalls) {
+			this._bUpdateRequired = true;
+		}
+
+		return this;
+	};
+
+	P13nFilterPanel.prototype.updateMessageStrip = function(sReason) {
+		this.updateAggregation("messageStrip");
+
+		if (sReason === "change" && !this._bIgnoreBindCalls) {
+			this._bUpdateRequired = true;
 		}
 	};
 

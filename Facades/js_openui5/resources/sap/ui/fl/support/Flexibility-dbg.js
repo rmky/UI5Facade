@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -26,7 +26,7 @@ sap.ui.define([
 		 *
 		 * @abstract
 		 * @extends sap.ui.core.support.Plugin
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 * @private
 		 * @ui5-restricted
 		 * @constructor
@@ -51,7 +51,6 @@ sap.ui.define([
 		});
 
 		Flexibility.prototype.sDelimiter = ";";
-		Flexibility.prototype.sNoDebug = "noDebug";
 
 		/**
 		 * Creation of the support plugin.
@@ -61,14 +60,6 @@ sap.ui.define([
 		 */
 		Flexibility.prototype.init = function (oSupportStub) {
 			Plugin.prototype.init.apply(this, arguments);
-
-			var sNoDebugInfoText = "<div class='sapUiSmallMargin'>sapui5 has to be in <b>debug mode</b> or at least the " +
-				"library \'<b> sap.ui.fl</b>\' has to be debugged.</div>" +
-				"<div class='sapUiSmallMargin'>To set the debug sources use the URL parameter '<b>sap-ui-debug</b> " +
-				"with general debug setting <b>sap-ui-debug=true</b> or to debug single libraries by naming the libraries " +
-				"<b>sap-ui-debug=lib1, lib2, ...</b> (including '<b>sap/ui/fl</b>' like '<b>sap-ui-debug=sap/ui/fl</b>').</div>" +
-				"<div class='sapUiSmallMargin'>Another option is to enable the debugging in this 'Diagnostics' window by " +
-				"toggle the <b>Debug Sources</b> under the <b>Technical Info</b> panel.</div>";
 
 			var sPanelInfoText = "<div class='sapUiSmallMargin'>The applications listed below have been handled by the sap.ui.fl library in this session.</div>" +
 				"<div class='sapUiSmallMarginBegin'>You can download a file containing the data that has been applied to an application as well as " +
@@ -81,8 +72,6 @@ sap.ui.define([
 				this.oAppModel = new JSONModel();
 				this.oToolSettings = new JSONModel({
 					hideDependingChanges: false,
-					flInDebug: true,
-					noDebugInfoText: sNoDebugInfoText,
 					panelInfoText: sPanelInfoText
 				});
 				this.oChangeDetails = new JSONModel();
@@ -108,7 +97,7 @@ sap.ui.define([
 
 			var _doPlainRendering = function () {
 				var rm = sap.ui.getCore().createRenderManager();
-				rm.write("<div id='" + that.getId() + "-FlexCacheArea' class='sapUiSizeCompact' />");
+				rm.write("<div id='" + that.getId() + "-FlexCacheArea' class='sapUiSizeCompact'></div>");
 				rm.flush(that.$().get(0));
 				rm.destroy();
 			};
@@ -146,28 +135,22 @@ sap.ui.define([
 		 * Collect list of apps
 		 */
 		Flexibility.prototype.onsapUiSupportFlexibilityGetApps = function () {
-			// only provide data in case the debug collected these
-			if (Utils.isDebugEnabled()) {
-				var that = this;
-				var aApps = [];
+			var aApps = [];
 
-				if (ChangePersistenceFactory._instanceCache) {
-					jQuery.each(ChangePersistenceFactory._instanceCache, function (sReference, mInstancesOfVersions) {
-						jQuery.each(mInstancesOfVersions, function (sVersion, oChangePersistanceInstance) {
-							aApps.push({
-								key : sReference + that.sDelimiter + sVersion,
-								text : sReference,
-								additionalText : sVersion,
-								data: Extractor.extractData(oChangePersistanceInstance)
-							});
+			if (ChangePersistenceFactory._instanceCache) {
+				jQuery.each(ChangePersistenceFactory._instanceCache, function (sReference, mInstancesOfVersions) {
+					jQuery.each(mInstancesOfVersions, function (sVersion, oChangePersistanceInstance) {
+						aApps.push({
+							key : sReference + this.sDelimiter + sVersion,
+							text : sReference,
+							additionalText : sVersion,
+							data: Extractor.extractData(oChangePersistanceInstance)
 						});
-					});
-				}
-
-				this._oStub.sendEvent(this.getId() + "SetApps", aApps);
-			} else {
-				this._oStub.sendEvent(this.getId() + "SetApps", this.sNoDebug);
+					}.bind(this));
+				}.bind(this));
 			}
+
+			this._oStub.sendEvent(this.getId() + "SetApps", aApps);
 		};
 
 		/**
@@ -191,13 +174,7 @@ sap.ui.define([
 		 */
 		Flexibility.prototype.onsapUiSupportFlexibilitySetApps = function (oEvent) {
 			var mApps = oEvent.getParameters();
-
-			var bFlInDebug = mApps !== this.sNoDebug;
-			this.oToolSettings.setProperty("/flInDebug", bFlInDebug);
-
-			if (bFlInDebug) {
-				this.oAppModel.setData(mApps);
-			}
+			this.oAppModel.setData(mApps);
 		};
 
 		/**

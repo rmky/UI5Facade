@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -70,12 +70,20 @@ sap.ui.define([
 	var CompositeBinding = PropertyBinding.extend("sap.ui.model.CompositeBinding", /** @lends sap.ui.model.CompositeBinding.prototype */ {
 
 		constructor : function (aBindings, bRawValues, bInternalValues) {
+			var oModel;
+
 			PropertyBinding.apply(this, [null,""]);
 			this.aBindings = aBindings;
 			this.aValues = null;
 			this.bRawValues = bRawValues;
 			this.bPreventUpdate = false;
 			this.bInternalValues = bInternalValues;
+			this.bMultipleModels = this.aBindings.some(function (oBinding) {
+				var oCurrentModel = oBinding.getModel();
+
+				oModel = oModel || oCurrentModel;
+				return oModel && oCurrentModel && oCurrentModel !== oModel;
+			});
 		},
 		metadata : {
 
@@ -124,6 +132,8 @@ sap.ui.define([
 	 * @public
 	 */
 	CompositeBinding.prototype.setType = function(oType, sInternalType) {
+		var that = this;
+
 		if (oType && !(oType instanceof CompositeType)) {
 			throw new Error("Only CompositeType can be used as type for composite bindings!");
 		}
@@ -131,6 +141,15 @@ sap.ui.define([
 
 		// If a composite type is used, the type decides whether to use raw values or not
 		if (this.oType) {
+			oType.getPartsIgnoringMessages().forEach(function (i) {
+				var oBinding = that.aBindings[i];
+
+				if (oBinding && oBinding.supportsIgnoreMessages()
+						&& oBinding.getIgnoreMessages() === undefined) {
+					oBinding.setIgnoreMessages(true);
+				}
+			});
+
 			this.bRawValues = this.oType.getUseRawValues();
 			this.bInternalValues = this.oType.getUseInternalValues();
 
@@ -244,7 +263,7 @@ sap.ui.define([
 	 * @public
 	 */
 	CompositeBinding.prototype.setExternalValue = function(oValue) {
-		var oInternalType, oDataState, pValues,
+		var oInternalType, oDataState, vResult, pValues,
 			that = this;
 
 		if (this.sInternalType === "raw") {
@@ -291,7 +310,7 @@ sap.ui.define([
 			pValues = SyncPromise.resolve([oValue]);
 		}
 
-		return pValues.then(function(aValues) {
+		vResult = pValues.then(function(aValues) {
 			that.aBindings.forEach(function(oBinding, iIndex) {
 				var sBindingMode = oBinding.getBindingMode();
 				oValue = aValues[iIndex];
@@ -308,7 +327,10 @@ sap.ui.define([
 			});
 			oDataState.setValue(that.getValue());
 			oDataState.setInvalidValue(undefined);
-		}).unwrap();
+		});
+		vResult.catch(function () {/*avoid "Uncaught (in promise)"*/});
+
+		return vResult.unwrap();
 	};
 
 	/**
@@ -765,6 +787,17 @@ sap.ui.define([
 		if (this.bPreventUpdate || (this.bSuspended && !bForceUpdate)) {
 			return;
 		}
+		// do not fire change event in case the destruction of the model for one part leads to the
+		// update of a model for another part of this binding
+		if (this.bMultipleModels
+			&& this.aBindings.some(function (oBinding) {
+				var oModel = oBinding.getModel();
+
+				return oModel && oModel.bDestroyed;
+			})) {
+			return;
+		}
+
 		var oDataState = this.getDataState();
 		var aOriginalValues = this.getOriginalValue();
 		if (bForceUpdate || !deepEqual(aOriginalValues, this.aOriginalValues)) {

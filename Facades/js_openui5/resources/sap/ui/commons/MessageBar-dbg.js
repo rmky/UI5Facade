@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -44,7 +44,7 @@ sap.ui.define([
 	 * @class
 	 * Creates an instance of a MessageBar Control, for displaying messages.
 	 * @extends sap.ui.core.Control
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -197,13 +197,13 @@ sap.ui.define([
 
 		// Activating our move handler:
 		var jDocument = jQuery(window.document);
-		jDocument.bind("mousemove", jQuery.proxy(this.handleMove, this));
+		jDocument.on("mousemove", jQuery.proxy(this.handleMove, this));
 		if (window.parent) {
-			jQuery(window.parent.document).bind("mousemove", jQuery.proxy(this.handleMove, this), true);
+			jQuery(window.parent.document).on("mousemove", jQuery.proxy(this.handleMove, this), true);
 		}
 
 		// Fix for IE blue text selection while dragging:
-		jDocument.bind("selectstart",jQuery.proxy(this.ondragstart,this), true);
+		jDocument.on("selectstart",jQuery.proxy(this.ondragstart,this), true);
 	};
 
 	/**
@@ -274,11 +274,11 @@ sap.ui.define([
 
 		// Removing our move handler:
 		var jDocument = jQuery(window.document);
-		jDocument.unbind("mousemove", jQuery.proxy(this.handleMove, this));
+		jDocument.off("mousemove", jQuery.proxy(this.handleMove, this));
 		if (window.parent) {
-			jQuery(window.parent.document).unbind("mousemove", jQuery.proxy(this.handleMove, this));
+			jQuery(window.parent.document).off("mousemove", jQuery.proxy(this.handleMove, this));
 		}
-		jDocument.unbind("selectstart",jQuery.proxy(this.ondragstart,this));
+		jDocument.off("selectstart",jQuery.proxy(this.ondragstart,this));
 
 		this.sDragMode = null;
 

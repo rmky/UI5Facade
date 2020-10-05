@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -19,13 +19,41 @@ sap.ui.define([
 	 * @since 1.67.0
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @alias sap.m.HeaderContainerItemNavigator
 	 * @private
 	 */
 	var HeaderContainerItemNavigator = ItemNavigation.extend("sap.m.HeaderContainerItemNavigator");
+
+	/**
+	 * Sets the focus to the item with the given index.
+	 *
+	 * @param {int} iIndex Index of the item to focus
+	 * @param {jQuery.Event} oEvent Event that leads to focus change
+	 * @private
+	 */
+	HeaderContainerItemNavigator.prototype.focusItem = function (iIndex, oEvent) {
+		if (oEvent.type === "mousedown") {
+			// ItemNavigation on mousedown sets dom focus on the one of
+			// the items defined in itemDomRefs array (In this case it is
+			// the container). That triggers onsapfocusleave and interrupts
+			// firing press event on the controls inside of the container
+			// (e.g. delete icon on sap.m.Token in sap.m.MultiComboBox).
+			// In Header container we want the dom focus to stay on the
+			// control inside of the header container on mousedown event.
+			// In order to prevent ItemNavigation.focusItem from setting
+			// the focus on the container we temporarily replace
+			// the container's focus function with empty one.
+			var fnFocus = this.aItemDomRefs[iIndex].focus;
+			this.aItemDomRefs[iIndex].focus = function() {};
+			this._callParent("focusItem", arguments);
+			this.aItemDomRefs[iIndex].focus = fnFocus;
+			return;
+		}
+		this._callParent("focusItem", arguments);
+	};
 
 	/**
 	 * Calls a parent function if it's defined.

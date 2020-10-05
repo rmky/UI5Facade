@@ -319,11 +319,11 @@ Licensor: Various
 Website: http://code.google.com/p/google-code-prettify/
 License: Apache License 2.0
 
-Component: Handlebars 4.4.3
+Component: Handlebars 4.7.6
 Licensor: Yehuda Katz
 Website: http://handlebarsjs.com/
 License: MIT License
-<year> = 2011-2017
+<year> = 2011-2019
 <copyright holders> = Yehuda Katz
 
 Component: Hasher 1.2.0
@@ -340,19 +340,19 @@ License: MIT License
 <year> = 2008-2013
 <copyright holders> = Matteo Spinelli
 
-Component: jQuery 2.2.3
+Component: jQuery 3.5.1
 Licensor: jQuery Foundation and other contributors
 Website: http://jquery.com/
 License: MIT License
-<year> = 2016
+<year> = 2020
 <copyright holders> = jQuery Foundation and other contributors
 
-Component: jQuery 3.1.1
-Licensor: jQuery Foundation and other contributors
-Website: http://jquery.com/
+Component: jQuery Migrate 3.3.1
+Licensor: OpenJS Foundation and other contributors
+Website: https://github.com/jquery/jquery-migrate
 License: MIT License
-<year> = 2016
-<copyright holders> = jQuery Foundation and other contributors
+<year> = 2020
+<copyright holders> = OpenJS Foundation and other contributors, https://openjsf.org/
 
 Component: jQuery-UI 1.10.4
 Licensor: Paul Bakaus
@@ -609,11 +609,11 @@ License: MIT License
 <year> = 2018
 <copyright holders> = Michael Mclaughlin
 
-Component: lodash 4.17.10
+Component: lodash 4.17.15
 Licensor: JS Foundation and other contributors
 Website: https://github.com/lodash/lodash
 License: MIT License
-<year> = 2018
+<year> = 2019
 <copyright holders> = JS Foundation and other contributors
 
 Component: mnater/Hyphenopoly 2.4.0
@@ -650,6 +650,43 @@ License: BSD 3-clause "New" or "Revised" License
 <ORGANIZATION>: Polymer Project
 <YEAR> = 2015
 
+Component: Adaptive Cards
+Licensor: Microsoft
+Website: https://github.com/microsoft/AdaptiveCards
+License: MIT License
+
+Component: Markdown-it
+Licensor: Vitaly Puzrin, Alex Kocharin
+Website: https://github.com/markdown-it/markdown-it
+License: MIT License
+<year> = 2014
+<copyright holders> = Vitaly Puzrin, Alex Kocharin
+
+Component: UI5 Web Components
+Licensor: SAP
+Website: https://sap.github.io/ui5-webcomponents/
+License: Apache License 2.0
+
+Component: ajv 6.10.2
+Licensor: Evgeny Poberezkin
+Website: https://ajv.js.org/
+License: MIT License
+<year> = 2015-2017
+<copyright holders> = Evgeny Poberezkin
+
+Component: p-cancelable 2.0.0
+Licensor: Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)
+Website: https://github.com/sindresorhus/p-cancelable
+License: MIT License
+<year> = unspecified
+<copyright holders> = Sindre Sorhus
+
+Component: @babel/helpers 7.10.4
+Licensor: Sebastian McKenzie and other contributors
+Website: https://babeljs.io/
+License: MIT License
+<year> = 2014-...
+<copyright holders> = Sebastian McKenzie and other contributors
 --------------------------------------------------------------------------------------------------------------------------
 
 CC0 1.0 Universal (CCO 1.0) Public Domain Dedication

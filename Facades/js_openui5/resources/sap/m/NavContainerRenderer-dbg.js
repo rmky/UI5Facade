@@ -1,11 +1,11 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define([],
-	function() {
+sap.ui.define(["sap/ui/core/InvisibleRenderer"],
+	function(InvisibleRenderer) {
 	"use strict";
 
 
@@ -28,9 +28,10 @@ sap.ui.define([],
 
 		oControl._bRenderingInProgress = true;
 
-		// return immediately if control is invisible
+		// render invisible placeholder
 		if (!oControl.getVisible()) {
-			return;
+			InvisibleRenderer.render(oRm, oControl, "div");
+			return false;
 		}
 
 		var sHeight = oControl.getHeight(),
@@ -62,10 +63,14 @@ sap.ui.define([],
 			this.renderBeforeContent(oRm, oControl); // may be used by inheriting renderers
 		}
 
-		if (oContent) {
-			oContent.removeStyleClass("sapMNavItemHidden"); // In case the current page was hidden (the previous current page got removed)
-			oRm.renderControl(oContent);
-		}
+		oControl.getPages().forEach(function(oPage) {
+			if (oPage === oContent) {
+				oContent.removeStyleClass("sapMNavItemHidden"); // In case the current page was hidden (the previous current page got removed)
+				oRm.renderControl(oContent);
+			} else {
+				oRm.cleanupControlWithoutRendering(oPage);
+			}
+		});
 
 		oRm.close("div");
 

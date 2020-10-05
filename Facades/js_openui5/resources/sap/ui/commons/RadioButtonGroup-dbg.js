@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -35,7 +35,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IFormContent
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -68,7 +68,7 @@ sap.ui.define([
 			editable : {type : "boolean", group : "Behavior", defaultValue : true},
 
 			/**
-			 * Тhe value state to be displayed for the RadioButton. Possible values are: sap.ui.core.ValueState.Error,
+			 * The value state to be displayed for the RadioButton. Possible values are: sap.ui.core.ValueState.Error,
 			 * sap.ui.core.ValueState.Warning, sap.ui.core.ValueState.Success and sap.ui.core.ValueState.None.
 			 * Note: Setting this attribute to sap.ui.core.ValueState.Error when the accessibility feature is enabled,
 			 * sets the value of the invalid property for the whole RadioButtonGroup to true.

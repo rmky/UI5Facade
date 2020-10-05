@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -73,6 +73,12 @@ sap.ui.define([],
 			reveal : {
 				changeType : "unhideControl"
 			},
+			rename: {
+				changeType: "rename",
+				domRef: function (oControl) {
+					return oControl.$()[0];
+				}
+			},
 			settings: function () {
 				return {
 					"changeLinkTarget": {
@@ -89,4 +95,4 @@ sap.ui.define([],
 			create: "sap/m/designtime/Link.create.fragment.xml"
 		}
 	};
-}, /* bExport= */false);
+});

@@ -1,13 +1,13 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides object sap.ui.core.util.XMLPreprocessor
 sap.ui.define([
-	"sap/ui/thirdparty/jquery",
 	"sap/base/Log",
+	"sap/base/util/deepExtend",
 	"sap/base/util/JSTokenizer",
 	"sap/base/util/ObjectPath",
 	"sap/ui/base/BindingParser",
@@ -18,7 +18,7 @@ sap.ui.define([
 	"sap/ui/model/CompositeBinding",
 	"sap/ui/model/Context",
 	"sap/ui/performance/Measurement"
-], function (jQuery, Log, JSTokenizer, ObjectPath, BindingParser, ManagedObject, SyncPromise,
+], function (Log, deepExtend, JSTokenizer, ObjectPath, BindingParser, ManagedObject, SyncPromise,
 		XMLTemplateProcessor, BindingMode, CompositeBinding, Context, Measurement) {
 	"use strict";
 
@@ -578,8 +578,11 @@ sap.ui.define([
 		 *   binding contexts relevant for template pre-processing
 		 * @param {object} mSettings.models
 		 *   models relevant for template pre-processing
-		 * @returns {Element}
-		 *   <code>oRootElement</code>
+		 * @returns {Element|Promise}
+		 *   <code>oRootElement</code> or a promise which resolves with <code>oRootElement</code> as
+		 *   soon as processing is done, or is rejected with a corresponding error if processing
+		 *   fails; since 1.57.0, a promise is returned if and only if processing cannot complete
+		 *   synchronously
 		 *
 		 * @private
 		 */
@@ -740,7 +743,7 @@ sap.ui.define([
 					 * @since 1.41.0
 					 */
 					getViewInfo : function () {
-						return jQuery.extend(true, {}, oViewInfo);
+						return deepExtend({}, oViewInfo);
 					},
 
 					/**
@@ -1267,7 +1270,8 @@ sap.ui.define([
 			 *   any XML DOM element
 			 * @returns {sap.ui.base.SyncPromise}
 			 *   A sync promise which resolves with <code>undefined</code> as soon as all required
-			 *   modules have been loaded
+			 *   modules have been loaded, or is rejected with a corresponding error if module
+			 *   loading fails.
 			 * @throws {Error}
 			 *   If loading fails in sync mode
 			 */
@@ -1278,15 +1282,21 @@ sap.ui.define([
 					aURNs;
 
 				function asyncRequire() {
-					return new SyncPromise(function (resolve) {
-						// Note: currently there is no way to detect failure
-						sap.ui.require(aURNs, function (/*oModule,...*/) {
-							var aModules = arguments;
+					return new SyncPromise(function (resolve, reject) {
+						var aModules = aURNs.map(sap.ui.require);
 
-							Object.keys(mAlias2URN).forEach(function (sAlias, i) {
-								oScope[sAlias] = aModules[i];
-							});
-							resolve();
+						if (aModules.every(Boolean)) {
+							// if all modules have been loaded already, resolve sync
+							// Note: we do not care about edge cases where a module value is falsy
+							resolve(aModules);
+						} else {
+							sap.ui.require(aURNs, function (/*oModule,...*/) {
+								resolve(arguments); // Note: not exactly an Array, but good enough
+							}, reject);
+						}
+					}).then(function (aModules) {
+						Object.keys(mAlias2URN).forEach(function (sAlias, i) {
+							oScope[sAlias] = aModules[i];
 						});
 					});
 				}
@@ -1571,7 +1581,8 @@ sap.ui.define([
 					error("Missing model '" + sModelName + "' in ", oElement);
 				}
 				oListBinding.enableExtendedChangeDetection();
-				aContexts = oListBinding.getContexts(oBindingInfo.startIndex, oBindingInfo.length);
+				aContexts = oListBinding.getContexts(oBindingInfo.startIndex,
+					oBindingInfo.length || /*no Model#iSizeLimit*/Infinity);
 				if (!oViewInfo.sync && aContexts.dataRequested) {
 					oPromise = new SyncPromise(function (resolve) {
 						oListBinding.attachEventOnce("change", resolve);
@@ -1915,8 +1926,8 @@ sap.ui.define([
 						context: oRootElement,
 						env: {
 							caller:"view",
-							viewinfo: jQuery.extend(true, {}, oViewInfo),
-							settings: jQuery.extend(true, {}, mSettings),
+							viewinfo: deepExtend({}, oViewInfo),
+							settings: deepExtend({}, mSettings),
 							clone: oRootElement.cloneNode(true),
 							type: "template"}
 					});

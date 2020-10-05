@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -154,7 +154,7 @@ sap.ui.define(["./library"],
 		rm.writeAttributeEscaped("title", oControl.getTitle());
 		rm.write(">");
 		rm.writeEscaped(oControl.getTitle());
-		rm.write("</span><br/>");
+		rm.write("</span><br>");
 		rm.write("</div><div class='sapUiUx3TVTitle'>");
 		rm.write("<span role='heading' aria-level='3' class='sapUiUx3TVTitleSecond'");
 		rm.writeAttributeEscaped("title", oControl.getSubtitle());

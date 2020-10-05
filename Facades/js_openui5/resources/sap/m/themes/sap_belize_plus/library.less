@@ -2,7 +2,7 @@
 
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -24,6 +24,18 @@
 .sapContrastPlus.sapMBtn:not(.sapMBtnDisabled) .sapMBtnGhost > .sapMBtnIcon {
 	color: @sapButton_IconColor;
 }
+
+.sapMOverflowToolbarMenu-CTX .sapMBtnInner.sapMBtnIconFirst:not(.sapMBtnBack) {
+	padding-left: 0.75rem;
+	padding-right: 0.75rem;
+}
+
+.sapUiSizeCompact .sapMOverflowToolbarMenu-CTX .sapMBtnInner.sapMBtnIconFirst:not(.sapMBtnBack) {
+	padding-left: 0.4375rem;
+	padding-right: 0.4375rem;
+}
+
+
 /* END "Button.less" */
 
 /* START "CheckBox.less" */
@@ -65,6 +77,9 @@
 /* Belize Plus theme             */
 /* ============================= */
 
+@_sap_m_Dialog_NoStateHeaderShadow: inset 0 -0.0625rem lighten(@sapUiGroupContentBackground, 8);
+
+// This parameter is used in sap.m.Select. TODO: remove it when it is removed from there.
 @_sap_m_Dialog_HeaderShadowColor: lighten(@sapUiGroupContentBackground, 8);
 
 // buttons on phone must stretch
@@ -272,11 +287,6 @@ html.sap-desktop .sapMGenericTag {
 
 @_sap_m_TabStrip_ItemHoverTextColor: lighten(@sapUiGroupTitleTextColor, 10);
 @_sap_m_TabStrip_ItemSelectedTextColor: lighten(@sapUiGroupTitleTextColor, 20);
-
-html.sap-phone .sapMTabStrip .sapMTSOverflowSelect {
-	border: none;
-	background: transparent;
-}
 /* END "TabStrip.less" */
 
 /* START "TileContent.less" */
@@ -319,6 +329,10 @@ html.sap-phone .sapMTabStrip .sapMTSOverflowSelect {
 .sapContrastPlus.sapMTB.sapMTB-Transparent-CTX {
 	background: @sapUiGroupContentBackground;
 }
+
+.sapUiFormContainerToolbar > .sapMTB-Transparent-CTX.sapMTB {
+	padding-right: 0.25rem;
+}
 /* END "Toolbar.less" */
 
 /* START "ViewSettingsDialog.less" */
@@ -347,9 +361,9 @@ html.sap-phone .sapMTabStrip .sapMTSOverflowSelect {
 /* Belize Plus theme                              */
 /* ============================================== */
 
-@_sap_m_WizardProgressNavigator_NavAnchorCircleHoverColor: darken(@sapUiObjectHeaderBackground, 5);
-@_sap_m_WizardProgressNavigator_NavAnchorTitleSelectedTextColor: lighten(@sapUiGroupTitleTextColor, 20);
-@_sap_m_WizardProgressNavigator_NavAnchorTitleHoverTextColor: lighten(@sapUiGroupTitleTextColor, 10);
+@_sap_m_WizardProgressNavigator_NavStepCircleHoverColor: darken(@sapUiObjectHeaderBackground, 5);
+@_sap_m_WizardProgressNavigator_NavStepTitleSelectedTextColor: lighten(@sapUiGroupTitleTextColor, 20);
+@_sap_m_WizardProgressNavigator_NavStepTitleHoverTextColor: lighten(@sapUiGroupTitleTextColor, 10);
 /* END "WizardProgressNavigator.less" */
 
 /* START "RatingIndicator.less" */

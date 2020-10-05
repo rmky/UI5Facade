@@ -1,18 +1,16 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/ui/fl/FakeLrepConnector",
-	"sap/ui/fl/apply/_internal/connectors/SessionStorageConnector",
 	"sap/ui/fl/write/_internal/connectors/SessionStorageConnector"
 ],
 function(
 	FakeLrepConnector,
-	ApplySessionStorageConnector,
-	WriteSessionStorageConnector
+	SessionStorageConnector
 ) {
 	"use strict";
 
@@ -22,7 +20,7 @@ function(
 	 * @class
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @private
 	 * @static
@@ -40,23 +38,23 @@ function(
 		},
 		forTesting: {
 			spyWrite: function (sandbox, assert) {
-				return FakeLrepConnector.forTesting.spyMethod(sandbox, assert, WriteSessionStorageConnector, "write");
+				return FakeLrepConnector.forTesting.spyMethod(sandbox, assert, SessionStorageConnector, "write");
 			},
 			getNumberOfChanges: function (sReference) {
-				return FakeLrepConnector.forTesting.getNumberOfChanges(ApplySessionStorageConnector, sReference);
+				return FakeLrepConnector.forTesting.getNumberOfChanges(SessionStorageConnector, sReference);
 			},
 			clear: function(mPropertyBag) {
-				return FakeLrepConnector.forTesting.clear(WriteSessionStorageConnector, mPropertyBag);
+				return FakeLrepConnector.forTesting.clear(SessionStorageConnector, mPropertyBag);
 			},
 			setStorage: function(oNewStorage) {
-				FakeLrepConnector.forTesting.setStorage(ApplySessionStorageConnector, oNewStorage);
+				FakeLrepConnector.forTesting.setStorage(SessionStorageConnector, oNewStorage);
 			},
 			synchronous: {
 				clearAll: function () {
 					FakeLrepConnector.forTesting.synchronous.clearAll(window.sessionStorage);
 				},
 				getNumberOfChanges: function(sReference) {
-					return FakeLrepConnector.forTesting.synchronous.getNumberOfChanges(ApplySessionStorageConnector.oStorage, sReference);
+					return FakeLrepConnector.forTesting.synchronous.getNumberOfChanges(SessionStorageConnector.oStorage, sReference);
 				}
 			}
 		}

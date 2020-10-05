@@ -1,12 +1,13 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides base class for controllers (part of MVC concept)
 sap.ui.define([
 	'sap/base/util/ObjectPath',
+	'sap/base/util/extend',
 	'sap/ui/base/EventProvider',
 	'sap/ui/base/ManagedObject',
 	'sap/ui/core/mvc/ControllerMetadata',
@@ -16,6 +17,7 @@ sap.ui.define([
 	"sap/ui/thirdparty/jquery"
 ], function(
 	ObjectPath,
+	extend,
 	EventProvider,
 	ManagedObject,
 	ControllerMetadata,
@@ -69,7 +71,7 @@ sap.ui.define([
 				EventProvider.apply(this,arguments);
 
 				if (oToExtend) {
-					jQuery.extend(this, mRegistry[sName]);
+					extend(this, mRegistry[sName]);
 				}
 
 				if (this.extension) {
@@ -182,7 +184,7 @@ sap.ui.define([
 							//apply lifecycle hooks even if they don't exist on controller
 							ControllerExtension.overrideMethod(sOverrideMember, oController, oOverrides, oExtension, oControllerMetadata.getOverrideExecution(sOverrideMember));
 						} else {
-							Log.error("Method '" + sExtensionOverride + "' of extension '" + oOrigExtensionInfo.namespace + " does not exist in controller " + oController.getMetadata().getName() + " and cannot be overridden");
+							Log.error("Method '" + sOverrideMember + "' does not exist in controller " + oController.getMetadata().getName() + " and cannot be overridden");
 						}
 					}
 					//handle non member extension overrides
@@ -282,7 +284,7 @@ sap.ui.define([
 					if (!ControllerClass) {
 						sap.ui.require([sControllerName], function (ControllerClass) {
 							resolve(resolveClass(ControllerClass));
-						});
+						}, reject);
 					} else {
 						resolve(ControllerClass);
 					}
@@ -315,7 +317,7 @@ sap.ui.define([
 								oProvider = new ExtensionProvider();
 								mExtensionProvider[sProviderName] = oProvider;
 								resolve(oProvider);
-							});
+							}, reject);
 						}
 					} else {
 						resolve();
@@ -460,13 +462,20 @@ sap.ui.define([
 						vController = vController.then(extendAsync.bind(null, sControllerName, oController));
 					} else {
 						//load Controller extension
-						if ( !mRegistry[sControllerName] && !sap.ui.require(sControllerName) ) {
+						if (!mRegistry[sControllerName] && !sap.ui.require(sControllerName)) {
 							loadControllerClass(sControllerName);
 						}
 						if ((oCustomControllerDef = mRegistry[sControllerName]) !== undefined) { //variable init, not comparison!
 							mixinControllerDefinition(oController, oCustomControllerDef);
 						} else {
-							Log.error("Attempt to load Extension Controller " + sControllerName + " was not successful - is the Controller correctly defined in its file?");
+							/* eslint-disable no-loop-func */
+							Log.error("Attempt to load Extension Controller " + sControllerName + " was not successful - is the Controller correctly defined in its file?", null, function() {
+								return {
+									type: "ControllerExtension",
+									name: sControllerName
+								};
+							});
+							/* eslint-enable no-loop-func */
 						}
 					}
 				}
@@ -561,6 +570,7 @@ sap.ui.define([
 		 * @deprecated Since 1.56, use {@link sap.ui.core.mvc.Controller.create Controller.create} or
 		 *  {@link sap.ui.core.mvc.Controller.extend Controller.extend} instead.
 		 * @public
+		 * @ui5-global-only
 		 */
 		sap.ui.controller = function (sName, oControllerImpl, bAsync) {
 			if (bAsync) {
@@ -655,7 +665,7 @@ sap.ui.define([
 				Object.keys(oExtensionInterface).forEach(function(sMethod) {
 					//extension member should not be exposed
 					delete mPublicFunctions[oExtensionInfo.location];
-					var oMethodMetadata = jQuery.extend({}, mAllMethods[sMethod], {reloadNeeded: oExtensionInfo.reloadNeeded});
+					var oMethodMetadata = extend({}, mAllMethods[sMethod], {reloadNeeded: oExtensionInfo.reloadNeeded});
 					mPublicFunctions[oExtensionInfo.location + "." + sMethod] = oMethodMetadata;
 				});
 			});

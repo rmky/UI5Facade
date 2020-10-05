@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -317,7 +317,9 @@ sap.ui.define([
 				if (oOldParent) {
 					oOldParent.removeDependent(this._oTitleProvider);
 				}
-				oView.addDependent(this._oTitleProvider);
+				if (oView instanceof View) {
+					oView.addDependent(this._oTitleProvider);
+				}
 			},
 
 			/**
@@ -327,7 +329,7 @@ sap.ui.define([
 			 * together with the later aggregation change.
 			 *
 			 * @protected
-			 * @param {object} mArguments
+			 * @param {object} mArguments the object containing the arguments
 			 * @param {sap.ui.core.Control} mArguments.container the container where the view will be added
 			 * @param {sap.ui.core.Control} mArguments.view the view which will be added to the container
 			 * @param {object} [mArguments.data] the data passed from {@link sap.ui.core.routing.Target#display} method
@@ -393,7 +395,7 @@ sap.ui.define([
 				// Setting title property should not trigger two way change in model
 				this.setProperty("title", sTitle, true);
 
-				if (this._oTarget._bIsDisplayed) {
+				if (this._oTarget._bIsDisplayed && sTitle) {
 					this._oTarget.fireTitleChanged({
 						name: this._oTarget._oOptions._name,
 						title: sTitle

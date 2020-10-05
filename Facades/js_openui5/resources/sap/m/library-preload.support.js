@@ -1,7 +1,7 @@
 //@ui5-bundle sap/m/library-preload.support.js
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -100,7 +100,7 @@ sap.ui.predefine('sap/m/library.support',[
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -160,7 +160,7 @@ sap.ui.predefine('sap/m/rules/Breadcrumbs.support',["sap/ui/support/library"],
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -258,7 +258,7 @@ sap.ui.predefine('sap/m/rules/Button.support',["sap/ui/support/library"],
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -319,7 +319,7 @@ sap.ui.predefine('sap/m/rules/CheckBox.support',["sap/ui/support/library"],
 	}, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -453,7 +453,7 @@ sap.ui.predefine('sap/m/rules/DatePicker.support',["sap/ui/support/library"], fu
 	};
 
 	/**
-	 *  Checks if a dateValue contains JS Date object with hours, minutes and seconds different than 0, 0, 0, local time - warхing.
+	 *  Checks if a dateValue contains JS Date object with hours, minutes and seconds different than 0, 0, 0, local time - warxing.
 	 */
 	var oDateValueHasHoursMinutesSeconds = {
 		id: "dateValueHasHoursMinutesSeconds",
@@ -462,7 +462,7 @@ sap.ui.predefine('sap/m/rules/DatePicker.support',["sap/ui/support/library"], fu
 		enabled: true,
 		minversion: "1.28",
 		title: "DatePicker: dateValue has hours, minutes or seconds",
-		description: "The dateValue contains JS Date object with hours, minutes and seconds different than 0, 0, 0, local time - warхing.",
+		description: "The dateValue contains JS Date object with hours, minutes and seconds different than 0, 0, 0, local time - warxing.",
 		resolution: "Do not set hours, minutes and seconds, when you set dateValue",
 		resolutionurls: [{
 			text: "SAP Fiori Design Guidelines: DatePicker",
@@ -500,7 +500,7 @@ sap.ui.predefine('sap/m/rules/DatePicker.support',["sap/ui/support/library"], fu
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -596,7 +596,7 @@ sap.ui.predefine('sap/m/rules/DateRangeSelection.support',["sap/ui/support/libra
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -652,7 +652,7 @@ sap.ui.predefine('sap/m/rules/Dialog.support',["sap/ui/support/library"],
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -716,7 +716,7 @@ sap.ui.predefine('sap/m/rules/FacetFilter.support',["sap/ui/support/library"], f
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -865,7 +865,7 @@ sap.ui.predefine('sap/m/rules/IconTabBar.support',["sap/ui/support/library"],
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -1015,7 +1015,7 @@ sap.ui.predefine('sap/m/rules/Image.support',["sap/ui/support/library"],
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -1085,7 +1085,7 @@ sap.ui.predefine('sap/m/rules/Input.support',["sap/ui/support/library"],
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -1146,7 +1146,7 @@ sap.ui.predefine('sap/m/rules/Link.support',["sap/ui/support/library"],
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -1209,7 +1209,7 @@ sap.ui.predefine('sap/m/rules/MaskInput.support',["sap/ui/support/library"], fun
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -1313,7 +1313,7 @@ function(SupportLib) {
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -1562,7 +1562,7 @@ sap.ui.predefine('sap/m/rules/ObjectHeader.support',["sap/ui/support/library"],
 	}, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -1625,7 +1625,7 @@ sap.ui.predefine('sap/m/rules/ObjectListItem.support',["sap/ui/support/library"]
 	}, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -1687,7 +1687,7 @@ sap.ui.predefine('sap/m/rules/ObjectMarker.support',["sap/ui/support/library"],
 	}, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -1750,7 +1750,7 @@ sap.ui.predefine('sap/m/rules/ObjectStatus.support',["sap/ui/support/library"],
 /* eslint-disable linebreak-style */
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -1812,7 +1812,7 @@ sap.ui.predefine('sap/m/rules/Panel.support',["sap/ui/support/library"],
 	}, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -1957,7 +1957,7 @@ sap.ui.predefine('sap/m/rules/Select.support',["sap/ui/support/library"],
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -2029,7 +2029,7 @@ sap.ui.predefine('sap/m/rules/SelectDialog.support',["sap/ui/support/library"],
 	}, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -2126,7 +2126,7 @@ sap.ui.predefine('sap/m/rules/StepInput.support',["sap/ui/support/library"], fun
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -2233,7 +2233,7 @@ sap.ui.predefine('sap/m/rules/Table.support',["sap/ui/support/library", "sap/m/L
 	}, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -2296,7 +2296,7 @@ sap.ui.predefine('sap/m/rules/Title.support',["sap/ui/support/library"],
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -2345,7 +2345,7 @@ function(SupportLib) {
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**

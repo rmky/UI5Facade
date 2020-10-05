@@ -1,19 +1,31 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/ui/fl/apply/_internal/ChangesController",
 	"sap/ui/fl/write/_internal/SaveAs",
-	"sap/ui/fl/write/_internal/Storage"
+	"sap/ui/fl/write/_internal/connectors/LrepConnector"
 ], function(
 	ChangesController,
 	SaveAs,
-	Storage
+	LrepConnector
 ) {
 	"use strict";
+
+	var _callAppVariantFunction = function(sFunctionName, mPropertyBag) {
+		if (!mPropertyBag.layer) {
+			return Promise.reject("Layer must be provided");
+		}
+
+		var oFlexController = ChangesController.getDescriptorFlexControllerInstance(mPropertyBag.selector);
+		mPropertyBag.reference = oFlexController.getComponentName();
+		mPropertyBag.url = "/sap/bc/lrep";
+		// Since this method is only called for Save As App Variant scenario on ABAP platform, the direct usage of write LrepConnector is triggered.
+		return LrepConnector.appVariant[sFunctionName](mPropertyBag);
+	};
 
 	/**
 	 * Provides an API for tools to create, update, delete app variants.
@@ -33,12 +45,6 @@ sap.ui.define([
 		 * @param {sap.ui.fl.Selector} mPropertyBag.selector - Selector
 		 * @param {string} mPropertyBag.id - App variant ID
 		 * @param {sap.ui.fl.Layer} mPropertyBag.layer - Current working layer
-		 * @param {string} [mPropertyBag.package] - Package info for the app variant - Smart Business must pass the package
-		 * @param {string} [mPropertyBag.transport] - Transport request for the app variant - Smart Business must pass the transport
-		 * @param {string} [mPropertyBag.version] - Version of the app variant
-		 * @param {string} [mPropertyBag.isForSAPDelivery=false] - Determines whether app variant creation is intended for SAP delivery
-		 * @param {boolean} [mPropertyBag.skipIam=false] - Indicates whether the default IAM item creation and registration is skipped. This is S4/Hana specific flag passed by only Smart Business
-		 *
 		 * @returns {Promise} Promise that resolves with the app variant save response
 		 *
 		 * @private
@@ -47,6 +53,9 @@ sap.ui.define([
 		saveAs: function(mPropertyBag) {
 			if (!mPropertyBag.layer) {
 				return Promise.reject("Layer must be provided");
+			}
+			if (!mPropertyBag.id) {
+				return Promise.reject("App variant ID must be provided");
 			}
 			var oFlexController = ChangesController.getDescriptorFlexControllerInstance(mPropertyBag.selector);
 			mPropertyBag.reference = oFlexController.getComponentName();
@@ -59,9 +68,6 @@ sap.ui.define([
 		 * @param {object} mPropertyBag - Object with parameters as properties
 		 * @param {sap.ui.fl.Selector} mPropertyBag.selector - Selector
 		 * @param {sap.ui.fl.Layer} mPropertyBag.layer - Connectors are now determined based on the layer - Smart Business must pass the layer
-		 * @param {string} [mPropertyBag.transport] - Transport request for the app variant - Smart Business must pass the transport
-		 * @param {string} [mPropertyBag.isForSAPDelivery=false] - Determines whether app variant deletion is intended for SAP delivery
-		 * @param {boolean} [mPropertyBag.skipIam=false] - Indicates whether the default IAM item creation and registration is skipped. This is S4/Hana specific flag passed by only Smart Business
 		 * @returns {Promise} Promise that resolves with the app variant deletion response
 		 *
 		 * @private
@@ -72,7 +78,7 @@ sap.ui.define([
 				return Promise.reject("Layer must be provided");
 			}
 			var oFlexController = ChangesController.getDescriptorFlexControllerInstance(mPropertyBag.selector);
-			mPropertyBag.referenceAppId = oFlexController.getComponentName();
+			mPropertyBag.id = oFlexController.getComponentName();
 
 			return SaveAs.deleteAppVariant(mPropertyBag);
 		},
@@ -90,16 +96,13 @@ sap.ui.define([
 			if (!mPropertyBag.layer) {
 				return Promise.reject("Layer must be provided");
 			}
-			var oFlexController = ChangesController.getDescriptorFlexControllerInstance(mPropertyBag.selector);
-			mPropertyBag["sap.app/id"] = oFlexController.getComponentName();
-
-			return Storage.appVariant.list(mPropertyBag);
+			return _callAppVariantFunction("list", mPropertyBag);
 		},
 		/**
 		 * Gets the manifest of an app(variant) from backend
 		 * @param {object} mPropertyBag - Object with parameters as properties
-		 * @param {sap.ui.fl.Selector} mPropertyBag.selector - Selector
 		 * @param {sap.ui.fl.Layer} mPropertyBag.layer - Connectors are now determined based on the layer
+		 * @param {sap.ui.fl.Layer} mPropertyBag.appVarUrl - Contains full url of app variant manifest
 		 * @returns {Promise} Promise that resolves with the app(variant) manifest
 		 *
 		 * @private
@@ -109,10 +112,14 @@ sap.ui.define([
 			if (!mPropertyBag.layer) {
 				return Promise.reject("Layer must be provided");
 			}
-			return Storage.appVariant.getManifest(mPropertyBag);
+			if (!mPropertyBag.appVarUrl) {
+				return Promise.reject("appVarUrl must be provided");
+			}
+			// Since this method is only called for Save As App Variant scenario on ABAP platform, the direct usage of write LrepConnector is triggered.
+			return LrepConnector.appVariant.getManifest(mPropertyBag);
 		},
 		/**
-		 * Assigns the same catalogs to app varriant as of reference application
+		 * Assigns the same catalogs to app variant as of reference application
 		 * @param {object} mPropertyBag - Object with parameters as properties
 		 * @param {sap.ui.fl.Selector} mPropertyBag.selector - Selector
 		 * @param {sap.ui.fl.Layer} mPropertyBag.layer - Connectors are now determined based on the layer
@@ -127,10 +134,13 @@ sap.ui.define([
 			if (!mPropertyBag.layer) {
 				return Promise.reject("Layer must be provided");
 			}
-			var oFlexController = ChangesController.getDescriptorFlexControllerInstance(mPropertyBag.selector);
-			mPropertyBag.reference = oFlexController.getComponentName();
-
-			return Storage.appVariant.assignCatalogs(mPropertyBag);
+			if (!mPropertyBag.assignFromAppId) {
+				return Promise.reject("assignFromAppId must be provided");
+			}
+			if (!mPropertyBag.action) {
+				return Promise.reject("action must be provided");
+			}
+			return _callAppVariantFunction("assignCatalogs", mPropertyBag);
 		},
 		/**
 		 * Assigns the same catalogs to app varriant as of reference application
@@ -147,10 +157,10 @@ sap.ui.define([
 			if (!mPropertyBag.layer) {
 				return Promise.reject("Layer must be provided");
 			}
-			var oFlexController = ChangesController.getDescriptorFlexControllerInstance(mPropertyBag.selector);
-			mPropertyBag.reference = oFlexController.getComponentName();
-
-			return Storage.appVariant.unassignCatalogs(mPropertyBag);
+			if (!mPropertyBag.action) {
+				return Promise.reject("action must be provided");
+			}
+			return _callAppVariantFunction("unassignCatalogs", mPropertyBag);
 		}
 	};
 	return AppVariantWriteAPI;

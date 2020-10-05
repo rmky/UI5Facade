@@ -1,12 +1,12 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides the default renderer for control sap.m.SliderTooltip
-sap.ui.define(['sap/ui/core/Renderer'],
-	function(Renderer) {
+sap.ui.define(['sap/ui/core/Renderer', "sap/ui/core/Core"],
+	function(Renderer, Core) {
 	"use strict";
 
 	/**
@@ -15,63 +15,55 @@ sap.ui.define(['sap/ui/core/Renderer'],
 	 * @author SAP SE
 	 * @namespace
 	 */
-	var SliderTooltipRenderer = {};
+	var SliderTooltipRenderer = {
+		apiVersion: 2
+	};
 
 	SliderTooltipRenderer.CSS_CLASS = "sapMSliderTooltip";
 
 	/**
 	 * Renders the HTML for the given control, using the provided {@link sap.ui.core.RenderManager}.
 	 *
-	 * @param {sap.ui.core.RenderManager} rm The RenderManager that can be used for writing to the renderer output buffer
+	 * @param {sap.ui.core.RenderManager} oRM The RenderManager that can be used for writing to the renderer output buffer
 	 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered
 	 */
 	SliderTooltipRenderer.render = function(oRM, oControl){
-		oRM.write("<div");
-		oRM.writeControlData(oControl);
-
-		oRM.addClass(SliderTooltipRenderer.CSS_CLASS);
+		oRM.openStart("div", oControl)
+			.class(SliderTooltipRenderer.CSS_CLASS);
 
 		if (!oControl.getEditable()) {
-			oRM.addClass(SliderTooltipRenderer.CSS_CLASS + "NonEditableWrapper");
+			oRM.class(SliderTooltipRenderer.CSS_CLASS + "NonEditableWrapper");
 		}
-
-		oRM.writeClasses();
 
 		if (oControl.getWidth()) {
-			oRM.addStyle("width", oControl.getWidth());
+			oRM.style("width", oControl.getWidth());
 		}
 
-		oRM.writeStyles();
-		oRM.write(">");
+		oRM.openEnd();
 
 		this.renderTooltipElement(oRM, oControl);
 
-		oRM.write("</div>");
+		oRM.close("div");
 	};
 
 	SliderTooltipRenderer.renderTooltipElement = function (oRM, oControl) {
-		var bAccessibilityOn = sap.ui.getCore().getConfiguration().getAccessibility();
+		var oRb = Core.getLibraryResourceBundle("sap.m");
 
-		oRM.write('<input ');
-		oRM.addClass(SliderTooltipRenderer.CSS_CLASS + "Input");
+		oRM.voidStart("input", oControl.getId() + "-input")
+			.class(SliderTooltipRenderer.CSS_CLASS + "Input");
 
 		if (!oControl.getEditable()) {
-			oRM.addClass(SliderTooltipRenderer.CSS_CLASS + "NonEditable");
+			oRM.class(SliderTooltipRenderer.CSS_CLASS + "NonEditable");
+		} else {
+			oRM.attr("aria-label", oRb.getText("SLIDER_INPUT_LABEL"));
 		}
 
-		if (bAccessibilityOn) {
-			oRM.writeAccessibilityState(oControl, {});
-		}
-
-		oRM.writeClasses();
-
-		oRM.writeAttribute("tabindex", "-1");
-		oRM.writeAttributeEscaped("value", oControl.getValue());
-		oRM.writeAttributeEscaped("type", "number");
-		oRM.writeAttributeEscaped("step", oControl.getStep());
-		oRM.writeAttributeEscaped("id", oControl.getId() + "-input");
-
-		oRM.write("/>");
+		oRM.accessibilityState(oControl)
+			.attr("tabindex", "-1")
+			.attr("value", oControl.getValue())
+			.attr("type", "number")
+			.attr("step", oControl.getStep())
+			.voidEnd();
 	};
 
 	return SliderTooltipRenderer;

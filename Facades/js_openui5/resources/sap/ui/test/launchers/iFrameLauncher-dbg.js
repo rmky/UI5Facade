@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -29,7 +29,8 @@ sap.ui.define([
 		bUi5Loaded = false,
 		oAutoWaiter = null,
 		FrameHashChanger = null,
-		sOpaLogLevel;
+		sOpaLogLevel,
+		bDisableHistoryOverride;
 
 	/*
 	 * INTERNALS
@@ -284,7 +285,9 @@ sap.ui.define([
 			oFramePlugin = new OpaPlugin();
 			oAutoWaiter = _autoWaiter;
 			oFrameUtils = QUnitUtils;
-			modifyIFrameNavigation(hasher, History, HashChanger);
+			if (!bDisableHistoryOverride) {
+				modifyIFrameNavigation(hasher, History, HashChanger);
+			}
 			FrameHashChanger = HashChanger;
 			afterModulesLoaded();
 		});
@@ -348,7 +351,9 @@ sap.ui.define([
 			//invalidate the cache
 			$Frame = jQueryDOM("#" + options.frameId);
 
-			if (!$Frame.length) {
+			if ($Frame.length) {
+				$FrameContainer = jQueryDOM(".opaFrameContainer");
+			} else {
 				if (!options.source) {
 					Log.error("No source was given to launch the IFrame", this);
 				}
@@ -366,6 +371,7 @@ sap.ui.define([
 				$Frame.on("load", handleFrameLoad);
 			}
 			sOpaLogLevel = options.opaLogLevel;
+			bDisableHistoryOverride = options.disableHistoryOverride;
 			return checkForUI5ScriptLoaded();
 		},
 		hasLaunched: function () {

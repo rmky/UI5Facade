@@ -1,42 +1,48 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/base/Log",
 	"sap/ui/core/Element",
+	"sap/ui/core/StashedControlSupport",
 	"sap/ui/core/util/reflection/JsControlTreeModifier",
 	"sap/ui/fl/apply/_internal/changes/FlexCustomData",
 	"sap/ui/fl/apply/_internal/changes/Utils",
+	"sap/ui/fl/apply/_internal/flexState/changes/DependencyHandler",
 	"sap/ui/fl/Utils"
 ], function(
 	Log,
 	Element,
+	StashedControlSupport,
 	JsControlTreeModifier,
 	FlexCustomData,
 	Utils,
+	DependencyHandler,
 	FlUtils
 ) {
 	"use strict";
 
+	var oLastPromise = new FlUtils.FakePromise();
+
 	function _checkControlAndDependentSelectorControls(oChange, mPropertyBag) {
 		var oSelector = oChange.getSelector && oChange.getSelector();
-		if (!oSelector || !oSelector.id) {
-			throw new Error("No selector in change found or no selector ID.");
+		if (!oSelector || (!oSelector.id && !oSelector.name)) {
+			throw Error("No selector in change found or no selector ID.");
 		}
 
 		var oControl = mPropertyBag.modifier.bySelector(oSelector, mPropertyBag.appComponent, mPropertyBag.view);
 		if (!oControl) {
-			throw new Error("A flexibility change tries to change a nonexistent control.");
+			throw Error("A flexibility change tries to change a nonexistent control.");
 		}
 
 		var aDependentControlSelectorList = oChange.getDependentControlSelectorList();
 		aDependentControlSelectorList.forEach(function(sDependentControlSelector) {
 			var oDependentControl = mPropertyBag.modifier.bySelector(sDependentControlSelector, mPropertyBag.appComponent, mPropertyBag.view);
 			if (!oDependentControl) {
-				throw new Error("A dependent selector control of the flexibility change is not available.");
+				throw Error("A dependent selector control of the flexibility change is not available.");
 			}
 		});
 
@@ -58,7 +64,6 @@ sap.ui.define([
 			oChange.setInitialApplyState();
 		} else if (!bChangeStatusAppliedFinished && bIsCurrentlyAppliedOnControl) {
 			// if a change is already applied on the control, but the status does not reflect that, the status has to be updated
-			// the change still needs to go through the process so that the dependencies are correctly updated and the whole process is not harmed
 			// scenario: viewCache
 			oChange.markFinished();
 		}
@@ -151,8 +156,50 @@ sap.ui.define([
 		Log.warning(sWarningMessage, undefined, "sap.ui.fl.apply._internal.changes.Applier");
 	}
 
+	function isControlStashed(mChangesMap, sControlId) {
+		var aControlChanges = mChangesMap.mChanges[sControlId] || [];
+		var bIsStashed = true;
+		var sChangeType;
+		aControlChanges.slice(0).reverse().some(function(oChange) {
+			sChangeType = oChange.getDefinition().changeType;
+			if (sChangeType.indexOf("stash") > -1) {
+				bIsStashed = true;
+				return true;
+			} else if (sChangeType.indexOf("unstash") > -1) {
+				bIsStashed = false;
+				return true;
+			}
+		});
+		return bIsStashed;
+	}
+
+	function handleStashedControls(mChangesMap, sControlId, oAppComponent) {
+		var bHasStashDependencies = false;
+		var aStashedChildren = StashedControlSupport.getStashedControlIds(sControlId);
+		aStashedChildren.forEach(function(sStashedControlId) {
+			if (isControlStashed(mChangesMap, sStashedControlId)) {
+				var aChangesToBeIgnored = DependencyHandler.removeOpenDependentChanges(mChangesMap, oAppComponent, sStashedControlId, sControlId);
+				aChangesToBeIgnored.forEach(function(oChange) {
+					oChange._ignoreOnce = true;
+				});
+				bHasStashDependencies = (aChangesToBeIgnored.length > 0) ? true : bHasStashDependencies;
+			}
+		});
+
+		return bHasStashDependencies;
+	}
+
 	var Applier = {
-		PENDING: "sap.ui.fl:PendingChange",
+		/**
+		 * Sets a specific precondition, which has to be fulfilled before applying all changes on control.
+		 *
+		 * @param {Promise} oPromise - Promise which is resolved when precondition fulfilled
+		 */
+		addPreConditionForInitialChangeApplying: function(oPromise) {
+			oLastPromise = oLastPromise.then(function () {
+				return oPromise;
+			});
+		},
 
 		/**
 		 * Applying a specific change on the passed control, if it is not already applied.
@@ -214,48 +261,67 @@ sap.ui.define([
 		 *
 		 * @param {function} fnGetChangesMap - Function which resolves with the changes map
 		 * @param {object} oAppComponent - Component instance that is currently loading
-		 * @param {sap.ui.fl.oFlexControlle} oFlexController - Instance of FlexController
+		 * @param {sap.ui.fl.oFlexController} oFlexController - Instance of FlexController
 		 * @param {sap.ui.core.Control} oControl Instance of the control to which changes should be applied
 		 * @returns {Promise|sap.ui.fl.Utils.FakePromise} Resolves as soon as all changes for the control are applied
 		 */
 		applyAllChangesForControl: function(fnGetChangesMap, oAppComponent, oFlexController, oControl) {
-			var aPromiseStack = [];
-			var sControlId = oControl.getId();
+			// the changes have to be queued synchronously
 			var mChangesMap = fnGetChangesMap();
-			var mChanges = mChangesMap.mChanges;
-			var aChangesForControl = mChanges[sControlId] || [];
-			var mPropertyBag = {
-				modifier: JsControlTreeModifier,
-				appComponent: oAppComponent,
-				view: FlUtils.getViewForControl(oControl)
-			};
+			var sControlId = oControl.getId();
+			var aChangesForControl = mChangesMap.mChanges[sControlId] || [];
+
+			var bHasStashDependencies = handleStashedControls(mChangesMap, sControlId, oAppComponent);
 
 			aChangesForControl.forEach(function (oChange) {
-				mChangesMap = _checkAndAdjustChangeStatus(oControl, oChange, mChangesMap, oFlexController, mPropertyBag);
-				oChange.setQueuedForApply();
-				if (!mChangesMap.mDependencies[oChange.getId()]) {
-					aPromiseStack.push(function() {
-						return Applier.applyChangeOnControl(oChange, oControl, mPropertyBag)
-						.then(function() {
-							oFlexController._updateDependencies(mChangesMap, oChange.getId());
-						});
-					});
-				} else {
-					//saves the information whether a change was already processed but not applied.
-					mChangesMap.mDependencies[oChange.getId()][Applier.PENDING] = Applier.applyChangeOnControl.bind(Applier, oChange, oControl, mPropertyBag);
+				if (!oChange.isApplyProcessFinished() && !oChange._ignoreOnce) {
+					oChange.setQueuedForApply();
 				}
 			});
 
-			// TODO improve handling of mControlsWithDependencies when change applying gets refactored
-			// 	- save the IDs of the waiting changes in the map
-			// 	- only try to apply those changes first
-			if (aChangesForControl.length || mChangesMap.mControlsWithDependencies[sControlId]) {
-				delete mChangesMap.mControlsWithDependencies[sControlId];
-				return FlUtils.execPromiseQueueSequentially(aPromiseStack).then(function () {
-					return oFlexController._processDependentQueue(mChangesMap, oAppComponent);
+			// make sure that the current control waits for the previous control to be processed
+			oLastPromise = oLastPromise.then(function(oControl, bHasStashDependencies) {
+				var aPromiseStack = [];
+				var sControlId = oControl.getId();
+				var aChangesForControl = mChangesMap.mChanges[sControlId] || [];
+				var mPropertyBag = {
+					modifier: JsControlTreeModifier,
+					appComponent: oAppComponent,
+					view: FlUtils.getViewForControl(oControl)
+				};
+				var bControlWithDependencies;
+
+				if (mChangesMap.mControlsWithDependencies[sControlId]) {
+					DependencyHandler.removeControlsDependencies(mChangesMap, sControlId);
+					bControlWithDependencies = true;
+				}
+
+				aChangesForControl.forEach(function (oChange) {
+					mChangesMap = _checkAndAdjustChangeStatus(oControl, oChange, mChangesMap, oFlexController, mPropertyBag);
+					if (oChange._ignoreOnce) {
+						delete oChange._ignoreOnce;
+					} else if (oChange.isApplyProcessFinished()) {
+						DependencyHandler.resolveDependenciesForChange(mChangesMap, oChange.getId(), sControlId);
+					} else if (!mChangesMap.mDependencies[oChange.getId()]) {
+						aPromiseStack.push(function() {
+							return Applier.applyChangeOnControl(oChange, oControl, mPropertyBag).then(function() {
+								DependencyHandler.resolveDependenciesForChange(mChangesMap, oChange.getId(), sControlId);
+							});
+						});
+					} else {
+						var fnCallback = Applier.applyChangeOnControl.bind(Applier, oChange, oControl, mPropertyBag);
+						DependencyHandler.addChangeApplyCallbackToDependency(mChangesMap, oChange.getId(), fnCallback);
+					}
 				});
-			}
-			return new FlUtils.FakePromise();
+
+				if (aChangesForControl.length || bControlWithDependencies || bHasStashDependencies) {
+					return FlUtils.execPromiseQueueSequentially(aPromiseStack).then(function () {
+						return DependencyHandler.processDependentQueue(mChangesMap, oAppComponent, sControlId);
+					});
+				}
+			}.bind(null, oControl, bHasStashDependencies));
+
+			return oLastPromise;
 		},
 
 		/**
@@ -266,45 +332,35 @@ sap.ui.define([
 		 * @param {string} mPropertyBag.viewId - ID of the processed view
 		 * @param {string} mPropertyBag.appComponent - Application component instance responsible for the view
 		 * @param {object} mPropertyBag.modifier - Polymorph reuse operations handling the changes on the given view type
-		 * @param {object} mPropertyBag.appDescriptor - App descriptor containing the metadata of the current application
-		 * @param {string} mPropertyBag.siteId - ID of the flp site containing this application
 		 * @param {sap.ui.fl.Change[]} aChanges List of flexibility changes on controls for the current processed view
 		 * @returns {Promise|sap.ui.fl.Utils.FakePromise} Promise that is resolved after all changes were reverted in asynchronous case or FakePromise for the synchronous processing scenario including view object in both cases
 		 */
 		applyAllChangesForXMLView: function(mPropertyBag, aChanges) {
-			var aPromiseStack = [];
-
 			if (!Array.isArray(aChanges)) {
 				var sErrorMessage = "No list of changes was passed for processing the flexibility on view: " + mPropertyBag.view + ".";
 				Log.error(sErrorMessage, undefined, "sap.ui.fl.apply._internal.changes.Applier");
 				aChanges = [];
 			}
 
-			aChanges.forEach(function (oChange) {
-				try {
+			return aChanges.reduce(function(oPreviousPromise, oChange) {
+				return oPreviousPromise.then(function() {
 					var oControl = _checkControlAndDependentSelectorControls(oChange, mPropertyBag);
-
 					oChange.setQueuedForApply();
-					aPromiseStack.push(function() {
-						_checkAndAdjustChangeStatus(oControl, oChange, undefined, undefined, mPropertyBag);
-
-						if (oChange.isApplyProcessFinished()) {
-							return new FlUtils.FakePromise();
-						}
-
-						return Applier.applyChangeOnControl(oChange, oControl, mPropertyBag).then(function(oReturn) {
-							if (!oReturn.success) {
-								_logApplyChangeError(oReturn.error || {}, oChange);
-							}
-						});
-					});
-				} catch (oException) {
-					_logApplyChangeError(oException, oChange);
-				}
-			});
-
-			return FlUtils.execPromiseQueueSequentially(aPromiseStack)
-
+					_checkAndAdjustChangeStatus(oControl, oChange, undefined, undefined, mPropertyBag);
+					if (!oChange.isApplyProcessFinished()) {
+						return Applier.applyChangeOnControl(oChange, oControl, mPropertyBag);
+					}
+					return {success: true};
+				})
+				.then(function(oReturn) {
+					if (!oReturn.success) {
+						throw Error(oReturn.error);
+					}
+				})
+				.catch(function(oError) {
+					_logApplyChangeError(oError, oChange);
+				});
+			}, new FlUtils.FakePromise())
 			.then(function() {
 				return mPropertyBag.view;
 			});

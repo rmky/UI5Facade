@@ -1,15 +1,17 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
+	"sap/ui/model/resource/ResourceModel",
 	"sap/m/HBox",
 	"sap/ui/rta/util/Animation",
 	"sap/ui/dt/util/ZIndexManager"
 ],
 function(
+	ResourceModel,
 	HBox,
 	Animation,
 	ZIndexManager
@@ -24,7 +26,7 @@ function(
 	 * @extends sap.m.HBox
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @private
@@ -59,7 +61,6 @@ function(
 			this.setAlignItems("Center");
 			this.setVisible(false);
 			this.placeToContainer();
-			this.buildContent();
 		},
 
 		/**
@@ -80,23 +81,23 @@ function(
 	 * @override
 	 */
 	Base.prototype.init = function() {
+		this._oResourceModel = new ResourceModel({
+			bundle: sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta")
+		});
 		HBox.prototype.init.apply(this, arguments);
+		// Assign the model object to the SAPUI5 core using the name "i18n"
+		this.setModel(this._oResourceModel, "i18n");
+		return this.buildContent();
 	};
 
 	/**
-	 * Event handler for onBeforeRendering
-	 * @protected
+	 * @override
 	 */
-	Base.prototype.onBeforeRendering = function () {
-		HBox.prototype.onBeforeRendering.apply(this, arguments);
-	};
-
-	/**
-	 * Event handler for onAfterRendering
-	 * @protected
-	 */
-	Base.prototype.onAfterRendering = function () {
-		HBox.prototype.onAfterRendering.apply(this, arguments);
+	Base.prototype.setTextResources = function(oTextResource) {
+		this.setProperty("textResources", oTextResource);
+		this._oResourceModel = new ResourceModel({
+			bundle: sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta")
+		});
 	};
 
 	/**
@@ -115,7 +116,7 @@ function(
 	 * @protected
 	 */
 	Base.prototype.buildControls = function () {
-		return [];
+		return Promise.resolve([]);
 	};
 
 	/**
@@ -132,7 +133,9 @@ function(
 	 * @protected
 	 */
 	Base.prototype.buildContent = function () {
-		this.buildControls().forEach(this.addItem, this);
+		return this.buildControls().then(function (aControls) {
+			aControls.forEach(this.addItem, this);
+		}.bind(this));
 	};
 
 	/**
@@ -185,17 +188,13 @@ function(
 
 	/**
 	 * Getter for inner controls
+	 *
 	 * @param {string} sName - Name of the control
 	 * @return {sap.ui.core.Control|undefined} - returns control or undefined if there is no control with provided name
 	 * @public
 	 */
 	Base.prototype.getControl = function(sName) {
-		return this
-			.getAggregation('items')
-			.filter(function (oControl) {
-				return oControl.data('name') === sName;
-			})
-			.pop();
+		return sap.ui.getCore().byId("sapUiRta_" + sName);
 	};
 
 	/**
@@ -205,13 +204,6 @@ function(
 	Base.prototype.bringToFront = function () {
 		this.setZIndex(ZIndexManager.getNextZIndex());
 	};
-
-	/**
-	 * Backwards compatibility
-	 */
-	Base.prototype.setUndoRedoEnabled = function () {};
-	Base.prototype.setPublishEnabled = function () {};
-	Base.prototype.setRestoreEnabled = function () {};
 
 	return Base;
 }, true);

@@ -1,11 +1,11 @@
 {
-  "_version": "1.9.0",
+  "_version": "1.21.0",
   "sap.app": {
     "id": "sap.m",
     "type": "library",
     "embeds": [],
     "applicationVersion": {
-      "version": "1.73.1"
+      "version": "1.82.0"
     },
     "title": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
     "description": "The main UI5 control library, with responsive controls that can be used in touch devices as well as desktop browsers.",
@@ -22,23 +22,70 @@
   },
   "sap.ui5": {
     "dependencies": {
-      "minUI5Version": "1.73",
+      "minUI5Version": "1.82",
       "libs": {
         "sap.ui.core": {
-          "minVersion": "1.73.1"
+          "minVersion": "1.82.0"
         },
         "sap.ui.layout": {
-          "minVersion": "1.73.1",
+          "minVersion": "1.82.0",
           "lazy": true
         },
         "sap.ui.unified": {
-          "minVersion": "1.73.1",
+          "minVersion": "1.82.0",
           "lazy": true
         }
       }
     },
     "library": {
-      "i18n": "messagebundle.properties",
+      "i18n": {
+        "bundleUrl": "messagebundle.properties",
+        "supportedLocales": [
+          "",
+          "ar",
+          "bg",
+          "ca",
+          "cs",
+          "da",
+          "de",
+          "el",
+          "en",
+          "en-US-sappsd",
+          "en-US-saptrc",
+          "es",
+          "et",
+          "fi",
+          "fr",
+          "hi",
+          "hr",
+          "hu",
+          "it",
+          "iw",
+          "ja",
+          "kk",
+          "ko",
+          "lt",
+          "lv",
+          "ms",
+          "nl",
+          "no",
+          "pl",
+          "pt",
+          "rigi",
+          "ro",
+          "ru",
+          "sh",
+          "sk",
+          "sl",
+          "sv",
+          "th",
+          "tr",
+          "uk",
+          "vi",
+          "zh-CN",
+          "zh-TW"
+        ]
+      },
       "content": {
         "controls": [
           "sap.m.ActionListItem",
@@ -213,6 +260,7 @@
           "sap.m.semantic.MasterPage"
         ],
         "elements": [
+          "sap.m.BadgeCustomData",
           "sap.m.Column",
           "sap.m.ColumnPopoverActionItem",
           "sap.m.ColumnPopoverCustomItem",
@@ -244,6 +292,7 @@
           "sap.m.SelectionDetailsItem",
           "sap.m.SelectionDetailsItemLine",
           "sap.m.SinglePlanningCalendarDayView",
+          "sap.m.SinglePlanningCalendarMonthView",
           "sap.m.SinglePlanningCalendarWeekView",
           "sap.m.SinglePlanningCalendarWorkWeekView",
           "sap.m.SinglePlanningCalendarView",
@@ -298,6 +347,7 @@
           "sap.m.AvatarType",
           "sap.m.AvatarColor",
           "sap.m.BackgroundDesign",
+          "sap.m.BadgeState",
           "sap.m.BarDesign",
           "sap.m.BreadcrumbsSeparatorStyle",
           "sap.m.ButtonType",
@@ -345,6 +395,7 @@
           "sap.m.ObjectMarkerVisibility",
           "sap.m.OverflowToolbarPriority",
           "sap.m.P13nPanelType",
+          "sap.m.P13nConditionOperation",
           "sap.m.PageBackgroundDesign",
           "sap.m.PanelAccessibleRole",
           "sap.m.PDFViewerDisplayType",
@@ -371,6 +422,7 @@
           "sap.m.TileSizeBehavior",
           "sap.m.TimePickerMaskMode",
           "sap.m.TitleAlignment",
+          "sap.m.TokenizerRenderMode",
           "sap.m.ToolbarDesign",
           "sap.m.ToolbarStyle",
           "sap.m.UploadState",
@@ -382,6 +434,7 @@
         ],
         "interfaces": [
           "sap.m.IBar",
+          "sap.m.IBadge",
           "sap.m.IBreadcrumbs",
           "sap.m.IconTab",
           "sap.m.IScale",

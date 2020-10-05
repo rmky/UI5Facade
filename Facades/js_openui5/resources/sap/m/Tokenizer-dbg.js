@@ -1,12 +1,15 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.Tokenizer.
 sap.ui.define([
 	'./library',
+	'sap/m/List',
+	'sap/m/StandardListItem',
+	'sap/m/ResponsivePopover',
 	'sap/ui/core/Control',
 	'sap/ui/core/delegate/ScrollEnablement',
 	'sap/ui/Device',
@@ -23,6 +26,9 @@ sap.ui.define([
 ],
 	function(
 		library,
+		List,
+		StandardListItem,
+		ResponsivePopover,
 		Control,
 		ScrollEnablement,
 		Device,
@@ -37,7 +43,9 @@ sap.ui.define([
 	) {
 	"use strict";
 
-
+	var RenderMode = library.TokenizerRenderMode,
+		PlacementType = library.PlacementType,
+		ListMode = library.ListMode;
 
 	/**
 	 * Constructor for a new Tokenizer.
@@ -59,7 +67,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -81,11 +89,28 @@ sap.ui.define([
 			/**
 			 * Defines the width of the Tokenizer.
 			 */
+
 			width : {type : "sap.ui.core.CSSSize", group : "Dimension", defaultValue : null},
+
 			/**
 			 * Defines the maximum width of the Tokenizer.
 			 */
-			maxWidth : {type: "sap.ui.core.CSSSize", group: "Dimension", defaultValue : "100%"}
+			maxWidth : {type: "sap.ui.core.CSSSize", group: "Dimension", defaultValue : "100%"},
+
+			/**
+			 * Defines the mode that the Tokenizer will use:
+			 * <ul>
+			 * <li><code>sap.m.TokenizerRenderMode.Loose</code> mode shows all tokens, no matter the width of the Tokenizer</li>
+			 * <li><code>sap.m.TokenizerRenderMode.Narrow</code> mode forces the Tokenizer to show only as much tokens as possible in its width and add an n-More indicator</li>
+			 * </ul>
+			 */
+			renderMode: {type : "string", group : "Misc", defaultValue : RenderMode.Loose},
+
+			/**
+			 * Defines the count of hidden tokens if any. If this property is set to 0, the n-More indicator will not be shown.
+			 */
+			hiddenTokensCount: {type : "int", group : "Misc", defaultValue : 0, visibility: "hidden"}
+
 		},
 		defaultAggregation : "tokens",
 		aggregations : {
@@ -186,17 +211,14 @@ sap.ui.define([
 
 	EnabledPropagator.apply(Tokenizer.prototype, [true]);
 
-	///**
-	// * This file defines behavior for the control,
-	// */
-
 	Tokenizer.prototype.init = function() {
-		this.bAllowTextSelection = false;
+		// Do not allow text selection in the Tokenizer
+		// If called with 'false', the method prevents the
+		// default behavior and propagation of the 'selectstart' event.
+		// For more info - check sap.ui.core.Control.js
+		this.allowTextSelection(false);
 		this._oTokensWidthMap = {};
 		this._oIndicator = null;
-		this._bAdjustable = false;
-
-		this._aTokenValidators = [];
 
 		this._oScroller = new ScrollEnablement(this, this.getId() + "-scrollContainer", {
 			horizontal : true,
@@ -219,20 +241,231 @@ sap.ui.define([
 	 * @param {function} fCallback The callback
 	 * @private
 	 */
-	Tokenizer.prototype._handleNMoreIndicatorPress = function(fCallback) {
-		this._fnOnNMorePress = fCallback;
+	Tokenizer.prototype._handleNMoreIndicatorPress = function () {
+		this._togglePopup(this.getTokensPopup());
 	};
 
 	/**
-	 * Function determines if the N-more state is active.
+	* Getter for the list containing tokens.
+	 *
+	 * @returns {sap.m.List} The list
+	 * @private
+	 */
+	Tokenizer.prototype._getTokensList = function () {
+		if (!this._oTokensList) {
+			this._oTokensList = new List({
+				width: "auto",
+				mode: ListMode.Delete
+			}).attachDelete(this._handleListItemDelete, this);
+		}
+
+		return this._oTokensList;
+	};
+
+	/**
+	 * Changes list mode.
+	 *
+	 * @param sMode {sap.m.ListMode}
+	 * @private
+	 */
+	Tokenizer.prototype._setPopoverMode = function (sMode) {
+		var oSettings = {},
+			oPopover = this.getTokensPopup();
+
+		switch (sMode) {
+			case ListMode.Delete:
+				oSettings = {
+					showArrow: false,
+					placement: PlacementType.VerticalPreferredBottom
+				};
+				break;
+			default:
+				oSettings = {
+					showArrow: true,
+					placement: PlacementType.Auto
+				};
+				break;
+		}
+		oPopover.setShowArrow(oSettings.showArrow);
+		oPopover.setPlacement(oSettings.placement);
+
+		this._getTokensList().setMode(sMode);
+	};
+
+	/**
+	 * Fills a list by creating new list items and mapping them to certain token.
+	 *
+	 * There might be a filtering function, so only certain tokens can be mapped to a ListItem.
+	 *
+	 * @param oList {sap.m.List}
+	 * @param fnFilter {function}
+	 * @private
+	 */
+	Tokenizer.prototype._fillTokensList = function (oList, fnFilter) {
+		oList.destroyItems();
+
+		fnFilter = fnFilter ? fnFilter : function () { return true; };
+
+		this.getTokens()
+			.filter(fnFilter)
+			.forEach(function (oToken) {
+				oList.addItem(this._mapTokenToListItem(oToken));
+			}, this);
+	};
+
+	/**
+	 * Handles token deletion from the List.
+	 *
+	 * @param oEvent
+	 * @private
+	 */
+	Tokenizer.prototype._handleListItemDelete = function (oEvent) {
+		var aListItems, oItemtoFocus, iItemIndex,
+			oListItem = oEvent.getParameter("listItem"),
+			sSelectedId = oListItem && oListItem.data("tokenId"),
+			oTokenToDelete;
+
+		oTokenToDelete = this.getTokens().filter(function(oToken){
+			return (oToken.getId() === sSelectedId) && oToken.getEditable();
+		})[0];
+
+		if (oTokenToDelete) {
+			this.fireTokenUpdate({
+				addedTokens: [],
+				removedTokens: [oTokenToDelete],
+				type: Tokenizer.TokenUpdateType.Removed
+			});
+
+			aListItems = this._getTokensList().getItems();
+			iItemIndex = aListItems.indexOf(oListItem);
+			oItemtoFocus = (iItemIndex === aListItems.length - 1) ?
+				aListItems[aListItems.length - 2] : aListItems[iItemIndex + 1];
+
+			oItemtoFocus && oItemtoFocus.focus();
+			this.removeAggregation("tokens", oTokenToDelete, true);
+			oListItem.destroy();
+			oTokenToDelete.destroy();
+
+			this._adjustTokensVisibility();
+		}
+	};
+
+	/**
+	 * Returns N-More Popover/Dialog.
 	 *
 	 * @private
-	 * @returns {boolean} true if there are hidden tokens.
+	 * @ui5-restricted for sap.m.MultiInput, sap.m.MultiComboBox
+	 * @returns {sap.m.ResponsivePopup}
 	 */
-	Tokenizer.prototype._hasMoreIndicator = function () {
-		var domRef = this.$();
+	Tokenizer.prototype.getTokensPopup = function () {
+		if (this._oPopup) {
+			return this._oPopup;
+		}
 
-		return !!domRef.length && this.$().find(".sapMHiddenToken").length > 0;
+		this._oPopup = new ResponsivePopover({
+			showArrow: false,
+			showHeader: false,
+			placement: PlacementType.Auto,
+			offsetX: 0,
+			offsetY: 3,
+			horizontalScrolling: false,
+			content: this._getTokensList()
+		})
+			.attachBeforeOpen(function () {
+				var oPopup = this._oPopup;
+				if (oPopup.getContent && !oPopup.getContent().length) {
+					oPopup.addContent(this._getTokensList());
+				}
+				this._fillTokensList(this._getTokensList());
+			}, this);
+
+		this.addDependent(this._oPopup);
+
+		if (Device.system.phone) {
+			this._oPopup.setEndButton(new sap.m.Button({
+				text: oRb.getText("SUGGESTIONSPOPOVER_CLOSE_BUTTON"),
+				press: function () {
+					this._oPopup.close();
+				}.bind(this)
+			}));
+		}
+
+		return this._oPopup;
+	};
+
+	/**
+	 * Toggles the popover.
+	 *
+	 * @private
+	 * @ui5-restricted for sap.m.MultiInput, sap.m.MultiComboBox
+	 */
+	Tokenizer.prototype._togglePopup = function (oPopover) {
+		var oOpenByDom,
+			oDomRef = this.getDomRef(),
+			oPopoverIsOpen = oPopover.isOpen(),
+			bEditable = this.getEditable();
+
+		this._setPopoverMode(bEditable ? ListMode.Delete : ListMode.None);
+
+		if (oPopoverIsOpen) {
+			oPopover.close();
+		} else {
+			oOpenByDom = bEditable || this.hasOneTruncatedToken() ? oDomRef : this._oIndicator[0];
+			oOpenByDom = oOpenByDom && oOpenByDom.className.indexOf("sapUiHidden") === -1 ? oOpenByDom : oDomRef;
+			oPopover.openBy(oOpenByDom || oDomRef);
+		}
+	};
+
+	/**
+	 * Generates a StandardListItem from token.
+	 *
+	 * @param {sap.m.Token} oToken The token
+	 * @private
+	 * @returns {sap.m.StandardListItem | null} The generated ListItem
+	 */
+	Tokenizer.prototype._mapTokenToListItem = function (oToken) {
+		if (!oToken) {
+			return null;
+		}
+
+		var oListItem = new StandardListItem({
+			selected: true
+		}).data("tokenId", oToken.getId());
+
+		oListItem.setTitle(oToken.getText());
+
+		return oListItem;
+	};
+
+	/** Gets the width of the tokenizer that will be used for the calculation for hiding
+	 * or revealing the tokens.
+	 *
+	 * @returns {number} The width of the DOM in pixels.
+	 * @private
+	 */
+	Tokenizer.prototype._getPixelWidth = function ()  {
+		var sMaxWidth = this.getMaxWidth(),
+			iTokenizerWidth,
+			oDomRef = this.getDomRef(),
+			iPaddingLeft;
+
+		if (!oDomRef) {
+			return;
+		}
+
+		// The padding needs to be exluded from the calculations later on
+		// as it is actually not an available space.
+		iPaddingLeft = parseInt(this.$().css("padding-left"));
+
+		if (sMaxWidth.indexOf("px") === -1) {
+			// We need to use pixel width in order to calculate the space left for the Tokens.
+			// In standalone Tokenizer, we take the width of the Tokenizer itself.
+			iTokenizerWidth = oDomRef.clientWidth;
+		} else {
+			iTokenizerWidth = parseInt(this.getMaxWidth());
+		}
+
+		return iTokenizerWidth - iPaddingLeft;
 	};
 
 	/**
@@ -245,7 +478,7 @@ sap.ui.define([
 			return;
 		}
 
-		var iTokenizerWidth = parseInt(this.getMaxWidth()),
+		var iTokenizerWidth = this._getPixelWidth(),
 			aTokens = this._getVisibleTokens().reverse(),
 			iTokensCount = aTokens.length,
 			iLabelWidth, iFreeSpace,
@@ -254,13 +487,20 @@ sap.ui.define([
 		// find the index of the first overflowing token
 		aTokens.some(function (oToken, iIndex) {
 			iTokenizerWidth = iTokenizerWidth - this._oTokensWidthMap[oToken.getId()];
-			if (iTokenizerWidth <= 0) {
+			if (iTokenizerWidth < 0) {
 				iFirstTokenToHide = iIndex;
 				return true;
 			} else {
 				iFreeSpace = iTokenizerWidth;
 			}
-		}.bind(this));
+		}, this);
+
+		if (iTokensCount === 1 && iFirstTokenToHide !== -1) {
+			this.setFirstTokenTruncated(true);
+			return;
+		} else if (iTokensCount === 1 && aTokens[0].getTruncated()) {
+			this.setFirstTokenTruncated(false);
+		}
 
 		// adjust the visibility of the tokens
 		if (iFirstTokenToHide > -1) {
@@ -284,10 +524,44 @@ sap.ui.define([
 				this._handleNMoreIndicator(iTokensCount - iFirstTokenToHide);
 				aTokens[iFirstTokenToHide].addStyleClass("sapMHiddenToken");
 			}
+
+			this._setHiddenTokensCount(iTokensCount - iFirstTokenToHide);
 		} else {
 			// if no token needs to be hidden, show all
+			this._setHiddenTokensCount(0);
 			this._showAllTokens();
 		}
+	};
+
+	/**
+	 * Sets the first token truncation.
+	 *
+	 * @param {boolean} bValue The value to set
+	 * @returns {sap.m.Tokenizer} <code>this</code> instance for method chaining
+	 * @protected
+	 */
+	Tokenizer.prototype.setFirstTokenTruncated = function (bValue) {
+		var oToken = this.getTokens()[0];
+
+		oToken && oToken.setTruncated(bValue);
+		if (bValue) {
+			this.addStyleClass("sapMTokenizerOneLongToken");
+		} else {
+			this.removeStyleClass("sapMTokenizerOneLongToken");
+			this.scrollToEnd();
+		}
+
+		return this;
+	};
+
+	/**
+	 * Checks if the token is one and truncated.
+	 *
+	 * @returns {boolean}
+	 * @protected
+	 */
+	Tokenizer.prototype.hasOneTruncatedToken = function () {
+		return this.getTokens().length === 1 && this.getTokens()[0].getTruncated();
 	};
 
 	/**
@@ -306,7 +580,6 @@ sap.ui.define([
 			var sLabelKey = "MULTIINPUT_SHOW_MORE_TOKENS";
 
 			if (iHiddenTokensCount === this._getVisibleTokens().length) {
-				this.$().css("overflow", "visible");
 				if (iHiddenTokensCount === 1) {
 					sLabelKey = "TOKENIZER_SHOW_ALL_ITEM";
 				} else {
@@ -314,11 +587,7 @@ sap.ui.define([
 				}
 			}
 
-			this._oIndicator.removeClass("sapUiHidden");
 			this._oIndicator.html(oRb.getText(sLabelKey, iHiddenTokensCount));
-		} else {
-			this.$().css("overflow", "hidden");
-			this._oIndicator.addClass("sapUiHidden");
 		}
 
 		return this;
@@ -342,9 +611,8 @@ sap.ui.define([
 	 * @private
 	 */
 	Tokenizer.prototype._showAllTokens = function() {
-		this._handleNMoreIndicator(0);
-
 		this._getVisibleTokens().forEach(function(oToken) {
+			// TODO: Token should provide proper API for this
 			oToken.removeStyleClass("sapMHiddenToken");
 		});
 	};
@@ -366,68 +634,31 @@ sap.ui.define([
 	 */
 	Tokenizer.prototype.scrollToEnd = function() {
 		var domRef = this.getDomRef(),
-			that;
+			scrollDiv;
 
-		if (!domRef) {
+		if (!this.getDomRef()) {
 			return;
 		}
 
-		if (!this._sResizeHandlerId) {
-			that = this;
-			this._sResizeHandlerId = ResizeHandler.register(domRef, function() {
-				that.scrollToEnd();
+		scrollDiv = this.$().find(".sapMTokenizerScrollContainer")[0];
+		if (Device.browser.msie) {
+			setTimeout(function () {
+				domRef.scrollLeft = scrollDiv.scrollWidth;
 			});
+		} else {
+			domRef.scrollLeft = scrollDiv.scrollWidth;
 		}
-
-		var scrollDiv = this.$().find(".sapMTokenizerScrollContainer")[0];
-		domRef.scrollLeft = scrollDiv.scrollWidth;
 	};
 
-	/**
-	 * Function sets the maximum width of the Tokenizer.
-	 *
-	 * @public
-	 * @param {string} sWidth The new maximal width
-	 * @returns {sap.m.Tokenizer} this instance for method chaining
-	 */
-	Tokenizer.prototype.setMaxWidth = function(sWidth) {
-		this.setProperty("maxWidth", sWidth, true);
-		this.$().css("max-width", this.getMaxWidth());
-
-		if (this.getDomRef() && this._getAdjustable()) {
-			this._adjustTokensVisibility();
+	Tokenizer.prototype._registerResizeHandler = function(){
+		if (!this._sResizeHandlerId) {
+			this._sResizeHandlerId = ResizeHandler.register(this.getDomRef(), this._handleResize.bind(this));
 		}
-		return this;
-	 };
-
-	/**
-	 * Function returns whether the n-more indicator is visible.
-	 *
-	 * @protected
-	 * @returns {boolean} If true the indicator is visible
-	 */
-	Tokenizer.prototype._getIndicatorVisibility = function() {
-		return this._oIndicator && !this._oIndicator.hasClass("sapUiHidden");
 	};
 
-	/**
-	 * Function sets whether the tokens visibility should be adjusted.
-	 *
-	 * @protected
-	 * @param {boolean} If true the the tokenizer should adjust the tokens visibility
-	 */
-	Tokenizer.prototype._setAdjustable = function(bAdjust) {
-		this._bAdjustable = bAdjust;
-	};
-
-	/**
-	 * Function gets whether the tokens visibility should be adjusted.
-	 *
-	 * @protected
-	 * @returns {boolean} If true the the tokenizer should adjust the tokens visibility
-	 */
-	Tokenizer.prototype._getAdjustable = function() {
-		return this._bAdjustable;
+	Tokenizer.prototype._handleResize = function(){
+		this._useCollapsedMode(this.getRenderMode());
+		this.scrollToEnd();
 	};
 
 	/**
@@ -463,13 +694,7 @@ sap.ui.define([
 			return;
 		}
 
-		this._deactivateScrollToEnd();
-
 		domRef.scrollLeft = 0;
-	};
-
-	Tokenizer.prototype._deactivateScrollToEnd = function(){
-		this._deregisterResizeHandler();
 	};
 
 	/**
@@ -489,7 +714,6 @@ sap.ui.define([
 
 	Tokenizer.prototype.onBeforeRendering = function() {
 		this._setTokensAria();
-		this._deregisterResizeHandler();
 	};
 
 	/**
@@ -498,29 +722,19 @@ sap.ui.define([
 	 * @private
 	 */
 	Tokenizer.prototype.onAfterRendering = function() {
-		var aTokens = this.getTokens(),
-			iTokensSize = aTokens.length;
-
-		this.scrollToEnd();
+		var sRenderMode = this.getRenderMode();
 
 		this._oIndicator = this.$().find(".sapMTokenizerIndicator");
+		this._updateTokensAriaSetAttributes();
 
-		// update ARIA information of Tokens depending on size and position in Tokenizer
-		for (var i = 0; i < iTokensSize; i++) {
-			var oTokenDomRef = aTokens[i].getDomRef();
+		// refresh the render mode (loose/narrow) based on whether an indicator should be shown
+		// to ensure that the N-more label is rendered correctly
+		this._useCollapsedMode(sRenderMode);
+		this._registerResizeHandler();
 
-			if (oTokenDomRef) {
-				oTokenDomRef.setAttribute("aria-posinset", i + 1);
-				oTokenDomRef.setAttribute("aria-setsize", iTokensSize);
-			}
+		if (sRenderMode === RenderMode.Loose) {
+			this.scrollToEnd();
 		}
-
-		if (this._getAdjustable()) {
-			// refresh the expanded/collapsed mode based on whether a indicator should be shown
-			// to ensure that the N-more label is rendered correctly
-			this._useCollapsedMode(this._hasMoreIndicator(), true);
-		}
-
 	};
 
 	/**
@@ -529,52 +743,33 @@ sap.ui.define([
 	 * @private
 	 */
 	Tokenizer.prototype.onThemeChanged = function() {
-
-		if (!this._getAdjustable()) {
-			return;
-		}
-
 		this.getTokens().forEach(function(oToken){
-			if (oToken.getDomRef()  && !oToken.$().hasClass("sapMHiddenToken")) {
+			if (oToken.getDomRef() && !oToken.$().hasClass("sapMHiddenToken") && !oToken.getTruncated()) {
 				this._oTokensWidthMap[oToken.getId()] = oToken.$().outerWidth(true);
 			}
 		}.bind(this));
 
-		this._adjustTokensVisibility();
+		this._useCollapsedMode(this.getRenderMode());
 	};
 
 	/**
 	 * Handles the setting of collapsed state.
 	 *
-	 * @param {boolean} bCollapse If true collapses the tokenizer's content
-	 * @param {boolean} bSkipSizeAdjustment If true the tokenizer won't trigger input width adjustment
+	 * @param {string} sRenderMode If true collapses the tokenizer's content
 	 * @private
 	 */
-	Tokenizer.prototype._useCollapsedMode = function(bCollapse, bSkipSizeAdjustment) {
-		var oParent = this.getParent(),
-			aTokens = this._getVisibleTokens();
+	Tokenizer.prototype._useCollapsedMode = function(sRenderMode) {
+		var aTokens = this._getVisibleTokens();
 
 		if (!aTokens.length) {
 			return;
 		}
 
-		if (bCollapse) {
+		if (sRenderMode === RenderMode.Narrow) {
 			this._adjustTokensVisibility();
 		} else {
+			this._setHiddenTokensCount(0);
 			this._showAllTokens();
-		}
-
-		if (!bSkipSizeAdjustment) {
-			oParent._syncInputWidth && setTimeout(oParent["_syncInputWidth"].bind(oParent, this), 0);
-		}
-	};
-
-	Tokenizer.prototype.invalidate = function(oOrigin) {
-		var oParent = this.getParent();
-		if (oParent instanceof sap.m.MultiInput) {
-			oParent.invalidate(oOrigin);
-		} else {
-			Control.prototype.invalidate.call(this, oOrigin);
 		}
 	};
 
@@ -586,24 +781,10 @@ sap.ui.define([
 	 */
 	Tokenizer.prototype.onsapfocusleave = function(oEvent) {
 		// when focus goes to token, keep the select status, otherwise deselect all tokens
-		if (document.activeElement == this.getDomRef() || !this._checkFocus()) {
+		if (document.activeElement === this.getDomRef() || !this._checkFocus()) {
 			this._changeAllTokensSelection(false);
 			this._oSelectionOrigin = null;
 		}
-	};
-
-	/**
-	 * check if all tokens in the tokenizer are selected.
-	 * @returns {boolean} True if all tokens are selected
-	 * @private
-	 */
-	Tokenizer.prototype.isAllTokenSelected = function() {
-		if (this._getVisibleTokens().length === this.getSelectedTokens().length) {
-
-			return true;
-		}
-		return false;
-
 	};
 
 	/**
@@ -627,7 +808,6 @@ sap.ui.define([
 		if ((oEvent.ctrlKey || oEvent.metaKey) && oEvent.which === KeyCodes.A) {
 
 			//to check how many tokens are selected before Ctrl + A in Tokenizer
-			this._iSelectedToken = this.getSelectedTokens().length;
 			bSelectAll = this.getSelectedTokens().length < this._getVisibleTokens().length;
 
 			if (this._getVisibleTokens().length > 0) {
@@ -758,7 +938,7 @@ sap.ui.define([
 		}
 
 		if (Device.browser.msie && window.clipboardData) {
-			/* TODO remove after 1.62 version */
+			/* TODO remove after the end of support for Internet Explorer */
 			window.clipboardData.setData("text", selectedText);
 		} else {
 			document.addEventListener('copy', copyToClipboard);
@@ -810,7 +990,7 @@ sap.ui.define([
 		}
 
 		if (Device.browser.msie && window.clipboardData) {
-			/* TODO remove after 1.62 version */
+			/* TODO remove after the end of support for Internet Explorer */
 			window.clipboardData.setData("text", selectedText);
 		} else {
 			document.addEventListener('cut', cutToClipboard);
@@ -834,6 +1014,7 @@ sap.ui.define([
 		}
 
 		if (aSelectedTokens.length < 2) {
+			oEvent.preventDefault();
 			this.onsapprevious(oEvent);
 		} else {
 			this._focusUnselectedToken(oEvent);
@@ -924,7 +1105,7 @@ sap.ui.define([
 			iTokenLeftOffset = oToken.$().offset().left,
 			iTokenWidth = oToken.$().width();
 
-		if (this._getVisibleTokens().indexOf(oToken) == 0) {
+		if (this._getVisibleTokens().indexOf(oToken) === 0) {
 			this.$().scrollLeft(0);
 			return;
 		}
@@ -936,6 +1117,47 @@ sap.ui.define([
 		if (iTokenLeftOffset - iTokenizerLeftOffset + iTokenWidth > iTokenizerWidth) {
 			this.$().scrollLeft(this.$().scrollLeft() + (iTokenLeftOffset - iTokenizerLeftOffset + iTokenWidth - iTokenizerWidth));
 		}
+	};
+
+	Tokenizer.prototype.ontap = function (oEvent) {
+		var bShiftKey = oEvent.shiftKey,
+			bCtrlKey = (oEvent.ctrlKey || oEvent.metaKey),
+			oTargetToken = oEvent.getMark("tokenTap"),
+			bDeleteToken = oEvent.getMark("tokenDeletePress"),
+			aTokens = this._getVisibleTokens(),
+			oFocusedToken, iFocusIndex, iIndex, iMinIndex, iMaxIndex;
+
+		if (bDeleteToken || !oTargetToken || (!bShiftKey && bCtrlKey)) { // Ctrl
+			this._oSelectionOrigin = null;
+			return;
+		}
+
+		if (!bShiftKey) { // Simple click/tap
+			// simple select, neither ctrl nor shift key was pressed, deselects other tokens
+			this._oSelectionOrigin = oTargetToken;
+			this._changeAllTokensSelection(false, oTargetToken, true);
+		}
+
+		// Shift
+		oFocusedToken = oTargetToken;
+		if (this._oSelectionOrigin) {
+			oFocusedToken = this._oSelectionOrigin;
+		} else {
+			this._oSelectionOrigin = oFocusedToken;
+		}
+
+		iFocusIndex = this.indexOfToken(oFocusedToken);
+		iIndex = this.indexOfToken(oTargetToken);
+		iMinIndex = Math.min(iFocusIndex, iIndex);
+		iMaxIndex = Math.max(iFocusIndex, iIndex);
+
+		aTokens.forEach(function (oToken, i) {
+			if (i >= iMinIndex && i <= iMaxIndex) {
+				oToken.setSelected(true);
+			} else if (!bCtrlKey) {
+				oToken.setSelected(false);
+			}
+		});
 	};
 
 	/**
@@ -956,7 +1178,7 @@ sap.ui.define([
 		// oFocusedElement could be undefined since the focus element might not correspond to an SAPUI5 Control
 		var index = oFocusedElement ? aTokens.indexOf(oFocusedElement) : -1;
 
-		if (index == 0) {
+		if (index === 0) {
 			oEvent.setMarked("forwardFocusToParent");
 			// focus is on first token - we do not handle this event and let it bubble
 			return;
@@ -976,12 +1198,7 @@ sap.ui.define([
 			currentToken = aTokens[index];
 			targetToken.setSelected(true);
 			currentToken.setSelected(true);
-
 		}
-
-		this._deactivateScrollToEnd();
-
-		this._ensureTokenVisible(targetToken);
 
 		// mark the event that it is handled by the control
 		oEvent.setMarked();
@@ -1025,8 +1242,6 @@ sap.ui.define([
 			return;
 		}
 
-		this._deactivateScrollToEnd();
-
 		// mark the event that it is handled by the control
 		oEvent.setMarked();
 		oEvent.preventDefault();
@@ -1037,11 +1252,13 @@ sap.ui.define([
 	 *
 	 * @public
 	 * @param {function} fValidator The validation function
+	 * @deprecated As of version 1.81, replaced by {@link MultiInput.prototype.addValidator}
 	 */
 	Tokenizer.prototype.addValidator = function(fValidator) {
-		if (typeof (fValidator) === "function") {
-			this._aTokenValidators.push(fValidator);
-		}
+		Log.warning(
+			"[Warning]:",
+			"You are attempting to use deprecated method 'addValidator()', please use MultiInput.prototype.addValidator instead.",
+			this);
 	};
 
 	/**
@@ -1049,122 +1266,26 @@ sap.ui.define([
 	 *
 	 * @public
 	 * @param {function} fValidator The validation function
+	 * @deprecated As of version 1.81, replaced by {@link MultiInput.prototype.addValidator}
 	 */
 	Tokenizer.prototype.removeValidator = function(fValidator) {
-		var i = this._aTokenValidators.indexOf(fValidator);
-		if (i !== -1) {
-			this._aTokenValidators.splice(i, 1);
-		}
+		Log.warning(
+			"[Warning]:",
+			"You are attempting to use deprecated method 'addValidator()', please use MultiInput.prototype.addValidator instead.",
+			this);
 	};
 
 	/**
 	 * Function removes all validation callbacks
 	 *
 	 * @public
+	 * @deprecated As of version 1.81, replaced by {@link MultiInput.prototype.addValidator}
 	 */
 	Tokenizer.prototype.removeAllValidators = function() {
-		this._aTokenValidators = [];
-	};
-
-	/**
-	 * Function validates a given token using the set validators.
-	 *
-	 * @private
-	 * @param {object} oParameters Parameter bag containing fields for text, token, suggestionObject and validation callback
-	 * @param {function[]} aValidators [optional] Array of all validators to be used
-	 * @returns {sap.m.Token} A valid token or null
-	 */
-	Tokenizer.prototype._validateToken = function(oParameters, aValidators) {
-		var oToken = oParameters.token;
-		var sText;
-
-		if (oToken && oToken.getText()) {
-			sText = oToken.getText();
-		} else {
-			sText = oParameters.text;
-		}
-
-		var fValidateCallback = oParameters.validationCallback;
-		var oSuggestionObject = oParameters.suggestionObject;
-
-		var i, validator, length;
-
-		if (!aValidators) {
-			aValidators = this._aTokenValidators;
-		}
-
-		length = aValidators.length;
-		if (length === 0) { // no custom validators, just return given token
-			if (!oToken && fValidateCallback) {
-				fValidateCallback(false);
-			}
-			return oToken;
-		}
-
-		for (i = 0; i < length; i++) {
-			validator = aValidators[i];
-
-			oToken = validator({
-				text : sText,
-				suggestedToken : oToken,
-				suggestionObject : oSuggestionObject,
-				asyncCallback : this._getAsyncValidationCallback(aValidators, i, sText, oSuggestionObject, fValidateCallback)
-			});
-
-			if (!oToken) {
-				if (fValidateCallback) {
-					fValidateCallback(false);
-				}
-				return null;
-			}
-
-			if (oToken === Tokenizer.WaitForAsyncValidation) {
-				return null;
-			}
-		}
-
-		return oToken;
-	};
-
-	/**
-	 * Function returns a callback function which is used for executing validators after an asynchronous validator was triggered.
-	 * @param {function[]} aValidators The validator array
-	 * @param {int} iValidatorIndex The current validator index
-	 * @param {string} sInitialText The initial text used for validation
-	 * @param {object} oSuggestionObject A pre-validated token or suggestion item
-	 * @param {function} fValidateCallback Callback after validation has finished
-	 * @returns {function} A callback function which is used for executing validators
-	 * @private
-	 */
-	Tokenizer.prototype._getAsyncValidationCallback = function(aValidators, iValidatorIndex, sInitialText,
-															   oSuggestionObject, fValidateCallback) {
-		var that = this,
-			bAddTokenSuccess;
-
-		return function(oToken) {
-			if (oToken) { // continue validating
-				aValidators = aValidators.slice(iValidatorIndex + 1);
-				oToken = that._validateToken({
-					text : sInitialText,
-					token : oToken,
-					suggestionObject : oSuggestionObject,
-					validationCallback : fValidateCallback
-				}, aValidators);
-				bAddTokenSuccess = that._addUniqueToken(oToken, fValidateCallback);
-
-				if (bAddTokenSuccess) {
-					that.fireTokenUpdate({
-						addedTokens : [oToken],
-						removedTokens : [],
-						type : Tokenizer.TokenUpdateType.Added
-					});
-				}
-			} else {
-				if (fValidateCallback) {
-					fValidateCallback(false);
-				}
-			}
-		};
+		Log.warning(
+			"[Warning]:",
+			"You are attempting to use deprecated method 'addValidator()', please use MultiInput.prototype.addValidator instead.",
+			this);
 	};
 
 	/**
@@ -1176,71 +1297,13 @@ sap.ui.define([
 	 * @param {object} [oParameters.token] Suggested token
 	 * @param {object} [oParameters.suggestionObject] Any object used to find the suggested token
 	 * @param {function} [oParameters.validationCallback] Callback which gets called after validation has finished
+	 * @deprecated As of version 1.81, replaced by {@link MultiInput.prototype.addValidator}
 	 */
 	Tokenizer.prototype.addValidateToken = function(oParameters) {
-		var oToken = this._validateToken(oParameters);
-		this._addUniqueToken(oToken, oParameters.validationCallback);
-	};
-
-	/**
-	 * Private function used by MultiInput which validates the given text and adds a new token if validation was successful.
-	 *
-	 * @private
-	 * @param {object} oParameters Parameter bag containing the following fields:
-	 * @param {string} oParameters.text The source text {sap.m.Token}
-	 * @param {object} [oParameters.token] Suggested token
-	 * @param {object} [oParameters.suggestionObject] Any object used to find the suggested token
-	 * @param {function} [oParameters.validationCallback] Callback which gets called after validation has finished
-	 */
-	Tokenizer.prototype._addValidateToken = function(oParameters) {
-		var oToken = this._validateToken(oParameters),
-			bAddTokenSuccessful = this._addUniqueToken(oToken, oParameters.validationCallback);
-
-		if (bAddTokenSuccessful) {
-			this.fireTokenUpdate({
-				addedTokens : [oToken],
-				removedTokens : [],
-				type : Tokenizer.TokenUpdateType.Added
-			});
-		}
-	};
-
-	/**
-	 * Function adds token if it does not already exist.
-	 *
-	 * @private
-	 * @param {sap.m.Token} oToken The token to be added
-	 * @param {function} fValidateCallback [optional] A validation function callback
-	 * @returns {boolean} True if the token was added
-	 */
-	Tokenizer.prototype._addUniqueToken = function(oToken, fValidateCallback) {
-		if (!oToken) {
-			return false;
-		}
-
-		var tokenExists = this._tokenExists(oToken);
-		if (tokenExists) {
-			var oParent = this.getParent();
-			if (oParent instanceof sap.m.MultiInput && fValidateCallback) {
-				fValidateCallback(false);
-			}
-
-			return false;
-		}
-
-		this.addToken(oToken);
-
-		if (fValidateCallback) {
-			fValidateCallback(true);
-		}
-
-		this.fireTokenChange({
-			addedTokens : [oToken],
-			removedTokens : [],
-			type : Tokenizer.TokenChangeType.TokensChanged
-		});
-
-		return true;
+		Log.warning(
+			"[Warning]:",
+			"You are attempting to use deprecated method 'addValidator()', please use MultiInput.prototype.addValidator instead.",
+			this);
 	};
 
 	/**
@@ -1266,39 +1329,6 @@ sap.ui.define([
 		return this.getDomRef() && containsOrEquals(this.getDomRef(), document.activeElement);
 	};
 
-
-	/**
-	 * Function checks if a given token already exists in the tokens aggregation based on their keys.
-	 *
-	 * @private
-	 * @param {sap.m.Token} oToken The token to search for
-	 * @return {boolean} true if it exists, otherwise false
-	 */
-	Tokenizer.prototype._tokenExists = function(oToken) {
-		var tokens = this.getTokens();
-
-		if (!(tokens && tokens.length)) {
-			return false;
-		}
-
-		var key = oToken.getKey();
-		if (!key) {
-			return false;
-		}
-
-		var length = tokens.length;
-		for (var i = 0; i < length; i++) {
-			var currentToken = tokens[i];
-			var currentKey = currentToken.getKey();
-
-			if (currentKey === key) {
-				return true;
-			}
-		}
-
-		return false;
-	};
-
 	Tokenizer.prototype.addToken = function(oToken, bSuppressInvalidate) {
 		// if tokenizer is in MultiInput
 		var oParent = this.getParent();
@@ -1320,23 +1350,47 @@ sap.ui.define([
 
 		oToken.addEventDelegate({
 			onAfterRendering: function () {
-				if (sap.ui.getCore().isThemeApplied() && oToken.getDomRef() && !oToken.$().hasClass("sapMHiddenToken")) {
+				if (sap.ui.getCore().isThemeApplied() && oToken.getDomRef() && !oToken.getTruncated() && !oToken.$().hasClass("sapMHiddenToken")) {
 					this._oTokensWidthMap[oToken.getId()] = oToken.$().outerWidth(true);
 				}
 			}.bind(this)
 		});
+
+		oToken.attachSelect(function () {
+			var oFocus = this.hasOneTruncatedToken() ? oToken : this;
+
+			if (!this.hasOneTruncatedToken() || this.hasStyleClass("sapMTokenizerIndicatorDisabled")) {
+				return;
+			}
+
+			this.getTokensPopup().setInitialFocus(oFocus);
+			this._togglePopup(this.getTokensPopup());
+		}.bind(this));
+
+		oToken.getAggregation("deleteIcon").attachPress(function () {
+			if (this.getEnabled()) {
+				this.handleTokenDeletion(oToken);
+			}
+		}.bind(this));
+
 		return this;
 	};
 
 	Tokenizer.prototype.removeToken = function(oToken) {
 		oToken = this.removeAggregation("tokens", oToken);
 
-		this._bScrollToEndIsActive = true; //Ensure scroll to end is active after rendering
+		this._updateTokensAriaSetAttributes();
+
+		!this.getTokens().length && this.setFirstTokenTruncated(false);
 
 		this.fireTokenChange({
 			token : oToken,
 			type : Tokenizer.TokenChangeType.Removed
 		});
+
+		if (this.getTokensPopup().isOpen()) {
+			this._fillTokensList(this._getTokensList());
+		}
 
 		return oToken;
 	};
@@ -1364,6 +1418,8 @@ sap.ui.define([
 
 		var aRemoved = this.removeAllAggregation("tokens");
 
+		this.setFirstTokenTruncated(false);
+
 		if (typeof (bFireEvent) === "boolean" && !bFireEvent) {
 			return aRemoved;
 		}
@@ -1385,6 +1441,11 @@ sap.ui.define([
 	Tokenizer.prototype.updateTokens = function () {
 		this.destroyTokens();
 		this.updateAggregation("tokens");
+	};
+
+	Tokenizer.prototype.destroyTokens = function() {
+		this.setFirstTokenTruncated(false);
+		return this.destroyAggregation("tokens");
 	};
 
 	/**
@@ -1440,6 +1501,10 @@ sap.ui.define([
 
 		this.scrollToEnd();
 
+		if (this.getTokensPopup().isOpen()) {
+			this._fillTokensList(this._getTokensList());
+		}
+
 		this.fireTokenChange({
 			addedTokens : [],
 			removedTokens : aTokensToBeDeleted,
@@ -1459,15 +1524,7 @@ sap.ui.define([
 			bSelect = true;
 		}
 
-		var tokens = this._getVisibleTokens(),
-			length = tokens.length,
-			i;
-
-		for (i = 0; i < length; i++) {
-			tokens[i].setSelected(bSelect);
-		}
-
-		this._doSelect();
+		this._changeAllTokensSelection(bSelect);
 
 		return this;
 	};
@@ -1475,23 +1532,25 @@ sap.ui.define([
 	/**
 	 * Function selects/deselects all tokens and fires the correct "select" or "deselect" events.
 	 * @param {boolean} bSelect Whether the tokens should be selected
-	 * @param {sap.m.Token} skipToken  [optional] this token will be skipped when changing the selection
+	 * @param {sap.m.Token} oTokenToSkip  [optional] this token will be skipped when changing the selection
+	 * @param {boolean} bSkipClipboardSelect  [optional] selecting the hidden cli div to enable copy to clipboard will be skipped
 	 * @private
 	 */
-	Tokenizer.prototype._changeAllTokensSelection = function(bSelect, skipToken) {
-		var tokens = this._getVisibleTokens(),
-			length = tokens.length,
-			token,
-			i;
+	Tokenizer.prototype._changeAllTokensSelection = function (bSelect, oTokenToSkip, bSkipClipboardSelect) {
+		var aTokens = this._getVisibleTokens();
 
-		for (i = 0; i < length; i++) {
-			token = tokens[i];
-			if (token !== skipToken) {
-				token._changeSelection(bSelect);
+		aTokens
+			.filter(function (oToken) {
+				return oToken !== oTokenToSkip;
+			})
+			.forEach(function (oToken) {
+				oToken.setSelected(bSelect);
+			});
+
+			if (!bSkipClipboardSelect) {
+				this._doSelect();
 			}
-		}
 
-		this._doSelect();
 
 		return this;
 	};
@@ -1502,117 +1561,11 @@ sap.ui.define([
 	 * @public
 	 * @returns {sap.m.Token[]} Array of selected tokens or empty array
 	 */
-	Tokenizer.prototype.getSelectedTokens = function() {
-		var aSelectedTokens = [],
-			tokens = this._getVisibleTokens(),
-			i,
-			token,
-			length = tokens.length;
-
-		for (i = 0; i < length; i++) {
-			token = tokens[i];
-			if (token.getSelected()) {
-				aSelectedTokens.push(token);
-			}
-		}
-		return aSelectedTokens;
-	};
-
-	/**
-	 * Function is called when token's delete icon was pressed function destroys token from Tokenizer's aggregation.
-	 *
-	 * @private
-	 * @param {sap.m.Token} token  The deleted token
-	 */
-	Tokenizer.prototype._onTokenDelete = function(token) {
-		if (token && this.getEditable() && this.getEnabled()) {
-
-			var eventResult = this.fireTokenUpdate({
-				addedTokens : [],
-				removedTokens : [token],
-				type : Tokenizer.TokenUpdateType.Removed
+	Tokenizer.prototype.getSelectedTokens = function () {
+		return this._getVisibleTokens()
+			.filter(function (oToken) {
+				return oToken.getSelected();
 			});
-
-			if (!eventResult) {
-				return;
-			}
-
-			delete this._oTokensWidthMap[token.getId()];
-			token.destroy();
-
-			this.fireTokenChange({
-				addedTokens : [],
-				removedTokens : [token],
-				type : Tokenizer.TokenChangeType.TokensChanged
-			});
-		}
-	};
-
-	Tokenizer.prototype._onTokenSelect = function(oTokenSource, ctrlKey, shiftKey) {
-		var aTokens = this._getVisibleTokens(),
-			oToken,
-			i;
-
-		if (shiftKey) {
-			var oFocusedToken = this._getFocusedToken();
-			if (!oFocusedToken) {
-				this._oSelectionOrigin = null;
-				return;
-			}
-
-			if (this._oSelectionOrigin) {
-				oFocusedToken = this._oSelectionOrigin;
-			} else {
-				this._oSelectionOrigin = oFocusedToken;
-			}
-
-			var iFocusIndex = this.indexOfToken(oFocusedToken),
-				iIndex = this.indexOfToken(oTokenSource),
-				iMinIndex = Math.min(iFocusIndex, iIndex),
-				iMaxIndex = Math.max(iFocusIndex, iIndex);
-
-			for (i = 0; i < aTokens.length; i++) {
-				oToken = aTokens[i];
-				if (i >= iMinIndex && i <= iMaxIndex) {
-					oToken._changeSelection(true);
-				} else if (!ctrlKey) {
-					oToken._changeSelection(false);
-				}
-			}
-
-			return;
-		}
-
-		this._oSelectionOrigin = null;
-
-		// ctrl key was pressed, do nothing, the token handled it
-		if (ctrlKey) {
-			return;
-		}
-
-		// simple select, neither ctrl nor shift key was pressed, deselects other tokens
-		this._oSelectionOrigin = oTokenSource;
-
-		for (i = 0; i < aTokens.length; i++) {
-			oToken = aTokens[i];
-
-			if (oToken !== oTokenSource) {
-				oToken._changeSelection(false);
-			}
-		}
-	};
-
-	Tokenizer.prototype._getFocusedToken = function() {
-		var oFocusedToken = sap.ui.getCore().byId(document.activeElement.id);
-
-		// if the focus is not on a Token in this Tokenizer do nothing
-		if (!oFocusedToken ||
-			!(oFocusedToken instanceof sap.m.Token) ||
-			this.indexOfToken(oFocusedToken) == -1) {
-			return null;
-		}
-
-		return oFocusedToken;
 	};
 
 	/**
@@ -1622,7 +1575,11 @@ sap.ui.define([
 	 * @private
 	 */
 	Tokenizer.prototype.onsaphome = function(oEvent) {
-		this._getVisibleTokens()[0].focus();
+		var aAvailableTokens = this.getTokens().filter(function (oToken) {
+			return oToken.getDomRef() && !oToken.getDomRef().classList.contains("sapMHiddenToken");
+		});
+
+		aAvailableTokens.length && aAvailableTokens[0].focus();
 		this.scrollToStart();
 
 		oEvent.preventDefault();
@@ -1659,17 +1616,19 @@ sap.ui.define([
 	 * @param {jQuery.Event} oEvent The occuring event
 	 * @protected
 	 */
-	Tokenizer.prototype.onclick = function(oEvent) {
+	Tokenizer.prototype.onclick = function (oEvent) {
 		var bFireIndicatorHandler;
-
-			bFireIndicatorHandler = jQuery(oEvent.target).hasClass("sapMTokenizerIndicator") || (oEvent.target === this.getFocusDomRef());
 
 		if (!this.getEnabled()) {
 			return;
 		}
 
+		bFireIndicatorHandler = !this.hasStyleClass("sapMTokenizerIndicatorDisabled") &&
+			(oEvent.target === this.getFocusDomRef()
+				|| oEvent.target.classList.contains("sapMTokenizerIndicator"));
+
 		if (bFireIndicatorHandler) {
-			this._fnOnNMorePress && this._fnOnNMorePress(oEvent);
+			this._handleNMoreIndicatorPress();
 		}
 	};
 
@@ -1697,6 +1656,25 @@ sap.ui.define([
 	 */
 	Tokenizer.prototype.exit = function() {
 		this._deregisterResizeHandler();
+
+		if (this._oTokensList) {
+			this._oTokensList.destroy();
+			this._oTokensList = null;
+		}
+
+		if (this._oScroller) {
+			this._oScroller.destroy();
+			this._oScroller = null;
+		}
+
+		if (this._oPopup) {
+			this._oPopup.destroy();
+			this._oPopup = null;
+		}
+
+		this._oTokensWidthMap = null;
+		this._oIndicator = null;
+		this._aTokenValidators = null;
 	};
 
 	/**
@@ -1740,6 +1718,26 @@ sap.ui.define([
 	};
 
 	/**
+	 * Sets accessibility attributes aria-setsize and aria-posinset to the tokens.
+	 *
+	 * @private
+	 */
+	Tokenizer.prototype._updateTokensAriaSetAttributes = function () {
+		var aTokens = this.getTokens(),
+			iTokensSize = aTokens.length;
+
+		// update ARIA information of Tokens depending on size and position in Tokenizer
+		for (var i = 0; i < iTokensSize; i++) {
+			var oTokenDomRef = aTokens[i].getDomRef();
+
+			if (oTokenDomRef) {
+				oTokenDomRef.setAttribute("aria-posinset", i + 1);
+				oTokenDomRef.setAttribute("aria-setsize", iTokensSize);
+			}
+		}
+	};
+
+	/**
 	 * Selects the hidden clip div to enable copy to clipboad.
 	 *
 	 * @private
@@ -1754,28 +1752,10 @@ sap.ui.define([
 				oRange.selectNodeContents(this.getDomRef("clip"));
 				oSelection.addRange(oRange);
 			}
-			if (window.clipboardData && oFocusRef.id == this.getId() + "-clip" && this.getDomRef()) {
+			if (window.clipboardData && oFocusRef.id === this.getId() + "-clip" && this.getDomRef()) {
 				this.getDomRef().focus();
 			}
 		}
-	};
-
-	/**
-	 * Returns if tokens should be rendered in reverse order.
-	 * @private
-	 * @returns {boolean} true if tokens should be rendered in reverse order
-	 */
-	Tokenizer.prototype.getReverseTokens = function() {
-		return !!this._reverseTokens;
-	};
-
-	/**
-	 * Sets internal property defining if tokens should be rendered in reverse order.
-	 * @param {boolean} bReverseTokens Whether tokens should be rendered in reverse
-	 * @private
-	 */
-	Tokenizer.prototype.setReverseTokens = function(bReverseTokens) {
-		this._reverseTokens = bReverseTokens;
 	};
 
 	/**
@@ -1800,6 +1780,31 @@ sap.ui.define([
 	};
 
 	/**
+	 * Sets the count of hidden tokens that will be used for the n-More indicator.
+	 * This also determines if the n-More indicator will be shown or not.
+	 *
+	 * @param {number} iCount The number of hidden tokens
+	 * @returns {sap.m.Tokenizer} this instance for method chaining
+	 * @private
+	 */
+	Tokenizer.prototype._setHiddenTokensCount = function (iCount) {
+		iCount = this.validateProperty("hiddenTokensCount", iCount);
+		return this.setProperty("hiddenTokensCount", iCount);
+	};
+
+	/**
+	 * Gets the count of hidden tokens that will be used for the n-More indicator.
+	 * If the count is 0, there is no n-More indicator shown.
+	 *
+	 * @since 1.80
+	 * @public
+	 * @returns {number} The number of hidden tokens
+	 */
+	Tokenizer.prototype.getHiddenTokensCount = function () {
+		return this.getProperty("hiddenTokensCount");
+	};
+
+	/**
 	 * Gets the accessibility text aggregation id.
 	 * @returns {string} Returns the InvisibleText control id
 	 * @protected
@@ -1819,9 +1824,6 @@ sap.ui.define([
 		Added : "added",
 		Removed : "removed"
 	};
-
-	Tokenizer.WaitForAsyncValidation = "sap.m.Tokenizer.WaitForAsyncValidation";
-
 
 	return Tokenizer;
 

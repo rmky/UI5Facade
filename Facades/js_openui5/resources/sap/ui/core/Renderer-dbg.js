@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -9,15 +9,15 @@ sap.ui.define([
 	"sap/base/util/isPlainObject",
 	"sap/base/util/ObjectPath",
 	"sap/base/assert",
-	"sap/ui/thirdparty/jquery"
-], function(isPlainObject, ObjectPath, assert, jQuery) {
+	"sap/base/util/extend"
+], function(isPlainObject, ObjectPath, assert, extend) {
 	"use strict";
 
 	/**
 	 * @classdesc Base Class for a Renderer.
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @namespace
 	 * @public
 	 * @alias sap.ui.core.Renderer
@@ -49,7 +49,7 @@ sap.ui.define([
 		var oChildRenderer = Object.create(this);
 		// subclasses should expose the modern signature variant only
 		oChildRenderer.extend = createExtendedRenderer;
-		jQuery.extend(oChildRenderer, oRendererInfo);
+		extend(oChildRenderer, oRendererInfo);
 
 		// expose the renderer globally
 		ObjectPath.set(sName, oChildRenderer);

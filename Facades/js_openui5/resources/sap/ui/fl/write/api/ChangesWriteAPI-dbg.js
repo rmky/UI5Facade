@@ -1,6 +1,6 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -8,7 +8,8 @@ sap.ui.define([
 	"sap/ui/fl/apply/_internal/changes/Applier",
 	"sap/ui/fl/apply/_internal/changes/Reverter",
 	"sap/ui/fl/apply/_internal/ChangesController",
-	"sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory",
+	"sap/ui/fl/apply/_internal/appVariant/DescriptorChangeTypes",
+	"sap/ui/fl/write/_internal/appVariant/AppVariantInlineChangeFactory",
 	"sap/ui/fl/descriptorRelated/api/DescriptorChangeFactory",
 	"sap/base/Log",
 	"sap/ui/core/Component",
@@ -20,7 +21,8 @@ sap.ui.define([
 	Applier,
 	Reverter,
 	ChangesController,
-	DescriptorInlineChangeFactory,
+	DescriptorChangeTypes,
+	AppVariantInlineChangeFactory,
 	DescriptorChangeFactory,
 	Log,
 	Component,
@@ -56,7 +58,7 @@ sap.ui.define([
 		create: function(mPropertyBag) {
 			var oFlexController;
 			// descriptor change
-			if (includes(DescriptorInlineChangeFactory.getDescriptorChangeTypes(), mPropertyBag.changeSpecificData.changeType)) {
+			if (includes(DescriptorChangeTypes.getChangeTypes(), mPropertyBag.changeSpecificData.changeType)) {
 				oFlexController = ChangesController.getDescriptorFlexControllerInstance(mPropertyBag.selector);
 				var sReference = oFlexController.getComponentName();
 				var sLayer;
@@ -67,9 +69,16 @@ sap.ui.define([
 					delete mPropertyBag.changeSpecificData.layer;
 				}
 
-				return DescriptorInlineChangeFactory.createDescriptorInlineChange(
-					mPropertyBag.changeSpecificData.changeType, mPropertyBag.changeSpecificData.content, mPropertyBag.changeSpecificData.texts
-				)
+				var oInlineChange = {
+					changeType: mPropertyBag.changeSpecificData.changeType,
+					content: mPropertyBag.changeSpecificData.content
+				};
+
+				if (mPropertyBag.changeSpecificData.texts) {
+					oInlineChange.texts = mPropertyBag.changeSpecificData.texts;
+				}
+
+				return AppVariantInlineChangeFactory.createDescriptorInlineChange(oInlineChange)
 					.then(function (oAppDescriptorChangeContent) {
 						return new DescriptorChangeFactory().createNew(
 							sReference, oAppDescriptorChangeContent, sLayer, mPropertyBag.selector
@@ -82,13 +91,22 @@ sap.ui.define([
 			}
 
 			// flex change
-			oFlexController = ChangesController.getFlexControllerInstance(mPropertyBag.selector);
+			if (mPropertyBag.selector.name && mPropertyBag.selector.view) {
+				oFlexController = ChangesController.getFlexControllerInstance(mPropertyBag.selector.view);
+			} else {
+				oFlexController = ChangesController.getFlexControllerInstance(mPropertyBag.selector);
+			}
+
 			// if a component instance is passed only a base change is created
 			if (mPropertyBag.selector instanceof Component) {
 				return oFlexController.createBaseChange(mPropertyBag.changeSpecificData, mPropertyBag.selector);
 			}
+			// if a extension point selector is passed a change with an extension point selector is created
+			if (mPropertyBag.selector.name && mPropertyBag.selector.view) {
+				return oFlexController.createChangeWithExtensionPointSelector(mPropertyBag.changeSpecificData, mPropertyBag.selector);
+			}
 			// in other cases if a control instance or selector is passed then change handler's completeChangeContent() is called
-			return oFlexController.createChange(mPropertyBag.changeSpecificData, mPropertyBag.selector);
+			return oFlexController.createChangeWithControlSelector(mPropertyBag.changeSpecificData, mPropertyBag.selector);
 		},
 
 		/**
@@ -104,17 +122,29 @@ sap.ui.define([
 		 * @ui5-restricted
 		 */
 		apply: function(mPropertyBag) {
+			if (!mPropertyBag.element instanceof Element) {
+				return Promise.reject("Please provide an Element");
+			}
+
 			var oFlexController = ChangesController.getFlexControllerInstance(mPropertyBag.element);
 			mPropertyBag.appComponent = ChangesController.getAppComponentForSelector(mPropertyBag.element);
 			if (!mPropertyBag.modifier) {
 				mPropertyBag.modifier = JsControlTreeModifier;
 			}
-			var bDependenciesExist = oFlexController.checkForOpenDependenciesForControl(mPropertyBag.change.getSelector(), mPropertyBag.modifier, mPropertyBag.appComponent);
-			if (!bDependenciesExist && mPropertyBag.element instanceof Element) {
-				return Applier.applyChangeOnControl(mPropertyBag.change, mPropertyBag.element, _omit(mPropertyBag, ["element", "change"]));
-			}
 			// TODO: Descriptor apply function
-			return Promise.reject(new Error("The following Change cannot be applied because of a dependency: " + mPropertyBag.change.getId()));
+			return Applier.applyChangeOnControl(mPropertyBag.change, mPropertyBag.element, _omit(mPropertyBag, ["element", "change"]))
+			.then(function(oResult) {
+				var bDependenciesExist = oFlexController.checkForOpenDependenciesForControl(mPropertyBag.change.getSelector(), mPropertyBag.appComponent);
+				if (bDependenciesExist) {
+					return ChangesWriteAPI.revert({
+						change: mPropertyBag.change,
+						element: mPropertyBag.element
+					}).then(function() {
+						throw Error("The following Change cannot be applied because of a dependency: " + mPropertyBag.change.getId());
+					});
+				}
+				return oResult;
+			});
 		},
 
 		/**

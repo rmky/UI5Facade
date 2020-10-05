@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -54,7 +54,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -106,17 +106,17 @@ sap.ui.define([
 		}
 	});
 
-	/**
+	/*
 	 * STATIC MEMBERS
 	 */
 
 	Breadcrumbs.STYLE_MAPPER = {
-		Slash: "&#047;",
-		BackSlash: "&#092;",
-		DoubleSlash: "&#047;&#047;",
-		DoubleBackSlash: "&#092;&#092;",
-		GreaterThan: "&gt;",
-		DoubleGreaterThan: "&#187;"
+		Slash: "/",
+		BackSlash: "\\",
+		DoubleSlash: "//",
+		DoubleBackSlash: "\\\\",
+		GreaterThan: ">",
+		DoubleGreaterThan: ">>"
 	};
 
 	/*************************************** Framework lifecycle events ******************************************/
@@ -182,18 +182,26 @@ sap.ui.define([
 				icon: IconPool.getIconURI("slim-arrow-down"),
 				type: SelectType.IconOnly,
 				tooltip: BreadcrumbsRenderer._getResourceBundleText("BREADCRUMB_SELECT_TOOLTIP")
-			})));
+			})), true);
 		}
 		return this.getAggregation("_select");
 	};
 
 	Breadcrumbs.prototype._getCurrentLocation = function () {
 		if (!this.getAggregation("_currentLocation")) {
-			this.setAggregation("_currentLocation", new Text({
+			var oCurrentLocation = new Text({
 				id: this._getAugmentedId("currentText"),
 				text: this.getCurrentLocationText(),
 				wrapping: false
-			}).addStyleClass("sapMBreadcrumbsCurrentLocation"));
+			}).addStyleClass("sapMBreadcrumbsCurrentLocation");
+
+			oCurrentLocation.addEventDelegate({
+				onAfterRendering: function () {
+					oCurrentLocation.$().attr("aria-current", "page");
+				}
+			});
+
+			this.setAggregation("_currentLocation", oCurrentLocation).addStyleClass("sapMBreadcrumbsCurrentLocation");
 		}
 		return this.getAggregation("_currentLocation");
 	};
@@ -598,21 +606,20 @@ sap.ui.define([
 	};
 
 	/**
-	* Custom setter for the <code>Breadcrumbs</code> separator style.
-	*
-	* @returns {object} this
-	* @param {string} sSeparatorStyle
-	* @public
-	* @since 1.71
-	*/
+	 * Custom setter for the <code>Breadcrumbs</code> separator style.
+	 *
+	 * @returns {sap.m.Breadcrumbs} this
+	 * @param {sap.m.BreadcrumbsSeparatorStyle} sSeparatorStyle
+	 * @public
+	 * @since 1.71
+	 */
 	Breadcrumbs.prototype.setSeparatorStyle = function (sSeparatorStyle) {
-		var sSeparatorSymbol = Breadcrumbs.STYLE_MAPPER[sSeparatorStyle];
-		if (!sSeparatorSymbol){
-			return this;
+		this.setProperty("separatorStyle", sSeparatorStyle);
+		var sSeparatorSymbol = Breadcrumbs.STYLE_MAPPER[this.getSeparatorStyle()];
+		if (sSeparatorSymbol){
+			this._sSeparatorSymbol = sSeparatorSymbol;
 		}
-
-		this._sSeparatorSymbol = sSeparatorSymbol;
-		return this.setProperty("separatorStyle", sSeparatorStyle);
+		return this;
 	};
 
 	/**

@@ -2,7 +2,7 @@
 
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -56,16 +56,6 @@ html .sapUxAPObjectPageLayout-Std-Desktop .sapUxAPAnchorBar.sapMTB
 
 .sapUxAPObjectPageNavigation > .sapMTB.sapMTB-Transparent-CTX > .anchorBarArrow .sapMBtn:hover > .sapMBtnHoverable {
 	background: @sapUiButtonHoverBackground;
-}
-
-.sapMTB-Transparent-CTX .sapUxAPAnchorBarButton.sapMBtn:not(.sapMBtnDisabled) > .sapMBtnInner:not(.sapMToggleBtnPressed):not(.sapMBtnEmphasized):not(.sapMBtnAccept):not(.sapMBtnReject):not(.sapMBtnActive),
-.sapMTB-Transparent-CTX .sapUxAPAnchorBarButton.sapMBtn > .sapMBtnInner:not(.sapMToggleBtnPressed):not(.sapMBtnEmphasized):not(.sapMBtnAccept):not(.sapMBtnReject):not(.sapMBtnGhost):not(.sapMBtnActive):hover,
-.sapMTB-Transparent-CTX .sapUxAPAnchorBarButton.sapMMenuBtn .sapMSBText > .sapMBtnInner:not(.sapMToggleBtnPressed):not(.sapMBtnEmphasized):not(.sapMBtnAccept):not(.sapMBtnReject):not(.sapMBtnGhost):not(.sapMBtnActive):hover,
-.sapMTB-Transparent-CTX .sapUxAPAnchorBarButton.sapMMenuBtn .sapMSBArrow > .sapMBtnInner:not(.sapMToggleBtnPressed):not(.sapMBtnEmphasized):not(.sapMBtnAccept):not(.sapMBtnReject):not(.sapMBtnGhost):not(.sapMBtnActive):hover,
-.sapUxAPAnchorBarButton.sapMMenuBtn.sapMMenuBtnSplit:not(.sapMBtnDisabled) .sapMSBActive > .sapMBtnInner,
-.sapUxAPAnchorBarButton.sapMMenuBtn .sapMSBText:hover > .sapMBtnInner,
-.sapUxAPAnchorBarButton.sapMMenuBtn .sapMSBArrow:hover > .sapMBtnInner {
-	background: none;
 }
 
 .sapUxAPAnchorBar .sapUxAPAnchorBarButton .sapMBtnIcon,
@@ -151,7 +141,7 @@ html[dir=rtl] .sapUxAPAnchorBar.sapUxAPAnchorBarScrollLeft .anchorBarArrowLeft {
 }
 
 /* OVERVIEW BUTTON IE, Edge focus fix */
-/* TODO remove after 1.62 version */
+/* TODO remove after the end of support for Internet Explorer */
 html[data-sap-ui-browser^="ie"],
 html[data-sap-ui-browser^="ed"] {
 	.sapUxAPAnchorBar.sapUxAPAnchorBarOverflow .sapUxAPHierarchicalSelect.sapMSltIconOnly:not(.sapMSltPressed):focus,
@@ -165,7 +155,7 @@ html[data-sap-ui-browser^="ed"] {
 	}
 }
 
-/* TODO remove after 1.62 version */
+/* TODO remove after the end of support for Internet Explorer */
 html[data-sap-ui-browser^="ie"] .sapUiSizeCompact .sapUxAPObjectPageLayout-Std-Tablet,
 html[data-sap-ui-browser^="ed"] .sapUiSizeCompact .sapUxAPObjectPageLayout-Std-Tablet{
 	.sapUxAPAnchorBar.sapUxAPAnchorBarOverflow .sapUxAPHierarchicalSelect.sapMSltIconOnly:not(.sapMSltPressed):focus .sapMSltIcon,
@@ -343,7 +333,7 @@ html[data-sap-ui-browser^="cr4"].sap-phone {
 	}
 }
 
-/* TODO remove after 1.62 version */
+/* TODO remove after the end of support for Internet Explorer */
 html[data-sap-ui-browser^="ie"].sap-desktop,
 html[data-sap-ui-browser^="ed"].sap-desktop {
 	.sapUxAPHierarchicalSelect.sapMSltHoverable.sapMSltIconOnly.sapMSlt:not(.sapMSltPressed):focus {
@@ -488,16 +478,9 @@ html .sapUxAPObjectPageLayout-Std-Desktop, html .sapUxAPObjectPageLayout-Std-Tab
 	width: auto;
 }
 
-// title hover
-.sapUxAPObjectPageLayout.sapUxAPObjectPageLayoutTitleClickEnabled .sapFDynamicPageTitle:hover {
-	background: @sapUiHighlight;
-	box-shadow: @sapUiShadowHeader;
-}
-
 // toggle header visual indicator
 .sapUxAPObjectPageLayout {
   &.sapUxAPObjectPageLayoutTitleClickEnabled {
-    .sapFDynamicPageTitle:hover,
     &.sapUxAPObjectPageLayoutTitleForceHovered .sapFDynamicPageTitle {
       background: @sapUiHighlight;
       box-shadow: @sapUiShadowHeader;
@@ -549,7 +532,7 @@ html .sapUxAPObjectPageLayout-Std-Desktop, html .sapUxAPObjectPageLayout-Std-Tab
 }
 
 /* IE ignores outline-offset. Use an overlay: */
-/* TODO remove after 1.62 version */
+/* TODO remove after the end of support for Internet Explorer */
 html[data-sap-ui-browser^="ie"].sap-desktop {
 	.sapUxAPObjectPageSection:focus:before {
 		border-width: 0.125rem;
@@ -571,7 +554,7 @@ html[data-sap-ui-browser^="ie"].sap-desktop {
 }
 
 /* IE ignores outline-offset. Use an overlay: */
-/* TODO remove after 1.62 version */
+/* TODO remove after the end of support for Internet Explorer */
 html[data-sap-ui-browser^="ie"].sap-desktop {
 	.sapUxAPObjectPageSubSection:focus:before {
 		border-width: 0.125rem;

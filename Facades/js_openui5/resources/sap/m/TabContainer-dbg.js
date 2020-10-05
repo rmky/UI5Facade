@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -13,9 +13,10 @@ sap.ui.define([
 	'./TabContainerRenderer',
 	'./TabStrip',
 	'./TabStripItem',
-	'./Button'
+	'./Button',
+	'sap/ui/Device'
 ],
-	function(library, Control, IconPool, ResponsivePaddingsEnablement, TabContainerRenderer, TabStrip, TabStripItem, Button) {
+	function(library, Control, IconPool, ResponsivePaddingsEnablement, TabContainerRenderer, TabStrip, TabStripItem, Button, Device) {
 		"use strict";
 
 		// shortcut for sap.m.ButtonType
@@ -59,13 +60,13 @@ sap.ui.define([
 		 * As the control is expected to occupy the whole parent, it should be the only child of its parent.
 		 *
 		 * When using the <code>sap.m.TabContainer</code> in SAP Quartz theme, the breakpoints and layout paddings could be determined by the container's width.
-		 * To enable this concept and add responsive padding to the the <code>TabContainer</code> control, you may add the following class:
+		 * To enable this concept and add responsive padding to the <code>TabContainer</code> control, you may add the following class:
 		 * <code>sapUiResponsivePadding--header</code>.
 		 *
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 *
 		 * @constructor
 		 * @public
@@ -216,7 +217,7 @@ sap.ui.define([
 		};
 
 		ResponsivePaddingsEnablement.call(TabContainer.prototype, {
-			header: {selector: ".sapMTabStribContainer"}
+			header: {selector: ".sapMTabStripContainer"}
 		});
 
 		/**
@@ -400,7 +401,8 @@ sap.ui.define([
 		 * @public
 		 */
 		TabContainer.prototype.removeItem = function(vItem) {
-			var bIsSelected;
+			var oTabStrip = this._getTabStrip(),
+				bIsSelected, oTab;
 
 			if (typeof vItem === "undefined" || vItem === null) {
 				return null;
@@ -408,9 +410,16 @@ sap.ui.define([
 
 			//Remove the corresponding TabContainerItem
 			vItem = this.removeAggregation("items", vItem);
+
 			// The selection flag of the removed item
 			bIsSelected = vItem.getId() === this.getSelectedItem();
-			this._getTabStrip().removeItem(this._toTabStripItem(vItem));
+
+			oTab = this._toTabStripItem(vItem);
+			if (oTab.getId() === oTabStrip.getSelectedItem()) {
+				oTabStrip.removeAllAssociation("selectedItem", true);
+			}
+			oTabStrip.removeItem(oTab);
+
 			// Perform selection switch
 			this._moveToNextItem(bIsSelected);
 
@@ -468,7 +477,8 @@ sap.ui.define([
 					icon: oItem.getIcon(),
 					iconTooltip: oItem.getIconTooltip(),
 					modified: oItem.getModified(),
-					tooltip: oItem.getTooltip()
+					tooltip: oItem.getTooltip(),
+					customData: oItem.getCustomData()
 				})
 			);
 
@@ -505,7 +515,8 @@ sap.ui.define([
 					icon: oItem.getIcon(),
 					iconTooltip: oItem.getIconTooltip(),
 					modified: oItem.getModified(),
-					tooltip: oItem.getTooltip()
+					tooltip: oItem.getTooltip(),
+					customData: oItem.getCustomData()
 				}),
 				iIndex
 			);
@@ -558,10 +569,15 @@ sap.ui.define([
 		TabContainer.prototype.setShowAddNewButton = function (bShowButton) {
 			this.setProperty("showAddNewButton", bShowButton, true);
 
+			if (Device.system.phone) {
+				bShowButton ? this.addStyleClass("sapUiShowAddNewButton") : this.removeStyleClass("sapUiShowAddNewButton");
+			}
+
 			var oTabStrip = this._getTabStrip();
 			if (oTabStrip) {
 				oTabStrip.setAddButton(bShowButton ? this._getAddNewTabButton() : null);
 			}
+
 			return this;
 		};
 

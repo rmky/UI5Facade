@@ -1,11 +1,11 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
-sap.ui.define([],
-	function() {
+sap.ui.define([ "sap/ui/Device"],
+	function(Device) {
 		"use strict";
 		/* global Map */
 
@@ -13,7 +13,9 @@ sap.ui.define([],
 		 * GridContainer renderer
 		 * @namespace
 		 */
-		var GridContainerRenderer = {};
+		var GridContainerRenderer = {
+			apiVersion: 2
+		};
 
 		/**
 		 * Renders the HTML for the given control, using the provided {@link sap.ui.core.RenderManager}.
@@ -23,42 +25,55 @@ sap.ui.define([],
 		 */
 		GridContainerRenderer.render = function(rm, control) {
 
-			rm.write('<div');
-			rm.writeControlData(control);
+			rm.openStart('div', control);
 
-			rm.addClass("sapFGridContainer");
+			rm.accessibilityState(control, {
+				role: "list",
+				roledescription: control._oRb.getText("GRIDCONTAINER_ROLEDESCRIPTION")
+			});
+			rm.class("sapFGridContainer");
 
 			if (control.getSnapToRow()) {
-				rm.addClass("sapFGridContainerSnapToRow");
+				rm.class("sapFGridContainerSnapToRow");
 			}
 
 			if (control.getAllowDenseFill()) {
-				rm.addClass("sapFGridContainerDenseFill");
+				rm.class("sapFGridContainerDenseFill");
 			}
-
-			rm.writeClasses();
 
 			// Add inline styles
 			if (control.getWidth()) {
-				rm.addStyle("width", control.getWidth());
+				rm.style("width", control.getWidth());
 			}
+			if (control.getMinHeight()) {
+				rm.style("min-height", control.getMinHeight());
+			}
+
 			this.addGridStyles(rm, control);
-			rm.writeStyles();
 
 			// Add tooltip
 			var tooltip = control.getTooltip_AsString();
 			if (tooltip) {
-				rm.writeAttributeEscaped("title", tooltip);
+				rm.attr("title", tooltip);
 			}
 
 			// Close opening tag
-			rm.write(">");
+			rm.openEnd();
 
-			control.getItems().forEach(function (oItem) {
-				this.renderItem(rm, oItem, control);
-			}.bind(this));
+			// dummy keyboard handling area
+			this.renderDummyArea(rm, control, "before", -1);
 
-			rm.write("</div>");
+			var iIndex = 0,
+				aItems = control.getItems();
+
+			for (iIndex = 0; iIndex < aItems.length; iIndex++) {
+				 this.renderItem(rm, aItems[iIndex], control, iIndex, aItems.length);
+			}
+
+			// dummy keyboard handling area
+			this.renderDummyArea(rm, control, "after", -1);
+
+			rm.close("div");
 		};
 
 		/**
@@ -70,7 +85,7 @@ sap.ui.define([],
 		GridContainerRenderer.addGridStyles = function(rm, oControl) {
 			var mStyles = oControl._getActiveGridStyles();
 			for (var sName in mStyles) {
-				rm.addStyle(sName, mStyles[sName]);
+				rm.style(sName, mStyles[sName]);
 			}
 		};
 
@@ -80,27 +95,34 @@ sap.ui.define([],
 		 * @param {sap.ui.core.Control} oItem The grid item
 		 * @param {sap.ui.core.Control} oControl The grid
 		 */
-		GridContainerRenderer.renderItem = function(rm, oItem, oControl) {
+		GridContainerRenderer.renderItem = function(rm, oItem, oControl, iIndex, iSize) {
 			var mStylesInfo = GridContainerRenderer.getStylesForItemWrapper(oItem, oControl),
 				mStyles = mStylesInfo.styles,
 				aClasses = mStylesInfo.classes;
 
-			rm.write("<div");
+			rm.openStart("div", oControl.getId() + "-item-" + iIndex);
+
+			rm.accessibilityState(oControl, {
+				role: "listitem",
+				keyshortcuts: oControl._oRb.getText("GRIDCONTAINER_ITEM_KEYSHORTCUTS"),
+				labelledby: oItem.getId()
+			});
 
 			mStyles.forEach(function (sValue, sKey) {
-				rm.addStyle(sKey, sValue);
+				rm.style(sKey, sValue);
 			});
 
 			aClasses.forEach(function (sValue) {
-				rm.addClass(sValue);
+				rm.class(sValue);
 			});
 
-			rm.writeClasses();
-			rm.writeStyles();
-			rm.write(">");
+			rm.attr("tabindex", "0");
+			rm.openEnd();
+
+			oItem.addStyleClass("sapFGridContainerItemInnerWrapper");
 
 			rm.renderControl(oItem);
-			rm.write("</div>");
+			rm.close("div");
 		};
 
 		/**
@@ -142,10 +164,22 @@ sap.ui.define([],
 				aClasses.push("sapFGridContainerInvisiblePlaceholder");
 			}
 
+			if (oControl._hasOwnVisualFocus(oItem)) {
+				aClasses.push("sapFGridContainerItemWrapperNoVisualFocus");
+			}
+
 			return {
 				styles: mStyles,
 				classes: aClasses
 			};
+		};
+
+		GridContainerRenderer.renderDummyArea = function(rm, control, sAreaId, iTabIndex) {
+			rm.openStart("div", control.getId() + "-" + sAreaId);
+			rm.attr("tabindex", iTabIndex);
+			rm.class("sapFGridContainerDummyArea");
+			rm.openEnd();
+			rm.close("div");
 		};
 
 		return GridContainerRenderer;

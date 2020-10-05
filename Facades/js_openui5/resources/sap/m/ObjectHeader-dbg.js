@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,6 +10,7 @@ sap.ui.define([
 	'sap/ui/core/Control',
 	'sap/ui/core/IconPool',
 	'sap/ui/core/library',
+	'sap/ui/core/util/ResponsivePaddingsEnablement',
 	'sap/ui/Device',
 	'sap/m/Text',
 	'sap/ui/events/KeyCodes',
@@ -23,6 +24,7 @@ sap.ui.define([
 		Control,
 		IconPool,
 		coreLibrary,
+		ResponsivePaddingsEnablement,
 		Device,
 		Text,
 		KeyCodes,
@@ -70,8 +72,15 @@ sap.ui.define([
 	 * <code>ObjectHeader</code> is a display control that enables the user to easily identify
 	 * a specific object. The object header title is the key identifier of the object and
 	 * additional text and icons can be used to further distinguish it from other objects.
+	 *
+	 * <h3>Responsive behavior</h3>
+	 *
+	 * When using the <code>sap.m.ObjectHeader</code> in SAP Quartz theme, the breakpoints and layout paddings could be automatically determined by the container's width.
+	 * To enable this concept and implement responsive padding to the <code>ObjectHeader</code> control, add the following class:
+	 * <code>sapUiResponsivePadding--header</code>.
+	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -470,6 +479,10 @@ sap.ui.define([
 		return sap.ui.getCore().getLibraryResourceBundle("sap.m");
 	};
 
+	ResponsivePaddingsEnablement.call(ObjectHeader.prototype, {
+		header: {selector: ".sapMOH, .sapMOHR"}
+	});
+
 	ObjectHeader.prototype.init = function() {
 		this._oTitleArrowIcon = IconPool.createControlByURI({
 			id : this.getId() + "-titleArrow",
@@ -486,6 +499,7 @@ sap.ui.define([
 		this._fNumberWidth = undefined;
 		this._titleText = new Text(this.getId() + "-titleText");
 		this._titleText.setMaxLines(3);
+		this._initResponsivePaddingsEnablement();
 
 	};
 
@@ -628,7 +642,7 @@ sap.ui.define([
 	 * @returns {sap.m.ObjectHeader} this pointer for chaining
 	 */
 	ObjectHeader.prototype.setNumberState = function (sState) {
-		this.setProperty("numberState", sState, true);
+		this.setProperty("numberState", sState);
 		this._getObjectNumber().setState(sState);
 		return this;
 	};
@@ -641,7 +655,7 @@ sap.ui.define([
 	 * @returns {sap.m.ObjectHeader} this pointer for chaining
 	 */
 	ObjectHeader.prototype.setTitleSelectorTooltip = function (sTooltip) {
-		this.setProperty("titleSelectorTooltip", sTooltip, false);
+		this.setProperty("titleSelectorTooltip", sTooltip);
 		this._oTitleArrowIcon.setTooltip(sTooltip);
 		return this;
 	};
@@ -680,7 +694,7 @@ sap.ui.define([
 			aAllMarkers = this.getMarkers(),
 			i;
 
-		this.setProperty("showMarkers", bMarked, false);
+		this.setProperty("showMarkers", bMarked);
 
 		for (i = 0; i < aAllMarkers.length; i++) {
 			sMarkerType = aAllMarkers[i].getType();
@@ -779,9 +793,9 @@ sap.ui.define([
 	 */
 	ObjectHeader.prototype.getFocusDomRef = function() {
 		if (this.getResponsive()) {
-			return this.$("txt");
+			return this.$("txt")[0];
 		} else {
-			return this.$("title");
+			return this.$("title")[0];
 		}
 	};
 
@@ -1031,7 +1045,8 @@ sap.ui.define([
 				// If there isn't an alt, then just add a default 'Icon' just in case
 				alt: this.getIconAlt() || ObjectHeader._getResourceBundle().getText("OH_ARIA_ICON"),
 				useIconTooltip : false,
-				densityAware : this.getIconDensityAware()
+				densityAware : this.getIconDensityAware(),
+				decorative : false
 			},
 				IconPool.isIconURI(this.getIcon()) ? { size : sSize } : {}
 		);
@@ -1046,7 +1061,6 @@ sap.ui.define([
 			}.bind(this);
 			mProperties.decorative = false;
 		}
-
 
 		this._oImageControl = ImageHelper.getImageControl(sImgId, this._oImageControl, this, mProperties);
 

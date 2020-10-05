@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -28,7 +28,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -381,7 +381,7 @@ sap.ui.define([
 		jQuery.each(aProperties, function(i, sName) {
 			var sValue = this.getProperty(sName),
 				oAttribute = this._mDeprecatedProperties[sName];
-			if (jQuery.type(sValue) === "number" && !!sValue || !!sValue) {
+			if (typeof sValue === "number" && !!sValue || !!sValue) {
 				if (!oAttribute) {
 					oAttribute = new ObjectAttribute({
 						active: false

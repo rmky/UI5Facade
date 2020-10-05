@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -221,6 +221,10 @@ sap.ui.define(['sap/base/security/encodeXML', 'sap/ui/core/library'],
 			}
 
 			rm.write("</div>");
+		} else {
+			oControl.getContent().forEach(function(oChild) {
+				rm.cleanupControlWithoutRendering(oChild);
+			});
 		}
 
 		rm.write("</section>");

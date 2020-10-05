@@ -1,26 +1,28 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
-	"sap/ui/core/InvisibleText",
-	"sap/base/Log",
-	"./Slider",
-	"./SliderTooltip",
-	"./SliderUtilities",
-	"./RangeSliderRenderer",
-	"sap/ui/thirdparty/jquery"
+    "sap/ui/core/InvisibleText",
+    "sap/base/Log",
+    "./Slider",
+    "./SliderTooltip",
+    "./SliderUtilities",
+    "./RangeSliderRenderer",
+    "sap/ui/thirdparty/jquery",
+    "sap/ui/events/KeyCodes"
 ],
     function(
-		InvisibleText,
-		log,
-		Slider,
-		SliderTooltip,
-		SliderUtilities,
-		RangeSliderRenderer,
-		jQuery
-	) {
+        InvisibleText,
+        log,
+        Slider,
+        SliderTooltip,
+        SliderUtilities,
+        RangeSliderRenderer,
+        jQuery,
+        KeyCodes
+    ) {
         "use strict";
 
         /**
@@ -49,13 +51,13 @@ sap.ui.define([
          * @extends sap.m.Slider
          *
          * @author SAP SE
-         * @version 1.73.1
+         * @version 1.82.0
          *
          * @constructor
          * @public
          * @since 1.38
          * @alias sap.m.RangeSlider
-		 * @see {@link fiori:https://experience.sap.com/fiori-design-web/range-slider/ Range Slider}
+         * @see {@link fiori:https://experience.sap.com/fiori-design-web/range-slider/ Range Slider}
          * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
          */
         var RangeSlider = Slider.extend("sap.m.RangeSlider", /** @lends sap.m.RangeSlider.prototype */ {
@@ -130,6 +132,7 @@ sap.ui.define([
         };
 
         RangeSlider.prototype.exit = function () {
+            Slider.prototype.exit.apply(this, arguments);
             this._oResourceBundle = null;
             this._aInitialFocusRange = null;
             this._liveChangeLastValue = null;
@@ -441,13 +444,13 @@ sap.ui.define([
         };
 
         /**
-		 * Gets the tooltips that should be shown.
-		 * Returns custom tooltips if provided and more than 1 else default tooltips
-		 *
-		 * @protected
+         * Gets the tooltips that should be shown.
+         * Returns custom tooltips if provided and more than 1 else default tooltips
+         *
+         * @protected
          * @override
-		 * @returns {sap.m.SliderTooltipBase[]} SliderTooltipBase instances.
-		 */
+         * @returns {sap.m.SliderTooltipBase[]} SliderTooltipBase instances.
+         */
         RangeSlider.prototype.getUsedTooltips = function () {
             var aCustomTooltips = this.getCustomTooltips(),
                 aDefaultTooltips = this.getAggregation("_defaultTooltips") || [];
@@ -711,7 +714,7 @@ sap.ui.define([
                 aHandles = [this.getClosestHandleDomRef(oTouch)];
                 this._updateHandle(aHandles[0], fValue);
                 // _updateHandle would update the range and the check for change event fire would fail in _ontouchend
-                this._fireChangeAndLiveChange({range: this.getRange()});
+                this.fireLiveChange({range: aRange});
             } else if (iHandleIndex !== -1) { // Determine if the press event is on certain handle
                 aHandles = [this.getDomRef(iHandleIndex === 0 ? "handle1" : "handle2")];
             }
@@ -904,7 +907,7 @@ sap.ui.define([
             }
 
             // remember the initial focus range so when esc key is pressed we can return to it
-            if (!(document.activeElement === this.getFocusDomRef())) {
+            if (document.activeElement !== this.getFocusDomRef()) {
                 this._aInitialFocusRange = this.getRange();
             }
         };
@@ -943,7 +946,8 @@ sap.ui.define([
             if (fRangeMax + fOffset > fMax) {
                 fOffset = iOffsetSign * (Math.abs(fMax) - Math.abs(fRangeMax));
             } else if (fRangeMin + fOffset < fMin) {
-                fOffset = iOffsetSign * (Math.abs(fRangeMin) - Math.abs(fMin));
+                fOffset = Math.abs(fRangeMin) - Math.abs(fMin);
+                fOffset = fOffset < 0 ? fOffset : iOffsetSign * fOffset;
             }
 
             aHandles.map(function (oCurHandle) {
@@ -961,6 +965,10 @@ sap.ui.define([
 
             if (bF2Pressed && bShowAdvancedTooltips && bFocusableTooltip && bTargetIsHandle) {
                 this._mHandleTooltip[bStartTooltipFocused ? "start" : "end"].tooltip.focus();
+            }
+
+            if (oEvent.keyCode === KeyCodes.SPACE) {
+                oEvent.preventDefault();
             }
         };
 

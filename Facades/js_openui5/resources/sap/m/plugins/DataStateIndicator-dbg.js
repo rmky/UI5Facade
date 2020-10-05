@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -19,7 +19,7 @@ sap.ui.define(["./PluginBase", "sap/ui/core/Core", "sap/ui/base/ManagedObjectObs
 	 *
 	 * @extends sap.ui.core.Element
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @public
 	 * @since 1.73
@@ -30,12 +30,24 @@ sap.ui.define(["./PluginBase", "sap/ui/core/Core", "sap/ui/base/ManagedObjectObs
 		library: "sap.m",
 		properties: {
 			/**
-			 * Defines a predicate to test each data state of the messages.
+			 * Defines a predicate to test each message of the data state.
 			 *
-			 * This callback gets called via the {@link sap.ui.model.DataState data state} parameter.
-			 * Return <code>true</code> to keep the data state, <code>false</code> otherwise.
+			 * This callback gets called using the {@link sap.ui.core.message.Message message} and {@link sap.ui.core.Control related control} parameters.
+			 * Returns <code>true</code> to keep the message, <code>false</code> otherwise.
 			 */
-			filter: {type: "function", invalidate: false}
+			filter: {type: "function", invalidate: false},
+
+			/**
+			 * Defines the text for the link in the message strip.
+			 * @since 1.79
+			 */
+			messageLinkText: {type: "string", visibility: "hidden"},
+
+			/**
+			 * Defines the visibility of the link control in the message strip.
+			 * @since 1.79
+			 */
+			messageLinkVisible: {type: "boolean", defaultValue: true, visibility: "hidden"}
 		},
 		events: {
 			/**
@@ -47,11 +59,66 @@ sap.ui.define(["./PluginBase", "sap/ui/core/Core", "sap/ui/base/ManagedObjectObs
 					/**
 					 * The data state object.
 					 */
-					dataState: {type: "sap.ui.model.DataState"}
+					dataState: {type: "sap.ui.model.DataState"},
+					/**
+					 * The messages (@see sap.ui.core.message.Message) from the current <code>dataState</code> object filtered by the given <code>filter</code> function.
+					 */
+					filteredMessages: {type: "any[]"}
 				}
 			}
 		}
 	}});
+
+	/**
+	 * Defines the text to be shown for the link control of the message strip.
+	 * @param {string} [sLinkText] The text for the link control
+	 * @returns {sap.m.plugins.DataStateIndicator} The control instance
+	 * @since 1.79
+	 * @private
+	 */
+	DataStateIndicator.prototype.setMessageLinkText = function(sLinkText) {
+		this.setProperty("messageLinkText", sLinkText, true);
+		// update the link aggregation of the message strip
+		this._updateMessageLinkControl();
+		return this;
+	};
+
+	/**
+	 * Returns the message link text.
+	 * @returns {string} message link text
+	 * @since 1.79
+	 * @private
+	 */
+	DataStateIndicator.prototype.getMessageLinkText = function() {
+		return this.getProperty("messageLinkText");
+	};
+
+	/**
+	 * Defines the visibility of the link control in the message strip.
+	 * @param {boolean} [bVisible] Visibility of the link control
+	 * @return {sap.m.plugins.DataStateIndicator} The control instance
+	 * @since 1.79
+	 * @private
+	 */
+	DataStateIndicator.prototype.setMessageLinkVisible = function(bVisible) {
+		this.setProperty("messageLinkVisible", bVisible, true);
+
+		if (this._oLink) {
+			this._oLink.setVisible(bVisible);
+		}
+
+		return this;
+	};
+
+	/**
+	 * Returns the property value of <code>messageLinkVisible</code>.
+	 * @returns {boolean} The <code>messageLinkVisible</code> property value
+	 * @since 1.79
+	 * @private
+	 */
+	DataStateIndicator.prototype.getMessageLinkVisible = function() {
+		return this.getProperty("messageLinkVisible");
+	};
 
 	DataStateIndicator.prototype.isApplicable = function(oControl) {
 		if (!oControl.addAriaLabelledBy ||
@@ -93,6 +160,11 @@ sap.ui.define(["./PluginBase", "sap/ui/core/Core", "sap/ui/base/ManagedObjectObs
 			this._oMessageStrip = null;
 		}
 
+		if (this._oLink) {
+			this._oLink.destroy();
+			this._oLink = null;
+		}
+
 		this._oObserver.unobserve(oControl, { bindings: [sBindingName] });
 		this._oObserver.destroy();
 		this._oObserver = null;
@@ -121,12 +193,66 @@ sap.ui.define(["./PluginBase", "sap/ui/core/Core", "sap/ui/base/ManagedObjectObs
 			this._oMessageStrip = new MessageStrip({
 				showCloseButton: true,
 				showIcon: true
-			}).addStyleClass("sapUiTinyMarginTopBottom");
+			}).addStyleClass("sapUiTinyMargin");
+
+			// update the link aggregation of the message strip
+			this._updateMessageLinkControl();
 
 			oControl.setAggregation("_messageStrip", this._oMessageStrip);
 			oControl.addAriaLabelledBy(this._oMessageStrip);
 			this.showMessage(sText, sType);
 		}.bind(this));
+	};
+
+	/**
+	 * Creates or updates the link control of the message strip.
+	 * @since 1.79
+	 * @private
+	 */
+	DataStateIndicator.prototype._updateMessageLinkControl = function() {
+		if (!this._oMessageStrip) {
+			return;
+		}
+
+		var sMessageLinkText = this.getMessageLinkText();
+		if (!sMessageLinkText) {
+			this._oMessageStrip.setLink(null);
+			return;
+		} else if (this._oLink) {
+			this._oLink.setText(sMessageLinkText);
+			this._oMessageStrip.setLink(this._oLink);
+		}
+
+		if (!this._oLink) {
+			sap.ui.require(["sap/m/Link"], function(Link) {
+				this._oLink = new Link({
+					text: sMessageLinkText,
+					visible: this.getMessageLinkVisible(),
+					press: [function() {
+						// private event fired when the link is pressed
+						this.fireEvent("messageLinkPressed");
+					}, this]
+				});
+				this._oMessageStrip.setLink(this._oLink);
+			}.bind(this));
+		}
+	};
+
+	/**
+	 * Refreshes the messages displayed for the current data state.
+	 *
+	 * The current data state is evaluated again, and the filters are applied.
+	 *
+	 * @public
+	 */
+	DataStateIndicator.prototype.refresh = function() {
+		if (this.isActive()) {
+			var sBindingName = this._getBindingName();
+			var oBinding = this.getControl().getBinding(sBindingName);
+			if (oBinding) {
+				this._processDataState(oBinding.getDataState());
+			}
+		}
 	};
 
 
@@ -153,26 +279,53 @@ sap.ui.define(["./PluginBase", "sap/ui/core/Core", "sap/ui/base/ManagedObjectObs
 		return Core.getLibraryResourceBundle("sap.m").getText(sBundleText);
 	};
 
+	DataStateIndicator.prototype._getCombinedType = function(aMessages) {
+		if (aMessages && aMessages.length) {
+			var mTypes = {None: 0, Information: 1, Success: 2, Warning: 4, Error: 8};
+			var iSeverity = 0;
+
+			aMessages.forEach(function(oMessage) {
+				iSeverity |= mTypes[oMessage.getType()];
+			});
+
+			if (iSeverity & mTypes.Error && iSeverity & mTypes.Warning) {
+				return "Issue";
+			} else if (iSeverity & mTypes.Error) {
+				return "Error";
+			} else if (iSeverity & mTypes.Warning) {
+				return "Warning";
+			} else if (iSeverity & mTypes.Success || iSeverity & mTypes.Information) {
+				return "Notification";
+			}
+		}
+
+		return "";
+	};
+
 	DataStateIndicator.prototype._processDataState = function(oDataState) {
-		if (!oDataState || !oDataState.getChanges().messages || !this.fireDataStateChange({ dataState: oDataState }, true)) {
+		if (!oDataState || !oDataState.getChanges().messages) {
 			return;
 		}
 
 		var aMessages = oDataState.getMessages();
+		var oControl = this.getControl();
 		var fnFilter = this.getFilter();
 		if (fnFilter) {
-			aMessages = aMessages.filter(fnFilter);
+			aMessages = aMessages.filter(function(oMessage) {
+				return fnFilter(oMessage, oControl);
+			});
+		}
+
+		if (!this.fireDataStateChange({ dataState: oDataState, filteredMessages: aMessages})) {
+			return;
 		}
 
 		if (aMessages.length) {
-			var oControl = this.getControl();
 			var oFirstMessage = aMessages[0];
 			var sBindingName = this._getBindingName();
 			var sBindingPath = oControl.getBinding(sBindingName).getPath();
-			var mTypes = {None: 0, Information: 1, Success: 2, Warning: 4, Error: 8};
 			var bUpdateMessageModel = false;
 			var sBundleKey = "";
-			var iSeverity = 0;
 			var sMessage = "";
 
 			aMessages.forEach(function(oMessage) {
@@ -180,23 +333,15 @@ sap.ui.define(["./PluginBase", "sap/ui/core/Core", "sap/ui/base/ManagedObjectObs
 					oMessage.addControlId(oControl.getId());
 					bUpdateMessageModel = true;
 				}
-				iSeverity |= mTypes[oMessage.getType()];
 			});
 
 			if (aMessages.length == 1 && oFirstMessage.getTarget() && oFirstMessage.getTarget().endsWith(sBindingPath)) {
 				sMessage = oFirstMessage.getMessage();
 			} else {
-				if (iSeverity & mTypes.Error && iSeverity & mTypes.Warning) {
-					sBundleKey = "ISSUE";
-				} else if (iSeverity & mTypes.Error) {
-					sBundleKey = "ERROR";
-				} else if (iSeverity & mTypes.Warning) {
-					sBundleKey = "WARNING";
-				} else if (iSeverity & mTypes.Success || iSeverity & mTypes.Information) {
-					sBundleKey = "NOTIFICATION";
-				}
+				sBundleKey = this._getCombinedType(aMessages);
+
 				if (sBundleKey) {
-					sMessage = this._translate(sBundleKey);
+					sMessage = this._translate(sBundleKey.toUpperCase());
 				}
 			}
 
@@ -237,4 +382,4 @@ sap.ui.define(["./PluginBase", "sap/ui/core/Core", "sap/ui/base/ManagedObjectObs
 
 	return DataStateIndicator;
 
-}, /* bExport= */ true);
+});

@@ -1,6 +1,6 @@
 /*
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -35,7 +35,7 @@ sap.ui.define([
 	 * @class Table Personalization Controller
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @alias sap.m.TablePersoController
 	 */
 	var TablePersoController = ManagedObject.extend("sap.m.TablePersoController", /** @lends sap.m.TablePersoController */
@@ -50,7 +50,7 @@ sap.ui.define([
 		metadata: {
 			properties: {
 				"contentWidth": {type: "sap.ui.core.CSSSize"},
-				"contentHeight": {type: "sap.ui.core.CSSSize", defaultValue: "20rem", since: "1.22"},
+				"contentHeight": {type: "sap.ui.core.CSSSize", since: "1.22"},
 				/**
 				 * Available options for the text direction are LTR and RTL. By default the control inherits the text direction from its parent control.
 				 */
@@ -168,7 +168,7 @@ sap.ui.define([
 	 *  onInit: function () {
 	 *
 	 *		// set explored app's demo model on this sample
-	 *		var oModel = new JSONModel(jQuery.sap.getModulePath("sap.ui.demo.mock", "/products.json"));
+	 *		var oModel = new JSONModel(sap.ui.require.toUrl("sap/ui/demo/mock/products.json"));
 	 *		var oGroupingModel = new JSONModel({ hasGrouping: false});
 	 *		this.getView().setModel(oModel);
 	 *		this.getView().setModel(oGroupingModel, 'Grouping');

@@ -2,7 +2,7 @@
 
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -90,15 +90,6 @@ html .sapUxAPObjectPageLayout-Std-Desktop .sapUxAPAnchorBar.sapMTB
 	background: @sapUiButtonLiteHoverBackground;
 }
 
-.sapMTB-Transparent-CTX .sapUxAPAnchorBarButton.sapMBtn > .sapMBtnInner:not(.sapMToggleBtnPressed):not(.sapMBtnEmphasized):not(.sapMBtnAccept):not(.sapMBtnReject):not(.sapMBtnGhost):not(.sapMBtnActive):hover,
-.sapMTB-Transparent-CTX .sapUxAPAnchorBarButton.sapMMenuBtn .sapMSBText > .sapMBtnInner:not(.sapMToggleBtnPressed):not(.sapMBtnEmphasized):not(.sapMBtnAccept):not(.sapMBtnReject):not(.sapMBtnGhost):not(.sapMBtnActive):hover,
-.sapMTB-Transparent-CTX .sapUxAPAnchorBarButton.sapMMenuBtn .sapMSBArrow > .sapMBtnInner:not(.sapMToggleBtnPressed):not(.sapMBtnEmphasized):not(.sapMBtnAccept):not(.sapMBtnReject):not(.sapMBtnGhost):not(.sapMBtnActive):hover,
-.sapUxAPAnchorBarButton.sapMMenuBtn.sapMMenuBtnSplit:not(.sapMBtnDisabled) .sapMSBActive > .sapMBtnInner,
-.sapUxAPAnchorBarButton.sapMMenuBtn .sapMSBText:hover > .sapMBtnInner,
-.sapUxAPAnchorBarButton.sapMMenuBtn .sapMSBArrow:hover > .sapMBtnInner {
-	background: none;
-}
-
 /***********************/
 /* BEGIN Scroll Arrows */
 /***********************/
@@ -166,11 +157,6 @@ html[data-sap-ui-animation="off"] {
 .sapUxAPAnchorBar .sapUxAPAnchorBarButton.sapMBtn:hover > .sapMBtnHoverable .sapMBtnContent,
 .sapUxAPAnchorBar .sapUxAPAnchorBarButton.sapMBtn:hover > .sapMBtnHoverable .sapMBtnIcon {
 	color: darken(@sapUiGroupTitleTextColor, 20);
-}
-
-/* override active button */
-.sapUxAPAnchorBar .sapUxAPAnchorBarButton .sapMBtnInner.sapMBtnActive {
-	background-color: @sapUiObjectHeaderBackground;
 }
 
 .sapUxAPAnchorBarButton .sapMIE .sapMBtnFocusDiv {
@@ -254,10 +240,6 @@ html.sap-desktop .sapUxAPHierarchicalSelect {
 	border-top: 1px solid @sapUiListBorderColor;
 }
 
-.sapUxAPHierarchicalSelectFirstLevel.sapMSelectListItem {
-	color: @sapUiListTextColor;
-}
-
 .sapUxAPHierarchicalSelectSecondLevel.sapMSelectListItem {
 	color: @sapUiContentLabelColor;
 }
@@ -269,12 +251,6 @@ html.sap-desktop .sapUxAPHierarchicalSelect {
 
 .sapUxAPHierarchicalSelect .sapMSltPicker-CTX .sapMSelectList {
 	border: 1px solid darken(@sapUiContentForegroundBorderColor, 15);
-}
-
-/* active */
-.sapUxAPHierarchicalSelectFirstLevel.sapMSelectListItem:active,
-.sapUxAPHierarchicalSelectSecondLevel.sapMSelectListItem:active {
-	color: @sapUiListActiveTextColor;
 }
 
 /* hover */
@@ -382,11 +358,7 @@ html[data-sap-ui-browser^="cr4"].sap-phone {
 		color: @sapUiContentLabelColor;
 	}
 
-	.sapUxAPObjectPageHeaderIdentifierActions {
-		.sapUxAPObjectPageHeaderStickied & {
-			right: 1.25rem;
-		}
-	}
+
 }
 
 .sapUiSizeCompact .sapUxAPObjectPageHeaderIdentifierContainer /* desktop-specific padding */{
@@ -551,29 +523,20 @@ html .sapUxAPObjectPageLayout-Std-Desktop, html .sapUxAPObjectPageLayout-Std-Tab
 	height: 1.9375rem;
 }
 
-// title hover
-.sapUxAPObjectPageLayout.sapUxAPObjectPageLayoutTitleClickEnabled .sapFDynamicPageTitle:hover {
-	background-color: darken(@sapUiObjectHeaderBackground, 3);
-}
-
-
 /* ======================================== */
 /* Title and Toggle Header Visual Indicator */
 /* ======================================== */
 .sapUxAPObjectPageLayout {
   &.sapUxAPObjectPageLayoutTitleClickEnabled {
 
-    .sapFDynamicPageTitle:hover,
     &.sapUxAPObjectPageLayoutTitleForceHovered .sapFDynamicPageTitle {
       .title-hover(@sapUiObjectHeaderBackground);
 	}
 
-	.sapFDynamicPageTitleTranslucent:hover,
 	&.sapUxAPObjectPageLayoutTitleForceHovered .sapFDynamicPageTitleTranslucent {
 		.title-hover(lighten(@sapUiObjectHeaderBackground, 10));
 	}
 
-	.sapFDynamicPageTitleTransparent:hover,
 	&.sapUxAPObjectPageLayoutTitleForceHovered .sapFDynamicPageTitleTransparent {
 		.title-hover(transparent);
 	}
@@ -602,6 +565,7 @@ html .sapUxAPObjectPageLayout-Std-Desktop, html .sapUxAPObjectPageLayout-Std-Tab
     }
 
     // active state
+    & > .sapMBtnInner.sapMFocusable.sapMBtnActive,
     &:focus > .sapMBtnInner.sapMFocusable.sapMBtnActive {
       background: @sapUiSelected;
       color: @sapUiButtonActiveBackground;

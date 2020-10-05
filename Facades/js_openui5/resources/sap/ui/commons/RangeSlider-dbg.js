@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -22,7 +22,7 @@ sap.ui.define(['./Slider', './library', './RangeSliderRenderer'],
 	 * @extends sap.ui.commons.Slider
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -46,9 +46,6 @@ sap.ui.define(['./Slider', './library', './RangeSliderRenderer'],
 		}
 	}});
 
-	///**
-	// * This file defines the control behavior.
-	// */
 	RangeSlider.prototype.onAfterRendering = function() {
 
 		this.oGrip2 = this.getDomRef("grip2");

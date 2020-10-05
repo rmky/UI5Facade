@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -42,7 +42,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -1114,11 +1114,11 @@ sap.ui.define([
 
 		// create the rows where we navigate to in the DOM
 		var sStyleString = "\"top:-" + oJQDomULFrom.outerHeight(true) + "px;" + sDirection + ":" + oJQDomULFrom.outerWidth(true) + "px;\"";
-		jQuery("<ul id=\"" + sId + "-page_" + iPageTo + "\" class=\"sapUiRrPage\" style=" + sStyleString + "/>").appendTo(oDomBodyDIV);
+		jQuery("<ul id=\"" + sId + "-page_" + iPageTo + "\" class=\"sapUiRrPage\" style=" + sStyleString + "></ul>").appendTo(oDomBodyDIV);
 		var oDomULTo = oDomBodyDIV.lastChild;
 		var oJQDomULTo = jQuery(oDomULTo);
 		for ( n = iStartIndex; n < iStartIndex + iCurrentVisibleRows; n++ ) {
-			jQuery("<li id=\"" + sId + "-row_" + n + "\" class=\"sapUiRrRow\"/>").appendTo(oDomULTo);
+			jQuery("<li id=\"" + sId + "-row_" + n + "\" class=\"sapUiRrRow\"></li>").appendTo(oDomULTo);
 			oDomCurrentLI =  oDomULTo.lastChild;
 			oRenderManager.render(aRows[n], oDomCurrentLI);
 		}
@@ -1203,7 +1203,7 @@ sap.ui.define([
 
 			// create all newly visible child elements, if size grows
 			for (var n = iOldNumberOfRows; n < iNewNumberOfRows; n++) {
-				jQuery("<li id=\"" + sId + "-row_" + n + "\" class=\"sapUiRrRow\"/>").appendTo(oDomPageUL);
+				jQuery("<li id=\"" + sId + "-row_" + n + "\" class=\"sapUiRrRow\"></li>").appendTo(oDomPageUL);
 				oDomCurrentLI = oDomPageUL.lastChild;
 				oRenderManager.render(aRows[n], oDomCurrentLI);
 			}

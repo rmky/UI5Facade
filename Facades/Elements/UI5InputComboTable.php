@@ -229,7 +229,9 @@ JS;
 			textFormatMode: "ValueKey",
 			showSuggestion: true,
             maxSuggestionWidth: "400px",
-            startSuggestion: 1,
+            startSuggestion: function(){
+                return sap.ui.Device.system.phone ? 0 : 1;
+            }(),
             showTableSuggestionValueHelp: false,
             filterSuggests: false,
             suggest: {$this->buildJsPropertySuggest($oControllerJs)},
@@ -275,7 +277,7 @@ JS;
     protected function buildJsPropertySuggest(string $oControllerJs)
     {        
         return <<<JS
-            function(oEvent) {
+            function(oEvent) {console.log('suggest');
                 {$this->getController()->buildJsMethodCallFromController('onSuggest', $this, 'oEvent', $oControllerJs)}
     		}
 JS;
@@ -375,11 +377,17 @@ JS;
                     }
                 }
                 {$this->buildJsBusyIconHide()}
+
+                if (oSuggestTable) {
+                    oSuggestTable.setBusy(false);
+                }
+                
 JS;
         
         return <<<JS
 
                 var oInput = {$oEventJs}.getSource();
+                var oSuggestTable = sap.ui.getCore().byId('{$this->getId()}-popup-table');
                 var q = {$oEventJs}.getParameter("suggestValue");
                 var fnCallback = {$oEventJs}.getParameter("onLoaded");
                 var qParams = {};
@@ -389,7 +397,7 @@ JS;
                     qParams = q;
                     silent = true;
                 } else {
-                    qParams.q = q;
+                    qParams.q = (q === "" ? " " : q);
                 }
                 var params = { 
                     action: "{$widget->getLazyLoadingActionAlias()}",
@@ -413,6 +421,10 @@ JS;
 
                 if (silent) {
                     {$this->buildJsBusyIconShow()}
+                }
+
+                if (oSuggestTable) {
+                    oSuggestTable.setBusyIndicatorDelay(0).setBusy(true);
                 }
                 
                 {$serverAdapter->buildJsServerRequest($widget->getLazyLoadingAction(), 'oModel', 'params', $onSuggestLoadedJs, $this->buildJsBusyIconHide())}

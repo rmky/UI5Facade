@@ -5,6 +5,8 @@
 	"ERROR.LOG_ID_HINT": "Bei Support-Anfragen bitte angeben!",
 	"ERROR.BUTTON_TEXT": "Schließen",
 	"ERROR.EXCEPTION_MESSAGE": "Originalnachricht:",
+	"ERROR.NO_CONNECTION": "Server nicht erreichbar!",
+	"ERROR.NO_CONNECTION_HINT": "Überprüfen Sie Ihre Netzwerkverbindung und versuchen Sie es erneut! Wenn das nicht hilft, wenden Sie sich bitte an den Support!",
 	"SAP-ERROR": "im SAP",
 	"SAP-LOGIC": "vom SAP",
 	

@@ -8,6 +8,7 @@ use exface\Core\CommonLogic\Constants\Colors;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JsValueScaleTrait;
 use exface\Core\Interfaces\Widgets\iHaveColorScale;
 use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
+use exface\Core\Widgets\Text;
 
 /**
  * Generates sap.m.Text controls for Display widgets.
@@ -25,7 +26,7 @@ class UI5Display extends UI5Value
     
     private $onChangeHandlerRegistered = false;
     
-    private $wrap = false;
+    private $wrap = null;
     
     /**
      *
@@ -312,6 +313,9 @@ JS;
      */
     protected function getWrapping() : bool
     {
+        if ($this->wrap === null) {
+            return $this->getWidget()->getValueDataType() instanceof Text;
+        }
         return $this->wrap;
     }
     

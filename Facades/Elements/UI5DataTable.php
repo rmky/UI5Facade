@@ -142,7 +142,6 @@ JS;
         $visible = $this->getWidget()->isPaged() === false || $this->getWidget()->getHideFooter() === true ? 'false' : 'true';
         return <<<JS
                 new sap.m.OverflowToolbar({
-                    design: "Info",
                     visible: {$visible},
     				content: [
                         {$this->getPaginatorElement()->buildJsConstructor($oControllerJs)},

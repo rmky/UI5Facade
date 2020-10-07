@@ -1,19 +1,18 @@
 <?php
 namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Widgets\Display;
 use exface\UI5Facade\Facades\Interfaces\UI5BindingFormatterInterface;
 use exface\Core\DataTypes\BooleanDataType;
 use exface\Core\CommonLogic\Constants\Colors;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JsValueScaleTrait;
 use exface\Core\Interfaces\Widgets\iHaveColorScale;
 use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
-use exface\Core\Widgets\Text;
+use exface\Core\DataTypes\TextDataType;
 
 /**
  * Generates sap.m.Text controls for Display widgets.
  * 
- * @method Display getWidget()
+ * @method \exface\Core\Widgets\Display getWidget()
  *
  * @author Andrej Kabachnik
  *        
@@ -314,7 +313,7 @@ JS;
     protected function getWrapping() : bool
     {
         if ($this->wrap === null) {
-            return $this->getWidget()->getValueDataType() instanceof Text;
+            return ($this->getWidget()->getValueDataType() instanceof TextDataType);
         }
         return $this->wrap;
     }

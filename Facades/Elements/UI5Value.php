@@ -1,7 +1,6 @@
 <?php
 namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Widgets\Value;
 use exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface;
 use exface\UI5Facade\Facades\Interfaces\UI5CompoundControlInterface;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryLiveReferenceTrait;
@@ -11,7 +10,7 @@ use exface\Core\Widgets\Input;
 /**
  * Generates sap.m.Text controls for Value widgets
  * 
- * @method Value getWidget()
+ * @method \exface\Core\Widgets\Value getWidget()
  *
  * @author Andrej Kabachnik
  *        

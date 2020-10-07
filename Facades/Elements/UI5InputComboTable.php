@@ -7,6 +7,8 @@ use exface\Core\Interfaces\DataTypes\DataTypeInterface;
 use exface\Core\Exceptions\Facades\FacadeLogicError;
 use exface\Core\Interfaces\Widgets\iShowDataColumn;
 use exface\Core\Interfaces\Widgets\iShowSingleAttribute;
+use exface\Core\Interfaces\Actions\ActionInterface;
+use exface\Core\Exceptions\Widgets\WidgetConfigurationError;
 
 /**
  * Generates sap.m.Input with tabular autosuggest and value help.
@@ -277,7 +279,7 @@ JS;
     protected function buildJsPropertySuggest(string $oControllerJs)
     {        
         return <<<JS
-            function(oEvent) {console.log('suggest');
+            function(oEvent) {
                 {$this->getController()->buildJsMethodCallFromController('onSuggest', $this, 'oEvent', $oControllerJs)}
     		}
 JS;
@@ -702,6 +704,71 @@ JS;
             $class = get_class($this);
             return "console.warn('No data setter implemented for {$class}!')";
         }
+    }
+    
+    public function buildJsDataGetter(ActionInterface $action = null)
+    {
+        // If the object of the action is the same as that of the widget, treat
+        // it as a regular input.
+        if ($action === null || $this->getMetaObject()->is($action->getMetaObject()) || $action->getInputMapper($this->getMetaObject()) !== null) {
+            return parent::buildJsDataGetter($action);
+        }
+        
+        $widget = $this->getWidget();
+        // If it's another object, we need to decide, whether to place the data in a 
+        // subsheet.
+        if ($action->getMetaObject()->is($widget->getTableObject())) {
+            // FIXME not sure what to do if the action is based on the object of the table.
+            // This should be really important in lookup dialogs, but for now we just fall
+            // back to the generic input logic.
+            return parent::buildJsDataGetter($action);
+        } elseif ($widget->hasParent() && $action->getMetaObject()->is($widget->getParent()->getMetaObject()) && $relPath = $widget->getObjectRelationPathFromParent()) {
+            // If the action is based on the same object as the widget's parent, use the widget's
+            // logic to find the relation to the parent. Otherwise try to find a relation to the
+            // action's object and throw an error if this fails.
+            $relAlias = $relPath->toString();
+        } elseif ($relPath = $action->getMetaObject()->findRelationPath($widget->getMetaObject())) {
+            $relAlias = $relPath->toString();
+        }
+        
+        if ($relAlias === null || $relAlias === '') {
+            throw new WidgetConfigurationError($widget, 'Cannot use data from widget "' . $widget->getId() . '" with action on object "' . $action->getMetaObject()->getAliasWithNamespace() . '": no relation can be found from widget object to action object', '7CYA39T');
+        }
+        
+        if ($widget->getMultiSelect() === false) { 
+            $rows = "[{ {$widget->getDataColumnName()}: {$this->buildJsValueGetter()} }]";
+        } else {
+            $delim = str_replace("'", "\\'", $this->getWidget()->getMultiSelectTextDelimiter());
+            $rows = <<<JS
+                            function(){
+                                var aVals = ({$this->buildJsValueGetter()}).split('{$delim}');
+                                var aRows = [];
+                                aVals.forEach(function(sVal) {
+                                    aRows.push({
+                                        {$widget->getDataColumnName()}: sVal
+                                    });
+                                })
+                                return aRows;
+                            }()
+
+JS;
+        }
+        
+        return <<<JS
+        
+            {
+                oId: '{$action->getMetaObject()->getId()}',
+                rows: [
+                    {
+                        '{$relAlias}': {
+                            oId: '{$widget->getMetaObject()->getId()}',
+                            rows: {$rows}
+                        }
+                    }
+                ]
+            }
+            
+JS;
     }
 }
 ?>

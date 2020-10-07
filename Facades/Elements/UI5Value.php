@@ -27,6 +27,8 @@ class UI5Value extends UI5AbstractElement implements UI5ValueBindingInterface, U
     
     private $valueBindingDisabled = false;
     
+    private $valueBoundToModel = null;
+    
     /**
      * 
      * {@inheritDoc}
@@ -130,13 +132,32 @@ JS;
     }
     
     /**
+     * Returns TRUE if the value of the control should be bound to the default model.
+     * 
+     * This actually depends on meny factors:
+     * - you can force value binding programmatically via setValueBoundToModel(). For example,
+     * table cell widgets MUST be bound to model, so table columns call this method on their
+     * cell widgets.
+     * - you can set binding options like setValueBindingPath() which means using a binding
+     * implicitly
+     * - same happens if the prefill model has a binding for this widget
+     * - on the other hand, widgets, that have static values should not have a binding unless
+     * any of the above forces it
+     * 
+     * If none of the above applies, the element is concidered to have a binding unless there
+     * is a binding conflict in the model (i.e. other widgets use the same binding name). This
+     * is mainly for historical reasons - not sure, if it's still required.
      * 
      * @return boolean
      */
     protected function isValueBoundToModel()
     {
+        if ($this->valueBoundToModel !== null) {
+            return $this->valueBoundToModel;
+        }
+        
         $widget = $this->getWidget();
-        $model = $this->getView()->getModel();
+        $model = $this->getModel();
         
         // If there is a model binding, obviously return true
         if ($model->hasBinding($widget, $this->getValueBindingWidgetPropertyName())) {
@@ -144,7 +165,7 @@ JS;
         }
         
         // If the the binding was disabled explicitly, return false
-        if ($this->getValueBindingDisabled() === true) {
+        if ($this->isValueBindingDisabled() === true) {
             return false;
         }
         
@@ -159,7 +180,28 @@ JS;
             return false;
         }
         
+        if ($model->hasBindingConflict($widget, $this->getValueBindingWidgetPropertyName())) {
+            return false;
+        }
+        
         return true;
+    }
+    
+    /**
+     * Forces value binding on or off for this control.
+     * 
+     * Note: `setValueBoundToModel(false)` and `setValueBindingDisabled(true)` have the same
+     * effect, but not `setValueBoundToModel(true)` and `setValueBindingDisabled(false)`
+     * because `setValueBindingDisabled(false)` does not force binding - it merely reinstantiates
+     * the automatic detection algorithm if it was disabled previously.
+     * 
+     * @param bool $trueOrFalse
+     * @return UI5Value
+     */
+    public function setValueBoundToModel(bool $trueOrFalse) : UI5Value
+    {
+        $this->valueBoundToModel = $trueOrFalse;
+        return $this;
     }
     
     /**
@@ -197,6 +239,7 @@ JS;
     public function setValueBindingPath($string)
     {
         $this->valueBindingPath = $string;
+        $this->setValueBoundToModel(true);
         return $this;
     }
     
@@ -209,7 +252,7 @@ JS;
     {
         if ($this->valueBindingPath === null) {
             $widget = $this->getWidget();
-            $model = $this->getView()->getModel();
+            $model = $this->getModel();
             if ($model->hasBinding($widget, $this->getValueBindingWidgetPropertyName())) {
                 return $model->getBindingPath($widget, $this->getValueBindingWidgetPropertyName());
             }
@@ -236,6 +279,7 @@ JS;
     public function setValueBindingPrefix(string $value) : UI5ValueBindingInterface
     {
         $this->valueBindingPrefix = $value;
+        $this->setValueBoundToModel(true);
         return $this;
     }
     
@@ -309,9 +353,9 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface::getValueBindingDisabled()
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface::isValueBindingDisabled()
      */
-    public function getValueBindingDisabled() : bool
+    public function isValueBindingDisabled() : bool
     {
         return $this->valueBindingDisabled;
     }
@@ -320,6 +364,16 @@ JS;
      * 
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface::setValueBindingDisabled()
+     * 
+     * Note: there is also setValueBoundToModel() with forces binding on or off regardless
+     * of any other parameters.
+     * 
+     * Note: `setValueBoundToModel(false)` and `setValueBindingDisabled(true)` have the same
+     * effect, but not `setValueBoundToModel(true)` and `setValueBindingDisabled(false)`
+     * because `setValueBindingDisabled(false)` does not force binding - it merely reinstantiates
+     * the automatic detection algorithm if it was disabled previously.
+     * 
+     * @see setValueBoundToModel()
      */
     public function setValueBindingDisabled(bool $value) : UI5ValueBindingInterface
     {

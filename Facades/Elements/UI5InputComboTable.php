@@ -399,7 +399,7 @@ JS;
                     qParams = q;
                     silent = true;
                 } else {
-                    qParams.q = (q === "" ? " " : q);
+                    qParams.q = q;
                 }
                 var params = { 
                     action: "{$widget->getLazyLoadingActionAlias()}",

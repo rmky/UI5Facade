@@ -40,4 +40,13 @@ interface UI5ModelInterface {
      */
     public function hasBinding(WidgetInterface $widget, string $bindingName) : bool;
     
+    /**
+     * Returns TRUE if the model contains other bindings with the same name (but for other widgets).
+     * 
+     * @param WidgetInterface $widget
+     * @param string $bindingName
+     * @return bool
+     */
+    public function hasBindingConflict(WidgetInterface $widget, string $bindingName) : bool;
+    
 }

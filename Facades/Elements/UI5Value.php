@@ -157,7 +157,7 @@ JS;
         }
         
         $widget = $this->getWidget();
-        $model = $this->getModel();
+        $model = $this->getView()->getModel();
         
         // If there is a model binding, obviously return true
         if ($model->hasBinding($widget, $this->getValueBindingWidgetPropertyName())) {
@@ -252,7 +252,7 @@ JS;
     {
         if ($this->valueBindingPath === null) {
             $widget = $this->getWidget();
-            $model = $this->getModel();
+            $model = $this->getView()->getModel();
             if ($model->hasBinding($widget, $this->getValueBindingWidgetPropertyName())) {
                 return $model->getBindingPath($widget, $this->getValueBindingWidgetPropertyName());
             }

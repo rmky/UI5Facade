@@ -173,6 +173,8 @@ JS;
             $toolbar = 'toolbar: ' . $toolbarConstructor;
         }
         
+        $phoneLabelSpan = $this->getWidget()->isReadonly() ? '5' : '12';
+        
         return <<<JS
         
             new sap.ui.layout.form.SimpleForm({$id} {
@@ -183,7 +185,7 @@ JS;
     			labelSpanXL: 5,
     			labelSpanL: 4,
     			labelSpanM: 4,
-    			labelSpanS: 12,
+    			labelSpanS: {$phoneLabelSpan},
     			emptySpanXL: 0,
     			emptySpanL: 0,
     			emptySpanM: 0,

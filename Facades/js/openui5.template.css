@@ -37,6 +37,8 @@ pre.sf-dump .sf-dump-private, pre.sf-dump .sf-dump-public, pre.sf-dump .sf-dump-
 /* sap.f.DynamicPage */
 .exf-page-heading-btn {margin-top: -5px; margin-left: -11px;}
 body:not(.sapUiSizeCompact) .sapFDynamicPageTitleMainHeadingInner .sapMTitle > span {line-height: 2.375rem}
+/* Fix page header collaps button icon shifted to the right */
+.sapUiSizeCompact .sapFDynamicPageToggleHeaderIndicator > .sapMBtnInner {padding-left: 0.2rem !important; padding-right: 0.2rem !important;}
 
 /* LoginPrompt */
 .exf-loginprompt-flexbox > div {max-width: 95%}

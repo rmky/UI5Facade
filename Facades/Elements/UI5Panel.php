@@ -183,7 +183,7 @@ JS;
     			labelSpanXL: 5,
     			labelSpanL: 4,
     			labelSpanM: 4,
-    			labelSpanS: 5,
+    			labelSpanS: 12,
     			emptySpanXL: 0,
     			emptySpanL: 0,
     			emptySpanM: 0,

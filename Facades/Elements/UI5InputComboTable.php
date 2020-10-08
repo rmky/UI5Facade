@@ -109,9 +109,10 @@ JS;
         } elseif ($widget->getValueAttribute() !== $widget->getTextAttribute()) {
             // If the value is to be taken from a model, we need to check if both - key
             // and value are there. If not, the value needs to be fetched from the server.
+            // NOTE: in sap.m.MultiInput there are no tokens yet, so we tell the getter
+            // method not to rely on the explicitly!!!
             $missingValueJs = <<<JS
-            
-            var sKey = sap.ui.getCore().byId('{$this->getId()}').{$this->buildJsValueGetterMethod()};
+            var sKey = oInput.{$this->buildJsValueGetterMethod(false)};
             var sVal = oInput.getValue();
             if (sKey !== '' && sVal === '') {
                 {$this->buildJsValueSetter('sKey')};
@@ -363,16 +364,39 @@ JS;
         $widget = $this->getWidget();
         $configuratorElement = $this->getFacade()->getElement($widget->getTable()->getConfiguratorWidget());
         $serverAdapter = $this->getFacade()->getElement($widget->getTable())->getServerAdapter();
+        $delim = json_encode($widget->getMultiSelectValueDelimiter());
         
+        // NOTE: in sap.m.MultiInput there are no tokens yet, so we tell the getter
+        // method not to rely on the explicitly!!!
         $onSuggestLoadedJs = <<<JS
                             
                 if (silent) {
                     var data = oModel.getProperty('/rows');
-                    var curKey = oInput.{$this->buildJsValueGetterMethod()};
-                    if (parseInt(oModel.getProperty("/recordsTotal")) == 1 && (curKey === '' || data[0]['{$widget->getValueColumn()->getDataColumnName()}'] == curKey)) {
+                    var curKey = oInput.{$this->buildJsValueGetterMethod(false)};
+                    var curKeys = curKey.split({$delim});
+                    var iRowsCnt = parseInt(oModel.getProperty("/recordsTotal"));
+                    var aFoundKeys = [];
+                    if (iRowsCnt === 1 && (curKey === '' || data[0]['{$widget->getValueColumn()->getDataColumnName()}'] == curKey)) {
                         oInput.{$this->buildJsSetSelectedKeyMethod("data[0]['{$widget->getValueColumn()->getDataColumnName()}']", "data[0]['{$widget->getTextColumn()->getDataColumnName()}']")}
                         oInput.closeSuggestions();
                         oInput.setValueState(sap.ui.core.ValueState.None);
+                    } else if (iRowsCnt > 0 && iRowsCnt === curKeys.length && oInput.addToken !== undefined) {
+                        oInput.removeAllTokens();
+                        curKeys.forEach(function(sKey) {
+                            sKey = sKey.trim();
+                            data.forEach(function(oRow) {
+                                if (oRow['{$widget->getValueColumn()->getDataColumnName()}'] == sKey) {
+                                    oInput.addToken(new sap.m.Token({key: sKey, text: oRow['{$widget->getTextColumn()->getDataColumnName()}']}));
+                                    aFoundKeys.push(sKey);
+                                }
+                            });
+                        });
+                        oInput.closeSuggestions();
+                        if (aFoundKeys.length === curKeys.length) {
+                            oInput.setValueState(sap.ui.core.ValueState.None);
+                        } else {
+                            oInput.setValueState(sap.ui.core.ValueState.Error);
+                        }
                     } else {
                         oInput.setSelectedKey("");
                         oInput.setValueState(sap.ui.core.ValueState.Error);
@@ -457,13 +481,21 @@ JS;
     }
     
     /**
+     * Returns the JS method to get the current value.
      * 
-     * {@inheritDoc}
+     * The additional parameter $useTokensIfMultiSelect controls, how sap.m.MultiInput is handled.
+     * For some reason it's methods getTokens() and getSelectedKey() are not in sync. So if the
+     * tokens are not initialized yet, getSelectedKey() must be used - that's the one that is
+     * bound to the model actually.
+     * 
+     * @param bool $useTokensIfMultiSelect
+     * @return string
+     * 
      * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsValueGetterMethod()
      */
-    public function buildJsValueGetterMethod()
+    public function buildJsValueGetterMethod(bool $useTokensIfMultiSelect = true)
     {
-        if ($this->getWidget()->getMultiSelect() === false) {
+        if ($this->getWidget()->getMultiSelect() === false || $useTokensIfMultiSelect === false) {
             if ($this->getWidget()->getValueAttribute() === $this->getWidget()->getTextAttribute()) {
                 return "getValue()";
             } else {            
@@ -722,12 +754,7 @@ JS;
             // This should be really important in lookup dialogs, but for now we just fall
             // back to the generic input logic.
             return parent::buildJsDataGetter($action);
-        } elseif ($widget->hasParent() && $action->getMetaObject()->is($widget->getParent()->getMetaObject()) && $relPath = $widget->getObjectRelationPathFromParent()) {
-            // If the action is based on the same object as the widget's parent, use the widget's
-            // logic to find the relation to the parent. Otherwise try to find a relation to the
-            // action's object and throw an error if this fails.
-            $relAlias = $relPath->toString();
-        } elseif ($relPath = $action->getMetaObject()->findRelationPath($widget->getMetaObject())) {
+        } elseif ($relPath = $widget->findRelationPathFromObject($action->getMetaObject())) {
             $relAlias = $relPath->toString();
         }
         

@@ -667,5 +667,23 @@ JS;
     {
         return $this->getController()->buildJsMethodCallFromController('closeDialog', $this, '') . ';';
     }
+    
+    /**
+     *
+     * @return string
+     */
+    protected function buildJsLayoutFormFixes() : string
+    {
+        $fixContainerQueryJs = <<<JS
+        
+                    var oGrid = sap.ui.getCore().byId($("#{$this->getId()}-scrollCont > .sapUiSimpleForm > .sapUiForm > .sapUiFormResGrid > .sapUiRespGrid").attr("id"));
+                    if (oGrid !== undefined) {
+                        oGrid.setContainerQuery(false);
+                    }
+                    
+JS;
+        $this->addPseudoEventHandler('onAfterRendering', $fixContainerQueryJs);
+        
+        return '';
+    }
 }
-?>

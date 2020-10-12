@@ -129,6 +129,38 @@ JS;
     }
     
     /**
+     * Tunes the configuration of responsive grids used in sap.m.SimpleForm.
+     * 
+     * The sap.m.SimpleForm uses sap.m.Grid internally with containerQuery=true, which causes
+     * forms in small dialogs or split panels to use full-width labels. This does not look
+     * ver very nice on large screens. Stand-alone sap.m.Grid controls have a special property
+     * `containerQuery` used to determine if a small container on a large screen is to be
+     * treated as a small screen. Unfortunately there does not seem to be a way to change
+     * that property within a form, so this method injects some hacky JS to deal with it.
+     * Different UI5 elements may have different implementations depending on how the grid
+     * is used there.
+     * 
+     * @return string
+     */
+    protected function buildJsLayoutFormFixes() : string
+    {
+        $fixContainerQueryJs = <<<JS
+        
+                    var oGrid = sap.ui.getCore().byId($("#{$this->getId()}--Layout > .sapUiRespGrid").attr("id"));
+                    if (oGrid !== undefined) {
+                        oGrid.setContainerQuery(false);
+                    }
+                    
+JS;
+        $this->addPseudoEventHandler('onAfterRendering', $fixContainerQueryJs);
+        // Also call the fix after the view was rendered because the pseudo event does not seem
+        // to work on the LoginForm if placed in the app directly and not in a dialog.
+        $this->getController()->addOnInitScript('setTimeout(function(){' . $fixContainerQueryJs . '}, 100);');
+        
+        return '';
+    }
+    
+    /**
      * 
      * @param string $content
      * @param string $toolbarConstructor
@@ -137,6 +169,8 @@ JS;
      */
     protected function buildJsLayoutForm($content, string $toolbarConstructor = null, string $id = null)
     {
+        $this->buildJsLayoutFormFixes();
+        
         $cols = $this->getNumberOfColumns();
         $id = $id === null ? '' : "'{$id}',";
         
@@ -235,6 +269,7 @@ JS;
             new sap.ui.layout.Grid({
                 height: "100%",
                 defaultSpan: "XL4 L4 M6 S12",
+                containerQuery: false,
                 content: [
                     {$content}
 				]

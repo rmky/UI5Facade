@@ -93,7 +93,7 @@ JS;
 JS;
             $value = $this->buildJsValueBinding($bindingOptions);
         }
-        return $value;
+        return $value ?? 0;
     }
             
     /**

@@ -52,7 +52,7 @@ class UI5Container extends UI5AbstractElement
             content: [
                 {$contentJs}
             ]
-        }).addStyleClass("sapUiNoMargin sapUiNoContentPadding")
+        }).addStyleClass("sapUiNoMargin sapUiNoContentPadding {$this->buildCssElementClass()}")
 
 JS;
     }

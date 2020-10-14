@@ -58,6 +58,8 @@ body:not(.sapUiSizeCompact) .sapFDynamicPageTitleMainHeadingInner .sapMTitle > s
 .sapMGT.exf-col-6 {width: calc(50% - 0.5rem)}
 .sapMGT.exf-col-12 {width: 100%}
 .exf-icon-tile .sapMGTContent {margin-top: -40px}
+.exf-tiles > h2 {margin-top: 1rem;}
+.exf-tiles > .sapMPanelContent {border-bottom: none;}
 
 /* Forms */
 .sapUiFormTitle:empty {display: none;}

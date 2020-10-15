@@ -1,57 +1,48 @@
 // Toggle online/offlie icon
 window.addEventListener('online', function(){
 	exfLauncher.toggleOnlineIndicator();
+	//TODO not tested yet if working correctly serviceWorker available
 	if(!navigator.serviceWorker){
 		console.log('Syncing offline Queue');
-		exfPreloader.getActionQueueData('offline')
-		.then(function(data) {
-			var count = data.length;
+		exfPreloader.getActionQueueIds('offline')
+		.then(function(ids) {
+			var count = ids.length;
 			if (count > 0){
 				var shell = exfLauncher.getShell();
-				shell.setBusy(true);
-				var ids = [];
-				data.forEach(function(item){
-					ids.push(item.id);
-				});
+				shell.setBusy(true);				
 				exfPreloader.syncActionAll(ids)
 				.then(function(){
-					exfPreloaderUI5.updateQueueCount()
-					.then(function(){
-						shell.setBusy(false);
-						exfLauncher.showMessageToast("Just went online! Actions synced!");
-					})
+					return exfLauncher.contextBar.getComponent().getPreloader().updateQueueCount();
+				})
+				.then(function(){
+					shell.setBusy(false);
+					exfLauncher.showMessageToast("Sync completed");
 				})
 			}
 		})
 		.catch(function(error){
 			shell.setBusy(false);
-			console.log(error);
-			exfLauncher.showMessageToast("Syncing actions failed!");
+			exfLauncher.showMessageToast("Sync failed. " + error);
 		})
-	} else {
-		(function updateQueueCount(retry = 0){
-			setTimeout(function(){
-				exfLauncher.contextBar.getComponent().getPreloader().updateQueueCount()
-				.then(function(count){
-					if (retry === 10) {
-						exfLauncher.showMessageToast("Background sync encountered a problem. See logs for details!");
-						return;
-					}
-					if (count > 0) {
-						updateQueueCount(retry+1);
-						return;
-					}
-				})
-			}, 3000)
-		})();
 	}
 });
 window.addEventListener('offline', function(){
 	exfLauncher.toggleOnlineIndicator();
 });
 
+if (navigator.serviceWorker) {
+	navigator.serviceWorker.addEventListener('message', function(event) {
+		exfLauncher.contextBar.getComponent().getPreloader().updateQueueCount()
+		.then(function(){
+			exfLauncher.showMessageToast(event.data);
+		})
+	});
+}
+
 const exfLauncher = {};
 (function() {
+	
+	exfPreloader.setTopics(['offlineTask', 'ui5', 'test']);
 	
 	var _oShell = {};
 	var _oAppMenu;
@@ -160,7 +151,7 @@ const exfLauncher = {};
 																					})
 																					.then(function(){
 																						oButton.setBusy(false);
-																						_oLauncher.showMessageToast("Actions synced!");
+																						_oLauncher.showMessageToast("Sync completed");
 																						return exfPreloader.getActionQueueData('offline')
 																					})
 																					.then(function(data){
@@ -170,7 +161,7 @@ const exfLauncher = {};
 																						return;
 																					})
 																					.catch(function(error){
-																						console.error('Sync Error: ',error.message);
+																						console.error('Sync Error: ', error);
 																						_oLauncher.contextBar.getComponent().getPreloader().updateQueueCount()
 																						.then(function(){
 																							oButton.setBusy(false);
@@ -228,9 +219,14 @@ const exfLauncher = {};
 																		]
 																	})
 																],
+																footerText: 'Geräte ID: {/_network/deviceId}',
 																columns: [
 																	new sap.m.Column({
-																		visible: false
+																		header: [
+																			new sap.m.Label({
+																				text: 'ID'
+																			})
+																		]
 																	}),
 																	new sap.m.Column({
 																		header: [
@@ -492,7 +488,8 @@ const exfLauncher = {};
 			_network: {
 				online: navigator.onLine,
 				queueCnt: 0,
-				syncErrorCnt: 0
+				syncErrorCnt: 0,
+				deviceId: exfPreloader.getDeviceId()
 			}
 		}));
 		

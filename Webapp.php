@@ -32,6 +32,7 @@ use exface\Core\Widgets\LoginPrompt;
 use exface\Core\Exceptions\Security\AuthenticationFailedError;
 use exface\Core\Interfaces\Exceptions\AuthorizationExceptionInterface;
 use exface\Core\Events\Widget\OnBeforePrefillEvent;
+use exface\Core\Events\Action\OnActionInputValidatedEvent;
 
 class Webapp implements WorkbenchDependantInterface
 {
@@ -154,6 +155,18 @@ class Webapp implements WorkbenchDependantInterface
                     return;
                 });
                 
+                // Listen to OnActionInputValidated to make sure, the input data of the action always
+                // has dummy data - even if it was modified by input mappers or anything else.
+                $this->getWorkbench()->eventManager()->addListener(OnActionInputValidatedEvent::getEventName(), function(OnActionInputValidatedEvent $event) use ($action) {
+                    if ($event->getAction() !== $action) {
+                        return;
+                    }
+                    $ds = $event->getDataSheet();
+                    if (! $ds->isEmpty() && $ds->hasUidColumn()) {
+                        $this->handlePrefillGenerateDummyData($ds);
+                    }
+                });
+                
             }
             // Overwrite the task's action with the action of the trigger widget to make sure, the prefill is really performed
             $task->setActionSelector($action->getSelector());
@@ -188,11 +201,17 @@ class Webapp implements WorkbenchDependantInterface
             $dataSheet->getColumns()->addFromUidAttribute();
         }
         
-        // Create a row with empty values for every column
-        foreach ($dataSheet->getColumns() as $col) {
-            $row[$col->getName()] = '';
+        // Create empty values for every column and at least one row
+        if ($dataSheet->isEmpty()) {
+            foreach ($dataSheet->getColumns() as $col) {
+                $row[$col->getName()] = '';
+            }
+            $dataSheet->addRow($row);
+        } else {
+            foreach ($dataSheet->getColumns() as $col) {
+                $col->setValueOnAllRows('');
+            }
         }
-        $dataSheet->addRow($row);
         
         // If the resulting sheet has a UID column, make sure it has a value - otherwise
         // the prefill logic will not attempt to ask the target widget for more columns

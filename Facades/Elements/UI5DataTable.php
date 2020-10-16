@@ -497,7 +497,7 @@ JS;
             if($this->getWidget()->getMultiSelect() === false) {
                 $row = "($oTableJs.getSelectedIndex() !== -1 ? [$oTableJs.getModel().getData().rows[$oTableJs.getSelectedIndex()]] : [])";
             } else {
-                $row = "function(){var selectedIdx = $oTableJs.getSelectedIndices(); var aRows = []; selectedIdx.forEach(index => aRows.push($oTableJs.getModel().getData().rows[index])); return aRows;}();";
+                $row = "function(){var selectedIdx = $oTableJs.getSelectedIndices(); var aRows = []; selectedIdx.forEach(index => aRows.push($oTableJs.getModel().getData().rows[index])); return aRows;}()";
             }
         } else {
             if($this->getWidget()->getMultiSelect() === false) {

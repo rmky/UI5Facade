@@ -1,7 +1,6 @@
 // Toggle online/offlie icon
 window.addEventListener('online', function(){
 	exfLauncher.toggleOnlineIndicator();
-	//TODO not tested yet if working correctly serviceWorker available
 	if(!navigator.serviceWorker){
 		console.log('Syncing offline Queue');
 		exfPreloader.getActionQueueIds('offline')
@@ -165,7 +164,7 @@ const exfLauncher = {};
 																						_oLauncher.contextBar.getComponent().getPreloader().updateQueueCount()
 																						.then(function(){
 																							oButton.setBusy(false);
-																							_oLauncher.contextBar.getComponent().showDialog('Offline Queue', 'Error syncing actions!', 'Error');
+																							_oLauncher.contextBar.getComponent().showDialog('Offline Queue', error, 'Error');
 																							return exfPreloader.getActionQueueData('offline')
 																						})
 																						.then(function(data){

@@ -387,7 +387,6 @@ sap.ui.define([
 							return;
 						}
 						exfLauncher.getShell().getModel().setProperty("/_network/queueCnt", count);
-						console.log('Queue count updated');
 						return count;
 					})
 				}

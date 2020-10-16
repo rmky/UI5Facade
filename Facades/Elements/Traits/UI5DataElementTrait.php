@@ -857,10 +857,15 @@ JS;
             $top_buttons .= $this->getFacade()->getElement($btn)->buildJsConstructor() . ',';
         }
         
+        // Add a title. If the dynamic page is actually the view, the title should be the name
+        // of the page, the view represents - otherwise it's the caption of the table widget.
+        // Since the back-button is also only shown when the dynamic page is the view itself,
+        // we can use the corresponding getter here.
+        $caption = $this->getDynamicPageShowBackButton() ? $this->getWidget()->getPage()->getName() : $this->getCaption();
         $title = <<<JS
         
                             new sap.m.Title({
-                                text: "{$this->escapeJsTextValue($this->getCaption())}"
+                                text: "{$this->escapeJsTextValue($caption)}"
                             })
                             
 JS;

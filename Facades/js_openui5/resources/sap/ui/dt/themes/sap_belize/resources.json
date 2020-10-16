@@ -3,43 +3,67 @@
 	"resources": [
 		{
 			"name": ".theming",
+			"size": 650,
 			"theme": "sap_belize"
 		},
 		{
 			"name": "Overlay.less",
+			"size": 239,
 			"designtime": true,
 			"theme": "sap_belize"
 		},
 		{
-			"name": "library-RTL-dbg.css",
-			"isDebug": true,
+			"name": "css_variables.css",
+			"size": 1225,
+			"theme": "sap_belize"
+		},
+		{
+			"name": "css_variables.less",
+			"size": 83709,
+			"designtime": true,
+			"theme": "sap_belize"
+		},
+		{
+			"name": "css_variables.source.less",
+			"size": 83343,
+			"designtime": true,
 			"theme": "sap_belize"
 		},
 		{
 			"name": "library-RTL.css",
-			"theme": "sap_belize"
-		},
-		{
-			"name": "library-dbg.css",
-			"isDebug": true,
+			"size": 5512,
 			"theme": "sap_belize"
 		},
 		{
 			"name": "library-parameters.json",
+			"size": 450,
 			"theme": "sap_belize"
 		},
 		{
 			"name": "library.css",
+			"size": 5506,
 			"theme": "sap_belize"
 		},
 		{
 			"name": "library.less",
+			"size": 804,
 			"designtime": true,
 			"theme": "sap_belize"
 		},
 		{
 			"name": "library.source.less",
+			"size": 349,
 			"designtime": true,
+			"theme": "sap_belize"
+		},
+		{
+			"name": "library_skeleton-RTL.css",
+			"size": 5132,
+			"theme": "sap_belize"
+		},
+		{
+			"name": "library_skeleton.css",
+			"size": 5126,
 			"theme": "sap_belize"
 		}
 	]

@@ -1,12 +1,11 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides class sap.ui.base.ManagedObjectMetadata
 sap.ui.define([
-	'sap/ui/thirdparty/jquery',
 	'./DataType',
 	'./Metadata',
 	'sap/base/Log',
@@ -14,10 +13,10 @@ sap.ui.define([
 	'sap/base/util/ObjectPath',
 	'sap/base/strings/escapeRegExp',
 	'sap/base/util/merge',
+	'sap/base/util/extend',
 	'sap/base/util/isPlainObject'
 ],
 function(
-	jQuery,
 	DataType,
 	Metadata,
 	Log,
@@ -25,6 +24,7 @@ function(
 	ObjectPath,
 	escapeRegExp,
 	merge,
+	extend,
 	isPlainObject
 ) {
 	"use strict";
@@ -75,7 +75,7 @@ function(
 	 *
 	 *
 	 * @author Frank Weigel
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @since 0.8.6
 	 * @alias sap.ui.base.ManagedObjectMetadata
 	 * @extends sap.ui.base.Metadata
@@ -90,6 +90,7 @@ function(
 
 	// chain the prototypes
 	ManagedObjectMetadata.prototype = Object.create(Metadata.prototype);
+	ManagedObjectMetadata.prototype.constructor = ManagedObjectMetadata;
 
 	var hasOwnProperty = Object.prototype.hasOwnProperty;
 
@@ -380,12 +381,11 @@ function(
 		return instance[this._sDestructor]();
 	};
 
-	Aggregation.prototype.update = function(instance, sChangeReason) {
+	Aggregation.prototype.update = function(instance, sChangeReason, oEventInfo) {
 		if (instance[this._sUpdater]) {
-			instance[this._sUpdater](sChangeReason);
+			instance[this._sUpdater](sChangeReason, oEventInfo);
 		} else {
-			//no change reason
-			instance.updateAggregation(this.name);
+			instance.updateAggregation(this.name, sChangeReason, oEventInfo);
 		}
 	};
 
@@ -881,16 +881,16 @@ function(
 		// PERFOPT: this could be done lazily
 		var oParent = this.getParent();
 		if ( oParent instanceof ManagedObjectMetadata ) {
-			this._mAllEvents = jQuery.extend({}, oParent._mAllEvents, this._mEvents);
-			this._mAllPrivateProperties = jQuery.extend({}, oParent._mAllPrivateProperties, this._mPrivateProperties);
-			this._mAllProperties = jQuery.extend({}, oParent._mAllProperties, this._mProperties);
-			this._mAllPrivateAggregations = jQuery.extend({}, oParent._mAllPrivateAggregations, this._mPrivateAggregations);
-			this._mAllAggregations = jQuery.extend({}, oParent._mAllAggregations, this._mAggregations);
-			this._mAllPrivateAssociations = jQuery.extend({}, oParent._mAllPrivateAssociations, this._mPrivateAssociations);
-			this._mAllAssociations = jQuery.extend({}, oParent._mAllAssociations, this._mAssociations);
+			this._mAllEvents = Object.assign({}, oParent._mAllEvents, this._mEvents);
+			this._mAllPrivateProperties = Object.assign({}, oParent._mAllPrivateProperties, this._mPrivateProperties);
+			this._mAllProperties = Object.assign({}, oParent._mAllProperties, this._mProperties);
+			this._mAllPrivateAggregations = Object.assign({}, oParent._mAllPrivateAggregations, this._mPrivateAggregations);
+			this._mAllAggregations = Object.assign({}, oParent._mAllAggregations, this._mAggregations);
+			this._mAllPrivateAssociations = Object.assign({}, oParent._mAllPrivateAssociations, this._mPrivateAssociations);
+			this._mAllAssociations = Object.assign({}, oParent._mAllAssociations, this._mAssociations);
 			this._sDefaultAggregation = this._sDefaultAggregation || oParent._sDefaultAggregation;
 			this._sDefaultProperty = this._sDefaultProperty || oParent._sDefaultProperty;
-			this._mAllSpecialSettings = jQuery.extend({}, oParent._mAllSpecialSettings, this._mSpecialSettings);
+			this._mAllSpecialSettings = Object.assign({}, oParent._mAllSpecialSettings, this._mSpecialSettings);
 			this._sProvider = this._sProvider || oParent._sProvider;
 		} else {
 			this._mAllEvents = this._mEvents;
@@ -1194,6 +1194,8 @@ function(
 	 * <code>undefined</code> is returned.
 	 *
 	 * @return {string} Name of the default aggregation
+	 * @public
+	 * @since 1.73
 	 */
 	ManagedObjectMetadata.prototype.getDefaultAggregationName = function() {
 		return this._sDefaultAggregation;
@@ -1206,6 +1208,8 @@ function(
 	 * info object for the default aggregation of the parent class is returned.
 	 *
 	 * @return {Object} An info object for the default aggregation
+	 * @public
+	 * @since 1.73
 	 */
 	ManagedObjectMetadata.prototype.getDefaultAggregation = function() {
 		return this.getAggregation();
@@ -1620,7 +1624,7 @@ function(
 		}
 
 		if ( this.getParent() instanceof ManagedObjectMetadata ) {
-			mDefaults = jQuery.extend({}, this.getParent().getPropertyDefaults());
+			mDefaults = Object.assign({}, this.getParent().getPropertyDefaults());
 		} else {
 			mDefaults = {};
 		}
@@ -1642,18 +1646,6 @@ function(
 			this._fnPropertyBagFactory.prototype = this.getPropertyDefaults();
 		}
 		return new (this._fnPropertyBagFactory)();
-	};
-
-	/**
-	 * Helper method that enriches the (generated) information objects for children
-	 * (e.g. properties, aggregations, ...) of this Element.
-	 *
-	 * Also ensures that the parent metadata is enriched.
-	 *
-	 * @private
-	 */
-	ManagedObjectMetadata.prototype._enrichChildInfos = function() {
-		Log.error("obsolete call to ManagedObjectMetadata._enrichChildInfos. This private method will be deleted soon");
 	};
 
 	/**
@@ -1786,11 +1778,11 @@ function(
 			} else {
 				oPromise = Promise.resolve();
 			}
-			return new Promise(function(fnResolve) {
+			return new Promise(function(fnResolve, fnReject) {
 				oPromise.then(function() {
 					sap.ui.require([oLibrary.designtime], function(oLib) {
 						fnResolve(oLib);
-					});
+					}, fnReject);
 				});
 			});
 		}
@@ -1808,7 +1800,7 @@ function(
 			return Promise.resolve(oMetadata._oDesignTime || {});
 		}
 
-		return new Promise(function(fnResolve) {
+		return new Promise(function(fnResolve, fnReject) {
 			var sModule;
 			if (typeof oMetadata._oDesignTime === "string") {
 				//oMetadata._oDesignTime points to resource path to another file, for example: "sap/ui/core/designtime/<control>.designtime"
@@ -1822,7 +1814,7 @@ function(
 					oMetadata._oDesignTime = mDesignTime;
 					mDesignTime._oLib = oLib;
 					fnResolve(mDesignTime);
-				});
+				}, fnReject);
 			});
 		});
 	}
@@ -1856,14 +1848,14 @@ function(
 		if (typeof sInstanceSpecificModule === "string") {
 			sInstanceSpecificModule = mPredefinedDesignTimeModules[sInstanceSpecificModule] || sInstanceSpecificModule;
 
-			return new Promise(function(fnResolve) {
+			return new Promise(function(fnResolve, fnReject) {
 				sap.ui.require([sInstanceSpecificModule], function(vDesignTime) {
 					if (typeof vDesignTime === "function") {
 						fnResolve(vDesignTime(oInstance));
 					} else {
 						fnResolve(vDesignTime);
 					}
-				});
+				}, fnReject);
 			});
 		} else {
 			return Promise.resolve({});

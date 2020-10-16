@@ -1,6 +1,6 @@
 /*
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -9,9 +9,10 @@ sap.ui.define([
 	'sap/ui/base/ManagedObject',
 	"sap/ui/core/syncStyleClass",
 	"sap/base/Log",
-	"sap/ui/thirdparty/jquery"
+	"sap/ui/thirdparty/jquery",
+	'./utils/TableUtils'
 ],
-	function(ManagedObject, syncStyleClass, Log, jQuery) {
+	function(ManagedObject, syncStyleClass, Log, jQuery, TableUtils) {
 	"use strict";
 
 
@@ -26,7 +27,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @since 1.21.1
 	 *
 	 * @constructor
@@ -364,13 +365,7 @@ sap.ui.define([
 				}
 			}
 			if (bForDialog) {
-				oColumnInfo.text = sPersoKey;
-				var aMultiLabels = oColumn.getMultiLabels();
-				if (aMultiLabels && aMultiLabels.length > 0) {
-					oColumnInfo.text = aMultiLabels[aMultiLabels.length - 1].getText();
-				} else if (oColumn.getLabel()) {
-					oColumnInfo.text = oColumn.getLabel().getText();
-				}
+				oColumnInfo.text = TableUtils.Column.getHeaderText(oTable, i) || sPersoKey;
 			}
 			oData.aColumns.push(oColumnInfo);
 		}

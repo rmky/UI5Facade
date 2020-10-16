@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -17,6 +17,10 @@ sap.ui.define(["sap/uxap/library"],
 			plural : function(){
 				return sap.ui.getCore().getLibraryResourceBundle("sap.uxap").getText("SECTION_CONTROL_NAME_PLURAL");
 			}
+		},
+		select: function(oObjectPageSection) {
+			var oObjectPageLayout = oObjectPageSection.getParent();
+			oObjectPageLayout.setSelectedSection(oObjectPageSection);
 		},
 		palette: {
 			group: "CONTAINER",
@@ -48,7 +52,10 @@ sap.ui.define(["sap/uxap/library"],
 					domRef: ".sapUxAPObjectPageSectionTitle",
 					isEnabled: function (oElement) {
 						return oElement.$("title").get(0) != undefined;
-					}
+					},
+					validators: [
+						"noEmptyText"
+					]
 				};
 			}
 		},
@@ -64,4 +71,4 @@ sap.ui.define(["sap/uxap/library"],
 		}
 	};
 
-}, /* bExport= */ false);
+});

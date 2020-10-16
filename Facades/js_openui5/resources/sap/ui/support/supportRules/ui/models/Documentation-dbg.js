@@ -1,13 +1,14 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"jquery.sap.global",
-	"sap/m/library"
-], function (jQuery, mLibrary) {
+	"sap/m/library",
+	"sap/ui/VersionInfo"
+], function (jQuery, mLibrary, VersionInfo) {
 	"use strict";
 
 	var Documentation = {
@@ -16,28 +17,30 @@ sap.ui.define([
 		 * @param {string} sTopicId The ID of the topic to open
 		 */
 		openTopic: function (sTopicId) {
-			var sUrl = "",
-				sVersion = "",
-				sFullVersion = sap.ui.getVersionInfo().version,
-				iMajorVersion = jQuery.sap.Version(sFullVersion).getMajor(),
-				iMinorVersion = jQuery.sap.Version(sFullVersion).getMinor(),
-				sOrigin = window.location.origin;
+			VersionInfo.load({ library: "sap.ui.core" }).then(function (oCoreLibInfo) {
+				var sUrl = "",
+					sVersion = "",
+					sFullVersion = oCoreLibInfo.version,
+					iMajorVersion = jQuery.sap.Version(sFullVersion).getMajor(),
+					iMinorVersion = jQuery.sap.Version(sFullVersion).getMinor(),
+					sOrigin = window.location.origin;
 
-			//This check is to make sure that version is even. Example: 1.53 will back down to 1.52
-			// This is used to generate the correct path to demokit
-			if (iMinorVersion % 2 !== 0) {
-				iMinorVersion--;
-			}
+				//This check is to make sure that version is even. Example: 1.53 will back down to 1.52
+				// This is used to generate the correct path to demokit
+				if (iMinorVersion % 2 !== 0) {
+					iMinorVersion--;
+				}
 
-			sVersion += String(iMajorVersion) + "." + String(iMinorVersion);
+				sVersion += String(iMajorVersion) + "." + String(iMinorVersion);
 
-			if (sOrigin.indexOf("veui5infra") !== -1) {
-				sUrl = sOrigin + "/sapui5-sdk-internal/#/topic/" + sTopicId;
-			} else {
-				sUrl = sOrigin + "/demokit-" + sVersion + "/#/topic/" + sTopicId;
-			}
+				if (sOrigin.indexOf("veui5infra") !== -1) {
+					sUrl = sOrigin + "/sapui5-sdk-internal/#/topic/" + sTopicId;
+				} else {
+					sUrl = sOrigin + "/demokit-" + sVersion + "/#/topic/" + sTopicId;
+				}
 
-			this._redirectToUrlWithFallback(sUrl, sTopicId);
+				this._redirectToUrlWithFallback(sUrl, sTopicId);
+			}.bind(this));
 		},
 
 		/**

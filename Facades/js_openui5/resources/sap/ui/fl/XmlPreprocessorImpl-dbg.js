@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -26,7 +26,7 @@ sap.ui.define([
 	 * @class
 	 * @constructor
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @experimental Since 1.27.0
 	 */
 	var XmlPreprocessorImpl = function() {
@@ -67,9 +67,11 @@ sap.ui.define([
 				//we only consider components whose type is application. Otherwise, we might send request for components that can never have changes.
 				return Promise.resolve(oView);
 			}
+
 			var sFlexReference = Utils.getComponentClassName(oAppComponent);
 			var sAppVersion = Utils.getAppVersionFromManifest(oAppComponent.getManifest());
 			var oFlexController = FlexControllerFactory.create(sFlexReference, sAppVersion);
+
 			return oFlexController.processXmlView(oView, mProperties)
 			.then(function() {
 				Log.debug("flex processing view " + mProperties.id + " finished");

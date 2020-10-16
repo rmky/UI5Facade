@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,7 +14,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.core",
-		version: "1.73.1",
+		version: "1.82.0",
 		designtime: "sap/ui/core/designtime/library.designtime",
 		types: [
 
@@ -61,6 +61,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 			"sap.ui.core.ValueState",
 			"sap.ui.core.VerticalAlign",
 			"sap.ui.core.Wrapping",
+			"sap.ui.core.InvisibleMessageMode",
 			"sap.ui.core.dnd.DropEffect",
 			"sap.ui.core.dnd.DropLayout",
 			"sap.ui.core.dnd.DropPosition",
@@ -115,7 +116,8 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 			"sap.ui.core.search.OpenSearchProvider",
 			"sap.ui.core.search.SearchProvider",
 			"sap.ui.core.tmpl.DOMAttribute",
-			"sap.ui.core.util.ExportCell"
+			"sap.ui.core.util.ExportCell",
+			"sap.ui.core.InvisibleMessage"
 		],
 		extensions: {
 			"sap.ui.support" : {
@@ -148,7 +150,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	 * @namespace
 	 * @alias sap.ui.core
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @public
 	 */
 	var thisLib = sap.ui.core;
@@ -1066,7 +1068,28 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 		 * Contrast color.
 		 * @public
 		 */
-		Contrast : "Contrast"
+		Contrast : "Contrast",
+
+		/**
+		 * Color that indicates an icon which isn't interactive
+		 * @public
+		 * @since 1.76
+		 */
+		NonInteractive : "NonInteractive",
+
+		/**
+		 * Color for icon used in a Tile
+		 * @public
+		 * @since 1.76
+		 */
+		Tile : "Tile",
+
+		/**
+		 * Color for icon used as a marker
+		 * @public
+		 * @since 1.76
+		 */
+		Marker : "Marker"
 
 	};
 
@@ -1124,6 +1147,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	 * @enum {string}
 	 * @public
 	 * @since 1.62.0
+	 * @see {@link fiori:/how-to-use-semantic-colors/ Semantic Colors}
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	thisLib.IndicationColor = {
@@ -1156,8 +1180,25 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 		 * Indication Color 5
 		 * @public
 		 */
-		Indication05 : "Indication05"
+		Indication05 : "Indication05",
 
+		/**
+		 * Indication Color 6
+		 * @public
+		 */
+		Indication06 : "Indication06",
+
+		/**
+		 * Indication Color 7
+		 * @public
+		 */
+		Indication07 : "Indication07",
+
+		/**
+		 * Indication Color 8
+		 * @public
+		 */
+		Indication08 : "Indication08"
 	};
 
 
@@ -1405,7 +1446,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	/**
 	 * Sort order of a column.
 	 *
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @enum {string}
 	 * @public
 	 * @since 1.61.0
@@ -1693,6 +1734,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	 *
 	 * @enum {string}
 	 * @public
+	 * @see {@link fiori:/how-to-use-semantic-colors/ Semantic Colors}
 	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
 	 * @since 1.0
 	 */
@@ -1954,7 +1996,7 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	thisLib.routing = thisLib.routing || {};
 
 	/**
-	 * Enumaration for different HistoryDirections.
+	 * Enumeration for different HistoryDirections.
 	 *
 	 * @enum {string}
 	 * @public
@@ -1963,25 +2005,25 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	thisLib.routing.HistoryDirection = {
 
 		/**
-		 * The page has already been navigated to and it was the successor of the previous page
+		 * The page has already been navigated to and it was the successor of the previous page.
 		 * @public
 		 */
 		Forwards : "Forwards",
 
 		/**
-		 * The page has already been navigated to and it was the precessor of the previous page
+		 * The page has already been navigated to and it was the predecessor of the previous page.
 		 * @public
 		 */
 		Backwards : "Backwards",
 
 		/**
-		 * A new Entry is added to the history
+		 * A new entry is added to the history.
 		 * @public
 		 */
 		NewEntry : "NewEntry",
 
 		/**
-		 * A Navigation took place, but it could be any of the other three states
+		 * A navigation took place, but it could be any of the other three states.
 		 * @public
 		 */
 		Unknown : "Unknown"
@@ -1989,8 +2031,8 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	};
 
 	/**
-	 * Enumeration for different lifecycle behaviors of Components created by the
-	 * ComponentContainer.
+	 * Enumeration for different lifecycle behaviors of components created by the
+	 * <code>ComponentContainer</code>.
 	 *
 	 * @enum {string}
 	 * @public
@@ -1999,28 +2041,55 @@ sap.ui.define(['sap/ui/base/DataType', './CalendarType', './Core'],
 	sap.ui.core.ComponentLifecycle =  {
 
 		/**
-		 * Legacy lifecycle means that the ComponentContainer takes care
-		 * to destroy the Component which is associated with the
-		 * ComponentContainer once the ComponentContainer is destroyed but
-		 * not when a new Component is associated.
+		 * Legacy lifecycle means that the <code>ComponentContainer</code> takes care
+		 * to destroy the component which is associated with the
+		 * <code>ComponentContainer</code> once the <code>ComponentContainer</code> is destroyed,
+		 * but not when a new component is associated.
 		 * @public
 		 */
 		Legacy : "Legacy",
 
 		/**
-		 * Application managed lifecycle means that the Application takes care
-		 * to destroy the Components associated with the ComponentContainer.
+		 * Application managed lifecycle means that the application takes care
+		 * to destroy the components associated with the <code>ComponentContainer</code>.
 		 * @public
 		 */
 		Application : "Application",
 
 		/**
-		 * Container managed lifecycle means that the ComponentContainer takes
-		 * care to destroy the Components associated with the ComponentContainer
-		 * once the ComponentContainer is destroyed or a new Component is associated.
+		 * Container managed lifecycle means that the <code>ComponentContainer</code> takes
+		 * care to destroy the components associated with the <code>ComponentContainer</code>
+		 * once the <code>ComponentContainer</code> is destroyed or a new component is associated.
 		 * @public
 		 */
 		Container : "Container"
+
+	};
+
+
+	/**
+	 * Enumeration for different mode behaviors of the <code>InvisibleMessage</code>.
+	 *
+	 * @enum {string}
+	 * @public
+	 * @experimental Since 1.73.
+	 * @since 1.78
+	 * @ui5-metamodel This enumeration also will be described in the UI5 (legacy) designtime metamodel
+	 */
+	sap.ui.core.InvisibleMessageMode =  {
+
+		/**
+		 * Indicates that updates to the region should be presented at the next graceful opportunity,
+		 * such as at the end of reading the current sentence, or when the user pauses typing.
+		 * @public
+		 */
+		Polite : "Polite",
+
+		/**
+		 * Indicates that updates to the region have the highest priority and should be presented to the user immediately.
+		 * @public
+		 */
+		Assertive : "Assertive"
 
 	};
 

@@ -1,12 +1,13 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/ui/thirdparty/jquery",
 	"sap/ui/base/ManagedObject",
+	"sap/ui/fl/Layer",
 	"sap/ui/fl/Utils",
 	"sap/ui/fl/LayerUtils",
 	"sap/ui/fl/registry/Settings",
@@ -15,6 +16,7 @@ sap.ui.define([
 ], function (
 	jQuery,
 	ManagedObject,
+	Layer,
 	Utils,
 	LayerUtils,
 	Settings,
@@ -31,7 +33,7 @@ sap.ui.define([
 	 * @class Variant class.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @alias sap.ui.fl.Variant
 	 * @experimental Since 1.52.0
 	 */
@@ -46,7 +48,7 @@ sap.ui.define([
 			this._oDefinition = oFile;
 			this._oOriginDefinition = merge({}, oFile);
 			this._sRequest = '';
-			this._bUserDependent = (oFile.content.layer === "USER");
+			this._bUserDependent = (oFile.content.layer === Layer.USER);
 			this._vRevertData = null;
 			this.setState(Variant.states.NEW);
 		},

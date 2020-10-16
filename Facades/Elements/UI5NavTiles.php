@@ -1,12 +1,10 @@
 <?php
 namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Widgets\NavTiles;
-
 /**
  * Renders a default container for NavTiles.
  * 
- * @method NavTiles getWidget()
+ * @method \exface\Core\Widgets\NavTiles getWidget()
  * 
  * @author Andrej Kabachnik
  *
@@ -27,5 +25,15 @@ class UI5NavTiles extends UI5Container
             $widget->getWidgetFirst()->setHideCaption(true);
         }
         return parent::buildJsConstructor($oControllerJs);
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildCssElementClass()
+     */
+    public function buildCssElementClass()
+    {
+        return 'exf-navtiles';
     }
 }

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -52,7 +52,7 @@ function (
 	 * @extends sap.ui.dt.Overlay
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @private
@@ -199,29 +199,24 @@ function (
 		}.bind(this));
 	};
 
-	ElementOverlay.prototype._initMutationObserver = function () {
-		if (this.isRoot()) {
-			this._subscribeToMutationObserver();
-		}
-
-		this.attachEvent('isRootChanged', function (oEvent) {
-			if (oEvent.getParameter('value')) {
-				this._subscribeToMutationObserver();
-			} else {
-				this._unsubscribeFromMutationObserver();
-			}
-		}, this);
+	ElementOverlay.prototype._onRootChanged = function (oEvent) {
+		var bRootChangedValue = oEvent.getParameter('value');
+		this._subscribeToMutationObserver(bRootChangedValue);
 	};
 
-	ElementOverlay.prototype._subscribeToMutationObserver = function () {
+	ElementOverlay.prototype._initMutationObserver = function () {
+		this._subscribeToMutationObserver(this.isRoot());
+		this.attachEvent('isRootChanged', this._onRootChanged, this);
+	};
+
+	ElementOverlay.prototype._subscribeToMutationObserver = function (bIsRoot) {
 		var oMutationObserver = Overlay.getMutationObserver();
 		var $DomRef = this.getAssociatedDomRef();
-		this._sObservableNodeId = $DomRef && $DomRef.get(0).id;
+		this._sObservableNodeId = $DomRef && $DomRef.get(0) && $DomRef.get(0).id;
 
 		if (this._sObservableNodeId) {
-			oMutationObserver.addToWhiteList(this._sObservableNodeId);
-			oMutationObserver.attachDomChanged(this._onDomChanged, this);
-		} else {
+			oMutationObserver.registerHandler(this._sObservableNodeId, this._domChangedCallback.bind(this), bIsRoot);
+		} else if (bIsRoot) {
 			throw Util.createError(
 				'ElementOverlay#_subscribeToMutationObserver',
 				'Please provide a root control with proper domRef and id to ensure that DesignTime is working properly'
@@ -232,8 +227,7 @@ function (
 	ElementOverlay.prototype._unsubscribeFromMutationObserver = function () {
 		if (this._sObservableNodeId) {
 			var oMutationObserver = Overlay.getMutationObserver();
-			oMutationObserver.removeFromWhiteList(this._sObservableNodeId);
-			oMutationObserver.detachDomChanged(this._onDomChanged, this);
+			oMutationObserver.deregisterHandler(this._sObservableNodeId);
 			delete this._sObservableNodeId;
 		}
 	};
@@ -288,9 +282,7 @@ function (
 	 * @protected
 	 */
 	ElementOverlay.prototype.exit = function () {
-		if (this.isRoot()) {
-			this._unsubscribeFromMutationObserver();
-		}
+		this._unsubscribeFromMutationObserver();
 		this._destroyControlObserver();
 
 		if (this._iApplyStylesRequest) {
@@ -355,34 +347,20 @@ function (
 	};
 
 	ElementOverlay.prototype._applySizes = function () {
-		// We need to know when all our children have correct positions
-		var aPromises = this.getChildren()
-			.filter(function (oChild) {
-				return oChild.isRendered();
-			})
-			.map(function(oChild) {
-				return new Promise(function (fnResolve) {
-					oChild.attachEventOnce('geometryChanged', fnResolve);
-				});
-			});
+		return Overlay.prototype._applySizes.apply(this, arguments)
+			.then(function () {
+				this._sortChildren(this.getChildrenDomRef());
+				if (!this.bIsDestroyed) {
+					this.getScrollContainers().forEach(function(mScrollContainer, iIndex) {
+						var $ScrollContainerDomRef = this.getDesignTimeMetadata().getAssociatedDomRef(this.getElement(), mScrollContainer.domRef) || jQuery();
+						var $ScrollContainerOverlayDomRef = this.getScrollContainerById(iIndex);
 
-		Overlay.prototype._applySizes.apply(this, arguments);
-
-		Promise.all(aPromises).then(function () {
-			this._sortChildren(this.getChildrenDomRef());
-
-			// TODO: re-think async flow of applyStyles as part of Managing Updates BLI
-			if (!this.bIsDestroyed) {
-				this.getScrollContainers().forEach(function(mScrollContainer, iIndex) {
-					var $ScrollContainerDomRef = this.getDesignTimeMetadata().getAssociatedDomRef(this.getElement(), mScrollContainer.domRef) || jQuery();
-					var $ScrollContainerOverlayDomRef = this.getScrollContainerById(iIndex);
-
-					if ($ScrollContainerDomRef.length) {
-						this._sortChildren($ScrollContainerOverlayDomRef.get(0));
-					}
-				}, this);
-			}
-		}.bind(this));
+						if ($ScrollContainerDomRef.length) {
+							this._sortChildren($ScrollContainerOverlayDomRef.get(0));
+						}
+					}, this);
+				}
+			}.bind(this));
 	};
 
 	/**
@@ -554,7 +532,7 @@ function (
 		var a$Children = Overlay.prototype._renderChildren.apply(this, arguments);
 
 		this.getScrollContainers().forEach(function (mScrollContainer, iIndex) {
-			var $ScrollContainer = jQuery("<div/>", {
+			var $ScrollContainer = jQuery("<div></div>", {
 				"class": S_SCROLLCONTAINER_CLASSNAME,
 				"data-sap-ui-dt-scrollContainerIndex": iIndex
 			});
@@ -740,21 +718,27 @@ function (
 	 * @private
 	 */
 	ElementOverlay.prototype._onElementModified = function (oEvent) {
+		if (oEvent.getParameters().type === "afterRendering") {
+			this._subscribeToMutationObserver(this.isRoot());
+			this._oScrollbarSynchronizers.forEach(function (oScrollbarSynchronizer) {
+				oScrollbarSynchronizer.refreshListeners();
+			});
+		}
 		this.fireElementModified(oEvent.getParameters());
 	};
 
 	/**
-	 * @param {sap.ui.baseEvent} oEvent event object
 	 * @private
 	 */
-	ElementOverlay.prototype._onDomChanged = function () {
-		// FIXME: instead of checking isReady subscribe on DOM changes when overlay is ready
-		if (this.isReady() && this.isRoot()) {
+	ElementOverlay.prototype._domChangedCallback = function (mParameters) {
+		mParameters.targetOverlay = this;
+		if (this.isReady()) {
+			//FIXME: temporal solution for cancel not relevant mutation. Should be finally done in the TaskManager
 			if (this._iApplyStylesRequest) {
 				window.cancelAnimationFrame(this._iApplyStylesRequest);
 			}
 			this._iApplyStylesRequest = window.requestAnimationFrame(function () {
-				this.applyStyles();
+				this.fireApplyStylesRequired(mParameters);
 				delete this._iApplyStylesRequest;
 			}.bind(this));
 		}

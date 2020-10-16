@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -66,7 +66,7 @@ function(
 	 * @extends sap.m.NotificationListBase
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -166,47 +166,20 @@ function(
 		if (!collapseButton) {
 			collapseButton = new Button(this.getId() + '-collapseButton', {
 				type: ButtonType.Transparent,
-				icon: collapsed ? EXPAND_ICON : COLLAPSE_ICON,
-				tooltip: collapsed ? EXPAND_TEXT : COLLAPSE_TEXT,
 				press: function () {
-					this.setCollapsed(!this.getCollapsed());
+					var isCollapsed = !this.getCollapsed();
+					this.setCollapsed(isCollapsed);
+					this.fireOnCollapse({collapsed: isCollapsed});
 				}.bind(this)
 			});
 
 			this.setAggregation("_collapseButton", collapseButton, true);
 		}
 
+		collapseButton.setIcon(collapsed ? EXPAND_ICON : COLLAPSE_ICON);
+		collapseButton.setTooltip(collapsed ? EXPAND_TEXT : COLLAPSE_TEXT);
+
 		return collapseButton;
-	};
-
-	NotificationListGroup.prototype.setCollapsed = function (bCollapsed) {
-
-		var $that = this.$(),
-			collapseButton = this._getCollapseButton(),
-			display = "",
-			areActionButtonsVisible = !bCollapsed && this._shouldRenderOverflowToolbar();
-
-		$that.toggleClass('sapMNLGroupCollapsed', bCollapsed);
-		$that.attr('aria-expanded', !bCollapsed);
-
-		if (!Device.system.phone) {
-			areActionButtonsVisible ? display = "block" : display = "none";
-			$that.find(".sapMNLGroupHeader .sapMNLIActions").css("display", display);
-		}
-
-		collapseButton.setIcon(bCollapsed ? EXPAND_ICON : COLLAPSE_ICON);
-		collapseButton.setTooltip(bCollapsed ? EXPAND_TEXT : COLLAPSE_TEXT);
-
-		// Setter overwritten to suppress invalidation
-		this.setProperty('collapsed', bCollapsed, true);
-
-		if (Device.system.phone && this.getDomRef()) {
-			this._updatePhoneButtons();
-		}
-
-		this.fireOnCollapse({collapsed: bCollapsed});
-
-		return this;
 	};
 
 	/**
@@ -224,6 +197,7 @@ function(
 	 * @private
 	 */
 	NotificationListGroup.prototype.exit = function() {
+		NotificationListBase.prototype.exit.apply(this, arguments);
 		if (this._groupTitleInvisibleText) {
 			this._groupTitleInvisibleText.destroy();
 			this._groupTitleInvisibleText = null;
@@ -262,12 +236,18 @@ function(
 	NotificationListGroup.prototype._getGroupTitleInvisibleText = function() {
 
 		var readUnreadText = this.getUnread() ? UNREAD_TEXT : READ_TEXT,
-			priorityText = RESOURCE_BUNDLE.getText('NOTIFICATION_LIST_GROUP_PRIORITY', this.getPriority()),
+			priorityText,
+			priority = this.getPriority(),
 			counterText,
-			ariaTexts = [readUnreadText, priorityText];
+			ariaTexts = [readUnreadText];
+
+			if (priority !== Priority.None) {
+				priorityText = RESOURCE_BUNDLE.getText('NOTIFICATION_LIST_GROUP_PRIORITY', priority);
+				ariaTexts.push(priorityText);
+			}
 
 		if (this.getShowItemsCounter()) {
-			counterText = RESOURCE_BUNDLE.getText("LIST_ITEM_COUNTER", this._getVisibleItemsCount());
+			counterText = RESOURCE_BUNDLE.getText("LIST_ITEM_COUNTER", [this._getVisibleItemsCount()]);
 			ariaTexts.push(counterText);
 		}
 

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -73,7 +73,7 @@ sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/library'],
 						+ sValueStateImage);
 					rm.write('<img id="' + sId + '-valueStateImage" class="sapUiRttValueStateImage" src="');
 					rm.writeEscaped(sValueStateImage);
-					rm.write('"/>');
+					rm.write('">');
 				}
 			}
 
@@ -100,7 +100,7 @@ sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/library'],
 			rm.write('<img id="' + sId + '-image" class="sapUiRttImage"');
 			rm.writeAttributeEscaped('alt', sAltText);
 			rm.writeAttributeEscaped('src', sImage);
-			rm.write('"/>');
+			rm.write('>');
 		}
 
 		// render RichTooltip's text

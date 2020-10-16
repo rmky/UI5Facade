@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  *
  * @private
@@ -17,8 +17,8 @@ sap.ui.define([
 		// Table Card
 		"tableMaxItems": {
 			"tags": ["content"],
-			"label": "{i18n>CARD_EDITOR.TABLE.MAXITEMS}",
-			"type": "number",
+			"label": "{i18n>CARD_EDITOR.MAXITEMS}",
+			"type": "integer",
 			"path": "content/maxItems",
 			"visible": "{= ${context>type} === 'Table' }"
 		},
@@ -27,11 +27,12 @@ sap.ui.define([
 			"label": "{i18n>CARD_EDITOR.TABLE.ROW.COLUMNS}",
 			"type": "array",
 			"path": "content/row/columns",
-			"itemLabel": "{i18n>CARD_EDITOR.TABLE.ROW.COLUMN}",
+			"itemLabel": "{title}",
+			"addItemLabel": "{i18n>CARD_EDITOR.TABLE.ROW.COLUMN}",
 			"template": {
 				"title": {
 					"tags": ["content", "tableRowColumn"],
-					"label": "{i18n>CARD_EDITOR.TABLE.ROW.COLUMN.TITLE}",
+					"label": "{i18n>CARD_EDITOR.TITLE}",
 					"type": "string",
 					"path": "title"
 				},
@@ -49,60 +50,96 @@ sap.ui.define([
 				},
 				"icon": {
 					"tags": ["content", "tableRowColumn"],
-					"label": "{i18n>CARD_EDITOR.TABLE.ROW.COLUMN.ICON}",
+					"label": "{i18n>CARD_EDITOR.ICON}",
 					"type": "icon",
-					"path": "icon/src"
+					"path": "icon",
+					"visible": false
 				},
 				"state": {
 					"tags": ["content", "tableRowColumn"],
 					"label": "{i18n>CARD_EDITOR.TABLE.ROW.COLUMN.STATE}",
-					"type": "enum",
-					"enum": [
-						"Success",
-						"Error",
-						"Warning",
-						"None",
-						"Information"
+					"type": "select",
+					"items": [
+						{
+							"key": "Success",
+							"title": "{i18n>CARD_EDITOR.STATE.SUCCESS}"
+						},
+						{   "key": "Error",
+							"title": "{i18n>CARD_EDITOR.STATE.ERROR}"
+						},
+						{
+							"key": "Warning",
+							"title": "{i18n>CARD_EDITOR.STATE.WARNING}"
+						},
+						{
+							"key": "None",
+							"title": "{i18n>CARD_EDITOR.STATE.NONE}"
+						},
+						{
+							"key": "Information",
+							"title": "{i18n>CARD_EDITOR.STATE.INFORMATION}"
+						}
 					],
-					"default": "None",
+					"defaultValue": "None",
 					"path": "state"
 				},
 				"url": {
 					"tags": ["content", "tableRowColumn"],
-					"label": "{i18n>CARD_EDITOR.TABLE.ROW.COLUMN.URL}",
+					"label": "{i18n>CARD_EDITOR.LABEL.URL}",
 					"type": "string",
 					"path": "url"
 				},
 				"target": {
 					"tags": ["content", "tableRowColumn"],
-					"label": "{i18n>CARD_EDITOR.TABLE.ROW.COLUMN.TARGET}",
-					"type": "enum",
-					"enum": [
-						"_blank",
-						"_self"
+					"label": "{i18n>CARD_EDITOR.TARGET}",
+					"type": "select",
+					"items": [
+						{
+							"key":"_blank",
+							"description": "{i18n>CARD_EDITOR.TARGET.BLANK}"
+						},
+						{
+							"key":"_self",
+							"description": "{i18n>CARD_EDITOR.TARGET.SELF}"
+						}
 					],
-					"default": "_blank",
-					"path": "target"
+					"defaultValue": "_blank",
+					"path": "target",
+					"visible": "{= !!${url}}"
 				},
 				"identifier": {
 					"tags": ["content", "tableRowColumn"],
 					"label": "{i18n>CARD_EDITOR.TABLE.ROW.COLUMN.IDENTIFIER}",
 					"type": "boolean",
-					"default": false,
+					"defaultValue": false,
 					"path": "identifier"
 				},
 				"progressIndicatorState": {
 					"tags": ["content", "tableRowColumn"],
 					"label": "{i18n>CARD_EDITOR.TABLE.ROW.COLUMN.PROGRESSINDICATOR.STATE}",
-					"type": "enum",
-					"enum": [
-						"Success",
-						"Error",
-						"Warning",
-						"None",
-						"Information"
+					"type": "select",
+					"items": [
+						{
+							"key": "Success",
+							"title": "{i18n>CARD_EDITOR.STATE.SUCCESS}"
+						},
+						{   "key": "Error",
+							"title": "{i18n>CARD_EDITOR.STATE.ERROR}"
+						},
+						{
+							"key": "Warning",
+							"title": "{i18n>CARD_EDITOR.STATE.WARNING}"
+						},
+						{
+							"key": "None",
+							"title": "{i18n>CARD_EDITOR.STATE.NONE}"
+						},
+						{
+							"key": "Information",
+							"title": "{i18n>CARD_EDITOR.STATE.INFORMATION}"
+						}
 					],
-					"default": "None",
+					"defaultValue": "None",
 					"path": "progressIndicator/state"
 				},
 				"progressIndicatorPercent": {

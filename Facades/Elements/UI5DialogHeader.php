@@ -39,7 +39,7 @@ class UI5DialogHeader extends UI5Container
             return '';
         }
         
-        $title = $widget->getCaption() ? 'new sap.m.Title({text: "' . $widget->getCaption() . '"}),' : '';
+        $title = $widget->getCaption() ? 'new sap.m.Title({text: "' . $this->escapeJsTextValue($widget->getCaption()) . '"}),' : '';
         foreach ($widget->getWidgets() as $w) {
             if ($w instanceof WidgetGrid) {
                 $content .= $this->buildJsVerticalLayout($w) . ',';

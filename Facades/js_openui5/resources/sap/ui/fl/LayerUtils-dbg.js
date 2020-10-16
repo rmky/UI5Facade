@@ -1,35 +1,33 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/base/util/UriParameters",
-	"sap/ui/thirdparty/hasher"
+	"sap/ui/thirdparty/hasher",
+	"sap/ui/fl/Layer",
+	"sap/ui/fl/Utils"
 ],
 function(
 	UriParameters,
-	hasher
+	hasher,
+	Layer,
+	Utils
 ) {
 	"use strict";
-	var LAYER = {
-		BASE: "BASE",
-		VENDOR: "VENDOR",
-		PARTNER: "PARTNER",
-		CUSTOMER_BASE: "CUSTOMER_BASE",
-		CUSTOMER: "CUSTOMER",
-		USER: "USER"
-	};
+
 	//Stack of layers in the layered repository
 	var aLayers = [
-		LAYER.BASE,
-		LAYER.VENDOR,
-		LAYER.PARTNER,
-		LAYER.CUSTOMER_BASE,
-		LAYER.CUSTOMER,
-		LAYER.USER
+		Layer.BASE,
+		Layer.VENDOR,
+		Layer.PARTNER,
+		Layer.CUSTOMER_BASE,
+		Layer.CUSTOMER,
+		Layer.USER
 	];
+
 	//Precalculates index of layers
 	var mLayersIndex = {};
 	aLayers.forEach(function(sLayer, iIndex) {
@@ -41,11 +39,11 @@ function(
 	 *
 	 * @namespace sap.ui.fl.LayerUtils
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 */
 	var LayerUtils = {
-		_mLayersIndex : mLayersIndex,
-		_sTopLayer : aLayers[aLayers.length - 1],
+		_mLayersIndex: mLayersIndex,
+		_sTopLayer: aLayers[aLayers.length - 1],
 		FL_MAX_LAYER_PARAM: "sap-ui-fl-max-layer",
 
 		/**
@@ -55,7 +53,7 @@ function(
 		 * @public
 		 */
 		isVendorLayer: function () {
-			return this.getCurrentLayer(false) === LAYER.VENDOR;
+			return this.getCurrentLayer(false) === Layer.VENDOR;
 		},
 
 		/**
@@ -66,7 +64,7 @@ function(
 		 * @public
 		 */
 		isCustomerDependentLayer : function(sLayerName) {
-			return ([LAYER.CUSTOMER, LAYER.CUSTOMER_BASE].indexOf(sLayerName) > -1);
+			return ([Layer.CUSTOMER, Layer.CUSTOMER_BASE].indexOf(sLayerName) > -1);
 		},
 
 		/**
@@ -79,7 +77,7 @@ function(
 		 */
 		doesCurrentLayerRequirePackage: function () {
 			var sCurrentLayer = this.getCurrentLayer(false);
-			return (sCurrentLayer === LAYER.VENDOR) || (sCurrentLayer === LAYER.PARTNER) || (sCurrentLayer === LAYER.CUSTOMER_BASE);
+			return (sCurrentLayer === Layer.VENDOR) || (sCurrentLayer === Layer.PARTNER) || (sCurrentLayer === Layer.CUSTOMER_BASE);
 		},
 
 		/**
@@ -89,15 +87,8 @@ function(
 		 * @return {String} maxLayer
 		 */
 		getMaxLayer: function () {
-			var sParseMaxLayer;
-			var oUshellContainer = this.getUshellContainer();
-			if (oUshellContainer) {
-				var oParsedHash = oUshellContainer.getService("URLParsing").parseShellHash(hasher.getHash()) || {};
-				if (oParsedHash.params && oParsedHash.params.hasOwnProperty(this.FL_MAX_LAYER_PARAM)) {
-					sParseMaxLayer = oParsedHash.params[this.FL_MAX_LAYER_PARAM][0];
-				}
-			}
-			return sParseMaxLayer || this.getUrlParameter(this.FL_MAX_LAYER_PARAM) || this._sTopLayer;
+			var sParseMaxLayer = LayerUtils.getMaxLayerTechnicalParameter(hasher.getHash());
+			return sParseMaxLayer || LayerUtils.getUrlParameter(this.FL_MAX_LAYER_PARAM) || LayerUtils._sTopLayer;
 		},
 
 		/**
@@ -160,12 +151,27 @@ function(
 		 */
 		getCurrentLayer: function (bIsEndUser) {
 			if (bIsEndUser) {
-				return LAYER.USER;
+				return Layer.USER;
 			}
 
 			var sLayer = this.getUrlParameter("sap-ui-layer") || "";
 			sLayer = sLayer.toUpperCase();
-			return sLayer || LAYER.CUSTOMER;
+			return sLayer || Layer.CUSTOMER;
+		},
+
+		/**
+		 * The function loops over the array and filteres the object if the layer property is over the current max layer
+		 *
+		 * @param {object[]} aChangeDefinitions - Array of change definitions
+		 * @returns {object[]} Array of filtered change definitions
+		 */
+		filterChangeDefinitionsByMaxLayer: function(aChangeDefinitions) {
+			return aChangeDefinitions.filter(function(oChangeDefinition) {
+				if (oChangeDefinition.layer && LayerUtils.isOverMaxLayer(oChangeDefinition.layer)) {
+					return false;
+				}
+				return true;
+			});
 		},
 
 		/**
@@ -181,12 +187,18 @@ function(
 		},
 
 		/**
-		 * Returns ushell container if available
+		 * Returns max layer technical parameter from the passed hash if ushell is available
 		 *
-		 * @returns {object|undefined} Returns ushell container object if available or undefined
+		 * @param {string} sHash Hash value
+		 * @returns {string|undefined} Max layer parameter value, if available
 		 */
-		getUshellContainer: function() {
-			return sap.ushell && sap.ushell.Container;
+		getMaxLayerTechnicalParameter: function(sHash) {
+			return Utils.ifUShellContainerThen(function(aServices) {
+				var oParsedHash = aServices[0].parseShellHash(sHash) || {};
+				if (oParsedHash.params && oParsedHash.params.hasOwnProperty(this.FL_MAX_LAYER_PARAM)) {
+					return oParsedHash.params[this.FL_MAX_LAYER_PARAM][0];
+				}
+			}.bind(this), ["URLParsing"]);
 		}
 	};
 	return LayerUtils;

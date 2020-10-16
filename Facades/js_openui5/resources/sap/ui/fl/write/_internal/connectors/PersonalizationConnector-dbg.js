@@ -1,19 +1,17 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/base/util/merge",
 	"sap/ui/fl/write/_internal/connectors/BackendConnector",
-	"sap/ui/fl/apply/_internal/connectors/PersonalizationConnector",
-	"sap/ui/fl/Layer"
+	"sap/ui/fl/initial/_internal/connectors/PersonalizationConnector"
 ], function(
 	merge,
 	BackendConnector,
-	ApplyConnector,
-	Layer
+	InitialConnector
 ) {
 	"use strict";
 
@@ -29,14 +27,13 @@ sap.ui.define([
 	 *
 	 * @namespace sap.ui.fl.write._internal.connectors.PersonalizationConnector
 	 * @since 1.70
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @private
 	 * @ui5-restricted sap.ui.fl.write._internal.Storage
 	 */
 	var PersonalizationConnector = merge({}, BackendConnector, {  /** @lends sap.ui.fl.write._internal.connectors.PersonalizationConnector */
-		layers: [
-			Layer.USER
-		],
+		layers: InitialConnector.layers,
+
 		ROUTES: {
 			CHANGES: PREFIX + API_VERSION + "/changes/",
 			TOKEN: PREFIX + API_VERSION + "/actions/getcsrftoken"
@@ -52,6 +49,6 @@ sap.ui.define([
 		}
 	});
 
-	PersonalizationConnector.applyConnector = ApplyConnector;
+	PersonalizationConnector.initialConnector = InitialConnector;
 	return PersonalizationConnector;
 }, true);

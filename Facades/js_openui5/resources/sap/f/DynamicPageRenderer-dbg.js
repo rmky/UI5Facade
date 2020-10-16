@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -41,7 +41,7 @@ sap.ui.define(["sap/ui/Device"], function (Device) {
 		if (oDynamicPage.getToggleHeaderOnTitleClick()) {
 			oRm.class("sapFDynamicPageTitleClickEnabled");
 		}
-
+		oRm.attr("aria-roledescription", oDynamicPage._getAriaRoleDescription());
 		oRm.accessibilityState(oDynamicPage, oDynamicPage._formatLandmarkInfo(oLandmarkInfo, "Root"));
 		oRm.openEnd();
 		// Renders Dynamic Page Custom ScrollBar for Desktop mode
@@ -61,6 +61,8 @@ sap.ui.define(["sap/ui/Device"], function (Device) {
 			oRm.class("sapFDynamicPageTitleOnly");
 		}
 		oRm.accessibilityState(oDynamicPage, oDynamicPage._formatLandmarkInfo(oLandmarkInfo, "Header"));
+		oRm.attr("data-sap-ui-customfastnavgroup", true);
+
 		oRm.openEnd();
 		oRm.renderControl(oDynamicPageTitle);
 

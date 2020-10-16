@@ -1,8 +1,13 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
+
+// Ensure that sap.ui.unified is loaded before the module dependencies will be required.
+// Loading it synchronously is the only compatible option and doesn't harm when sap.ui.unified
+// already has been loaded asynchronously (e.g. via a dependency declared in the manifest)
+sap.ui.getCore().loadLibrary("sap.ui.unified");
 
 // Provides control sap.m.SinglePlanningCalendarGrid.
 sap.ui.define([
@@ -21,6 +26,7 @@ sap.ui.define([
 		'sap/ui/unified/calendar/DatesRow',
 		'sap/ui/unified/calendar/CalendarDate',
 		'sap/ui/unified/calendar/CalendarUtils',
+		'sap/ui/unified/DateTypeRange',
 		'sap/ui/events/KeyCodes',
 		'./SinglePlanningCalendarGridRenderer',
 		'sap/ui/Device',
@@ -44,6 +50,7 @@ sap.ui.define([
 		DatesRow,
 		CalendarDate,
 		CalendarUtils,
+		DateTypeRange,
 		KeyCodes,
 		SinglePlanningCalendarGridRenderer,
 		Device,
@@ -97,7 +104,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 *
 		 * @constructor
 		 * @private
@@ -310,7 +317,7 @@ sap.ui.define([
 					},
 
 					/**
-					 * Fired when a grid cell is focused.
+					 * Fired when a grid cell is pressed.
 					 * @since 1.65
 					 */
 					cellPress: {
@@ -338,7 +345,7 @@ sap.ui.define([
 				}).addStyleClass("sapMSinglePCColumnHeader"),
 				iDelay = (60 - oStartDate.getSeconds()) * 1000,
 				sTimePattern = this._getCoreLocaleData().getTimePattern("medium");
-
+			oDatesRow._setAriaRole("columnheader");
 			this.setAggregation("_columnHeaders", oDatesRow);
 			this.setStartDate(oStartDate);
 			this._setColumns(7);
@@ -588,11 +595,11 @@ sap.ui.define([
 						$DraggedControl = oDragSession.getDragControl().$();
 
 					if (this._isResizeHandleBottomMouseDownTarget) {
-						oDragSession.setData("bottomHandle", "true");
+						oDragSession.setComplexData("bottomHandle", "true");
 					}
 
 					if (this._isResizeHandleTopMouseDownTarget) {
-						oDragSession.setData("topHandle", "true");
+						oDragSession.setComplexData("topHandle", "true");
 					}
 
 					$Indicator.addClass("sapUiDnDIndicatorHide");
@@ -660,7 +667,6 @@ sap.ui.define([
 					};
 
 					oDragSession.getDragControl().$().css(mDraggedControlConfig);
-
 					if (!oDragSession.getIndicator()) {
 						setTimeout(fnHideIndicator, 0);
 					} else {
@@ -682,7 +688,7 @@ sap.ui.define([
 						oAppointment.getStartDate(),
 						oAppointment.getEndDate(),
 						iIndex,
-						oDragSession.getData("bottomHandle")
+						oDragSession.getComplexData("bottomHandle")
 					);
 
 					this.$().find(".sapMSinglePCOverlay").removeClass("sapMSinglePCOverlayDragging");
@@ -736,6 +742,21 @@ sap.ui.define([
 					if (!Device.browser.msie && !Device.browser.edge) {
 						oEvent.getParameter("browserEvent").dataTransfer.setDragImage(getResizeGhost(), 0, 0);
 					}
+
+					var oGrid = oEvent.getParameter("target"),
+						aIntervalPlaceholders = oGrid.getAggregation("_intervalPlaceholders"),
+						oFirstIntervalRectangle = aIntervalPlaceholders[0].getDomRef().getBoundingClientRect(),
+						iIntervalSize = oFirstIntervalRectangle.height,
+						iIntervalIndexOffset = Math.floor((oFirstIntervalRectangle.top - oGrid.getDomRef().getBoundingClientRect().top) / iIntervalSize),
+						iIntervalIndex = Math.floor(oEvent.getParameter("browserEvent").offsetY / iIntervalSize) - iIntervalIndexOffset,
+						oDragSession = oEvent.getParameter("dragSession");
+
+					if	(iIntervalIndex < 0) {
+						iIntervalIndex = 0;
+					}
+
+					oDragSession.setComplexData("startingRectsDropArea", { top: Math.ceil(iIntervalIndex * iIntervalSize), left: oFirstIntervalRectangle.left });
+					oDragSession.setComplexData("startingDropDate", aIntervalPlaceholders[iIntervalIndex].getDate());
 				}.bind(this),
 
 				dragEnter: function (oEvent) {
@@ -807,9 +828,8 @@ sap.ui.define([
 		};
 
 		SinglePlanningCalendarGrid.prototype._calcResizeNewHoursAppPos = function(oAppStartDate, oAppEndDate, iIndex, bBottomHandle) {
-			var oSPCStartDate = new Date(this.getStartDate().getFullYear(), this.getStartDate().getMonth(), this.getStartDate().getDate()),
-				iMinutesStep = 30 * 60 * 1000, // 30 min
-				iPlaceholderStartTime = oSPCStartDate.getTime() + iIndex * iMinutesStep,
+			var iMinutesStep = 30 * 60 * 1000, // 30 min
+				iPlaceholderStartTime = this.getAggregation("_intervalPlaceholders")[iIndex].getDate().getTime(),
 				iPlaceholderEndTime = iPlaceholderStartTime + iMinutesStep,
 				iVariableBoundaryTime = bBottomHandle ? oAppStartDate.getTime() : oAppEndDate.getTime(),
 				iStartTime = Math.min(iVariableBoundaryTime, iPlaceholderStartTime),
@@ -1051,25 +1071,15 @@ sap.ui.define([
 					// Deselecting all selected appointments if a grid cell is focused or
 					// all selected appointments different than the currently focused appointment
 					if ( (!oAppointment || aAppointments[i].getId() !== oAppointment.getId()) && aAppointments[i].getSelected()) {
-						aAppointments[i].setProperty("selected", false, true); // do not invalidate
+						aAppointments[i].setProperty("selected", false);
 						aChangedApps.push(aAppointments[i]);
-						// Get appointment element(s) (it might be rendered in several columns)
-						// remove its selection class and set aria-selected attribute to false
-						jQuery('[data-sap-ui=' + aAppointments[i].getId() + ']')
-							.attr("aria-selected", "false")
-							.find(".sapUiCalendarApp").removeClass("sapUiCalendarAppSel");
 					}
 				}
 			}
 
 			if (oAppointment) {
-				oAppointment.setProperty("selected", !oAppointment.getSelected(), true); // do not invalidate
+				oAppointment.setProperty("selected", !oAppointment.getSelected());
 				aChangedApps.push(oAppointment);
-
-				// Get appointment element(s) and toggle its selection class and aria-selected attribute
-				jQuery('[data-sap-ui=' + oAppointment.getId() + ']')
-					.attr("aria-selected", oAppointment.getSelected())
-					.find(".sapUiCalendarApp").toggleClass("sapUiCalendarAppSel", oAppointment.getSelected());
 			}
 
 			return aChangedApps;
@@ -1144,9 +1154,9 @@ sap.ui.define([
 			}
 
 			if (bFullDayApp && iDirection !== KeyCodes.ARROW_DOWN) {
-				jQuery("[data-sap-start-date='" + oFormat.format(oAppStartDate) + "'].sapMSinglePCBlockersColumn").focus();
+				jQuery("[data-sap-start-date='" + oFormat.format(oAppStartDate) + "'].sapMSinglePCBlockersColumn").trigger("focus");
 			} else {
-				jQuery("[data-sap-start-date='" + oFormat.format(oAppStartDate) + "'].sapMSinglePCRow").focus();
+				jQuery("[data-sap-start-date='" + oFormat.format(oAppStartDate) + "'].sapMSinglePCRow").trigger("focus");
 			}
 		};
 
@@ -2036,6 +2046,24 @@ sap.ui.define([
 			this.addAggregation("_intervalPlaceholders", oPlaceholder, true);
 
 			return oPlaceholder;
+		};
+
+		SinglePlanningCalendarGrid.prototype._getSpecialDates = function(){
+			var specialDates = this.getSpecialDates();
+			for (var i = 0; i < specialDates.length; i++) {
+				var bNeedsSecondTypeAdding = specialDates[i].getSecondaryType() === unifiedLibrary.CalendarDayType.NonWorking
+					&& specialDates[i].getType() !== unifiedLibrary.CalendarDayType.NonWorking;
+				if (bNeedsSecondTypeAdding) {
+					var newSpecialDate = new DateTypeRange();
+					newSpecialDate.setType(unifiedLibrary.CalendarDayType.NonWorking);
+					newSpecialDate.setStartDate(specialDates[i].getStartDate());
+					if (specialDates[i].getEndDate()) {
+						newSpecialDate.setEndDate(specialDates[i].getEndDate());
+					}
+					specialDates.push(newSpecialDate);
+				}
+			}
+			return specialDates;
 		};
 
 		function getResizeGhost() {

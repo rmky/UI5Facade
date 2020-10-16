@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -49,7 +49,7 @@ sap.ui.define([
 		 * @implements sap.uxap.IHeaderTitle
 		 *
 		 * @author SAP SE
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 *
 		 * @constructor
 		 * @public
@@ -159,7 +159,7 @@ sap.ui.define([
 		 * @param {object} change event of child-element that brought the need to adapt the headerTitle layout
 		 * @private
 		 */
-		ObjectPageDynamicHeaderTitle.prototype._adaptLayoutForDomElement = function ($headerDomRef, oEvent) {
+		ObjectPageDynamicHeaderTitle.prototype._adaptObjectPageHeaderIndentifierLine = function ($headerDomRef, oEvent) {
 			// not supported
 		};
 

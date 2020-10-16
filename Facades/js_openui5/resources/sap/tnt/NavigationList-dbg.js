@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -41,7 +41,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 *
 		 * @constructor
 		 * @public
@@ -149,10 +149,6 @@ sap.ui.define([
 		NavigationList.prototype.onAfterRendering = function () {
 			this._itemNavigation.setRootDomRef(this.getDomRef());
 			this._itemNavigation.setItemDomRefs(this._getDomRefs());
-
-			if (this._selectedItem) {
-				this._selectedItem._select();
-			}
 		};
 
 		NavigationList.prototype._updateNavItems = function () {
@@ -164,12 +160,17 @@ sap.ui.define([
 		 * @private
 		 */
 		NavigationList.prototype._getDomRefs = function () {
-			var domRefs = [];
 
-			var items = this.getItems();
+			var domRefs = [],
+				items = this.getItems(),
+				isExpanded = this.getExpanded();
 
 			for (var i = 0; i < items.length; i++) {
-				jQuery.merge(domRefs, items[i]._getDomRefs());
+				if (isExpanded) {
+					jQuery.merge(domRefs, items[i]._getDomRefs());
+				} else {
+					domRefs.push(items[i].getDomRef());
+				}
 			}
 
 			return domRefs;
@@ -185,8 +186,8 @@ sap.ui.define([
 				this._marginRight = 10;
 				this._marginBottom = 10;
 
-				this._arrowOffset = 18;
-				this._offsets = ["0 -18", "18 0", "0 18", "-18 0"];
+				this._arrowOffset = 8;
+				this._offsets = ["0 -8", "8 0", "0 8", "-8 0"];
 
 				this._myPositions = ["center bottom", "begin top", "center top", "end top"];
 				this._atPositions = ["center top", "end top", "center bottom", "begin top"];
@@ -220,7 +221,6 @@ sap.ui.define([
 		 */
 		NavigationList.prototype._selectItem = function (params) {
 			this.fireItemSelect(params);
-
 
 			var item = params.item;
 			this.setSelectedItem(item, true);

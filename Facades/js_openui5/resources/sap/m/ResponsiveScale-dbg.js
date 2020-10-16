@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -34,7 +34,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Element
 		 *
 		 * @author SAP SE
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 *
 		 * @constructor
 		 * @public
@@ -197,7 +197,7 @@ sap.ui.define([
 				$oSlider = oEvent.control.$(),
 				aTickmarksInDOM = $oSlider.find(".sapMSliderTick"),
 				iScaleWidth = $oSlider.find(".sapMSliderTickmarks").width(),
-				bShowTickmarks = (iScaleWidth / aTickmarksInDOM.size()) >= SliderUtilities.CONSTANTS.TICKMARKS.MIN_SIZE.SMALL;
+				bShowTickmarks = (iScaleWidth / aTickmarksInDOM.length) >= SliderUtilities.CONSTANTS.TICKMARKS.MIN_SIZE.SMALL;
 
 			//Small tickmarks should get hidden if their width is less than _SliderUtilities.CONSTANTS.TICKMARKS.MIN_SIZE.SMALL
 			aTickmarksInDOM.css("visibility", bShowTickmarks ? '' /* visible */ : 'hidden');
@@ -209,7 +209,7 @@ sap.ui.define([
 			// Convert to PX
 			fOffsetLeftPx = iScaleWidth * fOffsetLeftPct / 100;
 			// Get which labels should become hidden
-			aHiddenLabels = this.getHiddenTickmarksLabels(iScaleWidth, aLabelsInDOM.size(), fOffsetLeftPx, SliderUtilities.CONSTANTS.TICKMARKS.MIN_SIZE.WITH_LABEL);
+			aHiddenLabels = this.getHiddenTickmarksLabels(iScaleWidth, aLabelsInDOM.length, fOffsetLeftPx, SliderUtilities.CONSTANTS.TICKMARKS.MIN_SIZE.WITH_LABEL);
 
 			aLabelsInDOM.each(function (iIndex, oElem) {
 				// All the labels are positioned prior the corresponding tickmark, except for the last label.

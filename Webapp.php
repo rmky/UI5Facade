@@ -31,6 +31,8 @@ use exface\Core\CommonLogic\Security\Authorization\UiPageAuthorizationPoint;
 use exface\Core\Widgets\LoginPrompt;
 use exface\Core\Exceptions\Security\AuthenticationFailedError;
 use exface\Core\Interfaces\Exceptions\AuthorizationExceptionInterface;
+use exface\Core\Events\Widget\OnBeforePrefillEvent;
+use exface\Core\Events\Action\OnActionInputValidatedEvent;
 
 class Webapp implements WorkbenchDependantInterface
 {
@@ -130,10 +132,41 @@ class Webapp implements WorkbenchDependantInterface
                 
                 // Listen to OnPrefillChangePropertyEvent and generate model bindings from it
                 $model = $this->createViewModel($this->getViewName($widget));
-                $eventHandler = function($event) use ($model) {
+                $prefillAppliedHandler = function($event) use ($model) {
                     $model->setBindingPointer($event->getWidget(), $event->getPropertyName(), $event->getPrefillValuePointer());
                 };
-                $this->getWorkbench()->eventManager()->addListener(OnPrefillChangePropertyEvent::getEventName(), $eventHandler);
+                $this->getWorkbench()->eventManager()->addListener(OnPrefillChangePropertyEvent::getEventName(), $prefillAppliedHandler);
+                
+                // Listen to the OnBeforePrefill event and empty data before prefilling the action's widget
+                // to make sure there are no hard-coded values! This is important because we added a dummy
+                // UID value above and also because filter contexts will add values directly to the sheet.
+                $widget = $action->getWidget();
+                $this->getWorkbench()->eventManager()->addListener(OnBeforePrefillEvent::getEventName(), function(OnBeforePrefillEvent $event) use ($widget) {
+                    if ($event->getWidget() === $widget) {
+                        // Empty all values
+                        foreach ($event->getDataSheet()->getColumns() as $col) {
+                            $col->setValueOnAllRows('');
+                        }
+                        // Empty all filters
+                        foreach ($event->getDataSheet()->getFilters()->getConditionsRecursive() as $cond) {
+                            $cond->unsetValue();
+                        }
+                    }
+                    return;
+                });
+                
+                // Listen to OnActionInputValidated to make sure, the input data of the action always
+                // has dummy data - even if it was modified by input mappers or anything else.
+                $this->getWorkbench()->eventManager()->addListener(OnActionInputValidatedEvent::getEventName(), function(OnActionInputValidatedEvent $event) use ($action) {
+                    if ($event->getAction() !== $action) {
+                        return;
+                    }
+                    $ds = $event->getDataSheet();
+                    if (! $ds->isEmpty() && $ds->hasUidColumn()) {
+                        $this->handlePrefillGenerateDummyData($ds);
+                    }
+                });
+                
             }
             // Overwrite the task's action with the action of the trigger widget to make sure, the prefill is really performed
             $task->setActionSelector($action->getSelector());
@@ -168,11 +201,17 @@ class Webapp implements WorkbenchDependantInterface
             $dataSheet->getColumns()->addFromUidAttribute();
         }
         
-        // Create a row with empty values for every column
-        foreach ($dataSheet->getColumns() as $col) {
-            $row[$col->getName()] = '';
+        // Create empty values for every column and at least one row
+        if ($dataSheet->isEmpty()) {
+            foreach ($dataSheet->getColumns() as $col) {
+                $row[$col->getName()] = '';
+            }
+            $dataSheet->addRow($row);
+        } else {
+            foreach ($dataSheet->getColumns() as $col) {
+                $col->setValueOnAllRows('');
+            }
         }
-        $dataSheet->addRow($row);
         
         // If the resulting sheet has a UID column, make sure it has a value - otherwise
         // the prefill logic will not attempt to ask the target widget for more columns
@@ -393,8 +432,8 @@ class Webapp implements WorkbenchDependantInterface
             }
         }
         
-        $tplTranslator = $this->facade->getApp()->getTranslator();
-        $dict = $tplTranslator->getDictionary($locale);
+        $tplTranslator = $this->facade->getApp()->getTranslator($locale);
+        $dict = $tplTranslator->getDictionary();
         
         if ($app) {
             $dict = array_merge($dict, $app->getTranslator()->getDictionary($locale));

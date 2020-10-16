@@ -2,7 +2,7 @@
 
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -64,7 +64,7 @@
 }
 
 .sapUiFormContainerToolbar > .sapMTB-Transparent-CTX.sapMTB{
-	padding: 0 0.25rem;
+	padding: 0 0.25rem 0 0;
 }
 
 /* END "FormLayout.less" */
@@ -80,6 +80,13 @@
 	height: 2.75rem; /* to have always 3rem on Form header */
 	line-height: 2.75rem;
 	padding: 0 1rem;
+}
+
+/* edit mode */
+/* labels next to field */
+.sapUiFormEdit > .sapUiFormCLSmallColumns .sapUiFormElementLbl:not(.sapUiFormCLCellsS12),
+.sapUiFormEdit > .sapUiFormCLWideColumns .sapUiFormElementLbl:not(.sapUiFormCLCellsL12){
+	padding-top: 0.875rem;
 }
 /* END "ColumnLayout.less" */
 
@@ -116,6 +123,20 @@
 	line-height: 2.75rem;
 }
 
+/* alignment of Labels */
+.sapUiFormEdit.sapUiFormM > .sapUiGrid > tbody > tr > td.sapUiFormElementLbl {
+	padding-top: 0.875rem;
+}
+
+.sapUiFormEdit.sapUiFormM > .sapUiGrid > tbody > tr.sapUiGridConteinerFirstRow > td.sapUiFormElementLbl {
+	padding-top: 2.875rem;
+}
+
+.sapUiFormEdit.sapUiFormM >.sapUiGrid > tbody > tr:first-child > td.sapUiFormElementLbl, /* if no Form title */
+.sapUiFormEdit[aria-labelledby].sapUiFormM > .sapUiGrid > tbody > tr:nth-child(2) > td.sapUiFormElementLbl {
+	padding-top: 1.875rem;
+}
+
 .sapUiGridHeader.sapUiFormContainerToolbar > .sapMTB {
 	padding: 0;
 }
@@ -132,7 +153,7 @@
 	background-color: transparent;
 	height: 2.75rem;
 	line-height: 2.75rem;
-	padding: 0 1rem;
+	padding-right: 1rem;
 }
 
 /* Grid */
@@ -143,6 +164,15 @@
 .sapUiFormResGrid.sapUiFormBackgrSolid > div {
 	background-color: @sapUiGroupContentBackground;
 }
+
+/* alignment of Labels */
+.sapUiFormEdit.sapUiFormM .sapUiRespGridMedia-Std-Phone.sapUiFormResGridCont > .sapUiFormElementLbl:not(.sapUiRespGridSpanS12),
+.sapUiFormEdit.sapUiFormM .sapUiRespGridMedia-Std-Tablet.sapUiFormResGridCont > .sapUiFormElementLbl:not(.sapUiRespGridSpanM12),
+.sapUiFormEdit.sapUiFormM .sapUiRespGridMedia-Std-Desktop.sapUiFormResGridCont > .sapUiFormElementLbl:not(.sapUiRespGridSpanL12),
+.sapUiFormEdit.sapUiFormM .sapUiRespGridMedia-Std-LargeDesktop.sapUiFormResGridCont > .sapUiFormElementLbl:not(.sapUiRespGridSpanXL12){
+	padding-top: 0.875rem;
+}
+
 /* END "ResponsiveGridLayout.less" */
 
 /* START "ResponsiveLayout.less" */
@@ -173,6 +203,16 @@
 .sapUiRLContainer.sapUiFormContainerToolbar > .sapMTB {
 	padding: 0;
 }
+
+/* alignment of Label */
+.sapUiFormEdit.sapUiFormM .sapUiRLElementWithLabel > .sapUiRFLRow:not(.sapUiRFLCompleteRow) > .sapUiRFLContainer:first-child > .sapUiRFLContainerContent{
+	padding-top: 0.875rem;
+}
+
+html[data-sap-ui-browser^="ff"] .sapUiFormEdit.sapUiFormM .sapUiRLElementWithLabel > .sapUiRFLRow:not(.sapUiRFLCompleteRow) > .sapUiRFLContainer:first-child > .sapUiRFLContainerContent{
+	padding-top: 0.8125rem;
+}
+
 /* END "ResponsiveLayout.less" */
 
 /* START "ResponsiveSplitter.less" */
@@ -181,88 +221,9 @@
 /* Quartz Dark theme                                 */
 /* ================================================= */
 
-// ==========================================================================
-// Variables overriding
-// ==========================================================================
-
 @_sap_ui_layout_ResponsiveSplitter_PaginatorHeight: 2.75rem;
 @_sap_ui_layout_ResponsiveSplitter_PaginatorButtonWidth: 2.25rem;
 @_sap_ui_layout_ResponsiveSplitter_PaginatorButtonHeight: 2.25rem;
-@_sap_ui_layout_ResponsiveSplitter_PaginatorButtonFocusWidth: 1.875rem;
-@_sap_ui_layout_ResponsiveSplitter_PaginatorButtonFocusHeight: 2rem;
-
-// ==========================================================================
-// Variables
-// ==========================================================================
-
-@_sap_ui_layout_ResponsiveSplitter_PaginatorButtonColor: lighten(@sapUiContentForegroundColor, 36);
-@_sap_ui_layout_ResponsiveSplitter_CircleColor: lighten(@sapUiBaseBG, 5);
-@_sap_ui_layout_ResponsiveSplitter_CircleBorderColor: lighten(@sapUiBaseBG, 40);
-
-.sapUiResponsiveSplitterPaginatorButton {
-	background-color: transparent;
-	position: relative;
-	top: 0.1875rem;
-
-	&:after {
-		background-color: @_sap_ui_layout_ResponsiveSplitter_PaginatorButtonColor;
-	}
-
-	&:hover {
-		background-color: @sapUiButtonLiteHoverBackground;
-
-		&:after {
-			background-color: @_sap_ui_layout_ResponsiveSplitter_PaginatorButtonColor;
-		}
-	}
-
-	&:active {
-		background-color: @sapUiButtonLiteActiveBackground;
-
-		&:after {
-			background-color: @sapUiContentContrastIconColor;
-		}
-	}
-
-	&:focus {
-		&:before {
-			border: 1px dotted @sapUiContentFocusColor;
-		}
-	}
-}
-
-.sapUiResponsiveSplitterPaginatorSelectedButton {
-	&:after {
-		background-color: @sapUiSelected;
-	}
-
-	&:hover {
-		background-color: @sapUiButtonLiteHoverBackground;
-
-		&:after {
-			background-color: @sapUiSelected;
-		}
-	}
-}
-
-
-
-html.sap-phone .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage > .sapUiLoSplitter .sapUiLoSplitterBar,
-html.sap-tablet .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage > .sapUiLoSplitter .sapUiLoSplitterBar,
-html.sap-phone .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage > .sapUiLoSplitter .sapUiLoSplitterOverlayBar,
-html.sap-tablet .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage > .sapUiLoSplitter .sapUiLoSplitterOverlayBar {
-	& .sapUiLoSplitterBarIcon:after {
-		background-color: @_sap_ui_layout_ResponsiveSplitter_CircleColor;
-		border-color: @_sap_ui_layout_ResponsiveSplitter_CircleBorderColor;
-	}
-}
-
-html.sap-phone .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage > .sapUiLoSplitter .sapUiLoSplitterOverlayBar,
-html.sap-tablet .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage > .sapUiLoSplitter .sapUiLoSplitterOverlayBar {
-	& .sapUiLoSplitterBarIcon:after {
-		border-color: @sapUiHighlight;
-	}
-}
 /* END "ResponsiveSplitter.less" */
 
 /* START "SimpleForm.less" */
@@ -280,49 +241,6 @@ html.sap-tablet .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage > .sapUi
 }
 /* END "SimpleForm.less" */
 
-/* START "Splitter.less" */
-/* ======================================= */
-/* CSS for control sap.ui.layout/Splitter  */
-/* Quartz Dark theme                       */
-/* ======================================= */
-
-@_sap_ui_layout_Splitter_BarColor: lighten(@sapUiBaseBG, 40);
-@_sap_ui_layout_Splitter_BarHoverColor: lighten(@sapUiBaseBG, 50);
-
-html.sap-desktop .sapUiLoSplitterH.sapUiLoSplitter > .sapUiLoSplitterBar,
-html.sap-desktop .sapUiLoSplitterH > .sapUiLoSplitterOverlay > .sapUiLoSplitterOverlayBar {
-	height: 100%;
-	width: 0.25rem;
-}
-
-html.sap-desktop .sapUiLoSplitterV.sapUiLoSplitter > .sapUiLoSplitterBar,
-html.sap-desktop .sapUiLoSplitterV > .sapUiLoSplitterOverlay > .sapUiLoSplitterOverlayBar {
-	width: 100%;
-	height: 0.25rem;
-}
-
-.sapUiLoSplitter > .sapUiLoSplitterBar {
-	background-color: @_sap_ui_layout_Splitter_BarColor;
-	&:hover {
-		background-color: @_sap_ui_layout_Splitter_BarHoverColor;
-	}
-}
-
-.sapUiLoSplitterOverlay > .sapUiLoSplitterOverlayBar {
-	background-color: @sapUiHighlight;
-}
-
-.sapUiLoSplitterBarIcon {
-	display: none;
-}
-
-/*********************************** IE Focus outline workaround **********************************/// TODO remove after 1.62 version
-
-html[data-sap-ui-browser^=ie] .sapUiLoSplitterH > .sapUiLoSplitterBar:focus::after {
-	top: 0;
-}
-/* END "Splitter.less" */
-
 /* START "BlockLayout.less" */
 /* ========================================== */
 /* CSS for control sap.ui.layout/BlockLayout  */
@@ -337,78 +255,87 @@ html[data-sap-ui-browser^=ie] .sapUiLoSplitterH > .sapUiLoSplitterBar:focus::aft
 @_sap_ui_layout_BlockLayout_BlockColorAccentType1C: darken(@sapAccentColor1, 49);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType1D: darken(@sapAccentColor1, 47);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType1E: @sapAccentColor1;
-@_sap_ui_layout_BlockLayout_BlockColorAccentType1F: darken(@sapAccentColor1, 3);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType1F: lighten(@sapAccentColor1, 3);
 
-@_sap_ui_layout_BlockLayout_BlockColorAccentType2A: darken(@sapAccentColor2, 44);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType2B: darken(@sapAccentColor2, 42);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType2C: darken(@sapAccentColor2, 40);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType2D: darken(@sapAccentColor2, 38);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType2A: darken(@sapAccentColor2, 50);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType2B: darken(@sapAccentColor2, 48);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType2C: darken(@sapAccentColor2, 46);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType2D: darken(@sapAccentColor2, 44);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType2E: @sapAccentColor2;
-@_sap_ui_layout_BlockLayout_BlockColorAccentType2F: darken(@sapAccentColor2, 4);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType2F: lighten(@sapAccentColor2, 4);
 
 @_sap_ui_layout_BlockLayout_BlockColorAccentType3A: darken(@sapAccentColor3, 49);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType3B: darken(@sapAccentColor3, 47);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType3C: darken(@sapAccentColor3, 45);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType3D: darken(@sapAccentColor3, 43);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType3E: @sapAccentColor3;
-@_sap_ui_layout_BlockLayout_BlockColorAccentType3F: darken(@sapAccentColor3, 6);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType3F: lighten(@sapAccentColor3, 6);
 
 @_sap_ui_layout_BlockLayout_BlockColorAccentType4A: darken(@sapAccentColor4, 50);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType4B: darken(@sapAccentColor4, 48);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType4C: darken(@sapAccentColor4, 46);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType4D: darken(@sapAccentColor4, 44);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType4E: @sapAccentColor4;
-@_sap_ui_layout_BlockLayout_BlockColorAccentType4F: darken(@sapAccentColor4, 6);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType4F: lighten(@sapAccentColor4, 6);
 
-@_sap_ui_layout_BlockLayout_BlockColorAccentType5A: darken(@sapAccentColor5, 35);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType5B: darken(@sapAccentColor5, 33);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType5C: darken(@sapAccentColor5, 31);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType5D: darken(@sapAccentColor5, 29);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType5A: darken(@sapAccentColor5, 49);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType5B: darken(@sapAccentColor5, 47);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType5C: darken(@sapAccentColor5, 45);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType5D: darken(@sapAccentColor5, 43);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType5E: @sapAccentColor5;
-@_sap_ui_layout_BlockLayout_BlockColorAccentType5F: darken(@sapAccentColor5, 6);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType5F: lighten(@sapAccentColor5, 6);
 
 @_sap_ui_layout_BlockLayout_BlockColorAccentType6A: darken(@sapAccentColor6, 55);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType6B: darken(@sapAccentColor6, 53);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType6C: darken(@sapAccentColor6, 51);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType6D: darken(@sapAccentColor6, 49);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType6E: @sapAccentColor6;
-@_sap_ui_layout_BlockLayout_BlockColorAccentType6F: darken(@sapAccentColor6, 10);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType6F: lighten(@sapAccentColor6, 10);
 
-@_sap_ui_layout_BlockLayout_BlockColorAccentType7A: darken(@sapAccentColor7, 67);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType7B: darken(@sapAccentColor7, 65);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType7C: darken(@sapAccentColor7, 63);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType7D: darken(@sapAccentColor7, 61);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType7A: darken(@sapAccentColor7, 37);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType7B: darken(@sapAccentColor7, 35);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType7C: darken(@sapAccentColor7, 33);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType7D: darken(@sapAccentColor7, 31);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType7E: @sapAccentColor7;
-@_sap_ui_layout_BlockLayout_BlockColorAccentType7F: darken(@sapAccentColor7, 3);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType7F: lighten(@sapAccentColor7, 3);
 
-@_sap_ui_layout_BlockLayout_BlockColorAccentType8A: darken(@sapAccentColor8, 64);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType8B: darken(@sapAccentColor8, 62);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType8C: darken(@sapAccentColor8, 60);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType8D: darken(@sapAccentColor8, 58);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType8E: darken(@sapAccentColor8, 7);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType8F: darken(@sapAccentColor8, 10);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType8A: darken(@sapAccentColor8, 55);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType8B: darken(@sapAccentColor8, 53);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType8C: darken(@sapAccentColor8, 51);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType8D: darken(@sapAccentColor8, 49);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType8E: @sapAccentColor8;
+@_sap_ui_layout_BlockLayout_BlockColorAccentType8F: lighten(@sapAccentColor8, 6);
 
-@_sap_ui_layout_BlockLayout_BlockColorAccentType9A: @sapUiGroupContentBackground;
-@_sap_ui_layout_BlockLayout_BlockColorAccentType9B: darken(@sapUiGroupContentBackground,2);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType9C: darken(@sapUiGroupContentBackground,4);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType9D: darken(@sapUiGroupContentBackground,6);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType9E: darken(@sapUiGroupContentBackground, 54);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType9F: darken(@sapUiGroupContentBackground, 58);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType9A: darken(@sapUiAccent9, 54);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType9B: darken(@sapUiAccent9, 52);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType9C: darken(@sapUiAccent9, 50);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType9D: darken(@sapUiAccent9, 48);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType9E: @sapUiAccent9;
+@_sap_ui_layout_BlockLayout_BlockColorAccentType9F: lighten(@sapUiAccent9, 6);
 
-@_sap_ui_layout_BlockLayout_BlockColorAccentType10A: darken(@sapUiGroupContentBackground,8);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType10B: darken(@sapUiGroupContentBackground,10);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType10C: darken(@sapUiGroupContentBackground,12);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType10D: darken(@sapUiGroupContentBackground,14);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType10E: darken(@sapUiGroupContentBackground, 60);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType10F: darken(@sapUiGroupContentBackground, 64);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType10A: darken(@sapUiAccent10, 50);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType10B: darken(@sapUiAccent10, 48);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType10C: darken(@sapUiAccent10, 46);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType10D: darken(@sapUiAccent10, 44);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType10E: @sapUiAccent10;
+@_sap_ui_layout_BlockLayout_BlockColorAccentType10F: lighten(@sapUiAccent10, 51);
 
 @_sap_ui_layout_BlockLayout_BlockColorAccentType11A: darken(@sapUiHighlight, 65);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType11B: darken(@sapUiHighlight, 63);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType11C: darken(@sapUiHighlight, 61);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType11D: darken(@sapUiHighlight, 59);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType11E: darken(@sapUiHighlight, 7);
-@_sap_ui_layout_BlockLayout_BlockColorAccentType11F: darken(@sapUiHighlight, 2);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType11E: lighten(@sapUiHighlight, 2);
+@_sap_ui_layout_BlockLayout_BlockColorAccentType11F: lighten(@sapUiHighlight, 7);
 
+
+@_sap_ui_layout_BlockLayout_BackgroundDashboardMargin: 0.5rem;
+@_sap_ui_layout_BlockLayout_BackgroundDashboardEdgeChildMargin: 1rem;
+@_sap_ui_layout_BlockLayout_BackgroundDashboardAfterScrollbarMargin: 0.75rem;
+
+@_sap_ui_layout_BlockLayout_LinkTextShadow: none;
+
+@_sap_ui_layout_BlockLayout_BackgroundDashboardColor: @sapUiTileBackground;
+@_sap_ui_layout_BlockLayout_BackgroundDashboardBorderRadius: 0.25rem;
 
 // Create classes which would just set background color of the BlockLayout cells
 .generateCellColorSets (@backgroundColorSet, @backgroundColorShade) {

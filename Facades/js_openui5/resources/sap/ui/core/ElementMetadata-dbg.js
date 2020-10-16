@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -25,10 +25,11 @@ sap.ui.define([
 	 *
 	 * @class
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @since 0.8.6
 	 * @alias sap.ui.core.ElementMetadata
 	 * @extends sap.ui.base.ManagedObjectMetadata
+	 * @public
 	 */
 	var ElementMetadata = function(sClassName, oClassInfo) {
 
@@ -38,6 +39,7 @@ sap.ui.define([
 
 	//chain the prototypes
 	ElementMetadata.prototype = Object.create(ManagedObjectMetadata.prototype);
+	ElementMetadata.prototype.constructor = ElementMetadata;
 
 	/**
 	 * Calculates a new id based on a prefix.
@@ -187,6 +189,7 @@ sap.ui.define([
 	}
 
 	Aggregation.prototype = Object.create(fnMetaFactoryAggregation.prototype);
+	Aggregation.prototype.constructor = Aggregation;
 	ElementMetadata.prototype.metaFactoryAggregation = Aggregation;
 
 	/**

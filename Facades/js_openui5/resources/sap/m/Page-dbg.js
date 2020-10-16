@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -93,7 +93,7 @@ function(
 		 * @extends sap.ui.core.Control
 		 * @mixes sap.ui.core.ContextMenuSupport
 		 * @author SAP SE
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 *
 		 * @public
 		 * @alias sap.m.Page
@@ -319,10 +319,16 @@ function(
 			if (this._headerTitle) {
 				this._headerTitle.setLevel(this.getTitleLevel());
 			}
+
+			this._ensureNavButton(); // creates this._navBtn, if required
 		};
 
 		Page.prototype.onAfterRendering = function () {
-			setTimeout(this._adjustFooterWidth.bind(this), 10);
+			this.$().toggleClass("sapMPageBusyCoversAll", !this.getContentOnlyBusy());
+
+			// If contentOnlyBusy property is set, then the busy indicator should cover only the content area
+			// Otherwise all clicks in the footer, header and subheader might be suppressed
+			this._sBusySection = this.getContentOnlyBusy() ? 'cont' : null;
 		};
 
 		/**
@@ -374,25 +380,23 @@ function(
 		};
 
 		Page.prototype._ensureNavButton = function () {
+
+			if (!this.getShowNavButton()) {
+				return;
+			}
+
 			var sBackText = this.getNavButtonTooltip() || sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("PAGE_NAVBUTTON_TEXT"); // any other types than "Back" do not make sense anymore in Blue Crystal
 
 			if (!this._navBtn) {
-				var sNavButtonType = this.getNavButtonType();
-
 				this._navBtn = new Button(this.getId() + "-navButton", {
-					press: jQuery.proxy(function () {
+					press: function () {
 						this.fireNavButtonPress();
 						this.fireNavButtonTap();
-					}, this)
+					}.bind(this)
 				});
-
-				if (Device.os.android && sNavButtonType == ButtonType.Back) {
-					this._navBtn.setType(ButtonType.Up);
-				} else {
-					this._navBtn.setType(sNavButtonType);
-				}
 			}
 
+			this._navBtn.setType(this.getNavButtonType());
 			this._navBtn.setTooltip(sBackText);
 		};
 
@@ -450,62 +454,6 @@ function(
 			}
 
 			return this;
-		};
-
-		Page.prototype.setNavButtonType = function (sNavButtonType) {
-			this._ensureNavButton(); // creates this._navBtn, if required
-			if (!Device.os.ios && sNavButtonType == ButtonType.Back) {
-				// internal conversion from Back to Up for non-iOS platform
-				this._navBtn.setType(ButtonType.Up);
-			} else {
-				this._navBtn.setType(sNavButtonType);
-			}
-			this.setProperty("navButtonType", sNavButtonType, true);
-			return this;
-		};
-
-		Page.prototype.setNavButtonText = function (sText) {
-			this._ensureNavButton(); // creates this._navBtn, if required
-			this.setProperty("navButtonText", sText, true);
-			return this;
-		};
-
-		Page.prototype.setNavButtonTooltip = function (sText) {
-			this.setProperty("navButtonTooltip", sText, true);
-			this._ensureNavButton(); // creates this._navBtn, if required
-			return this;
-		};
-
-		Page.prototype.setIcon = function (sIconSrc) {
-			var sOldValue = this.getIcon();
-			if (sOldValue === sIconSrc) {
-				return this;
-			}
-
-			this.setProperty("icon", sIconSrc, true);
-			return this;
-		};
-
-		Page.prototype._adjustFooterWidth = function () {
-			var bDirection  = sap.ui.getCore().getConfiguration().getRTL() ? "left" : "right";
-			if (!this.getShowFooter() || !this.getFloatingFooter() || !this.getFooter()) {
-				return;
-			}
-
-			var $footer = jQuery(this.getDomRef()).find(".sapMPageFooter").last();
-
-			if (this._contentHasScroll()) {
-				$footer.css(bDirection, jQuery.position.scrollbarWidth() + "px");
-				$footer.css("width", "initial");
-			} else {
-				$footer.css(bDirection, 0);
-				$footer.css("width", "");
-			}
-		};
-
-		Page.prototype._contentHasScroll = function () {
-			var $section = jQuery(document.getElementById(this.getId() + "-cont"));
-			return $section[0].scrollHeight > $section.innerHeight();
 		};
 
 		/**
@@ -690,7 +638,7 @@ function(
 		 * Scrolls to the given position. Only available if enableScrolling is set to "true".
 		 *
 		 * @param {int} y The vertical pixel position to scroll to. Scrolling down happens with positive values.
-		 * @param {int} time The duration of animated scrolling. To scroll immediately without animation, give 0 as value. 0 is also the default value, when this optional parameter is omitted.
+		 * @param {int} [time=0] The duration of animated scrolling in milliseconds. The value <code>0</code> results in immediate scrolling without animation.
 		 * @returns {sap.m.Page} <code>this</code> to facilitate method chaining.
 		 * @public
 		 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
@@ -724,20 +672,6 @@ function(
 				this._oScroller.scrollToElement(oElement, iTime, aOffset);
 			}
 			return this;
-		};
-
-		Page.prototype.setContentOnlyBusy = function (bContentOnly) {
-			this.setProperty("contentOnlyBusy", bContentOnly, true); // no re-rendering
-			this.$().toggleClass("sapMPageBusyCoversAll", !bContentOnly);
-			return this;
-		};
-
-		Page.prototype.setBusy = function () {
-			// If contentOnlyBusy property is set, then the busy indicator should cover only the content area
-			// Otherwise all clicks in the footer, header and subheader might be suppressed
-			this._sBusySection = this.getContentOnlyBusy() ? 'cont' : null;
-
-			return Control.prototype.setBusy.apply(this, arguments);
 		};
 
 		Page.prototype.setCustomHeader = function(oHeader) {

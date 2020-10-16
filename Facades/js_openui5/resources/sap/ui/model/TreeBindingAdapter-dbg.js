@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -1166,6 +1166,7 @@ sap.ui.define([
 
 			// find the first selected entry -> this is our lead selection index
 			var iNodeCounter = -1;
+			var nodeFound = false;
 			var fnMatchFunction = function (oNode) {
 				if (!oNode || !oNode.isArtificial) {
 					iNodeCounter++;
@@ -1173,13 +1174,21 @@ sap.ui.define([
 
 				if (oNode) {
 					if (oNode.groupID === this._sLeadSelectionGroupID) {
+						nodeFound = true;
 						return true;
 					}
 				}
 			};
 			this._match(this._oRootNode, [], 1, fnMatchFunction);
 
-			return iNodeCounter;
+			if (nodeFound) {
+				return iNodeCounter;
+			}
+			// If a parent of the lead selected node has been collapsed,
+			//	we might not be able to find it in the current tree.
+			// This can only happen if recursive collapse is not active
+			//	(recursive collapse always removes the selection of a collapsed nodes' children)
+			return -1;
 		};
 
 		/**

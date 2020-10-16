@@ -1,7 +1,7 @@
 sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/core/routing/History"
-], function (Controller, History, HashChanger) {
+], function (Controller, History) {
 	"use strict";
 	return Controller.extend("[#app_id#].controller.BaseController", {
 		

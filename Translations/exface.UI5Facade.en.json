@@ -4,13 +4,15 @@
 	"ERROR.DETAILS": "Details",
 	"ERROR.LOG_ID_HINT": "Please use it in all support requests!",
 	"ERROR.BUTTON_TEXT": "Close",
+	"ERROR.EXCEPTION_MESSAGE": "Original message:",
+	"ERROR.NO_CONNECTION": "No connection to server!",
+	"ERROR.NO_CONNECTION_HINT": "Please check your network connection and try again. If this does not help, please contact the support!",
 	"SAP-ERROR": "in SAP",
 	"SAP-LOGIC": "from SAP",
 	
 	"MESSAGE.ERROR_TITLE": "Error",
 	"MESSAGE.ERROR.SERVER_ERROR_TITLE": "Server error",
 	"MESSAGE.SUCCESS_TITLE": "",
-	"MESSAGE.FILL_REQUIRED_ATTRIBUTES": "Please fill in the required fields: ",	
 	"MESSAGE.TYPE.ERROR": "Error",
 	"MESSAGE.TYPE.WARNING": "Warning",
 	"MESSAGE.TYPE.INFO": "Info",
@@ -59,6 +61,8 @@
 	"WIDGET.FILELIST.ERROR_FILE_TOO_BIG": "File too big: max. %mb% MB allowed!",
 	"WIDGET.FILELIST.ERROR_FILENAME_TOO_LONG": "File name too long: max. %length% characters allowed!",
 	"WIDGET.FILELIST.ERROR_DELETE": "Delete failed: unknown error in UI5.",
+	
+	"WIDGET.FORM.MESSAGE_VALIDATION_FAILED": "Please check all marked fields: it seems, they were not filled correctly!",
 	
 	"WIDGET.INPUTPASSWORD.CONFIRM": "Confirm password",	
 	"WIDGET.INPUTPASSWORD.DONT_MATCH": "Passwords do not match",

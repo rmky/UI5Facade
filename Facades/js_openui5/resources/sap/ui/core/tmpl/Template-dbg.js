@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -48,7 +48,7 @@ function(
 	 * @extends sap.ui.base.ManagedObject
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @alias sap.ui.core.tmpl.Template
 	 * @since 1.15
 	 * @deprecated since 1.56, use an {@link sap.ui.core.mvc.XMLView XMLView} or {@link sap.ui.core.mvc.JSView JSView} instead.
@@ -333,7 +333,7 @@ function(
 				// but it can be also defined on the root DOM element for inline templates
 				// in case of inline templates we mark them
 				var sContext = $this.attr("data-context");
-				oContext = oContext || sContext && jQuery.parseJSON(sContext);
+				oContext = oContext || sContext && JSON.parse(sContext);
 
 				// mark the template as inline template (to avoid extra DOM for the TemplateControl)
 				// for inline templates the UIArea and the TemplateControl are the same DOM element
@@ -447,6 +447,7 @@ function(
 	 * @deprecated since 1.56, use an {@link sap.ui.core.mvc.XMLView XMLView} or {@link sap.ui.core.mvc.JSView JSView} instead.
 	 * @public
 	 * @static
+	 * @ui5-global-only
 	 */
 	sap.ui.template = function(oTemplate) {
 

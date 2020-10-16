@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -44,7 +44,7 @@ function (
 	 * Constructor for a new sap.ui.rta.util.PopupManager
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @constructor
 	 * @private
 	 * @since 1.48
@@ -400,7 +400,7 @@ function (
 			}
 		}
 		//If clicked from toolbar or popup - autoClose is disabled
-		oPopup.setAutoCloseAreas(aAutoCloseAreas);
+		oPopup.setExtraContent(aAutoCloseAreas);
 
 		//cases when onAfterRendering is called after this function - app inside popup
 		if (!this.fnOriginalPopupOnAfterRendering) {
@@ -576,15 +576,25 @@ function (
 		}
 	};
 
+	function checkPopupAncestorsAdaptation(oPopupElement) {
+		if (!oPopupElement || oPopupElement instanceof Component) {
+			return true;
+		}
+		if (!oPopupElement.isPopupAdaptationAllowed || oPopupElement.isPopupAdaptationAllowed()) {
+			return checkPopupAncestorsAdaptation(oPopupElement.getParent());
+		}
+		return false;
+	}
+
 	PopupManager.prototype._isPopupAdaptable = function(oPopupElement) {
-		//For variantManagement manage dialog
 		if (oPopupElement.isPopupAdaptationAllowed && !oPopupElement.isPopupAdaptationAllowed()) {
 			return false;
 		}
-
 		var oPopupAppComponent = this._getAppComponentForControl(oPopupElement);
-
-		return this.oRtaRootAppComponent === oPopupAppComponent || this._isComponentInsidePopup(oPopupElement);
+		if (this.oRtaRootAppComponent === oPopupAppComponent || this._isComponentInsidePopup(oPopupElement)) {
+			return checkPopupAncestorsAdaptation(oPopupElement.getParent());
+		}
+		return false;
 	};
 
 	/**
@@ -601,4 +611,4 @@ function (
 	};
 
 	return PopupManager;
-}, /* bExport= */ true);
+});

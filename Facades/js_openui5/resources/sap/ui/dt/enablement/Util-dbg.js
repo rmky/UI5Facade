@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -18,18 +18,17 @@ function(
 	"use strict";
 
 	/**
-	 * Class for Element tests.
+	 * Utility functionality for Element tests.
 	 *
-	 * @class
-	 * Utility functionality for Element tests
+	 * @namespace
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @private
 	 * @static
 	 * @since 1.38
-	 * @alias sap.ui.dt.test.Element
+	 * @alias sap.ui.dt.enablement.Util
 	 * @experimental Since 1.38. This class is experimental and provides only limited functionality. Also the API might be changed in future.
 	 */
 

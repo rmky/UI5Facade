@@ -1,16 +1,19 @@
 /*!
 * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
 */
 
 sap.ui.require([
 	"sap/ui/integration/widgets/Card",
 	"sap/ui/integration/customElements/CustomElementBase",
-	"sap/ui/integration/customElements/CustomElementHostConfiguration"
+	"sap/ui/integration/customElements/CustomElementHostConfiguration",
+	"sap/m/BadgeCustomData"
 ], function (
 	Card,
-	CustomElementBase
+	CustomElementBase,
+	CustomElementHostConfiguration,
+	BadgeCustomData
 ) {
 	"use strict";
 
@@ -23,7 +26,14 @@ sap.ui.require([
 	 * @private
 	 */
 	var CustomElementCard = CustomElementBase.extend(Card, {
-		privateProperties: ["width", "height"]
+		privateProperties: ["width", "height"],
+		customProperties: {
+			"badge": {
+				set: function(oCard, vValue) {
+					oCard.addCustomData( new BadgeCustomData({value: vValue}));
+				}
+			}
+		}
 	});
 
 	/* Public methods */

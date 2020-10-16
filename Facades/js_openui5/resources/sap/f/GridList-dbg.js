@@ -1,20 +1,21 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
+	"./library",
 	"sap/m/ListBase",
 	"sap/ui/base/ManagedObjectObserver",
 	"sap/ui/layout/cssgrid/GridLayoutDelegate",
 	"sap/ui/layout/cssgrid/GridLayoutBase",
 	"./GridListRenderer"
 ], function(
+	library,
 	ListBase,
 	ManagedObjectObserver,
 	GridLayoutDelegate,
-	GridLayoutBase,
-	GridListRenderer
+	GridLayoutBase
 ) {
 	"use strict";
 
@@ -79,7 +80,7 @@ sap.ui.define([
 	 * @see {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Grid_Layout MDN web docs: CSS Grid Layout}
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @extends sap.m.ListBase
 	 * @implements sap.ui.layout.cssgrid.IGridConfigurable
@@ -121,6 +122,15 @@ sap.ui.define([
 		this._oGridObserver.observe(this, { aggregations: ["items"] });
 	};
 
+	GridList.prototype.onfocusin = function() {
+		ListBase.prototype.onfocusin.apply(this, arguments);
+
+		this._oItemNavigation = this.getItemNavigation();
+		if (this._oItemNavigation) {
+			//Enable Up/Left Arrow and Down/Right Arrow to navigate
+			this._oItemNavigation.setTableMode(false, false);
+		}
+	};
 	GridList.prototype.exit = function () {
 		this._removeGridLayoutDelegate();
 

@@ -1,19 +1,31 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/base/util/merge",
 	"sap/ui/fl/write/connectors/BaseConnector",
+	"sap/ui/fl/initial/_internal/StorageUtils",
 	"sap/ui/fl/apply/_internal/connectors/ObjectStorageUtils"
 ], function(
 	merge,
 	BaseConnector,
+	StorageUtils,
 	ObjectStorageUtils
 ) {
 	"use strict";
+
+	function loadDataFromStorage (mPropertyBag) {
+		var aFlexObjects = [];
+
+		return ObjectStorageUtils.forEachObjectInStorage(mPropertyBag, function(mFlexObject) {
+			aFlexObjects.push(mFlexObject.changeDefinition);
+		}).then(function () {
+			return aFlexObjects;
+		});
+	}
 
 	function shouldChangeBeDeleted(mPropertyBag, oChangeDefinition) {
 		var bDelete = true;
@@ -55,11 +67,30 @@ sap.ui.define([
 	 */
 	var ObjectStorageConnector = merge({}, BaseConnector, /** @lends sap.ui.fl.write._internal.connectors.ObjectStorageConnector */ {
 		/**
-		 * can be either window.sessionStorage or window.localStorage or just a JS map
+		 * can be any storage implementing setItem, removeItem, clear, getItem and getItems
 		 */
 		oStorage: undefined,
+		layers: [
+			"ALL"
+		],
 
-		layers: ["ALL"],
+		/**
+		 * Provides the flex data stored in the session or local storage;
+		 * Changes can be filtered by reference and layer.
+		 *
+		 * @param {object} mPropertyBag properties needed by the connectors
+		 * @param {string} mPropertyBag.reference reference of the application
+		 * @returns {Promise<Object>} resolving with an object containing a data contained in the changes-bundle
+		 */
+		loadFlexData: function (mPropertyBag) {
+			return loadDataFromStorage({
+				storage: this.oStorage,
+				reference: mPropertyBag.reference
+			}).then(function (aFlexObjects) {
+				var mGroupedFlexObjects = StorageUtils.getGroupedFlexObjects(aFlexObjects);
+				return StorageUtils.filterAndSortResponses(mGroupedFlexObjects);
+			});
+		},
 
 		/**
 		 * @inheritDoc
@@ -99,9 +130,20 @@ sap.ui.define([
 				layer: mPropertyBag.layer
 			}, function(mFlexObject) {
 				if (shouldChangeBeDeleted(mPropertyBag, mFlexObject.changeDefinition)) {
-					return this.oStorage.removeItem(mFlexObject.key);
+					return Promise.resolve(this.oStorage.removeItem(mFlexObject.key)).then(function () {
+						return {
+							fileName: mFlexObject.changeDefinition && mFlexObject.changeDefinition.fileName
+						};
+					});
 				}
-			}.bind(this));
+			}.bind(this))
+			.then(function(aResponse) {
+				return {
+					response: aResponse.filter(function (oChangeDefinition) {
+						return !!oChangeDefinition;
+					})
+				};
+			});
 		},
 
 		/**

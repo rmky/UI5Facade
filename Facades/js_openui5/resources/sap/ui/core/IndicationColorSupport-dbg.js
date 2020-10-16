@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -16,7 +16,7 @@ sap.ui.define(['./Element', './library', "sap/base/assert"],
 		 * Helper functionality for indication color support.
 		 *
 		 * @author SAP SE
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 * @public
 		 * @namespace sap.ui.core.IndicationColorSupport
 		 * @since 1.66
@@ -34,6 +34,9 @@ sap.ui.define(['./Element', './library', "sap/base/assert"],
 				mTexts[IndicationColor.Indication03] = rb.getText("INDICATION_STATE_INDICATION03");
 				mTexts[IndicationColor.Indication04] = rb.getText("INDICATION_STATE_INDICATION04");
 				mTexts[IndicationColor.Indication05] = rb.getText("INDICATION_STATE_INDICATION05");
+				mTexts[IndicationColor.Indication06] = rb.getText("INDICATION_STATE_INDICATION06");
+				mTexts[IndicationColor.Indication07] = rb.getText("INDICATION_STATE_INDICATION07");
+				mTexts[IndicationColor.Indication08] = rb.getText("INDICATION_STATE_INDICATION08");
 			}
 		};
 

@@ -1,8 +1,13 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
+
+// Ensure that sap.ui.unified is loaded before the module dependencies will be required.
+// Loading it synchronously is the only compatible option and doesn't harm when sap.ui.unified
+// already has been loaded asynchronously (e.g. via a dependency declared in the manifest)
+sap.ui.getCore().loadLibrary("sap.ui.unified");
 
 sap.ui.define([
 	'sap/ui/unified/calendar/CalendarDate',
@@ -109,6 +114,7 @@ sap.ui.define([
 				oRm.openStart("div");
 				oRm.class("sapMSPCMonthDays");
 				oRm.class("sapMSPCMonthDaysMax" + iWeekMaxAppCount);
+				oRm.attr("role", "row");
 				oRm.openEnd();
 
 				for (j = 0; j < iColumns; j++) {
@@ -120,6 +126,7 @@ sap.ui.define([
 				oRm.openStart("div");
 				oRm.class("sapMSinglePCBlockers");
 				oRm.class("sapUiCalendarRowVisFilled");
+				oRm.attr("role", "list" );
 				oRm.openEnd();
 
 				for (j = 0; j < iColumns; j++) {
@@ -141,7 +148,7 @@ sap.ui.define([
 		};
 
 		SinglePlanningCalendarMonthGridRenderer.renderDay = function(oRm, oControl, oDay, oLocaleData, more, iCellIndex) {
-			var aSpecialDates = oControl.getSpecialDates(),
+			var aSpecialDates = oControl._getSpecialDates(),
 				aDayTypes = Month.prototype._getDateTypes.call(oControl, oDay),
 				oFormat = oControl._getDateFormatter(),
 				oType,
@@ -149,6 +156,7 @@ sap.ui.define([
 
 			oRm.openStart("div");
 			oRm.class("sapMSPCMonthDay");
+			oRm.attr("role", "gridcell");
 
 			if (CalendarUtils._isWeekend(oDay, oLocaleData)) {
 				oRm.class("nonWorkingTimeframe");
@@ -227,13 +235,13 @@ sap.ui.define([
 				sIcon = oAppointment.getIcon(),
 				sId = oAppointment.getId(),
 				mAccProps = {
-					role: "gridcell",
+					role: "listitem",
 					labelledby: {
 						value: InvisibleText.getStaticId("sap.ui.unified", "APPOINTMENT"),
 						append: true
 					},
-					// Setting aria-selected attribute to all blockers
-					selected: !!oAppointment.getSelected()
+					// Prevents aria-selected from being added on the appointment
+					selected: null
 				},
 				// aAriaLabels = oControl.getAriaLabelledBy(),
 				iRight = iColumns - iColumn - iWidth,
@@ -256,6 +264,10 @@ sap.ui.define([
 
 			if (oAppointment.getTentative()) {
 				mAccProps["labelledby"].value = mAccProps["labelledby"].value + " " + InvisibleText.getStaticId("sap.ui.unified", "APPOINTMENT_TENTATIVE");
+			}
+
+			if (oAppointment.getSelected()) {
+				mAccProps["labelledby"].value = mAccProps["labelledby"].value + " " + InvisibleText.getStaticId("sap.ui.unified", "APPOINTMENT_SELECTED");
 			}
 
 			oRm.openStart("div", oAppointment);

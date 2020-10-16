@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -27,7 +27,7 @@ sap.ui.define(['sap/ui/base/EventProvider', "sap/base/util/uid"],
 	 * @extends sap.ui.base.EventProvider
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @public
 	 * @alias sap.ui.core.message.MessageProcessor
@@ -68,7 +68,7 @@ sap.ui.define(['sap/ui/base/EventProvider', "sap/base/util/uid"],
 	/**
 	 * The <code>messageChange</code> event is fired when the messages are changed.
 	 *
-	 * @name sap.ui.core.messages.MessageProcessor#messageChange
+	 * @name sap.ui.core.message.MessageProcessor#messageChange
 	 * @event
 	 * @param {sap.ui.base.Event} oEvent
 	 * @public
@@ -134,9 +134,8 @@ sap.ui.define(['sap/ui/base/EventProvider', "sap/base/util/uid"],
 	 * Implement in inheriting classes
 	 * @abstract
 	 *
-	 * @name sap.ui.core.message.MessageProcessor.prototype.checkMessage
+	 * @name sap.ui.core.message.MessageProcessor.prototype.checkMessages
 	 * @function
-	 * @return {sap.ui.model.ListBinding}
 	 * @public
 	 */
 
@@ -146,7 +145,7 @@ sap.ui.define(['sap/ui/base/EventProvider', "sap/base/util/uid"],
 	 *
 	 * @name sap.ui.core.message.MessageProcessor.prototype.setMessages
 	 * @function
-	 * @param {map}
+	 * @param {Object<string,array>}
 	 *         vMessages map of messages: {'target': [array of messages],...}
 	 * @public
 	 */

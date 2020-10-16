@@ -118,7 +118,7 @@ JS;
                         items: [
                             {$icon}.addStyleClass("sapUiSmallMargin"),
                             new sap.m.Title({
-                                text: "{$widget->getCaption()}"
+                                text: "{$this->escapeJsTextValue($widget->getCaption())}"
                             })
                         ]
                     })

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -25,7 +25,7 @@ sap.ui.define([
 	 * @class The Settings allows trigger change of settings operations on the overlay
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -45,12 +45,14 @@ sap.ui.define([
 		}
 	});
 
+	var sPluginId = "CTX_SETTINGS";
+
 	/**
 	 * @param {sap.ui.dt.ElementOverlay} oOverlay overlay to be checked for editable
 	 * @returns {boolean} true if it's editable
 	 * @private
 	 */
-	Settings.prototype._isEditable = function (oOverlay) {
+	Settings.prototype._isEditable = function(oOverlay) {
 		var vSettingsAction = this.getAction(oOverlay);
 		// If no additional actions are defined in settings, a handler must be present to make it available
 		if (vSettingsAction) {
@@ -77,7 +79,7 @@ sap.ui.define([
 	 * @returns {boolean} true if it's enabled
 	 * @public
 	 */
-	Settings.prototype.isEnabled = function (aElementOverlays) {
+	Settings.prototype.isEnabled = function(aElementOverlays) {
 		var oElementOverlay = aElementOverlays[0];
 		var oAction = this.getAction(oElementOverlay);
 		if (!oAction) {
@@ -242,61 +244,72 @@ sap.ui.define([
 	 * @param {sap.ui.dt.ElementOverlay[]} aElementOverlays - Target overlays
 	 * @return {object[]} array of the items with required data
 	 */
-	Settings.prototype.getMenuItems = function (aElementOverlays) {
+	Settings.prototype.getMenuItems = function(aElementOverlays) {
 		var oElementOverlay = aElementOverlays[0];
 		var vSettingsActions = this.getAction(oElementOverlay);
-		var iRank = 110;
-		var sPluginId = "CTX_SETTINGS";
 
+		var aMenuItems = [];
 		if (vSettingsActions) {
-			// Only one action: simply return settings entry as usual
-			if (vSettingsActions.handler && this._checkRelevantContainerStableID(vSettingsActions, oElementOverlay)) {
-				return this._getMenuItems([oElementOverlay], {
-					pluginId: sPluginId,
-					rank: iRank,
-					icon: this._getActionIcon(vSettingsActions)
-				});
-			// Multiple actions: return one menu item for each action
-			}
+			var iRank = 110;
 
-			var aMenuItems = [];
+			if (vSettingsActions.handler) {
+				vSettingsActions = {
+					settings: vSettingsActions
+				};
+			}
 			var aSettingsActions = Object.keys(vSettingsActions);
-			var iActionCounter = 0;
-			aSettingsActions.forEach(function (sSettingsAction) {
+			aSettingsActions.forEach(function(sSettingsAction, iIndex, aActions) {
 				var oSettingsAction = vSettingsActions[sSettingsAction];
-				var sActionText = this.getActionText(oElementOverlay, oSettingsAction, oSettingsAction.name);
-				if (oSettingsAction.handler && this._checkRelevantContainerStableID(oSettingsAction, oElementOverlay)) {
+				if (
+					oSettingsAction.handler
+					&& this._checkRelevantContainerStableID(oSettingsAction, oElementOverlay)
+					&& this.isAvailable([oElementOverlay])
+				) {
+					var bSingleAction = aActions.length === 1;
+
 					aMenuItems.push({
-						id: sPluginId + iActionCounter,
-						text: sActionText,
-						icon: this._getActionIcon(oSettingsAction),
+						id: bSingleAction ? sPluginId : sPluginId + iIndex,
+						rank: bSingleAction ? iRank : iRank + iIndex,
+						text: this.getActionText(oElementOverlay, oSettingsAction, sPluginId),
+						icon: getActionIcon(oSettingsAction),
 						enabled: (
-							typeof oSettingsAction.isEnabled === 'function'
-							&& ( // eslint-disable-line no-extra-parens
-								function (aElementOverlays) {
-									return oSettingsAction.isEnabled(aElementOverlays[0].getElement());
-								}
-							)
+							typeof oSettingsAction.isEnabled === "function"
+							&& function(aElementOverlays) {
+								return oSettingsAction.isEnabled(aElementOverlays[0].getElement());
+							}
 							|| oSettingsAction.isEnabled
+							|| this.isEnabled([oElementOverlay])
 						),
 						handler: function(fnHandler, aElementOverlays, mPropertyBag) {
 							mPropertyBag = mPropertyBag || {};
 							mPropertyBag.fnHandler = fnHandler;
 							return this.handler(aElementOverlays, mPropertyBag);
 						}.bind(this, oSettingsAction.handler),
-						rank: iRank + iActionCounter
+						submenu: formatSubMenuItems(oSettingsAction.submenu)
 					});
-					iActionCounter++;
 				} else {
-					BaseLog.warning("Handler not found for settings action '" + sActionText + "' or relevant container has no stable id");
+					BaseLog.warning("Handler not found for settings action '" + sSettingsAction + "' or relevant container has no stable id");
 				}
 			}, this);
-			return aMenuItems;
 		}
-		return [];
+
+		return aMenuItems;
 	};
 
-	Settings.prototype._getActionIcon = function(oSettingsAction) {
+	function formatSubMenuItems(aSubMenu) {
+		if (aSubMenu) {
+			return aSubMenu.map(function(oSubMenu, iIndex) {
+				return {
+					id: oSubMenu.key || sPluginId + "_SUB_" + iIndex,
+					icon: oSubMenu.icon || "blank",
+					text: oSubMenu.name || "",
+					enabled: oSubMenu.hasOwnProperty("enabled") ? oSubMenu.enabled : true
+				};
+			});
+		}
+	}
+
+	function getActionIcon(oSettingsAction) {
 		var sDefaultSettingIcon = "sap-icon://key-user-settings";
 		var sActionIcon = oSettingsAction.icon;
 		if (!sActionIcon) {
@@ -307,7 +320,7 @@ sap.ui.define([
 			return sDefaultSettingIcon;
 		}
 		return sActionIcon;
-	};
+	}
 
 	/**
 	 * Get the name of the action related to this plugin.
@@ -318,4 +331,4 @@ sap.ui.define([
 	};
 
 	return Settings;
-}, /* bExport= */true);
+});

@@ -1,8 +1,13 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
+
+// Ensure that sap.ui.unified is loaded before the module dependencies will be required.
+// Loading it synchronously is the only compatible option and doesn't harm when sap.ui.unified
+// already has been loaded asynchronously (e.g. via a dependency declared in the manifest)
+sap.ui.getCore().loadLibrary("sap.ui.unified");
 
 // Provides control sap.m.DateRangeSelection.
 sap.ui.define([
@@ -13,6 +18,8 @@ sap.ui.define([
 	'sap/ui/core/format/DateFormat',
 	'sap/ui/core/date/UniversalDate',
 	'./DateRangeSelectionRenderer',
+	"sap/ui/unified/calendar/CustomMonthPicker",
+	"sap/ui/unified/calendar/CustomYearPicker",
 	"sap/base/util/deepEqual",
 	"sap/base/Log",
 	"sap/base/assert",
@@ -26,6 +33,8 @@ sap.ui.define([
 		DateFormat,
 		UniversalDate,
 		DateRangeSelectionRenderer,
+		CustomMonthPicker,
+		CustomYearPicker,
 		deepEqual,
 		Log,
 		assert
@@ -120,8 +129,8 @@ sap.ui.define([
 	 * compact mode and provides a touch-friendly size in cozy mode.
 	 *
 	 * @extends sap.m.DatePicker
-	 * @version 1.73.1
-	 * @version 1.73.1
+	 * @version 1.82.0
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -167,11 +176,6 @@ sap.ui.define([
 		ENDASH = String.fromCharCode(8211),
 		EMDASH = String.fromCharCode(8212);
 
-	/**
-	 * This file defines behavior for the control
-	 * @public
-	 */
-
 	/* eslint-disable no-lonely-if */
 
 	DateRangeSelection.prototype.init = function(){
@@ -180,6 +184,28 @@ sap.ui.define([
 
 		this._bIntervalSelection = true;
 
+	};
+
+	/**
+	 * Override DatePicker's '_createPopupContent' in order to add support for months and years range selection
+	 * @override
+	 */
+	DateRangeSelection.prototype._createPopupContent = function() {
+		DatePicker.prototype._createPopupContent.apply(this, arguments);
+
+		var oCalendar = this._getCalendar();
+
+		if (oCalendar instanceof CustomMonthPicker) {
+			oCalendar._getMonthPicker().setIntervalSelection(true);
+		}
+
+		if (oCalendar instanceof CustomYearPicker) {
+			oCalendar._getYearPicker().setIntervalSelection(true);
+		}
+
+		this._getCalendar().attachWeekNumberSelect(this._handleWeekSelect, this);
+		this._getCalendar().getSelectedDates()[0].setStartDate(this._oDateRange.getStartDate());
+		this._getCalendar().getSelectedDates()[0].setEndDate(this._oDateRange.getEndDate());
 	};
 
 	DateRangeSelection.prototype.onkeypress = function(oEvent){
@@ -273,7 +299,7 @@ sap.ui.define([
 	DateRangeSelection.prototype.setValue = function(sValue) {
 
 		if (sValue !== this.getValue()) {
-			this._lastValue = sValue;
+			this.setLastValue(sValue);
 		} else {
 			return this;
 		}
@@ -429,7 +455,7 @@ sap.ui.define([
 	 */
 	DateRangeSelection.prototype.setDateValue = function(oDateValue) {
 
-		if (this._isValidDate(oDateValue)) {
+		if (!this._isValidDate(oDateValue)) {
 			throw new Error("Date must be a JavaScript date object; " + this);
 		}
 
@@ -446,7 +472,7 @@ sap.ui.define([
 
 	DateRangeSelection.prototype.setSecondDateValue = function(oSecondDateValue) {
 
-		if (this._isValidDate(oSecondDateValue)) {
+		if (!this._isValidDate(oSecondDateValue)) {
 			throw new Error("Date must be a JavaScript date object; " + this);
 		}
 
@@ -694,12 +720,12 @@ sap.ui.define([
 			}
 		}
 
-		if (sValue !== this._lastValue) {
+		if (sValue !== this.getLastValue()) {
 			if (this.getDomRef() && (this._$input.val() !== sValue)) {
 				this._$input.val(sValue);
 				this._curpos = this._$input.cursorPos();
 			}
-			this._lastValue = sValue;
+			this.setLastValue(sValue);
 			this.setProperty("value", sValue, true);
 			if (this._bValid) {
 				this.setProperty("dateValue", _normalizeDateValue(aDates[0]), true);
@@ -744,6 +770,10 @@ sap.ui.define([
 
 		sValue = (typeof sValue == "undefined") ? this._$input.val() : sValue.toString();
 
+		if (!sValue) {
+			return "";
+		}
+
 		var aDates = this._parseValue(sValue);
 		sValue = this._formatValue( aDates[0], aDates[1]);
 
@@ -771,47 +801,6 @@ sap.ui.define([
 		}
 
 		return this;
-	};
-
-	DateRangeSelection.prototype.onsappageup = function(oEvent){
-		// increase by one day
-		this._increaseDateRange(1, "day");
-
-		// prevent scrolling
-		oEvent.preventDefault();
-	};
-
-	DateRangeSelection.prototype.onsappageupmodifiers = function(oEvent){
-
-		if (oEvent.shiftKey && !oEvent.ctrlKey) {
-			// increase by one month
-			this._increaseDateRange(1, "month");
-		} else if (oEvent.shiftKey && oEvent.ctrlKey) {
-			// increase by one year
-			this._increaseDateRange(1, "year");
-		}
-		// prevent scrolling
-		oEvent.preventDefault();
-	};
-
-	DateRangeSelection.prototype.onsappagedown = function(oEvent){
-		//decrease by one day
-		this._increaseDateRange(-1, "day");
-
-		// prevent scrolling
-		oEvent.preventDefault();
-	};
-	DateRangeSelection.prototype.onsappagedownmodifiers = function(oEvent){
-
-		if (oEvent.shiftKey && !oEvent.ctrlKey) {
-			// increase by one month
-			this._increaseDateRange(-1, "month");
-		} else if (oEvent.shiftKey && oEvent.ctrlKey) {
-			// increase by one year
-			this._increaseDateRange(-1, "year");
-		}
-		// prevent scrolling
-		oEvent.preventDefault();
 	};
 
 	//Support of two date range version of Calendar added into original DatePicker's version
@@ -877,6 +866,9 @@ sap.ui.define([
 					}
 				}
 
+				this._oDateRange.setStartDate(this._getCalendar().getSelectedDates()[0].getStartDate());
+				this._oDateRange.setEndDate(this._getCalendar().getSelectedDates()[0].getEndDate());
+
 				// close popup and focus input after change event to allow application to reset value state or similar things
 				this._oPopup.close();
 			}
@@ -892,6 +884,24 @@ sap.ui.define([
 			this._oPopup.getBeginButton().setEnabled(!!(oSelectedStartDate && oSelectedEndDate));
 			return;
 		}
+
+		this._selectDate();
+	};
+
+	DateRangeSelection.prototype._handleWeekSelect = function(oEvent){
+		var oSelectedDates = oEvent.getParameter("weekDays"),
+			oSelectedStartDate = oSelectedDates.getStartDate(),
+			oSelectedEndDate = oSelectedDates.getEndDate();
+
+		if (this.getShowFooter()) {
+			this._oPopup.getBeginButton().setEnabled(!!(oSelectedStartDate && oSelectedEndDate));
+			return;
+		}
+
+		this._getCalendar().getSelectedDates()[0].setStartDate(oSelectedStartDate);
+		this._getCalendar().getSelectedDates()[0].setEndDate(oSelectedEndDate);
+		this._oDateRange.setStartDate(oSelectedStartDate);
+		this._oDateRange.setEndDate(oSelectedEndDate);
 
 		this._selectDate();
 	};
@@ -923,7 +933,7 @@ sap.ui.define([
 		var sValue = this._formatValue(oDateValue, oSecondDateValue);
 
 		if (sValue !== this.getValue()) {
-			this._lastValue = sValue;
+			this.setLastValue(sValue);
 		}
 		// Set the property in any case but check validity on output
 		this.setProperty("value", sValue);
@@ -981,7 +991,14 @@ sap.ui.define([
 
 	}
 
-	DateRangeSelection.prototype._increaseDateRange = function (iNumber, sUnit) {
+	/**
+	 * Override DatePicker.protototype._increaseDate method
+	 * @override
+	 *
+	 * @param {int} iNumber to use for increasing the dateValue
+	 * @param {string} sUnit for day, month or year
+	 */
+	DateRangeSelection.prototype._increaseDate = function (iNumber, sUnit) {
 		var sValue = this._$input.val(),
 			aDates = this._parseValue(sValue),
 			oFirstOldDate = aDates[0],
@@ -996,7 +1013,7 @@ sap.ui.define([
 			bSecondDate,
 			oDate;
 
-		if (!this.getEditable() || !this.getEnabled()) {
+		if (!oFirstOldDate || !this.getEditable() || !this.getEnabled()) {
 			return;
 		}
 
@@ -1012,8 +1029,8 @@ sap.ui.define([
 		// as they don't make the input to be considered invalid, but make the cursor position calculations wrong
 		sValue = _trim(sValue, [sDelimiter, " "]);
 		iCurPos = this._$input.cursorPos();
-		iFirstDateValueLen = oFormat.format(oFirstOldDate).length;
-		iSecondDateValueLen = oFormat.format(oSecondOldDate).length;
+		iFirstDateValueLen = oFirstOldDate ? oFormat.format(oFirstOldDate).length : 0;
+		iSecondDateValueLen = oSecondOldDate ? oFormat.format(oSecondOldDate).length : 0;
 
 		iValueLen = sValue.length;
 		bFirstDate = iCurPos <= iFirstDateValueLen + 1;
@@ -1224,7 +1241,7 @@ sap.ui.define([
 	 * <li>'to' of type <code>object</code> Current end date after change.</li>
 	 * </ul>
 	 *
-	 * @param {Map} [mArguments] The arguments to pass along with the event.
+	 * @param {object} [mArguments] The arguments to pass along with the event.
 	 * @return {sap.m.DateRangeSelection} <code>this</code> to allow method chaining
 	 * @protected
 	 * @name sap.m.DateRangeSelection#fireChange

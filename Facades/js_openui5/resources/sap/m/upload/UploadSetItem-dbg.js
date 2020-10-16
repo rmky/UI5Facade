@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -36,7 +36,7 @@ sap.ui.define([
 	 * @class Item that represents one file to be uploaded using the {@link sap.m.upload.UploadSet} control.
 	 * @extends sap.ui.core.Element
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @constructor
 	 * @public
 	 * @since 1.62
@@ -274,8 +274,12 @@ sap.ui.define([
 
 		if (this.getParent()) {
 			this._getRestartButton().setVisible(sUploadState === UploadState.Error);
-			this._getEditButton().setVisible(!bUploading);
-			this._getDeleteButton().setVisible(!bUploading);
+			if (this.getVisibleEdit()) {
+				this._getEditButton().setVisible(!bUploading);
+			}
+			if (this.getVisibleRemove()) {
+				this._getDeleteButton().setVisible(!bUploading);
+			}
 			this._getTerminateButton().setVisible(this.getParent().getTerminationEnabled() && bUploading);
 		}
 
@@ -317,6 +321,33 @@ sap.ui.define([
 			this.setProperty("visibleEdit", bVisible, true);
 			if (this.getParent()) {
 				this._getEditButton().setVisible(bVisible);
+			}
+		}
+		return this;
+	};
+
+	UploadSetItem.prototype.setThumbnailUrl = function(sUrl) {
+		if (this.getThumbnailUrl() != sUrl) {
+			this.setProperty("thumbnailUrl", sUrl, true);
+			// Below we handle change of icon case for existing uploadSetItem.For creation of uploadSetItem icon is created using _getIcon method.
+			if (this._oListItem) {
+				for (var i = 0; i < this._oListItem.getContent().length; i++) {
+					if (this._oListItem.getContent()[i] instanceof sap.ui.core.Icon || this._oListItem.getContent()[i] instanceof sap.m.Image) {
+						var oItem = this._oListItem.getContent()[i];
+						this._oListItem.removeContent(oItem);
+						if (this._oIcon) {
+							this._oIcon.destroy();
+							this._oIcon = null;
+						}
+						this._oIcon = IconPool.createControlByURI({
+							id: this.getId() + "-thumbnail",
+							src: sUrl,
+							decorative: false
+						}, Image);
+						this._oIcon.addStyleClass("sapMUCItemImage sapMUCItemIcon");
+						this._oListItem.insertContent(this._oIcon, 0);
+					}
+				}
 			}
 		}
 		return this;
@@ -489,9 +520,9 @@ sap.ui.define([
 		if (!this._oFileNameLink) {
 			this._oFileNameLink = new Link({
 				id: this.getId() + "-fileNameLink",
-				text: this.getFileName(),
 				press: [this, this._handleFileNamePressed, this]
 			});
+			this._oFileNameLink.setText(this.getFileName());//For handling curly braces in file name we have to use setter.Otherwise it will be treated as binding.
 			this._oFileNameLink.addStyleClass("sapMUCFileName");
 			this._oFileNameLink.addStyleClass("sapMUSFileName");
 			this.addDependent(this._oFileNameLink);
@@ -532,7 +563,7 @@ sap.ui.define([
 		if (!this._oEditButton) {
 			this._oEditButton = new Button({
 				id: this.getId() + "-editButton",
-				icon: "sap-icon://request",
+				icon: "sap-icon://edit",
 				type: MobileLibrary.ButtonType.Standard,
 				enabled: this.getEnabledEdit(),
 				visible: this.getVisibleEdit(),
@@ -626,7 +657,7 @@ sap.ui.define([
 		if (!this._oDeleteButton) {
 			this._oDeleteButton = new Button({
 				id: this.getId() + "-deleteButton",
-				icon: "sap-icon://sys-cancel",
+				icon: "sap-icon://decline",
 				type: MobileLibrary.ButtonType.Standard,
 				enabled: this.getEnabledRemove(),
 				visible: this.getVisibleRemove(),

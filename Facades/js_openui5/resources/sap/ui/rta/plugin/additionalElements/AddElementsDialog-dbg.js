@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -10,7 +10,6 @@ sap.ui.define([
 	"sap/ui/model/json/JSONModel",
 	"sap/m/SearchField",
 	"sap/m/Button",
-	"sap/m/ButtonType",
 	"sap/m/Toolbar",
 	"sap/m/ToolbarSpacer",
 	"sap/ui/model/Filter",
@@ -32,7 +31,6 @@ sap.ui.define([
 	JSONModel,
 	SearchField,
 	Button,
-	ButtonType,
 	Toolbar,
 	ToolbarSpacer,
 	Filter,
@@ -50,6 +48,9 @@ sap.ui.define([
 ) {
 	"use strict";
 
+	// shortcut for sap.m.ButtonType
+	var ButtonType = mobileLibrary.ButtonType;
+
 	// shortcut for sap.m.ListType
 	var ListType = mobileLibrary.ListType;
 
@@ -62,7 +63,7 @@ sap.ui.define([
 	 * @class Context - Dialog for available Fields in Runtime Authoring
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @constructor
 	 * @private
 	 * @since 1.44
@@ -174,10 +175,10 @@ sap.ui.define([
 		var oFieldName = new Label({
 			design: LabelDesign.Standard,
 			text: {
-				parts: [{path: "label"}, {path: "referencedComplexPropertyName"}, {path: "duplicateComplexName"}],
-				formatter: function(sLabel, sReferencedComplexPropertyName, bDuplicateComplexName) {
-					if (bDuplicateComplexName && sReferencedComplexPropertyName) {
-						sLabel += " (" + sReferencedComplexPropertyName + ")";
+				parts: [{path: "label"}, {path: "parentPropertyName"}, {path: "duplicateName"}],
+				formatter: function(sLabel, sParentPropertyName, bDuplicateName) {
+					if (bDuplicateName && sParentPropertyName) {
+						sLabel += " (" + sParentPropertyName + ")";
 					}
 					return sLabel;
 				}
@@ -230,11 +231,15 @@ sap.ui.define([
 			path:"/elements",
 			template: oListItem,
 			sorter: oSorter,
+			templateShareable: false,
+			//Extended Change Detection via "key" property see docs: #/topic/7cdff73f308b4b10bdf7d83b7aba72e7 -
 			key: function (oContext) {
 				switch (oContext.getProperty("type")) {
 					case "invisible":
 						return oContext.getProperty("elementId");
 					case "odata":
+						return oContext.getProperty("name");
+					case "delegate":
 						return oContext.getProperty("name");
 					case "custom":
 						return oContext.getProperty("key");
@@ -354,10 +359,10 @@ sap.ui.define([
 		if ((typeof sValue) === "string") {
 			var oFilterLabel = new Filter("label", FilterOperator.Contains, sValue);
 			var oOriginalLabelFilter = new Filter("originalLabel", FilterOperator.Contains, sValue);
-			var oReferencedComplexPropertyNameFilter = new Filter("referencedComplexPropertyName", FilterOperator.Contains, sValue);
-			var oDuplicateComplexNameFilter = new Filter("duplicateComplexName", FilterOperator.EQ, true);
-			var oComplexNameFilter = new Filter({ filters: [oReferencedComplexPropertyNameFilter, oDuplicateComplexNameFilter], and: true });
-			var oFilterLabelOrInfo = new Filter({ filters: [oFilterLabel, oOriginalLabelFilter, oComplexNameFilter], and: false });
+			var oParentPropertyNameFilter = new Filter("parentPropertyName", FilterOperator.Contains, sValue);
+			var oDuplicateNameFilter = new Filter("duplicateName", FilterOperator.EQ, true);
+			var oParentNameFilter = new Filter({ filters: [oParentPropertyNameFilter, oDuplicateNameFilter], and: true });
+			var oFilterLabelOrInfo = new Filter({ filters: [oFilterLabel, oOriginalLabelFilter, oParentNameFilter], and: false });
 			oBinding.filter([oFilterLabelOrInfo]);
 		} else {
 			oBinding.filter([]);
@@ -450,4 +455,4 @@ sap.ui.define([
 	};
 
 	return AddElementsDialog;
-}, /* bExport= */ true);
+});

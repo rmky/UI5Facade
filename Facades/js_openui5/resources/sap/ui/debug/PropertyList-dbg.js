@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -38,7 +38,7 @@ sap.ui.define('sap/ui/debug/PropertyList', [
 	 *
 	 * @extends sap.ui.base.EventProvider
 	 * @author Martin Schaus
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @param {sap.ui.core.Core}
 	 *            oCore the core instance to use for analysis
@@ -60,20 +60,20 @@ sap.ui.define('sap/ui/debug/PropertyList', [
 			this.bEmbedded = top.window == oWindow; // check only with ==, not === as the test otherwise fails on IE8
 			this.mProperties = {};
 			var that = this;
-			jQuery(oParentDomRef).bind("click",function(evt) {
+			jQuery(oParentDomRef).on("click",function(evt) {
 				that.onclick(evt);
 			})
-			.bind("focusin",function(evt) {
+			.on("focusin",function(evt) {
 				that.onfocus(evt);
 			})
-			.bind("keydown",function(evt) {
+			.on("keydown",function(evt) {
 				that.onkeydown(evt);
 			});
 			if ( !this.bEmbedded ) {
-				jQuery(oParentDomRef).bind("mouseover",function(evt) {
+				jQuery(oParentDomRef).on("mouseover",function(evt) {
 					that.onmouseover(evt);
 				})
-				.bind("mouseout",function(evt) {
+				.on("mouseout",function(evt) {
 					that.onmouseout(evt);
 				});
 			}
@@ -89,7 +89,7 @@ sap.ui.define('sap/ui/debug/PropertyList', [
 	 * @private
 	 */
 	PropertyList.prototype.exit = function() {
-		jQuery(this.oParentDomRef).unbind();
+		jQuery(this.oParentDomRef).off();
 	};
 
 	/**
@@ -218,18 +218,18 @@ sap.ui.define('sap/ui/debug/PropertyList', [
 					}
 					sTitle = ' title="This aggregation currently references an Element. You can set a ' + sType +  ' value instead"';
 				}
-				aHTML.push("<input type='text' style='width:100%;font-size:8pt;background-color:#f5f5f5;" + sColor + "' value='" + encodeXML("" + oValue) + "'" + sTitle + " sap-name='" + sName + "'/>");
+				aHTML.push("<input type='text' style='width:100%;font-size:8pt;background-color:#f5f5f5;" + sColor + "' value='" + encodeXML("" + oValue) + "'" + sTitle + " sap-name='" + sName + "'>");
 			} else if (sType == "boolean") {
 				aHTML.push("<input type='checkbox' sap-name='" + sName + "' ");
 				if (oValue == true) {
 					aHTML.push("checked='checked'");
 				}
-				aHTML.push("/>");
+				aHTML.push(">");
 			} else if (sType != "void") {
 				//Enum or Custom Type
 				var oEnum = ObjectPath.get(sType || "");
 				if (!oEnum || oEnum instanceof DataType) {
-					aHTML.push("<input type='text' style='width:100%;font-size:8pt;background-color:#f5f5f5;' value='" + encodeXML("" + oValue) + "'" + sTitle + " sap-name='" + sName + "'/>");
+					aHTML.push("<input type='text' style='width:100%;font-size:8pt;background-color:#f5f5f5;' value='" + encodeXML("" + oValue) + "'" + sTitle + " sap-name='" + sName + "'>");
 				} else {
 					aHTML.push("<select style='width:100%;font-size:8pt;background-color:#f5f5f5;' sap-name='" + sName + "'>");
 					sType = sType.replace("/",".");

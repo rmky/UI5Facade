@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -25,7 +25,7 @@ sap.ui.define([
 	 * @alias sap.ui.fl.FlexCustomData
 	 * @experimental Since 1.61.0
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 */
 	var FlexCustomData = {};
 
@@ -63,47 +63,6 @@ sap.ui.define([
 	};
 
 	/**
-	 * Checks the custom data of the provided control and returns 'true' if the failed change key is there
-	 *
-	 * @param {sap.ui.core.Control} oControl The Control that should be checked
-	 * @param {sap.ui.fl.Change} oChange The change instance
-	 * @param {sap.ui.core.util.reflection.BaseTreeModifier} oModifier The control tree modifier
-	 *
-	 * @returns {boolean} Returns 'true' if the custom data is there
-	 */
-	FlexCustomData.hasFailedCustomDataJs = function(oControl, oChange, oModifier) {
-		var mCustomData = this._getCustomData(oControl, oModifier, this._getCustomDataKey(oChange, FlexCustomData.failedChangesCustomDataKeyJs));
-		return !!mCustomData.customDataValue;
-	};
-
-	/**
-	 * Checks the custom data of the provided control and returns 'true' if the applied change key is there
-	 *
-	 * @param {sap.ui.core.Control} oControl The Control that should be checked
-	 * @param {sap.ui.fl.Change} oChange The change instance
-	 * @param {sap.ui.core.util.reflection.BaseTreeModifier} oModifier The control tree modifier
-	 *
-	 * @returns {boolean} Returns 'true' if the custom data is there
-	 */
-	FlexCustomData.hasAppliedCustomData = function(oControl, oChange, oModifier) {
-		return !!this.getAppliedCustomDataValue(oControl, oChange, oModifier);
-	};
-
-	/**
-	 * Checks the custom data of the provided control and returns 'true' if the notApplicable change key is there
-	 *
-	 * @param {sap.ui.core.Control} oControl The Control that should be checked
-	 * @param {sap.ui.fl.Change} oChange The change instance
-	 * @param {sap.ui.core.util.reflection.BaseTreeModifier} oModifier The control tree modifier
-	 *
-	 * @returns {boolean} Returns 'true' if the custom data is there
-	 */
-	FlexCustomData.hasNotApplicableCustomData = function(oControl, oChange, oModifier) {
-		var mCustomData = this._getCustomData(oControl, oModifier, this._getCustomDataKey(oChange, FlexCustomData.notApplicableChangesCustomDataKey));
-		return !!mCustomData.customDataValue;
-	};
-
-	/**
 	 * Checks the custom data of the provided control and returns 'true' if the notApplicable, applied or failed change key is there
 	 *
 	 * @param {sap.ui.core.Control} oControl The Control that should be checked
@@ -113,14 +72,18 @@ sap.ui.define([
 	 * @returns {boolean} Returns 'true' if the custom data is there
 	 */
 	FlexCustomData.hasChangeApplyFinishedCustomData = function(oControl, oChange, oModifier) {
-		var aCustomDataFunctionNames = [
-			"hasAppliedCustomData",
-			"hasFailedCustomDataJs",
-			"hasNotApplicableCustomData"
+		var aCustomData = oModifier.getAggregation(oControl, "customData") || [];
+		var aCustomDataKeys = [
+			this._getCustomDataKey(oChange, FlexCustomData.appliedChangesCustomDataKey),
+			this._getCustomDataKey(oChange, FlexCustomData.failedChangesCustomDataKeyJs),
+			this._getCustomDataKey(oChange, FlexCustomData.notApplicableChangesCustomDataKey)
 		];
-		return aCustomDataFunctionNames.some(function(sCustomDataFunction) {
-			return !!this[sCustomDataFunction](oControl, oChange, oModifier);
-		}, this);
+		return aCustomData.some(function (oCustomData) {
+			var sKey = oModifier.getProperty(oCustomData, "key");
+			if (aCustomDataKeys.indexOf(sKey) > -1) {
+				return !!oModifier.getProperty(oCustomData, "value");
+			}
+		});
 	};
 
 	/**
@@ -140,8 +103,7 @@ sap.ui.define([
 		var sCustomDataValue;
 		var sCustomDataKey = this._getCustomDataKey(oChange, FlexCustomData.appliedChangesCustomDataKey);
 		if (bSaveRevertData) {
-			// '{' and '}' have to be escaped in order to correctly create the custom data from the view cache. Same effect as unbindProperty during runtime
-			sCustomDataValue = this._escapeCurlyBracketsInString(JSON.stringify(oChange.getRevertData()));
+			sCustomDataValue = JSON.stringify(oChange.getRevertData());
 		} else {
 			sCustomDataValue = "true";
 		}
@@ -206,10 +168,6 @@ sap.ui.define([
 			return FlexCustomData.failedChangesCustomDataKeyXml;
 		}
 		return FlexCustomData.failedChangesCustomDataKeyJs;
-	};
-
-	FlexCustomData._escapeCurlyBracketsInString = function(sText) {
-		return sText.replace(/{/g, '\\\{').replace(/}/g, '\\\}');
 	};
 
 	FlexCustomData._getCustomDataKey = function(oChange, sIdentifier) {

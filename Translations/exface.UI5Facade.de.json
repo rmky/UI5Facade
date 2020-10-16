@@ -4,13 +4,15 @@
 	"ERROR.DETAILS": "Details",
 	"ERROR.LOG_ID_HINT": "Bei Support-Anfragen bitte angeben!",
 	"ERROR.BUTTON_TEXT": "Schließen",
+	"ERROR.EXCEPTION_MESSAGE": "Originalnachricht:",
+	"ERROR.NO_CONNECTION": "Server nicht erreichbar!",
+	"ERROR.NO_CONNECTION_HINT": "Überprüfen Sie Ihre Netzwerkverbindung und versuchen Sie es erneut! Wenn das nicht hilft, wenden Sie sich bitte an den Support!",
 	"SAP-ERROR": "im SAP",
 	"SAP-LOGIC": "vom SAP",
 	
 	"MESSAGE.ERROR_TITLE": "Fehler",	
 	"MESSAGE.ERROR.SERVER_ERROR_TITLE": "Fehler im Server",
 	"MESSAGE.SUCCESS_TITLE": "",
-	"MESSAGE.FILL_REQUIRED_ATTRIBUTES": "Bitte füllen Sie die benötigten Felder aus: ",
 	"MESSAGE.TYPE.ERROR": "Fehler",
 	"MESSAGE.TYPE.WARNING": "Warnung",
 	"MESSAGE.TYPE.INFO": "Info",
@@ -60,6 +62,8 @@
 	"WIDGET.FILELIST.ERROR_FILE_TOO_BIG": "Datei zu groß: max. %mb% MB erlaubt!",
 	"WIDGET.FILELIST.ERROR_FILENAME_TOO_LONG": "Dateiname zu lang: max. %length% Zeichen erlaubt!",
 	"WIDGET.FILELIST.ERROR_DELETE": "Löschen fehlgeschlagen: unbekannter Fehler.",
+	
+	"WIDGET.FORM.MESSAGE_VALIDATION_FAILED": "Bitte alle markierten Felder kontrollieren: die Eingaben scheinen nicht korrekt zu sein!",
 	
 	"WIDGET.INPUTPASSWORD.CONFIRM": "Passwort bestätigen",
 	"WIDGET.INPUTPASSWORD.DONT_MATCH": "Passwörter stimmen nicht überein",

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -50,7 +50,7 @@ function(
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -376,10 +376,11 @@ function(
 		if (!sControlWidth) {
 			// Modify whole control width if needed
 			if ((iMaxWidth * iButtonsCount) > iParentWidth) {
-				this.$().css("width", "100%");
+				this.addStyleClass("sapMSegBFit");
 			} else if (iMaxWidth > 0) {
 				// Here we add 1px to compensate for the border which is taken within the calculation of max width
 				this.$().width((iMaxWidth * iButtonsCount) + 1);
+				this.removeStyleClass("sapMSegBFit");
 			}
 			// Modify button widths
 			i = 0;
@@ -449,7 +450,7 @@ function(
 			canOverflow: true,
 			listenForEvents: ["select"],
 			autoCloseEvents: ["select"],
-			noInvalidationProps: ["enabled", "selectedKey"],
+			propsUnrelatedToSize: ["enabled", "selectedKey"],
 			invalidationEvents: ["_containerWidthChanged"],
 			onBeforeEnterOverflow: this._onBeforeEnterOverflow,
 			onAfterExitOverflow: this._onAfterExitOverflow
@@ -462,7 +463,11 @@ function(
 	};
 
 	SegmentedButton.prototype._onAfterExitOverflow = function(oControl) {
-		oControl._toNormalMode();
+		if (oControl._bForcedSelectMode) {
+			oControl._toSelectMode();
+		} else {
+			oControl._toNormalMode();
+		}
 	};
 
 	/**
@@ -484,8 +489,8 @@ function(
 	 * @param {sap.ui.core.URI} sURI
 	 *         Icon to be displayed as graphical element within the Button.
 	 *         Density related image will be loaded if image with density awareness name in format [imageName]@[densityValue].[extension] is provided.
-	 * @param {boolean} bEnabled
-	 *         Enables the control (default is true). Buttons that are disabled have other colors than enabled ones, depending on custom settings.
+	 * @param {boolean} [bEnabled=true]
+	 *         Enables the control. Buttons that are disabled have other colors than enabled ones, depending on custom settings.
 	 * @param {sap.ui.core.TextDirection} [sTextDirection]
 	 *         Element's text directionality with enumerated options
 	 *         @since 1.28.0
@@ -932,6 +937,7 @@ function(
 		this.addStyleClass("sapMSegBSelectWrapper");
 		this._lazyLoadSelectForm();
 		this._syncSelect();
+		this._syncAriaAssociations();
 	};
 
 	/**
@@ -941,6 +947,24 @@ function(
 	SegmentedButton.prototype._toNormalMode = function() {
 		delete this._bInOverflow;
 		this.removeStyleClass("sapMSegBSelectWrapper");
+	};
+
+	SegmentedButton.prototype._syncAriaAssociations = function () {
+		var oSelect = this.getAggregation("_select");
+		this.getAriaLabelledBy().forEach(function (oLabel) {
+			if (oSelect.getAriaLabelledBy().indexOf(oLabel) === -1) {
+				oSelect.addAriaLabelledBy(oLabel);
+			}
+		});
+
+		// sap.m.Select doesn't have an ariaDescribedBy association, so we copy
+		// the ariaDescribedBy association elements from the sap.m.SegmentedButton instance
+		// into the ariaLabelledBy association in the sap.m.Select instance
+		this.getAriaDescribedBy().forEach(function (oDesc) {
+			if (oSelect.getAriaLabelledBy().indexOf(oDesc) === -1) {
+				oSelect.addAriaLabelledBy(oDesc);
+			}
+		});
 	};
 
 	/**

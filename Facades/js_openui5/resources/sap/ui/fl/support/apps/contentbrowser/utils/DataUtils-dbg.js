@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,7 +14,7 @@ sap.ui.define(["sap/m/GroupHeaderListItem", "sap/ui/thirdparty/jquery"],
 		 * @constructor
 		 * @alias sap.ui.fl.support.apps.contentbrowser.utils.DataUtils
 		 * @author SAP SE
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 * @experimental Since 1.45
 		 */
 		var DataUtils = {
@@ -118,7 +118,7 @@ sap.ui.define(["sap/m/GroupHeaderListItem", "sap/ui/thirdparty/jquery"],
 
 			/**
 			 * Title formatter: combines the items namespace, filename and type.
-			 * @param {map} mModelData
+			 * @param {object} mModelData
 			 * @param {string} mModelData.namespace
 			 * @param {string} mModelData.fileName
 			 * @param {string} mModelData.fileType

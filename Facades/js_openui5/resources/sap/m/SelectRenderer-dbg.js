@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -85,7 +85,6 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 			}
 
 			oRm.style("max-width", oSelect.getMaxWidth());
-			this.writeAccessibilityState(oRm, oSelect);
 
 			if (sTooltip) {
 				oRm.attr("title", sTooltip);
@@ -97,12 +96,8 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 				}
 			}
 
-			if (bEnabled) {
-				oRm.attr("tabindex", "0");
-			}
-
 			oRm.openEnd();
-			this.renderHiddenInput(oRm, oSelect);
+			this.renderHiddenSelect(oRm, oSelect);
 			this.renderLabel(oRm, oSelect);
 
 			switch (sType) {
@@ -123,24 +118,46 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 				this.renderShadowList(oRm, oList);
 			}
 
-			if (oSelect.getName()) {
-				this.renderInput(oRm, oSelect);
-			}
-
 			oRm.close("div");
 		};
 
-		SelectRenderer.renderHiddenInput = function (oRm, oSelect) {
-			oRm.voidStart("input", oSelect.getId() + "-hiddenInput");
+		SelectRenderer.renderHiddenSelect = function (oRm, oSelect) {
+			var oList = oSelect.getList(),
+				aItems,
+				i;
 
-			// Attributes
-			oRm.attr("aria-readonly", "true");
-			oRm.attr("tabindex", "-1");
+			oRm.openStart("select", oSelect.getId() + "-hiddenSelect");
+
+			this.writeAccessibilityState(oRm, oSelect);
+
+			if (oSelect.getRequired()) {
+				oRm.attr("required", "required");
+			}
+
+			if (!oSelect.getEnabled()) {
+				oRm.attr("disabled", "disabled");
+			}
+
+			oRm.attr("name", oSelect.getName());
+			oRm.attr("value", oSelect.getSelectedKey());
 
 			// Classes
 			oRm.class("sapUiPseudoInvisibleText");
+			oRm.class(SelectRenderer.CSS_CLASS + "HiddenSelect");
 
-			oRm.voidEnd();
+			oRm.openEnd();
+
+			for (i = 0, aItems = oList.getItems(); i < aItems.length; i++) {
+				oRm.openStart("option");
+				oRm.attr("value", aItems[i].getText());
+				oRm.attr("hidden", true);
+				oRm.openEnd();
+				oRm.text(aItems[i].getText());
+				oRm.close("option");
+			}
+
+			oRm.close('select');
+
 		};
 
 		/**
@@ -156,9 +173,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 				sTextAlign = Renderer.getTextAlign(oSelect.getTextAlign(), sTextDir),
 				CSS_CLASS = SelectRenderer.CSS_CLASS;
 
-			oRm.openStart("label", oSelect.getId() + "-label");
-			oRm.attr("for", oSelect.getId());
-			oRm.attr("aria-live", "polite");
+			oRm.openStart("span", oSelect.getId() + "-label");
 			oRm.class(CSS_CLASS + "Label");
 
 			if (oSelect.getValueState() !== ValueState.None) {
@@ -191,7 +206,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 
 				oRm.close("span");
 			}
-			oRm.close("label");
+			oRm.close("span");
 		};
 
 		/**
@@ -222,26 +237,12 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 		 * @private
 		 */
 		SelectRenderer.renderIcon = function(oRm, oSelect) {
+			var sTooltip = oSelect.getTooltip_AsString();
+
 			oRm.icon(oSelect.getIcon(), SelectRenderer.CSS_CLASS + "Icon", {
 				id: oSelect.getId() + "-icon",
-				title: null
+				title: sTooltip || null
 			});
-		};
-
-		SelectRenderer.renderInput = function(oRm, oSelect) {
-			oRm.voidStart("input", oSelect.getId() + "-input");
-			oRm.attr("type", "hidden");
-			oRm.class(SelectRenderer.CSS_CLASS + "Input");
-			oRm.attr("aria-hidden", "true");
-			oRm.attr("tabindex", "-1");
-
-			if (!oSelect.getEnabled()) {
-				oRm.attr("disabled", "disabled");
-			}
-
-			oRm.attr("name", oSelect.getName());
-			oRm.attr("value", oSelect.getSelectedKey());
-			oRm.voidEnd();
 		};
 
 		/**
@@ -352,11 +353,21 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 			var sValueState = this._getValueStateString(oSelect),
 				oSelectedItem = oSelect.getSelectedItem(),
 				bIconOnly = oSelect.getType() === SelectType.IconOnly,
+				oValueIcon = oSelect._getValueIcon(),
+				aLabels = [],
+				aAriaLabelledBy = [],
 				oAriaLabelledBy,
+				sActiveDescendant,
 				sDesc;
 
-			if (sValueState) {
-				sValueState = " " + sValueState;
+			oSelect.getLabels().forEach(function (oLabel) {
+				if (oLabel && oLabel.getId) {
+					aLabels.push(oLabel.getId());
+				}
+			});
+
+			if (oSelect.isOpen() && oSelectedItem && oSelectedItem.getDomRef()) {
+				sActiveDescendant = oSelectedItem.getId();
 			}
 
 			if (oSelectedItem && !oSelectedItem.getText() && oSelectedItem.getIcon && oSelectedItem.getIcon()) {
@@ -366,19 +377,32 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/IconPool', 'sap/m/library', 
 				}
 			}
 
+			if (sDesc && oValueIcon) {
+				sValueState = oValueIcon.getId();
+			}
+
+			if (sValueState) {
+				aAriaLabelledBy.push(sValueState);
+			}
+
+			if (aLabels.length) {
+				aAriaLabelledBy = aAriaLabelledBy.concat(aLabels);
+			}
+
 			oAriaLabelledBy = {
-				value: sDesc ? oSelect._getValueIcon().getId() : oSelect.getId() + "-label" + sValueState,
+				value: aAriaLabelledBy.join(" "),
 				append: true
 			};
 
-			oRm.accessibilityState(oSelect, {
+			oRm.accessibilityState(null, {
 				role: this.getAriaRole(oSelect),
-				disabled: !oSelect.getEnabled(),
+				roledescription: oSelect._sAriaRoleDescription,
 				readonly: bIconOnly ? undefined : oSelect.getEnabled() && !oSelect.getEditable(),
 				expanded: oSelect.isOpen(),
 				invalid: (oSelect.getValueState() === ValueState.Error) ? true : undefined,
-				labelledby: bIconOnly ? undefined : oAriaLabelledBy,
-				haspopup: bIconOnly ? true : undefined
+				labelledby: (bIconOnly || oAriaLabelledBy.value === "") ? undefined : oAriaLabelledBy,
+				activedescendant: sActiveDescendant,
+				haspopup: "listbox"
 			});
 		};
 

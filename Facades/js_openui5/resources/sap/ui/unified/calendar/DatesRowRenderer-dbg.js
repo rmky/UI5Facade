@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -69,7 +69,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/unified/calendar/CalendarDate', '
 
 			oRm.openStart("div", oDatesRow.getId() + "-weeks");
 			oRm.class("sapUiCalRowWeekNumbers");
-			oRm.openEnd(">");
+			oRm.openEnd();
 
 			iDays = oDatesRow.getDays();
 			iDaysWidth = 100 / iDays;
@@ -88,6 +88,8 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/unified/calendar/CalendarDate', '
 			oRm.close("div");
 		}
 	};
+
+	DatesRowRenderer.renderDummyCell = function() {};
 
 	/**
 	 * @param {sap.ui.core.RenderManager} oRm The RenderManager that can be used for writing to the render output buffer

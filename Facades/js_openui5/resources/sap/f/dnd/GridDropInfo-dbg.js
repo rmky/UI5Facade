@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -37,7 +37,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.dnd.DropInfo
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @public
 	 * @experimental Since 1.68 This class is experimental. The API may change.
@@ -72,6 +72,13 @@ sap.ui.define([
 					draggedControl: {type: "sap.ui.core.Control"}
 				}
 			}
+		},
+		events: {
+			/**
+			 * @override
+			 * @name sap.ui.core.dnd.DropInfo#drop
+			 * @param {sap.ui.core.Element} oControlEvent.getParameters.droppedControl The element on which the drag control is dropped. Could be <code>null</code> if you drop in an empty grid
+			 */
 		}
 	}});
 
@@ -142,7 +149,8 @@ sap.ui.define([
 			target: mDropPosition ? mDropPosition.targetControl : null
 		}, true);
 
-		if (eventResult) {
+		// don't handle drag over when performing keyboard dnd
+		if (eventResult && oEvent.originalEvent.type !== "keydown") {
 			gridDragOver.handleDragOver(oEvent);
 		}
 
@@ -163,7 +171,7 @@ sap.ui.define([
 
 		var mDropPosition = this._suggestDropPosition(oEvent);
 
-		if (mDropPosition && oEvent.dragSession) {
+		if (mDropPosition && oEvent.dragSession && mDropPosition.targetControl) {
 			oEvent.dragSession.setDropControl(mDropPosition.targetControl);
 			// mDropPosition.position may be different than oEvent.dragSession.getDropPosition, since the second is calculated inside DragAndDrop.js.
 			// This can be fixed by having a method oEvent.dragSession.setDropPosition
@@ -177,6 +185,9 @@ sap.ui.define([
 		});
 	};
 
+	/**
+	 * @override
+	 */
 	GridDropInfo.prototype.fireDrop = function(oEvent) {
 		if (!this._shouldEnhance()) {
 			return DropInfo.prototype.fireDrop.apply(this, arguments);
@@ -198,15 +209,34 @@ sap.ui.define([
 
 		mDropPosition = gridDragOver.getSuggestedDropPosition();
 
-		this.fireEvent("drop", {
-			dragSession: oEvent.dragSession,
-			browserEvent: oEvent.originalEvent,
-			dropPosition: mDropPosition ? mDropPosition.position : null,
-			draggedControl: oDragSession.getDragControl(),
-			droppedControl: mDropPosition ? mDropPosition.targetControl : null
-		});
+		this.fireDropEvent(
+			oEvent.dragSession,
+			oEvent.originalEvent,
+			mDropPosition ? mDropPosition.position : null,
+			oDragSession.getDragControl(),
+			mDropPosition ? mDropPosition.targetControl : null
+		);
 
 		gridDragOver.scheduleEndDrag();
+	};
+
+	/**
+	 * Fires "drop" event.
+	 *
+	 * @param {sap.ui.core.dnd.DragSession} oDragSession The drag session.
+	 * @param {object} oBrowserEvent The browser event.
+	 * @param {string} sDropPosition "Before" or "After".
+	 * @param {object} oDraggedControl The dragged control.
+	 * @param {object} oDroppedControl The control around which the drop happened.
+	 */
+	GridDropInfo.prototype.fireDropEvent = function(oDragSession, oBrowserEvent, sDropPosition, oDraggedControl, oDroppedControl) {
+		this.fireEvent("drop", {
+			dragSession: oDragSession,
+			browserEvent: oBrowserEvent,
+			dropPosition: sDropPosition,
+			draggedControl: oDraggedControl,
+			droppedControl: oDroppedControl
+		});
 	};
 
 	/**
@@ -268,4 +298,4 @@ sap.ui.define([
 
 	return GridDropInfo;
 
-}, /* bExport= */ true);
+});

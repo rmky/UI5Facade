@@ -2,7 +2,7 @@
 //@ui5-bundle-raw-include sap/ui/thirdparty/baseuri.js
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -5205,7 +5205,7 @@ return Promise$2;
 //@ui5-bundle-raw-include ui5loader.js
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -5262,12 +5262,9 @@ return Promise$2;
 	var resolveURL = (function(_URL) {
 
 		// feature check: URI support
-		// - can URL be used as a constructor (fails in IE 11)?
-		// - does toString() return the expected URL string (fails in PhantomJS 2.1)?
+		// Can URL be used as a constructor (fails in IE 11)?
 		try {
-			if ( !/localhost/.test(new _URL('index.html', 'http://localhost:8080/')) ) {
-				_URL = null;
-			}
+			new _URL('index.html', 'http://localhost:8080/');
 		} catch (e) {
 			isIE11 = true;
 			_URL = null;
@@ -5281,7 +5278,7 @@ return Promise$2;
 			};
 		}
 
-		// fallback for IE11 and PhantomJS: use a shadow document with <base> and <a>nchor tag
+		// fallback for IE11: use a shadow document with <base> and <a>nchor tag
 		var doc = document.implementation.createHTMLDocument("Dummy doc for resolveURI");
 		var base = doc.createElement('base');
 		base.href = docBase();
@@ -5818,7 +5815,7 @@ return Promise$2;
 					sResourceName = sResourceName.slice(1);
 				}
 
-				if ( mModules[sResourceName] && mModules[sResourceName].data ) {
+				if ( mModules[sResourceName] && mModules[sResourceName].data != undefined ) {
 					return sResourceName;
 				}
 			}
@@ -5979,7 +5976,7 @@ return Promise$2;
 		/*
 		 * Whether processing of the module is complete.
 		 * This is very similar to, but not the same as state >= READY because declareModule() sets state=READY very early.
-		 * That state transition is 'legacy' from the library-all files; it needs to checked whether it can be removed.
+		 * That state transition is 'legacy' from the library-all files; it needs to be checked whether it can be removed.
 		 */
 		this.settled = false;
 		this.url =
@@ -6240,13 +6237,8 @@ return Promise$2;
 		ensureStacktrace(oError);
 		ensureStacktrace(cause);
 		// concat the error stack for better traceability of loading issues
-		// (ignore for PhantomJS since Error.stack is readonly property!)
 		if ( oError.stack && cause.stack ) {
-			try {
-				oError.stack = oError.stack + "\nCaused by: " + cause.stack;
-			} catch (err) {
-				// ignore
-			}
+			oError.stack = oError.stack + "\nCaused by: " + cause.stack;
 		}
 		// @evo-todo
 		// for non Chrome browsers we log the caused by stack manually in the console
@@ -6297,14 +6289,14 @@ return Promise$2;
 	 * module name. It then resolves the pending modules in the queue. Only one entry can get the name of the module
 	 * if there are more entries, then this is an error
 	 */
-	var queue = new function ModuleDefinitionQueue() {
+	function ModuleDefinitionQueue() {
 		var aQueue = [],
 			iRun = 0,
 			vTimer;
 
 		this.push = function(name, deps, factory, _export) {
 			if ( log.isLoggable() ) {
-				log.debug("pushing define() call"
+				log.debug(sLogPrefix + "pushing define() call"
 					+ (document.currentScript ? " from " + document.currentScript.src : "")
 					+ " to define queue #" + iRun);
 			}
@@ -6447,7 +6439,9 @@ return Promise$2;
 				log.debug(sLogPrefix + "processing define queue #" + iCurrentRun + " done");
 			}
 		};
-	}();
+	}
+
+	var queue = new ModuleDefinitionQueue();
 
 	/**
 	 * Loads the source for the given module with a sync XHR.
@@ -6585,13 +6579,14 @@ return Promise$2;
 	 *           this is needed to detect cycles
 	 * @param {string} sModuleName Name of the module to be loaded, in URN form and with '.js' extension
 	 * @param {boolean} bAsync Whether the operation can be executed asynchronously
-	 * @param {boolean} bSkipShimDeps Whether shim dependencies should be ignored
+	 * @param {boolean} [bSkipShimDeps=false] Whether shim dependencies should be ignored (used by recursive calls)
+	 * @param {boolean} [bSkipBundle=false] Whether bundle information should be ignored (used by recursive calls)
 	 * @returns {any|Promise} Returns the module export in sync mode or a promise on it in async mode
 	 * @throws {Error} When loading failed in sync mode
 	 *
 	 * @private
 	 */
-	function requireModule(oRequestingModule, sModuleName, bAsync, bSkipShimDeps) {
+	function requireModule(oRequestingModule, sModuleName, bAsync, bSkipShimDeps, bSkipBundle) {
 
 		var bLoggable = log.isLoggable(),
 			oSplitName = urnToBaseIDAndSubType(sModuleName),
@@ -6617,7 +6612,8 @@ return Promise$2;
 				log.debug("require dependencies of raw module " + sModuleName);
 			}
 			return requireAll(oModule, oShim.deps, function() {
-				return requireModule(oRequestingModule, sModuleName, bAsync, /* bSkipShimDeps = */ true);
+				// set bSkipShimDeps to true to prevent endless recursion
+				return requireModule(oRequestingModule, sModuleName, bAsync, /* bSkipShimDeps = */ true, bSkipBundle);
 			}, function(oErr) {
 				oModule.fail(oErr);
 				if ( bAsync ) {
@@ -6627,6 +6623,29 @@ return Promise$2;
 			}, bAsync);
 		}
 
+		// when there's bundle information for the module
+		// require the bundle first before requiring the module again with bSkipBundle = true
+		if ( oModule.state === INITIAL && oModule.group && oModule.group !== sModuleName && !bSkipBundle ) {
+			if ( bLoggable ) {
+				log.debug(sLogPrefix + "require bundle '" + oModule.group + "'"
+						+ " containing '" + sModuleName + "'");
+			}
+			if ( bAsync ) {
+				return requireModule(null, oModule.group, bAsync).catch(noop).then(function() {
+					// set bSkipBundle to true to prevent endless recursion
+					return requireModule(oRequestingModule, sModuleName, bAsync, bSkipShimDeps, /* bSkipBundle = */ true);
+				});
+			} else {
+				try {
+					requireModule(null, oModule.group, bAsync);
+				} catch (oError) {
+					if ( bLoggable ) {
+						log.error(sLogPrefix + "require bundle '" + oModule.group + "' failed (ignored)");
+					}
+				}
+			}
+		}
+
 		if ( bLoggable ) {
 			log.debug(sLogPrefix + "require '" + sModuleName + "'"
 					+ (oRequestingModule ? " (dependency of '" + oRequestingModule.name + "')" : ""));
@@ -6634,6 +6653,13 @@ return Promise$2;
 
 		// check if module has been loaded already
 		if ( oModule.state !== INITIAL ) {
+
+			if ( oModule.state === EXECUTING && oModule.data != null && !bAsync && oModule.async ) {
+				oModule.state = PRELOADED;
+				oModule.async = bAsync;
+				oModule.pending = null; // TODO or is this still needed ?
+			}
+
 			if ( oModule.state === PRELOADED ) {
 				oModule.state = LOADED;
 				oModule.async = bAsync;
@@ -6770,15 +6796,17 @@ return Promise$2;
 
 		var oModule = mModules[sModuleName],
 			bLoggable = log.isLoggable(),
-			sOldPrefix, sScript, oMatch, bOldForceSyncDefines;
+			sOldPrefix, sScript, oMatch, bOldForceSyncDefines, oOldQueue;
 
 		if ( oModule && oModule.state === LOADED && typeof oModule.data !== "undefined" ) {
 
 			bOldForceSyncDefines = bForceSyncDefines;
+			oOldQueue = queue;
 
 			try {
 
 				bForceSyncDefines = !bAsync;
+				queue = new ModuleDefinitionQueue();
 
 				if ( bLoggable ) {
 					if ( typeof oModule.data === "string" ) {
@@ -6845,22 +6873,21 @@ return Promise$2;
 						__global.eval(sScript);
 					}
 				}
-				_execStack.pop();
 				queue.process(oModule, "after eval");
+
+			} catch (err) {
+				oModule.data = undefined;
+				oModule.fail(err);
+			} finally {
+
+				_execStack.pop();
 
 				if ( bLoggable ) {
 					sLogPrefix = sOldPrefix;
 					log.debug(sLogPrefix + "finished executing '" + sModuleName + "'");
 				}
 
-			} catch (err) {
-				if ( bLoggable ) {
-					sLogPrefix = sOldPrefix;
-				}
-				oModule.data = undefined;
-				oModule.fail(err);
-			} finally {
-
+				queue = oOldQueue;
 				bForceSyncDefines = bOldForceSyncDefines;
 			}
 		}
@@ -7459,6 +7486,17 @@ return Promise$2;
 			}
 			bGlobalAsyncMode = !!async;
 		},
+		bundles: function(bundle, modules) {
+			bundle += '.js';
+			modules.forEach(function(module) {
+				Module.get(module + '.js').group = bundle;
+			});
+		},
+		bundlesUI5: function(bundle, resources) {
+			resources.forEach(function(module) {
+				Module.get(module).group = bundle;
+			});
+		},
 		debugSources: function(debug) {
 			bDebugSources = !!debug;
 		},
@@ -7515,7 +7553,7 @@ return Promise$2;
 	 * Executes all available handlers which are defined in the config object
 	 *
 	 * @param {object} oCfg config to handle
-	 * @param {map} mHandlers all available handlers
+	 * @param {Object<string,function>} mHandlers all available handlers
 	 */
 	function handleConfigObject(oCfg, mHandlers) {
 
@@ -7649,6 +7687,7 @@ return Promise$2;
 	 *
 	 * @public
 	 * @namespace
+	 * @ui5-global-only
 	 */
 	sap.ui.loader = {
 
@@ -7684,6 +7723,18 @@ return Promise$2;
 		 *       "app": {
 		 *         'sinon': 'sap/ui/legacy/sinon'
 		 *       }
+		 *     },
+		 *
+		 *     // define two bundles that consists of JS modules only
+		 *     bundles: {
+		 *       bundle1: ['module1', 'module2'],
+		 *       bundle2: ['moduleX', 'moduleY']
+		 *     },
+		 *
+		 *     // define a bundle that also contains non-JS resources
+		 *     bundlesUI5: {
+		 *       'all.js': ['Component.js', 'manifest.json',
+		 *                  'App.controller.js', 'App.view.xml']
 		 *     },
 		 *
 		 *     // activate real async loading and module definitions
@@ -7761,6 +7812,52 @@ return Promise$2;
 		 *   <b>Note:</b> The ui5loader does not support the <code>init</code> option described by the
 		 *   "Common Config" section of the AMD spec.
 		 *
+		 * @param {Object.<string, string[]>} [cfg.bundles]
+		 *   A map of arrays that each define the modules contained in a bundle.
+		 *
+		 *   Each key of the map represents the module ID of a bundle file. The array value represents
+		 *   the set of JavaScript modules (their module IDs) that are contained in the bundle.
+		 *
+		 *   When a module is required that has not been loaded yet, and for which a containing bundle is
+		 *   known, that bundle will be required first. Only then the original module will be required
+		 *   again and usually be taken from the just loaded bundle.
+		 *
+		 *   A bundle will be loaded asynchronously only when the loader is in asynchronous mode and when
+		 *   the request for the contained module originates from an asynchronous API. In all other cases,
+		 *   the bundle has to be loaded synchronously to fulfill API contracts.
+		 *
+		 *   <b>Note:</b> The loader only supports one containing bundle per module. If a module is declared
+		 *   to be part of multiple bundles, only the last one will be taken into account.
+		 *
+		 *   This configuration option is basically provided to be compatible with requireJS or SystemJS
+		 *   configuration.
+		 *
+		 * @param {Object.<string, string[]>} [cfg.bundlesUI5]
+		 *   A map of arrays that each define the resources contained in a bundle.
+		 *
+		 *   This is similar to <code>bundles</code>, but all strings are unified resource names including
+		 *   a file type extension, not only module IDs. This allows to represent more than just JavaScript
+		 *   modules.
+		 *
+		 *   Each key of the map represents the resource name (in unified resource name syntax) of a bundle
+		 *   file. The array value represents the set of resources (also in unified resource name syntax)
+		 *   that are contained in the bundle. The array can contain JavaScript as well as other textual
+		 *   resource types (e.g. *.xml or *.json resources).
+		 *
+		 *   When a module is required that has not been loaded yet, and for which a containing bundle is
+		 *   known, that bundle will be required first. Only then the original module will be required
+		 *   again and usually be taken from the just loaded bundle.
+		 *
+		 *   A bundle will be loaded asynchronously only when the loader is in asynchronous mode and when
+		 *   the request for the contained module originates from an asynchronous API. In all other cases,
+		 *   the bundle has to be loaded synchronously to fulfill API contracts.
+		 *
+		 *   <b>Note:</b> The loader only supports one containing bundle per module. If a module is declared
+		 *   to be part of multiple bundles, only the last one will be taken into account.
+		 *
+		 *   <b>Note:</b> Although non-JS resources can be declared to be part of a bundle, only requests for
+		 *   JavaScript modules will currently trigger the loading of a bundle.
+		 *
 		 * @param {boolean} [cfg.async=false]
 		 *   When set to true, <code>sap.ui.require</code> loads modules asynchronously via script tags and
 		 *   <code>sap.ui.define</code> executes asynchronously. To enable this feature, it is recommended to
@@ -7784,6 +7881,7 @@ return Promise$2;
 		 * @public
 		 * @since 1.56.0
 		 * @function
+		 * @ui5-global-only
 		 */
 		config: ui5Config,
 
@@ -8114,12 +8212,15 @@ return Promise$2;
 	 * @public
 	 * @see https://github.com/amdjs/amdjs-api
 	 * @function
+	 * @ui5-global-only
 	 */
 	sap.ui.define = ui5Define;
 
 	/**
 	 * @private
+	 * @ui5-restricted library-preload files
 	 * @function
+	 * @ui5-global-only
 	 */
 	sap.ui.predefine = predefine;
 
@@ -8178,6 +8279,7 @@ return Promise$2;
 	 * @returns {any|undefined} A single module export value (sync probing variant) or undefined (async loading variant)
 	 * @public
 	 * @function
+	 * @ui5-global-only
 	 */
 	sap.ui.require = ui5Require;
 
@@ -8216,6 +8318,7 @@ return Promise$2;
 	 * @public
 	 * @name sap.ui.require.toUrl
 	 * @function
+	 * @ui5-global-only
 	 */
 
 	/**
@@ -8241,7 +8344,9 @@ return Promise$2;
 	 * @param {string} sModuleName Module name in requireJS syntax
 	 * @returns {any} value of the loaded module or undefined
 	 * @private
+	 * @ui5-restricted sap.ui.core
 	 * @function
+	 * @ui5-global-only
 	 */
 	sap.ui.requireSync = requireSync;
 
@@ -8249,7 +8354,7 @@ return Promise$2;
 //@ui5-bundle-raw-include ui5loader-autoconfig.js
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /*
@@ -8593,7 +8698,8 @@ return Promise$2;
 			},
 			'sap/ui/thirdparty/jquery': {
 				amd: true,
-				exports: 'jQuery'
+				exports: 'jQuery',
+				deps: ['sap/ui/thirdparty/jquery-compat']
 			},
 			'sap/ui/thirdparty/jqueryui/jquery-ui-datepicker': {
 				deps: ['sap/ui/thirdparty/jqueryui/jquery-ui-core'],

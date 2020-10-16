@@ -1,6 +1,6 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -10,18 +10,22 @@ sap.ui.define([
 	"sap/ui/core/util/reflection/JsControlTreeModifier",
 	"sap/ui/fl/apply/_internal/changes/FlexCustomData",
 	"sap/ui/fl/apply/_internal/ChangesController",
-	"sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory",
+	"sap/ui/fl/apply/_internal/appVariant/DescriptorChangeTypes",
+	"sap/ui/fl/write/_internal/condenser/Condenser",
 	"sap/ui/fl/write/api/FeaturesAPI",
-	"sap/ui/fl/write/_internal/SaveAs"
+	"sap/base/Log",
+	"sap/ui/fl/Layer"
 ], function(
 	includes,
 	_omit,
 	JsControlTreeModifier,
 	FlexCustomData,
 	ChangesController,
-	DescriptorInlineChangeFactory,
+	DescriptorChangeTypes,
+	Condenser,
 	FeaturesAPI,
-	SaveAs
+	Log,
+	Layer
 ) {
 	"use strict";
 
@@ -34,8 +38,8 @@ sap.ui.define([
 	 */
 	function isDescriptorChange(oChange) {
 		return (oChange._getMap
-			&& includes(DescriptorInlineChangeFactory.getDescriptorChangeTypes(), oChange._getMap().changeType))
-			|| (oChange.getChangeType && includes(DescriptorInlineChangeFactory.getDescriptorChangeTypes(), oChange.getChangeType()));
+			&& includes(DescriptorChangeTypes.getChangeTypes(), oChange._getMap().changeType))
+			|| (oChange.getChangeType && includes(DescriptorChangeTypes.getChangeTypes(), oChange.getChangeType()));
 	}
 
 	/**
@@ -109,8 +113,7 @@ sap.ui.define([
 		 * @param {boolean} [mPropertyBag.skipUpdateCache] - Indicates if cache update should be skipped
 		 * @param {string} [mPropertyBag.transport] - Transport request for the app variant - Smart Business must pass the transport in onPremise system
 		 * @param {string} [mPropertyBag.layer=CUSTOMER] - Proposed layer (might be overwritten by the backend) when creating a new app variant - Smart Business must pass the layer
-		 * @param {string} [mPropertyBag.isForSAPDelivery=false] - Determines whether app variant updation is intended for SAP delivery
-		 * @param {boolean} [mPropertyBag.skipIam=false] - Indicates whether the default IAM item creation and registration is skipped. This is S4/Hana specific flag passed by Smart Business
+		 * @param {boolean} [mPropertyBag.draft=false] - Indicates if changes should be written as a draft
 		 *
 		 * @returns {Promise} Promise that resolves with an array of responses or is rejected with the first error
 		 *
@@ -121,20 +124,12 @@ sap.ui.define([
 			var oFlexController = ChangesController.getFlexControllerInstance(mPropertyBag.selector);
 			var oDescriptorFlexController = ChangesController.getDescriptorFlexControllerInstance(mPropertyBag.selector);
 
-			if (mPropertyBag.selector.appId) { // Only Smart Business passes appId as a part of selector
-				if (!mPropertyBag.layer) {
-					return Promise.reject("Layer must be provided");
-				}
-				if (mPropertyBag.isForSAPDelivery && mPropertyBag.layer === 'CUSTOMER') {
-					return Promise.reject("Layer provided is not compatible");
-				}
-				mPropertyBag.referenceAppId = oDescriptorFlexController.getComponentName();
-				return SaveAs.updateAppVariant(mPropertyBag);
-			}
-
+			// with invalidation more parameters are required to make a new storage request
 			mPropertyBag.invalidateCache = true;
-			return oFlexController.saveAll(mPropertyBag.skipUpdateCache)
-				.then(oDescriptorFlexController.saveAll.bind(oDescriptorFlexController, mPropertyBag.skipUpdateCache))
+			var oAppComponent = ChangesController.getAppComponentForSelector(mPropertyBag.selector);
+			mPropertyBag.componentId = oAppComponent.getId();
+			return oFlexController.saveAll(oAppComponent, mPropertyBag.skipUpdateCache, mPropertyBag.draft, oAppComponent)
+				.then(oDescriptorFlexController.saveAll.bind(oDescriptorFlexController, oAppComponent, mPropertyBag.skipUpdateCache, mPropertyBag.draft))
 				.then(PersistenceWriteAPI._getUIChanges.bind(null, _omit(mPropertyBag, "skipUpdateCache")));
 		},
 
@@ -143,7 +138,7 @@ sap.ui.define([
 		 *
 		 * @param {object} mPropertyBag Contains additional data needed for checking flex/info
 		 * @param {sap.ui.fl.Selector} mPropertyBag.selector Selector
-		 * @param {string} mPropertyBag.layer Layer on which the request is sent to the the backend
+		 * @param {string} mPropertyBag.layer Layer on which the request is sent to the backend
 		 *
 		 * @returns {Promise<object>} Resolves the information if the application to which the selector belongs has content that can be published/reset
 		 *
@@ -163,12 +158,16 @@ sap.ui.define([
 					};
 					var bPublishAvailable = aResetPublishInfo[2];
 
-					var bIsBackEndCallNeeded = !oFlexInfo.isResetEnabled || (bPublishAvailable && !oFlexInfo.isPublishEnabled);
+					var bIsBackEndCallNeeded = !(mPropertyBag.layer === Layer.USER) && (!oFlexInfo.isResetEnabled || (bPublishAvailable && !oFlexInfo.isPublishEnabled));
 					if (bIsBackEndCallNeeded) {
 						return ChangesController.getFlexControllerInstance(mPropertyBag.selector).getResetAndPublishInfo(mPropertyBag)
 							.then(function(oResponse) {
 								oFlexInfo.isResetEnabled = oFlexInfo.isResetEnabled || oResponse.isResetEnabled;
 								oFlexInfo.isPublishEnabled = oFlexInfo.isPublishEnabled || oResponse.isPublishEnabled;
+								return oFlexInfo;
+							})
+							.catch(function(oError) {
+								Log.error("Sending request to flex/info route failed: " + oError.message);
 								return oFlexInfo;
 							});
 					}
@@ -209,8 +208,10 @@ sap.ui.define([
 		 * @param {string} mPropertyBag.layer - Working layer
 		 * @param {array} [mPropertyBag.appVariantDescriptors] - Array of app variant descriptors that need to be transported
 		 *
-		 * @returns {Promise} Promise that resolves when all the artifacts are successfully transported
-		 * TODO: Must be changed in future.
+		 * @returns {Promise<string>} Promise that can resolve to the following strings:
+		 * - "Cancel" if publish process was canceled
+		 * - <sMessage> when all the artifacts are successfully transported fl will return the message to show
+		 * - "Error" in case of a problem
 		 */
 		publish: function(mPropertyBag) {
 			mPropertyBag.styleClass = mPropertyBag.styleClass || "";
@@ -270,6 +271,34 @@ sap.ui.define([
 			}
 			// delete from flex persistence map
 			oFlexController.deleteChange(mPropertyBag.change, oAppComponent);
+		},
+
+		/**
+		 * Calls the Condenser with all the passed changes.
+		 * ATTENTION: Only to be used by sap.ui.rta.test
+		 *
+		 * @param {object} mPropertyBag - Object with parameters as properties
+		 * @param {sap.ui.fl.Selector} mPropertyBag.selector - Retrieves the associated flex persistence
+		 * @param {sap.ui.fl.Change[]} mPropertyBag.changes - Array of changes
+		 * @returns {Promise<sap.ui.fl.Change[]>} Resolves with all necessary changes
+
+		 * @private
+	 	 * @ui5-restricted sap.ui.rta.test
+		 */
+		_condense: function(mPropertyBag) {
+			return Promise.resolve().then(function() {
+				if (!mPropertyBag.selector) {
+					throw Error("An invalid selector was passed");
+				}
+				var oAppComponent = ChangesController.getAppComponentForSelector(mPropertyBag.selector);
+				if (!oAppComponent) {
+					throw Error("Invalid application component for selector");
+				}
+				if (!mPropertyBag.changes || mPropertyBag.changes && !Array.isArray(mPropertyBag.changes)) {
+					throw Error("Invalid array of changes");
+				}
+				return Condenser.condense(oAppComponent, mPropertyBag.changes);
+			});
 		},
 
 		/**

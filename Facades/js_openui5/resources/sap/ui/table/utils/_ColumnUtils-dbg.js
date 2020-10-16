@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -18,7 +18,7 @@ sap.ui.define([
 	 * Note: Do not access the functions of this helper directly, but via <code>sap.ui.table.utils.TableUtils.Column...</code>
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @namespace
 	 * @alias sap.ui.table.utils._ColumnUtils
 	 * @private
@@ -760,6 +760,52 @@ sap.ui.define([
 			}
 
 			return iVisibleFixedColumnCount;
+		},
+
+		/**
+		 * Returns one of the following starting with highest priority:
+		 * <ul>
+		 * <li>name of the column</li>
+		 * <li>Last label of the column with a span equal to 1, if the column has multiLabels</li>
+		 * <li>label</li>
+		 * </ul>
+		 *
+		 * @param {sap.ui.table.Table} oTable Instance of the table
+		 * @param {int} iColumnIndex The index of a column
+		 * @returns {string} Returns the column header text
+		 */
+		getHeaderText: function(oTable, iColumnIndex) {
+			if (!oTable ||
+				iColumnIndex == null || iColumnIndex < 0) {
+				return null;
+			}
+
+			var aColumns = oTable.getColumns();
+			if (iColumnIndex >= aColumns.length) {
+				return null;
+			}
+
+			function getLabelText(oLabel) {
+				return oLabel && oLabel.getText && oLabel.getText() || "";
+			}
+			var oColumn = aColumns[iColumnIndex];
+			var sText = oColumn.getName();
+
+			if (!sText) {
+				var aMultiLabels = oColumn.getMultiLabels();
+				for (var i = aMultiLabels.length - 1; i >= 0; i--) {
+					var sLabelText = getLabelText(aMultiLabels[i]);
+					if (ColumnUtils.getHeaderSpan(oColumn, i) === 1 && sLabelText) {
+						sText = sLabelText;
+						break;
+					}
+				}
+			}
+
+			if (!sText) {
+				sText = getLabelText(oColumn.getLabel());
+			}
+			return sText;
 		}
 	};
 

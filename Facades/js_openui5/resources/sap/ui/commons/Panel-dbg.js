@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -31,7 +31,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/base/assert', './library', 'sap/
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -205,11 +205,11 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/base/assert', './library', 'sap/
 			this._bFocusCollapseIcon = false;
 			var $collArrow = this.$("collArrow");
 			if ($collArrow.is(":visible") && ($collArrow.css("visibility") == "visible" || $collArrow.css("visibility") == "inherit")) {
-				$collArrow.focus();
+				$collArrow.trigger("focus");
 			} else {
 				var $collIco = this.$("collIco");
 				if ($collIco.is(":visible") && ($collIco.css("visibility") == "visible" || $collIco.css("visibility") == "inherit")) {
-					$collIco.focus();
+					$collIco.trigger("focus");
 				}
 			}
 		}
@@ -258,7 +258,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/base/assert', './library', 'sap/
 	Panel.prototype.applyFocusInfo = function (oFocusInfo) {
 		var $DomRef;
 		if (oFocusInfo && oFocusInfo.id && ($DomRef = jQuery(document.getElementById(oFocusInfo.id))) && ($DomRef.length > 0)) {
-			$DomRef.focus();
+			$DomRef.trigger("focus");
 		} else {
 			this.focus();
 		}

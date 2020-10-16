@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -74,7 +74,7 @@ sap.ui.define([
 	 * Grid row's height is dynamically determined by the height of the highest grid element on this row.
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @extends sap.ui.layout.cssgrid.GridLayoutBase
 	 *
@@ -106,6 +106,13 @@ sap.ui.define([
 			}
 		}
 	});
+
+	/**
+	 * CSS class for the current layout.
+	 * @string
+	 * @private
+	 */
+	ResponsiveColumnLayout.prototype._sCurrentLayoutClassName = "";
 
 	/**
 	 * Returns if the Grid Layout is responsive.
@@ -154,14 +161,13 @@ sap.ui.define([
 	/**
 	 * Render display:grid styles. Used for non-responsive grid layouts.
 	 *
-	 * @param {sap.ui.core.RenderManager} rm The render manager of the Control which wants to render display:grid styles
+	 * @param {sap.ui.core.RenderManager} oRM The render manager of the Control which wants to render display:grid styles
 	 */
-	ResponsiveColumnLayout.prototype.renderSingleGridLayout = function (rm) {
-
+	ResponsiveColumnLayout.prototype.renderSingleGridLayout = function (oRM) {
 		if (this.isGridSupportedByBrowser()) {
-			rm.addClass("sapUiLayoutCSSResponsiveColumnLayout");
+			oRM.class("sapUiLayoutCSSResponsiveColumnLayoutGrid");
 		} else {
-			rm.addClass("sapUiLayoutCSSResponsiveColumnLayoutPolyfill");
+			oRM.class("sapUiLayoutCSSResponsiveColumnLayoutGridPolyfill");
 		}
 	};
 
@@ -173,29 +179,25 @@ sap.ui.define([
 	 * @private
 	 */
 	ResponsiveColumnLayout.prototype._applyLayout = function (oGrid, bTriggerLayoutChange) {
-		var sGridSuffix = oGrid.isA("sap.f.GridList") ? "listUl" : "",
-			sCurrentLayoutClassName = this._sCurrentLayoutClassName,
-			$parent = oGrid.$().parent(),
-			$grid = oGrid.$(sGridSuffix),
-			iWidth = $parent.outerWidth(),
+		var iWidth = oGrid.$().parent().outerWidth(),
 			oRange = Device.media.getCurrentRange("StdExt", iWidth),
 			sClassName = mSizeClasses[oRange.name],
 			bGridSupportedByBrowser = this.isGridSupportedByBrowser();
 
 		if (!bGridSupportedByBrowser) {
-			this._scheduleIEPolyfill(oGrid, $grid, oRange);
+			this._scheduleIEPolyfill(oGrid, oRange);
 		}
 
-		if (sCurrentLayoutClassName === sClassName) {
+		if (this._sCurrentLayoutClassName === sClassName) {
 			return;
 		}
 
-		this._sCurrentLayoutClassName = sClassName;
-
 		if (bGridSupportedByBrowser) {
-			$grid.removeClass(sCurrentLayoutClassName);
-			$grid.addClass(sClassName);
+			oGrid.removeStyleClass(this._sCurrentLayoutClassName);
+			oGrid.addStyleClass(sClassName);
 		}
+
+		this._sCurrentLayoutClassName = sClassName;
 
 		if (bTriggerLayoutChange) {
 			this.fireLayoutChange({
@@ -208,16 +210,18 @@ sap.ui.define([
 	 * Schedules the application of the IE polyfill for the next tick.
 	 *
 	 * @param {sap.ui.layout.cssgrid.IGridConfigurable} oGrid The grid
-	 * @param {jQuery} $grid The grid on which to add the polyfill
 	 * @param {object} oRange The information about the current active range set
 	 * @private
 	 */
-	ResponsiveColumnLayout.prototype._scheduleIEPolyfill = function (oGrid, $grid, oRange) {
+	ResponsiveColumnLayout.prototype._scheduleIEPolyfill = function (oGrid, oRange) {
 		if (this._iPolyfillCallId) {
 			clearTimeout(this._iPolyfillCallId);
 		}
 
 		this._iPolyfillCallId = setTimeout(function () {
+			var sGridSuffix = oGrid.isA("sap.f.GridList") ? "listUl" : "",
+				$grid = oGrid.$(sGridSuffix);
+
 			this._applyIEPolyfillLayout(oGrid, $grid, oRange);
 		}.bind(this), 0);
 	};

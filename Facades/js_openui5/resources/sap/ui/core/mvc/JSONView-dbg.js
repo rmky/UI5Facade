@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -44,7 +44,7 @@ sap.ui.define([
 	 * @class
 	 * A View defined using JSON.
 	 * @extends sap.ui.core.mvc.View
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @public
 	 * @alias sap.ui.core.mvc.JSONView
@@ -116,6 +116,7 @@ sap.ui.define([
 	 * @static
 	 * @deprecated since 1.56: Use {@link sap.ui.core.mvc.JSONView.create JSONView.create} instead.
 	 * @return {sap.ui.core.mvc.JSONView} the created JSONView instance
+	 * @ui5-global-only
 	 */
 	sap.ui.jsonview = function(sId, vView) {
 		return sap.ui.view(sId, vView, ViewType.JSON);
@@ -179,7 +180,7 @@ sap.ui.define([
 			// TODO model this as a property as soon as write-once-during-init properties become available
 			this.mProperties["viewContent"] = mSettings.viewContent;
 			if (typeof mSettings.viewContent === "string") {
-				this._oJSONView = jQuery.parseJSON(mSettings.viewContent);
+				this._oJSONView = JSON.parse(mSettings.viewContent);
 				if (!this._oJSONView) { // would lead to errors later on
 					throw new Error("error when parsing viewContent: " + mSettings.viewContent);
 				}

@@ -1,6 +1,6 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -8,6 +8,7 @@ sap.ui.define([
 	"sap/ui/rta/RuntimeAuthoring",
 	"sap/ui/core/Element",
 	"sap/ui/fl/write/api/FeaturesAPI",
+	"sap/ui/fl/Layer",
 	"sap/ui/fl/Utils",
 	"sap/ui/core/UIComponent",
 	"sap/base/Log"
@@ -15,6 +16,7 @@ sap.ui.define([
 	RuntimeAuthoring,
 	Element,
 	FeaturesAPI,
+	Layer,
 	FlexUtils,
 	UIComponent,
 	Log
@@ -24,9 +26,6 @@ sap.ui.define([
 	 * Starts key user adaptation, initiated for an application at the passed root control instance.
 	 * It subsequently extends to all valid child controls.
 	 *
-	 * Example: If the whole application needs to be adapted,
-	 * then this application's components container {@see sap.ui.core.ComponentContainer} should be passed as the root control to this function.
-	 *
 	 * @function
 	 * @experimental since 1.71
 	 * @since 1.71
@@ -34,7 +33,6 @@ sap.ui.define([
 	 *
 	 * @param {object} mPropertyBag - Object with properties
 	 * @param {sap.ui.core.Element|sap.ui.core.UIComponent} mPropertyBag.rootControl - Control instance from where key user adaptation should be started
-	 * @param {boolean} [mPropertyBag.adaptWholeApp] - Indicates if adaptation should start from the passed control's application component
 	 *
 	 * @returns {Promise} Resolves when adaptation was successfully started
 	 * @public
@@ -49,16 +47,11 @@ sap.ui.define([
 					throw new Error("Key user rights have not been granted to the current user");
 				}
 
-				var oRootControl = mPropertyBag.rootControl;
-				if (mPropertyBag.adaptWholeApp) {
-					oRootControl = FlexUtils.getAppComponentForControl(mPropertyBag.rootControl);
-				}
-
 				var oRta = new RuntimeAuthoring({
-					rootControl: oRootControl,
+					rootControl: FlexUtils.getAppComponentForControl(mPropertyBag.rootControl),
 					flexSettings: {
 						developerMode: false,
-						layer: "CUSTOMER"
+						layer: Layer.CUSTOMER
 					},
 					validateAppVersion: true
 				});

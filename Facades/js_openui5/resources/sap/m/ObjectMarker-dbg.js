@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -62,7 +62,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -148,7 +148,7 @@ sap.ui.define([
 	/**
 	 * Library internationalization resource bundle.
 	 *
-	 * @type {jQuery.sap.util.ResourceBundle}
+	 * @type {module:sap/base/i18n/ResourceBundle}
 	 */
 	var oRB = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 
@@ -391,6 +391,9 @@ sap.ui.define([
 		var oType = ObjectMarker.M_PREDEFINED_TYPES[this.getType()],
 			oInnerControl = this._getInnerControl(),
 			sAdditionalInfo = this.getAdditionalInfo(),
+			bIsIconVisible = this._isIconVisible(),
+			bIsTextVisible = this._isTextVisible(),
+			bIsIconOnly = bIsIconVisible && !bIsTextVisible,
 			sType = this.getType(),
 			sText;
 
@@ -403,15 +406,16 @@ sap.ui.define([
 			sText = this._getMarkerText(oType, sType, sAdditionalInfo);
 		}
 
-		if (this._isIconVisible()) {
+		if (bIsIconVisible) {
 			oInnerControl.setIcon(oType.icon.src, bSuppressInvalidate);
+			oInnerControl._getIconAggregation().setDecorative(!bIsIconOnly); // icon should be decorative if we have text
 			this.addStyleClass("sapMObjectMarkerIcon");
 		} else {
 			oInnerControl.setIcon(null, bSuppressInvalidate);
 			this.removeStyleClass("sapMObjectMarkerIcon");
 		}
 
-		if (this._isTextVisible()) {
+		if (bIsTextVisible) {
 			oInnerControl.setAggregation("tooltip", null, bSuppressInvalidate);
 			oInnerControl.setText(sText, bSuppressInvalidate);
 			this.addStyleClass("sapMObjectMarkerText");
@@ -576,6 +580,8 @@ sap.ui.define([
 
 	var CustomTextRenderer = Renderer.extend(TextRenderer);
 
+	CustomTextRenderer.apiVersion = 2;
+
 	CustomTextRenderer.renderText = function(oRm, oControl) {
 		oRm.renderControl(oControl._getIconAggregation());
 		TextRenderer.renderText(oRm, oControl);
@@ -622,14 +628,11 @@ sap.ui.define([
 		return oIcon;
 	};
 
-	CustomText.prototype.setText = function(sText, bSuppressInvalidate) {
-		this.setProperty("text", sText , bSuppressInvalidate);
-		return this;
-	};
-
 	/****************************************** CUSTOM LINK CONTROL ****************************************************/
 
 	var CustomLinkRenderer = Renderer.extend(LinkRenderer);
+
+	CustomLinkRenderer.apiVersion = 2;
 
 	CustomLinkRenderer.renderText = function(oRm, oControl) {
 		oRm.renderControl(oControl._getIconAggregation());
@@ -680,11 +683,6 @@ sap.ui.define([
 		}
 
 		return oIcon;
-	};
-
-	CustomLink.prototype.setText = function(sText, bSuppressInvalidate){
-		this.setProperty("text", sText, bSuppressInvalidate);
-		return this;
 	};
 
 	return ObjectMarker;

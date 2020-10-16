@@ -1,6 +1,6 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -44,7 +44,7 @@ sap.ui.define([
 	 * @class A simple ContextMenu.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @constructor
 	 * @private
 	 * @experimental
@@ -126,7 +126,7 @@ sap.ui.define([
 			var oPopoverExpanded = new Popover(sPopExpId, {
 				showHeader: false,
 				showArrow: false,
-				verticalScrolling: false,
+				verticalScrolling: true,
 				horizontalScrolling: false,
 				content: new VBox(sPopExpId + "ContentBox", {
 					renderType: "Bare"
@@ -351,7 +351,7 @@ sap.ui.define([
 
 			// place a Target DIV (for the moment at wrong position)
 			jQuery("#" + sFakeDivId).remove();
-			jQuery("#" + sOverlayId).append("<div id=\"" + sFakeDivId + "\" overlay=\"" + sOverlayId + "\" style = \"position: absolute; top: " + iFakeDivTop + "px; left: 0px;\" />");
+			jQuery("#" + sOverlayId).append("<div id=\"" + sFakeDivId + "\" overlay=\"" + sOverlayId + "\" style = \"position: absolute; top: " + iFakeDivTop + "px; left: 0px;\"></div>");
 			sOverlayId = null;
 			var oFakeDiv = document.getElementById(sFakeDivId);
 
@@ -363,14 +363,10 @@ sap.ui.define([
 			// get Dimensions of Popover
 			var oPopoverDimensions = this._getPopoverDimensions(!bContextMenu);
 
-			// check if vertical scrolling should be done
+			// check if vertical size is too big (not bigger than 2/3 of the viewport)
 			if (oPopoverDimensions.height >= oViewportDimensions.height * 2 / 3) {
-				this.getPopover().setVerticalScrolling(true);
 				oPopoverDimensions.height = (oViewportDimensions.height * 2 / 3).toFixed(0);
 				this.getPopover().setContentHeight(oPopoverDimensions.height + "px");
-			} else {
-				this.getPopover().setVerticalScrolling(false);
-				this.getPopover().setContentHeight(undefined);
 			}
 
 			// check if horizontal size is too big
@@ -603,7 +599,9 @@ sap.ui.define([
 			function handler() {
 				fnContextMenuHandler(this);
 			}
-
+			if (oButtonItem.responsible) {
+				aElementOverlays = oButtonItem.responsible;
+			}
 			var sText = typeof oButtonItem.text === "function" ? oButtonItem.text(aElementOverlays[0]) : oButtonItem.text;
 			var bEnabled = typeof oButtonItem.enabled === "function" ? oButtonItem.enabled(aElementOverlays) : oButtonItem.enabled;
 			var oButtonOptions = {

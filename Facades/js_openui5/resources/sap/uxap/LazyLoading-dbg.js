@@ -1,21 +1,21 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/ui/thirdparty/jquery",
 	"sap/ui/Device",
-	"sap/ui/base/Metadata",
+	"sap/ui/base/Object",
 	"./ObjectPageSubSection",
 	"./library",
 	"sap/base/Log"
 ],
-	function(jQuery, Device, Metadata, ObjectPageSubSection, library, Log) {
+	function(jQuery, Device, BaseObject, ObjectPageSubSection, library, Log) {
 		"use strict";
 
-		var LazyLoading = Metadata.createClass("sap.uxap._helpers.LazyLoading", {
+		var LazyLoading = BaseObject.extend("sap.uxap._helpers.LazyLoading", {
 			/**
 			 * @private
 			 * @param {*} oObjectPageLayout Object Layout instance
@@ -30,9 +30,13 @@ sap.ui.define([
 				this._iScrollProgress = 0;                  //progress done between the 2 last scroll events
 				this._iPreviousScrollTimestamp = 0;         //Timestamp of the last scroll event
 				this._sLazyLoadingTimer = null;
+				this._bSuppressed = false;
 
 				this._oPrevSubSectionsInView = {};
 				this.setLazyLoadingParameters();
+			},
+			getInterface: function() {
+				return this; // no facade
 			}
 		});
 
@@ -73,6 +77,14 @@ sap.ui.define([
 			this.LAZY_LOADING_FAST_SCROLLING_THRESHOLD = 5;
 		};
 
+		LazyLoading.prototype.suppress = function() {
+			this._bSuppressed = true;
+		};
+
+		LazyLoading.prototype.resume = function() {
+			this._bSuppressed = false;
+		};
+
 		/**
 		 * Resets the internal information of which subsections are in view and immediately
 		 * calls the layout calculation so that an event is fired for the subsections
@@ -91,6 +103,10 @@ sap.ui.define([
 			var iProgressPercentage,
 				iDelay,
 				bFastScrolling = false;
+
+			if (this._bSuppressed) {
+				return;
+			}
 
 			if (bImmediateLazyLoading) {
 				if (this._sLazyLoadingTimer) {
@@ -142,6 +158,9 @@ sap.ui.define([
 				bOnGoingScroll,
 				iShift;
 
+			if (this._bSuppressed) {
+				return;
+			}
 
 			//calculate the limit of visible sections to be lazy loaded
 			iPageHeight = (
@@ -317,4 +336,4 @@ sap.ui.define([
 
 		return LazyLoading;
 
-	}, /* bExport= */ false);
+	});

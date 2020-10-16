@@ -3,88 +3,123 @@
 	"resources": [
 		{
 			"name": ".theme",
+			"size": 646,
 			"theme": "sap_belize_plus"
 		},
 		{
 			"name": ".theming",
+			"size": 611,
 			"theme": "sap_belize_plus"
 		},
 		{
 			"name": "base.less",
+			"size": 11156,
+			"designtime": true,
+			"theme": "sap_belize_plus"
+		},
+		{
+			"name": "css_variables.css",
+			"size": 206768,
+			"theme": "sap_belize_plus"
+		},
+		{
+			"name": "css_variables.less",
+			"size": 166783,
+			"designtime": true,
+			"theme": "sap_belize_plus"
+		},
+		{
+			"name": "css_variables.source.less",
+			"size": 166407,
 			"designtime": true,
 			"theme": "sap_belize_plus"
 		},
 		{
 			"name": "fonts/72-Bold-full.woff",
+			"size": 65960,
 			"theme": "sap_belize_plus"
 		},
 		{
 			"name": "fonts/72-Bold-full.woff2",
+			"size": 57472,
 			"theme": "sap_belize_plus"
 		},
 		{
 			"name": "fonts/72-Bold.woff",
+			"size": 37584,
 			"theme": "sap_belize_plus"
 		},
 		{
 			"name": "fonts/72-Bold.woff2",
+			"size": 26732,
 			"theme": "sap_belize_plus"
 		},
 		{
 			"name": "fonts/72-Regular-full.woff",
+			"size": 68984,
 			"theme": "sap_belize_plus"
 		},
 		{
 			"name": "fonts/72-Regular-full.woff2",
+			"size": 57136,
 			"theme": "sap_belize_plus"
 		},
 		{
 			"name": "fonts/72-Regular.woff",
+			"size": 38944,
 			"theme": "sap_belize_plus"
 		},
 		{
 			"name": "fonts/72-Regular.woff2",
+			"size": 27844,
 			"theme": "sap_belize_plus"
 		},
 		{
 			"name": "global.less",
+			"size": 6316,
 			"designtime": true,
 			"theme": "sap_belize_plus"
 		},
 		{
-			"name": "library-RTL-dbg.css",
-			"isDebug": true,
-			"theme": "sap_belize_plus"
-		},
-		{
 			"name": "library-RTL.css",
-			"theme": "sap_belize_plus"
-		},
-		{
-			"name": "library-dbg.css",
-			"isDebug": true,
+			"size": 158202,
 			"theme": "sap_belize_plus"
 		},
 		{
 			"name": "library-parameters.json",
+			"size": 90171,
 			"theme": "sap_belize_plus"
 		},
 		{
 			"name": "library.css",
+			"size": 158184,
 			"theme": "sap_belize_plus"
 		},
 		{
 			"name": "library.less",
+			"size": 1217,
 			"designtime": true,
 			"theme": "sap_belize_plus"
 		},
 		{
 			"name": "library.source.less",
+			"size": 265,
 			"designtime": true,
 			"theme": "sap_belize_plus"
 		},
 		{
+			"name": "library_skeleton-RTL.css",
+			"size": 39958,
+			"theme": "sap_belize_plus"
+		},
+		{
+			"name": "library_skeleton.css",
+			"size": 39941,
+			"theme": "sap_belize_plus"
+		},
+		{
 			"name": "shared.less",
+			"size": 732,
 			"designtime": true,
 			"theme": "sap_belize_plus"
 		}

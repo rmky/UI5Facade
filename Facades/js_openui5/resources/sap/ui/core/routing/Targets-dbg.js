@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -10,9 +10,9 @@ sap.ui.define([
 	'./sync/Targets',
 	"sap/base/util/UriParameters",
 	"sap/base/Log",
-	"sap/ui/thirdparty/jquery"
+	"sap/base/util/deepExtend"
 ],
-	function(EventProvider, Target, asyncTargets, syncTargets, UriParameters, Log, jQuery) {
+	function(EventProvider, Target, asyncTargets, syncTargets, UriParameters, Log, deepExtend) {
 		"use strict";
 
 		/**
@@ -183,9 +183,8 @@ sap.ui.define([
 		 *
 		 *
 		 * @param {string} [oOptions.targets.anyName.usage] Defines the 'usage' name for 'Component' target which refers to the '/sap.ui5/componentUsages' entry in the owner component's manifest.
-		 * @param {string} [oOptions.targets.anyName.viewType]
-		 * The type of the view that is going to be created. These are the supported types: {@link sap.ui.core.mvc.ViewType}.
-		 * You always have to provide a viewType except if you are using {@link sap.ui.core.routing.Views#setView}.
+		 * @param {string} [oOptions.targets.anyName.viewType=oOptions.config.viewType] The type of the view that is going to be created. These are the supported types: {@link sap.ui.core.mvc.ViewType}.
+		 * You always have to provide a viewType except if <code>oOptions.config.viewType</code> is set or when using {@link sap.ui.core.routing.Views#setView}.
 		 * @param {string} [oOptions.targets.anyName.path]
 		 * A prefix that will be prepended in front of the name.<br/>
 		 * <b>Example:</b> name is set to "myView" and path is set to "myApp" - the created view name will be "myApp.myView".
@@ -297,6 +296,7 @@ sap.ui.define([
 				EventProvider.apply(this);
 
 				this._mTargets = {};
+				this._oLastTitleTarget = {};
 				this._oConfig = oOptions.config;
 				this._oCache = oOptions.cache || oOptions.views;
 
@@ -396,10 +396,15 @@ sap.ui.define([
 			 * Returns a target by its name (if you pass myTarget: { view: "myView" }) in the config myTarget is the name.
 			 *
 			 * @param {string|string[]} vName the name of a single target or the name of multiple targets
-			 * @return {sap.ui.core.routing.Target|undefined|sap.ui.core.routing.Target[]} The target with the coresponding name or undefined. If an array way passed as name this will return an array with all found targets. Non existing targets will not be returned but will log an error.
+			 * @param {boolean} [bSuppressNotFoundError=false] In case no target is found for the given name, the not found
+			 *  error is supressed when this is set with true
+			 * @return {sap.ui.core.routing.Target|undefined|sap.ui.core.routing.Target[]} The target with the
+			 * coresponding name or undefined. If an array way passed as name this will return an array with all found
+			 * targets. Non existing targets will not be returned and an error is logged when
+			 * <code>bSuppressNotFoundError</code> param isn't set to <code>true</code>.
 			 * @public
 			 */
-			getTarget : function (vName) {
+			getTarget : function (vName, bSuppressNotFoundError) {
 				var that = this,
 					aTargetsConfig = this._alignTargetsInfo(vName),
 					aTargets;
@@ -409,7 +414,7 @@ sap.ui.define([
 
 					if (oTarget) {
 						aAcc.push(oTarget);
-					} else {
+					} else if (!bSuppressNotFoundError){
 						Log.error("The target you tried to get \"" + oConfig.name + "\" does not exist!", that);
 					}
 					return aAcc;
@@ -428,13 +433,13 @@ sap.ui.define([
 			 * an error log will be written to the console.
 			 *
 			 * @param {string} sName Name of a target
-			 * @param {object} oTarget Options of a target. The option names are the same as the ones in "oOptions.targets.anyName" of {@link #constructor}.
+			 * @param {object} oTargetOptions Options of a target. The option names are the same as the ones in "oOptions.targets.anyName" of {@link #constructor}.
 			 * @returns {sap.ui.core.routing.Targets} Reference to <code>this</code> in order to allow method chaining
 			 * @public
 			 *
 			 */
 			addTarget : function (sName, oTargetOptions) {
-				var oOldTarget = this.getTarget(sName),
+				var oOldTarget = this.getTarget(sName, true /* suppress not found error log*/),
 					oTarget;
 
 				if (oOldTarget) {
@@ -605,7 +610,15 @@ sap.ui.define([
 			},
 
 			fireTitleChanged : function(oParameters) {
-				return this.fireEvent(this.M_EVENTS.TITLE_CHANGED, oParameters);
+				// if the new target is different as the last target that changed the title or the title changed, fire a titleChanged event
+				if (this._oLastTitleTarget.name !== oParameters.name || this._oLastTitleTarget.title !== oParameters.title) {
+					// save the current target name
+					this._oLastTitleTarget.name = oParameters.name;
+					// save the current title name
+					this._oLastTitleTarget.title = oParameters.title;
+					this.fireEvent(this.M_EVENTS.TITLE_CHANGED, oParameters);
+				}
+				return this;
 			},
 
 			M_EVENTS : {
@@ -645,10 +658,10 @@ sap.ui.define([
 			},
 
 			/**
-			 * created all targets
+			 * Creates a target
 			 *
-			 * @param {string} sName
-			 * @param {object} oTargetOptions
+			 * @param {string} sName The name of the target
+			 * @param {object} oTargetOptions The options of the target
 			 * @return {sap.ui.core.routing.Target} The created target object
 			 * @private
 			 */
@@ -656,7 +669,7 @@ sap.ui.define([
 				var oTarget,
 					oOptions;
 
-				oOptions = jQuery.extend(true, { _name: sName }, this._oConfig, oTargetOptions);
+				oOptions = deepExtend({ _name: sName }, this._oConfig, oTargetOptions);
 				oTarget = this._constructTarget(oOptions);
 				oTarget.attachDisplay(function (oEvent) {
 					var oParameters = oEvent.getParameters();
@@ -674,7 +687,8 @@ sap.ui.define([
 			},
 
 			/**
-			 * @param oTarget
+			 * Adds the parent target to the given <code>oTarget</code>
+			 * @param {sap.ui.core.routing.Target} oTarget The target
 			 * @private
 			 */
 			_addParentTo : function (oTarget) {
@@ -697,6 +711,9 @@ sap.ui.define([
 
 			/**
 			 * Hook for the mobile library
+			 * @param {object} oOptions The target options
+			 * @param {sap.ui.core.routing.Target} oParent The parent of this target
+			 * @returns {sap.ui.core.routing.Target} the new target
 			 * @private
  			 */
 			_constructTarget : function (oOptions, oParent) {
@@ -722,7 +739,7 @@ sap.ui.define([
 			/**
 			 * Called by the UIComponent since the rootView id is not known in the constructor
 			 *
-			 * @param {string} sId
+			 * @param {string} sId The id of the root view
 			 * @private
 			 */
 			_setRootViewId: function (sId) {
@@ -745,25 +762,30 @@ sap.ui.define([
 			_getTitleTargetName: function(vTargetNames, sProvidedTitleTargetName) {
 				var oTarget, sTitleTargetName;
 
-				sTitleTargetName = sProvidedTitleTargetName ||
-					(typeof vTargetNames === "string" ? vTargetNames : undefined);
-
-				if (!sTitleTargetName) {
-					vTargetNames.some(function(sTargetName) {
-						oTarget = this.getTarget(sTargetName);
-
-						// search the TitleTarget depth first
-						while (oTarget && oTarget._oParent && oTarget._oParent._oOptions.title) {
-							oTarget = oTarget._oParent;
-						}
-
-						if (oTarget && oTarget._oOptions.title) {
-							// we found the TitleTarget
-							sTitleTargetName = oTarget._oOptions._name;
-							return true;
-						}
-					}.bind(this));
+				if (sProvidedTitleTargetName) {
+					// when titleTarget is defined, we use it directly without looping
+					// through the vTargetNames
+					vTargetNames = [sProvidedTitleTargetName];
 				}
+
+				vTargetNames = this._alignTargetsInfo(vTargetNames);
+
+				vTargetNames.some(function(sTargetName) {
+					oTarget = this.getTarget(sTargetName);
+
+					// find the first target along the parent chain which has title defined
+					while (oTarget && !oTarget._oOptions.title) {
+						// oTarget._oParent && oTarget._oParent._oOptions.title) {
+						oTarget = oTarget._oParent;
+					}
+
+					if (oTarget) {
+						// we found the TitleTarget
+						sTitleTargetName = oTarget._oOptions._name;
+						return true;
+					}
+
+				}.bind(this));
 
 				return sTitleTargetName;
 			},
@@ -782,22 +804,22 @@ sap.ui.define([
 			 * Calculate the 'TitleTarget' based on the given parameters and register to the titleChanged event on the 'TitleTarget'
 			 */
 			_attachTitleChanged: function(vTargets, sTitleTarget) {
-				var oTitleTarget;
+				var oTitleTarget, sCalculatedTargetName;
 
-				sTitleTarget = this._getTitleTargetName(vTargets, sTitleTarget);
+				sCalculatedTargetName = this._getTitleTargetName(vTargets, sTitleTarget);
 
-				if (sTitleTarget) {
-					oTitleTarget = this.getTarget(sTitleTarget);
+				if (sCalculatedTargetName) {
+					oTitleTarget = this.getTarget(sCalculatedTargetName);
 				}
 
-				if (this._oLastTitleTarget) {
-					this._oLastTitleTarget.detachTitleChanged(this._forwardTitleChanged, this);
-					this._oLastTitleTarget._bIsDisplayed = false;
+				if (this._oLastDisplayedTitleTarget) {
+					this._oLastDisplayedTitleTarget.detachTitleChanged(this._forwardTitleChanged, this);
+					this._oLastDisplayedTitleTarget._bIsDisplayed = false;
 				}
 
 				if (oTitleTarget) {
 					oTitleTarget.attachTitleChanged({name:oTitleTarget._oOptions._name}, this._forwardTitleChanged, this);
-					this._oLastTitleTarget = oTitleTarget;
+					this._oLastDisplayedTitleTarget = oTitleTarget;
 				} else if (sTitleTarget) {
 					Log.error("The target with the name \"" + sTitleTarget + "\" where the titleChanged event should be fired does not exist!", this);
 				}

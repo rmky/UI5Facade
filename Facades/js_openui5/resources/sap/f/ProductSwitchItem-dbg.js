@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -8,6 +8,7 @@
 sap.ui.define([
 	"sap/ui/core/Control",
 	"sap/ui/core/Icon",
+	"sap/ui/core/library",
 	"sap/m/Text",
 	"sap/ui/events/KeyCodes",
 	"sap/f/ProductSwitchItemRenderer"
@@ -15,11 +16,16 @@ sap.ui.define([
 	function (
 		Control,
 		Icon,
+		library,
 		Text,
 		KeyCodes,
 		ProductSwitchItemRenderer
 	) {
 		"use strict";
+
+		// shortcut for sap.ui.core.TextAlign
+		var TextAlign = library.TextAlign;
+
 		/**
 		 * Constructor for a new <code>ProductSwitchItem</code>.
 		 *
@@ -34,7 +40,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 *
 		 * @constructor
 		 * @public
@@ -142,7 +148,7 @@ sap.ui.define([
 			var oText = this.getAggregation("_title");
 
 			if (!oText) {
-				oText = new Text({ text: this.getTitle(), maxLines: 2, textAlign: null })
+				oText = new Text({ text: this.getTitle(), maxLines: 2, textAlign: TextAlign.Initial })
 					.addStyleClass("sapFPSItemMainTitle")
 					.addStyleClass("sapFPSItemTitle");
 
@@ -193,4 +199,4 @@ sap.ui.define([
 
 		return ProductSwitchItem;
 
-	}, /* bExport= */ true);
+	});

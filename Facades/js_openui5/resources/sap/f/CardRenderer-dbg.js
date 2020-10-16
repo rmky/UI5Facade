@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -18,8 +18,9 @@ sap.ui.define([
 	 * @author SAP SE
 	 * @namespace
 	 */
-	var CardRenderer = {},
-		oRb = sap.ui.getCore().getLibraryResourceBundle("sap.f");
+	var CardRenderer = {
+		apiVersion: 2
+	};
 
 	/**
 	 * Renders the HTML for the given control, using the provided {@link sap.ui.core.RenderManager}.
@@ -30,46 +31,50 @@ sap.ui.define([
 	CardRenderer.render = function (oRm, oCard) {
 		var oHeader = oCard.getCardHeader(),
 			sHeight = oCard.getHeight(),
-			bCardHeaderBottom = oHeader && oCard.getCardHeaderPosition() === HeaderPosition.Bottom;
+			bCardHeaderBottom = oHeader && oCard.getCardHeaderPosition() === HeaderPosition.Bottom,
+			sTooltip = oCard.getTooltip_AsString(),
+			oFilterBar = oCard.getAggregation("_filterBar");
 
-		//start
-		oRm.write("<div");
-		oRm.writeElementData(oCard);
-		oRm.addClass("sapFCard");
+		oRm.openStart("div", oCard)
+			.class("sapFCard")
+			.style("width", oCard.getWidth());
+
 		if (!oCard.getCardContent()) {
-			oRm.addClass("sapFCardNoContent");
+			oRm.class("sapFCardNoContent");
 		}
+
 		if (bCardHeaderBottom) {
-			oRm.addClass("sapFCardBottomHeader");
+			oRm.class("sapFCardBottomHeader");
 		}
-		oRm.writeClasses();
 
-		oRm.addStyle("width", oCard.getWidth());
+		if (sHeight && sHeight !== "auto") {
+			oRm.style("height", sHeight);
+		}
 
-		if (sHeight && sHeight !== 'auto') {
-			oRm.addStyle("height", sHeight);
+		if (sTooltip) {
+			oRm.attr("title", sTooltip);
 		}
 
 		//Accessibility state
-		oRm.writeAccessibilityState(oCard, {
+		oRm.accessibilityState(oCard, {
 			role: "region",
-			roledescription: {value: oRb.getText("ARIA_ROLEDESCRIPTION_CARD"), append: true}
+			labelledby: { value: oCard.getId() + "-ariaText", append: true }
 		});
-		if (oHeader) {
-			var oTitle = oHeader._getTitle();
-			if (oTitle) {
-				oRm.writeAccessibilityState(oCard, {
-					labelledby: {value: oTitle.getId(), append: true}
-				});
-			}
-
-		}
-		oRm.writeStyles();
-		oRm.write(">");
+		oRm.openEnd();
 
 		//header at the top
-		if (oHeader && oCard.getCardHeaderPosition() === "Top") {
+		if (oHeader && oCard.getCardHeaderPosition() === HeaderPosition.Top) {
 			oRm.renderControl(oHeader);
+		}
+
+		if (oFilterBar) {
+			oRm.openStart("div")
+				.class("sapFCardFilterBar")
+				.openEnd();
+
+			oRm.renderControl(oFilterBar);
+
+			oRm.close("div");
 		}
 
 		//content
@@ -80,8 +85,10 @@ sap.ui.define([
 			oRm.renderControl(oHeader);
 		}
 
-		//end
-		oRm.write("</div>");
+		oRm.renderControl(oCard._ariaText);
+		oRm.renderControl(oCard._ariaContentText);
+
+		oRm.close("div");
 	};
 
 	/**
@@ -89,25 +96,23 @@ sap.ui.define([
 	 * Will be overwritten by subclasses.
 	 *
 	 * @param {sap.ui.core.RenderManager} oRm The RenderManager that can be used for writing to the render output buffer.
-	 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered.
+	 * @param {sap.ui.core.Control} oCard An object representation of the control that should be rendered.
 	 */
 	CardRenderer.renderContentSection = function (oRm, oCard) {
 		var oContent = oCard.getCardContent();
 
 		if (oContent) {
-			oRm.write("<div");
-			oRm.addClass("sapFCardContent");
-			oRm.writeClasses();
-			//Accessibility configuration
-			oRm.writeAccessibilityState(oCard, {
-				role: "group",
-				label: {value: oRb.getText("ARIA_LABEL_CARD_CONTENT"), append: true}
-			});
-			oRm.write(">");
+			oRm.openStart("div", oCard.getId() + "-contentSection")
+				.class("sapFCardContent")
+				.accessibilityState(oCard, {
+					role: "group",
+					labelledby: { value: oCard.getId() + "-ariaContentText", append: true }
+				})
+				.openEnd();
 
 			oRm.renderControl(oContent);
 
-			oRm.write("</div>");
+			oRm.close("div");
 		}
 	};
 

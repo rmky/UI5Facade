@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define(function(){"use strict";var L={};L.render=function(R,c){R.write("<div");R.writeControlData(c);R.addClass("sapUiLocalBusyIndicator");R.writeClasses();R.write(">");r(R,c);R.write("</div>");};var r=function(R,c){var I=c.getId();var s=I+"-animation";var b=["-leftBox","-middleBox","-rightBox"];R.write('<div');R.writeAttribute('id',s);R.addClass("sapUiLocalBusyIndicatorAnimation");R.writeClasses();R.write(">");for(var i=0;i<b.length;i++){R.write('<div');R.addClass("sapUiLocalBusyIndicatorBox");R.writeClasses();R.writeAttribute("id",I+b[i]);R.write(">");R.write("</div>");}R.write("</div>");};return L;},true);
+sap.ui.define(function(){"use strict";var L={apiVersion:2};L.render=function(R,c){R.openStart("div",c);R.class("sapUiLocalBusyIndicator");R.openEnd();r(R,c);R.close("div");};var r=function(R,c){var I=c.getId();var s=I+"-animation";var b=["-leftBox","-middleBox","-rightBox"];R.openStart('div',s);R.class("sapUiLocalBusyIndicatorAnimation");R.openEnd();for(var i=0;i<b.length;i++){R.openStart('div',I+b[i]);R.class("sapUiLocalBusyIndicatorBox");R.openEnd();R.close("div");}R.close("div");};return L;},true);

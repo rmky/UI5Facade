@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -69,7 +69,7 @@ function(
 	 * @class
 	 * The column allows you to define column specific properties that will be applied when rendering the table.
 	 * @extends sap.ui.core.Element
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -225,8 +225,8 @@ function(
 			visible : {type : "boolean", group : "Appearance", defaultValue : true},
 
 			/**
-			 * The name of the column which is used in the column visibility menu item as text.
-			 * If not set as a fallback the column menu tries to get the text from the nested Label.
+			 * The name of the column which is used for the text representation of this column, for example, in menus.
+			 * If not set, the text from the multiLabels aggregation or the label aggregation (in that order) is used as a fallback option.
 			 * @since 1.11.1
 			 */
 			name : {type : "string", group : "Appearance", defaultValue : null},
@@ -250,6 +250,10 @@ function(
 			 * applied for all header rows, with multiple integers you can specify a separate span for each header row.
 			 * <b>Note:</b> Only columns with a span equal to 1 can have a column menu. When setting a column to fixed, all
 			 * columns which are part of the header with the greatest span will be set to fixed.
+			 * @example <caption>Example of usage: header with 3 subheaders, each of them with span = 1</caption>
+			 * <code>headerSpan = [3, 1] // for the first column
+			 * headerSpan = [2, 1] // for the second column
+			 * headerSpan = [1, 1] // or not set for the third column</code>
 			 */
 			headerSpan : {type : "any", group : "Behavior", defaultValue : 1},
 
@@ -373,14 +377,12 @@ function(
 	 */
 	Column.prototype.exit = function() {
 		this._destroyTemplateClones();
-		ColumnMenu._destroyColumnVisibilityMenuItem(this.oParent);
 	};
 
 	/**
 	 * called when the column's parent is set
 	 */
 	Column.prototype.setParent = function(oParent, sAggregationName, bSuppressRerendering) {
-		ColumnMenu._destroyColumnVisibilityMenuItem(this.oParent);
 		var vReturn = Element.prototype.setParent.apply(this, arguments);
 		var oMenu = this.getAggregation("menu");
 		if (oMenu && typeof oMenu._updateReferences === "function") {
@@ -577,19 +579,21 @@ function(
 	 */
 	Column.prototype._menuHasItems = function() {
 		var oMenu = this.getAggregation("menu");
-		var oTable = this.getParent();
-		var fnMenuHasItems = function() {
-			return (
-				this.isSortableByMenu() || // Sorter
-				this.isFilterableByMenu() || // Filter
-				this.isGroupable() || // Grouping
-				(oTable && oTable.getEnableColumnFreeze()) || // Column Freeze
-				(oTable && oTable.getShowColumnVisibilityMenu()) // Column Visibility Menu
-			);
+		var oTable = this._getTable();
+		var bHasOwnItems = (oMenu ? oMenu.getItems().length > 0 : false)
+						   || (oTable ? oTable.getEnableColumnFreeze() : false)
+						   || (oTable ? oTable.getShowColumnVisibilityMenu() : false)
+						   || this.isSortableByMenu()
+						   || this.isFilterableByMenu()
+						   || this.isGroupable();
 
-		}.bind(this);
+		if (bHasOwnItems) {
+			return true;
+		}
 
-		return !!((oMenu && oMenu.getItems().length > 0) || fnMenuHasItems());
+		return TableUtils.Hook.call(oTable, TableUtils.Hook.Keys.Column.MenuItemNotification, this).some(function(bValue) {
+			return bValue;
+		});
 	};
 
 	/**
@@ -725,11 +729,16 @@ function(
 	/**
 	 * Open the column menu.
 	 * @param {Object} [oDomRef] DOM reference of the element to which the menu should be visually attached. Fallback is the focused DOM reference.
-	 * @param {boolean} [bWithKeyboard=false] Indicates whether or not the first item shall be highlighted when the menu is opened.
+	 * @returns {boolean} Whether the menu was opened.
 	 * @private
 	 */
-	Column.prototype._openMenu = function(oDomRef, bWithKeyboard) {
+	Column.prototype._openMenu = function(oDomRef) {
 		var oMenu = this.getMenu();
+
+		if (!this._menuHasItems()) {
+			return false;
+		}
+
 		var bExecuteDefault = this.fireColumnMenuOpen({
 			menu: oMenu
 		});
@@ -741,7 +750,10 @@ function(
 				oDomRef = this.getDomRef();
 				oFocusDomRef = this.getFocusDomRef();
 			}
-			oMenu.open(!!bWithKeyboard, oFocusDomRef, eDock.BeginTop, eDock.BeginBottom, oDomRef);
+			oMenu.open(null, oFocusDomRef, eDock.BeginTop, eDock.BeginBottom, oDomRef);
+			return true;
+		} else {
+			return true; // We do not know whether the event handler opens a context menu or not, so we just assume it is done.
 		}
 	};
 
@@ -1202,12 +1214,6 @@ function(
 		if (oMenu) {
 			oMenu.close();
 		}
-	};
-
-	Column.prototype.setVisible = function(bVisible) {
-		this.setProperty("visible", bVisible);
-		ColumnMenu._updateVisibilityIcon(this.getParent(), this.getIndex(), bVisible);
-		return this;
 	};
 
 	/**

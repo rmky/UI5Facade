@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -22,7 +22,7 @@ sap.ui.define([
 	 * @deprecated Since 1.15.1. The Component class is enhanced to take care about the Application code.
 	 * @class
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @since 1.13.2
 	 * @alias sap.ui.app.ApplicationMetadata
 	 * @extends sap.ui.core.ComponentMetadata
@@ -34,6 +34,7 @@ sap.ui.define([
 
 	//chain the prototypes
 	ApplicationMetadata.prototype = Object.create(ComponentMetadata.prototype);
+	ApplicationMetadata.prototype.constructor = ApplicationMetadata;
 
 	ApplicationMetadata.preprocessClassInfo = function(oClassInfo) {
 		// if the component is a string we convert this into a "_src" metadata entry

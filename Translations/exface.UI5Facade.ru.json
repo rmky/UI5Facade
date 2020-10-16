@@ -1,0 +1,72 @@
+{
+	"ACTION.EXPORTFIORIWEBAPP.NAME": "Экспорт",
+	
+	"ERROR.DETAILS": "Дополнительно",
+	"ERROR.LOG_ID_HINT": "Укажите это при обращении в тех-поддержку!",
+	"ERROR.BUTTON_TEXT": "Закрыть",
+	"ERROR.EXCEPTION_MESSAGE": "Оригинальное сообщение:",
+	"ERROR.NO_CONNECTION": "Нет соединения с сервером!",
+	"ERROR.NO_CONNECTION_HINT": "Пожалуйста, проверьте Ваше сетевое подключение и поробуйте ещё раз. Если это не поможет, обратитесь в тех-поддержку!",
+	"SAP-ERROR": "в SAP",
+	"SAP-LOGIC": "от SAP",
+	
+	"MESSAGE.ERROR_TITLE": "Ошибка",
+	"MESSAGE.ERROR.SERVER_ERROR_TITLE": "Ошибка сервера",
+	"MESSAGE.SUCCESS_TITLE": "",
+	"MESSAGE.TYPE.ERROR": "Ошибка",
+	"MESSAGE.TYPE.WARNING": "Предупреждение",
+	"MESSAGE.TYPE.INFO": "Сообщение",
+	
+	"WEBAPP.ROUTING.NOTFOUND.TITLE": "Неверный адрес",
+	"WEBAPP.ROUTING.NOTFOUND.TEXT": "Страница не найдена!",
+	"WEBAPP.ROUTING.NOTFOUND.DESCRIPTION": "Попробуйте перезагрузить страницу.",
+	
+	"WEBAPP.ROUTING.OFFLINE.TITLE": "Оффлайн",
+	"WEBAPP.ROUTING.OFFLINE.TEXT": "Эта функция не доступна в оффлайне!",
+	"WEBAPP.ROUTING.OFFLINE.DESCRIPTION": "Установите соединение и попробуйте еще раз.",
+	
+	"WEBAPP.SHELL.HOME.TITLE": "Старт",
+	"WEBAPP.SHELL.NETWORK.ONLINE": "Сейчас ОНЛАЙН",
+	"WEBAPP.SHELL.NETWORK.OFFLINE": "Сейчас ОФФЛАЙН",
+	"WEBAPP.SHELL.NETWORK.SYNC_MENU": "Действия в очереди",
+	"WEBAPP.SHELL.NETWORK.SYNC_MENU_QUEUE": "Очередь",
+	"WEBAPP.SHELL.NETWORK.SYNC_MENU_ERRORS": "Ошибки",
+	"WEBAPP.SHELL.PRELOAD.MENU": "Оффлайн-данные",
+	"WEBAPP.SHELL.PRELOAD.MENU_SYNC": "Синхронизировать",
+	"WEBAPP.SHELL.PRELOAD.MENU_SYNC_TOOLTIP": "Synchronize all offline data for this client",
+	"WEBAPP.SHELL.PRELOAD.MENU_RESET": "Clear",
+	"WEBAPP.SHELL.PRELOAD.MENU_RESET_TOOLTIP": "Remove all offline data from this client",
+	"WEBAPP.SHELL.USER.TITLE": "Вы вошли как",
+	
+	"WIDGET.DATATPAGINATOR.SHOWING": "Показано %from% - %to% из %total%",
+	
+	"WIDGET.DATATABLE.FILTERED_BY": "Фильтр",
+	"WIDGET.DATATABLE.FILTERED_BY_NONE": "нет",
+	"WIDGET.DATATABLE.GO_BUTTON_TEXT": "Искать",
+	"WIDGET.DATATABLE.OFFLINE_HINT": "The requested data is only available online!",
+	"WIDGET.DATATABLE.OFFLINE_ERROR": "The requested data is only available online.",
+	"WIDGET.DATATABLE.OFFLINE_ERROR_TITLE": "Your are offline...",
+	"WIDGET.DATATABLE.SETTINGS_DIALOG.TITLE": "Настройки таблицы",
+	"WIDGET.DATATABLE.SETTINGS_DIALOG.FILTERS": "Фильтры",
+	"WIDGET.DATATABLE.SETTINGS_DIALOG.COLUMNS": "Столбцы",
+	"WIDGET.DATATABLE.SETTINGS_DIALOG.SORTING": "Сортировка",
+	"WIDGET.DATATABLE.SETTINGS_DIALOG.ADVANCED_SEARCH": "Расширенный поиск",
+	
+	"WIDGET.DATALOOKUPDIALOG.SELECTED_ITEMS": "Выбрано",
+	
+	"WIDGET.DIALOG.TITLE_NEW": "Создать",
+	
+	"WIDGET.FILELIST.ERROR_EXTENSION_NOT_ALLOWED": "File type \"%ext%\" not allowed!",
+	"WIDGET.FILELIST.ERROR_MIMETYPE_NOT_ALLOWED": "Content type \"%type%\" not allowed!",
+	"WIDGET.FILELIST.ERROR_FILE_TOO_BIG": "File too big: max. %mb% MB allowed!",
+	"WIDGET.FILELIST.ERROR_FILENAME_TOO_LONG": "File name too long: max. %length% characters allowed!",
+	"WIDGET.FILELIST.ERROR_DELETE": "Delete failed: unknown error in UI5.",
+	
+	"WIDGET.FORM.MESSAGE_VALIDATION_FAILED": "Проверьте все подсвеченные поля: они заполнены неверно!",
+	
+	"WIDGET.INPUTPASSWORD.CONFIRM": "Подвтердите пароль",	
+	"WIDGET.INPUTPASSWORD.DONT_MATCH": "Пароли не совпадают",
+	
+	"WIDGET.PAGINATOR.NEXT_PAGE": "Следующая страница",
+	"WIDGET.PAGINATOR.PREVIOUS_PAGE": "Предыдущая страница"
+}

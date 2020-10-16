@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -541,7 +541,8 @@
 	 */
 	function checkUncaught(fnReporter) {
 		var sId,
-			iLength = Object.keys(mUncaughtById).length + mUncaughtPromise2Reason.size,
+			iLength = Object.keys(mUncaughtById).length
+				+ (mUncaughtPromise2Reason ? mUncaughtPromise2Reason.size : 0),
 			sMessage = "Uncaught (in promise): " + iLength + " times\n",
 			oPromise,
 			vReason,
@@ -565,7 +566,7 @@
 			mUncaughtById = {};
 
 			//TODO once IE is gone: for (let vReason of mUncaughtPromise2Reason.values()) {...}
-			if (mUncaughtPromise2Reason.size) {
+			if (mUncaughtPromise2Reason && mUncaughtPromise2Reason.size) {
 				itValues = mUncaughtPromise2Reason.values();
 				for (;;) {
 					oResult = itValues.next();
@@ -737,11 +738,11 @@
 
 			jQuery("#qunit-modulefilter-dropdown-list").css("max-height", "none");
 
-			jQuery("#qunit-modulefilter-dropdown").click(function (oMouseEvent) {
+			jQuery("#qunit-modulefilter-dropdown").on("click", function (oMouseEvent) {
 				if (oMouseEvent.target.tagName === "LABEL") {
 					setTimeout(function () {
 						// click on label instead of checkbox triggers "Apply" automatically
-						jQuery("#qunit-modulefilter-actions").children().first().click();
+						jQuery("#qunit-modulefilter-actions").children().first().trigger("click");
 					});
 				}
 			});

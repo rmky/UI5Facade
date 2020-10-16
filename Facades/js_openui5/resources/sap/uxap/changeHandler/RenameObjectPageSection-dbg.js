@@ -1,14 +1,14 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/ui/fl/Utils",
 	"sap/base/Log",
-	"sap/ui/fl/changeHandler/BaseRename"],
-function (
+	"sap/ui/fl/changeHandler/BaseRename"
+], function (
 	Utils,
 	Log,
 	BaseRename
@@ -21,7 +21,7 @@ function (
 	 * @constructor
 	 * @alias sap.uxap.changeHandler.RenameObjectPageSection
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @experimental Since 1.50
 	 */
 
@@ -39,7 +39,7 @@ function (
 		// taken from its SubSection in case it is only one no matter if the Section has title itself.
 		if (aSubSections
 			&& aSubSections.length === 1
-			&& oModifier.getProperty(aSubSections[0], "title")
+			&& (oModifier.getPropertyBindingOrProperty(aSubSections[0], "title"))
 			&& oModifier.getProperty(oModifier.getParent(oControl), "subSectionLayout") === "TitleOnTop"
 		) {
 			return aSubSections[0];
@@ -47,20 +47,13 @@ function (
 		return oControl;
 	};
 
-	RenameObjectPageSection._getSetterMethodName = function (sValue, sPropertyName, oModifier) {
-		// The value can be a binding - e.g. for translatable values in WebIde
-		return Utils.isBinding(sValue)
-			? "setPropertyBinding"
-			: "setProperty";
-	};
-
 	RenameObjectPageSection.applyChange = function (oChange, oControl, mPropertyBag) {
-		var oModifier = mPropertyBag.modifier;
-		var sPropertyName = mRenameSettings.propertyName;
-		var oChangeDefinition = oChange.getDefinition();
-		var sText = oChangeDefinition.texts[mRenameSettings.changePropertyName];
-		var sValue = sText.value;
-		var oControlToBeRenamed = RenameObjectPageSection._getControlForRename(oControl, oModifier);
+		var oModifier = mPropertyBag.modifier,
+			sPropertyName = mRenameSettings.propertyName,
+			oChangeDefinition = oChange.getDefinition(),
+			sText = oChangeDefinition.texts[mRenameSettings.changePropertyName],
+			sValue = sText.value,
+			oControlToBeRenamed = RenameObjectPageSection._getControlForRename(oControl, oModifier);
 
 		if (typeof sValue === "string" && sValue.trim() === "") {
 			throw new Error("Change cannot be applied as ObjectPageSubSection's title cannot be empty: ["
@@ -68,9 +61,9 @@ function (
 		}
 
 		if (oChangeDefinition.texts && sText && typeof (sValue) === "string") {
-			oChange.setRevertData(oModifier.getProperty(oControlToBeRenamed, sPropertyName));
-			var sMethodName = RenameObjectPageSection._getSetterMethodName(sValue);
-			oModifier[sMethodName](oControlToBeRenamed, sPropertyName, sValue);
+			oChange.setRevertData(oModifier.getPropertyBindingOrProperty(oControlToBeRenamed, sPropertyName));
+			oModifier.setPropertyBindingOrProperty(oControlToBeRenamed, sPropertyName, sValue);
+
 			return true;
 		} else {
 			Log.error("Change does not contain sufficient information to be applied: [" + oChangeDefinition.layer + "]" + oChangeDefinition.namespace + "/" + oChangeDefinition.fileName + "." + oChangeDefinition.fileType);
@@ -79,16 +72,15 @@ function (
 	};
 
 	RenameObjectPageSection.revertChange = function (oChange, oControl, mPropertyBag) {
-		var sOldText = oChange.getRevertData();
+		var vOldText = oChange.getRevertData(),
+			oModifier = mPropertyBag.modifier,
+			oControlToBeReverted = RenameObjectPageSection._getControlForRename(oControl, oModifier),
+			sPropertyName = mRenameSettings.propertyName;
 
-		if (typeof (sOldText) === "string") {
-			var oModifier = mPropertyBag.modifier;
-			var oControlToBeReverted = RenameObjectPageSection._getControlForRename(oControl, oModifier);
-			var sPropertyName = mRenameSettings.propertyName;
-			var sMethodName = RenameObjectPageSection._getSetterMethodName(sOldText);
-			oModifier[sMethodName](oControlToBeReverted, sPropertyName, sOldText);
-
+		if (vOldText || vOldText === "") {
+			oModifier.setPropertyBindingOrProperty(oControlToBeReverted, sPropertyName, vOldText);
 			oChange.resetRevertData();
+
 			return true;
 		} else {
 			Log.error("Change doesn't contain sufficient information to be reverted. Most Likely the Change didn't go through applyChange.");

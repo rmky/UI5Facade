@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -104,7 +104,7 @@ sap.ui.define([
      * @private
      */
     _ControlFinder._getControlForElement = function (vElement) {
-        var vSelector = Object.prototype.toString.call(vElement) === "[object String]" ? document.getElementById(vElement) : vElement;
+        var vSelector = Object.prototype.toString.call(vElement) === "[object String]" ? "#" + vElement : vElement;
         var controls = _ControlFinder._getIdentifiedDOMElement(vSelector).control();
         return controls && controls[0];
     };
@@ -123,7 +123,7 @@ sap.ui.define([
     };
 
      /**
-     * Retrieves the ID suffix of the DOM element, if it is stable
+     * Retrieves the ID suffix of a DOM element
      * @param {object} oElement DOM element
      * @returns {string} ID suffix or undefined
      * @private
@@ -131,11 +131,8 @@ sap.ui.define([
     _ControlFinder._getDomElementIDSuffix = function (oElement, oControl) {
         var sElementId = oElement.id;
         var sDelimiter = "-";
-
-        if (!ManagedObjectMetadata.isGeneratedId(sElementId)) {
-            var iSuffixStart = oControl.getId().length;
-            return sElementId.charAt(iSuffixStart) === sDelimiter && sElementId.substring(iSuffixStart + 1);
-        }
+        var iSuffixStart = oControl.getId().length;
+        return sElementId.charAt(iSuffixStart) === sDelimiter && sElementId.substring(iSuffixStart + 1);
     };
 
     /**
@@ -145,7 +142,21 @@ sap.ui.define([
      * @private
      */
     _ControlFinder._getIdentifiedDOMElement = function (vSelector) {
+        if (typeof vSelector === "string") {
+            vSelector = vSelector.replace(/(:|\.|\[|\]|,|=|@)/g, "\\$1");
+        }
         return $(vSelector).closest("[data-sap-ui]");
+    };
+
+    /**
+     * Retrieves the UI5 ID of the nearest parent DOM element that has such an ID
+     * @param {object|string} vSelector DOM element or jQuery string selector
+     * @returns {string} ID
+     * @private
+     */
+    _ControlFinder._getIdentifiedDOMElementId = function (vSelector) {
+        var oElement = _ControlFinder._getIdentifiedDOMElement(vSelector);
+        return oElement.attr("data-sap-ui");
     };
 
      /**
@@ -155,6 +166,17 @@ sap.ui.define([
      */
     _ControlFinder._getLatestLog = function () {
         return aLogs && aLogs.pop();
+    };
+
+    /**
+     * check if a control's representing DOM element is inside the static area
+     * @param {sap.ui.core.Control} oControl the control to check
+     * @return {boolean} true if the control is inside the static area
+     * @private
+     */
+    _ControlFinder._isControlInStaticArea = function (oControl) {
+        var oStaticArea = sap.ui.getCore().getStaticAreaRef();
+        return $.contains(oStaticArea, oControl.getDomRef());
     };
 
     function _hasExpansions(oOptions) {

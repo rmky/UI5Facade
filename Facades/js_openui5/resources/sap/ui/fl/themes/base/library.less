@@ -2,7 +2,7 @@
 
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -26,35 +26,35 @@
 	vertical-align: top;
 }
 
-.sapUiSizeCompact .sapUiFlVarMngmt .sapMTitle.sapUiFlVarMngmtTitle {		
-	padding-top: 0.4rem;
-	vertical-align: top;	
+.sapUiSizeCompact .sapUiFlVarMngmt .sapMTitle.sapUiFlVarMngmtTitle {
+	padding-top: 0.5rem;
 }
 
-.sapMFlexBox .sapUiFlVarMngmt .sapUiFlVarMngmtTitle {
+.sapUiSizeCozy .sapUiFlVarMngmt .sapMTitle.sapUiFlVarMngmtTitle {
+	padding-top: 0.5rem;
+}
+
+.sapUiSizeCompact .sapFDynamicPageTitle .sapUiFlVarMngmt .sapMTitle.sapUiFlVarMngmtTitle {
+	padding-top: 0.3rem;
+}
+
+.sapUiSizeCozy .sapFDynamicPageTitle .sapUiFlVarMngmt .sapMTitle.sapUiFlVarMngmtTitle {
+	padding-top: 0.7rem;
+}
+
+.sapUiSizeCompact .sapUxAPObjectPageSubSection .sapUiMdcTable .sapUiFlVarMngmt .sapMTitle.sapUiFlVarMngmtTitle {
+	padding-top: 0.5rem;
+}
+
+.sapUiSizeCozy .sapUxAPObjectPageSubSection .sapUiMdcTable .sapUiFlVarMngmt .sapMTitle.sapUiFlVarMngmtTitle {
 	padding-top: 0.9rem;
-	 	vertical-align: top;
 }
 
-.sapUiSizeCompact .sapMFlexBox .sapUiFlVarMngmt .sapUiFlVarMngmtTitle {
-	padding-top: 0.4rem; 
-	vertical-align: top;	
-}
-
-.sapUiSizeCompact .sapUxAPObjectPageHeader .sapUiFlVarMngmt .sapMTitle.sapUiFlVarMngmtTitle {		
-	padding-top: 0rem;
-	vertical-align: top;	
-}
-
-.sapUiSizeCozy .sapUxAPObjectPageHeader .sapUiFlVarMngmt .sapMTitle.sapUiFlVarMngmtTitle {		
-	padding-top: 0rem;
-	vertical-align: top;	
-}
-
-
+/*
 .sapMIBar .sapUiFlVarMngmt.sapMBarChild {
     margin-left: 0rem;
 }
+*/
 
 .sapUiFlVarMngmtModified {
 	color: @sapUiGroupTitleTextColor;
@@ -112,6 +112,14 @@
 
 .sapUiFlVarMngmtFavColor {
 	color: @sapUiButtonIconColor;
+}
+
+.sapUiFlVarMngmtSaveDialog .sapUiFlVarMngmtSaveDialogLabel.sapMLabel::after {
+	content: ":";
+}
+
+.sapUiFlVarMngmtSaveDialog .sapUiFlVarMngmtSaveDialogLabel.sapMLabel::after {
+	content: ":";
 }
 /* END "VariantManagement.less" */
 

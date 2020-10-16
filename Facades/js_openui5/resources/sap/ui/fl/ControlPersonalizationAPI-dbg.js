@@ -1,10 +1,12 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
+	"sap/ui/fl/apply/_internal/flexState/FlexState",
+	"sap/ui/fl/Layer",
 	"sap/ui/fl/Utils",
 	"sap/ui/fl/LayerUtils",
 	"sap/ui/fl/registry/ChangeRegistry",
@@ -17,9 +19,10 @@ sap.ui.define([
 	"sap/ui/fl/apply/_internal/controlVariants/URLHandler",
 	"sap/ui/core/Component",
 	"sap/base/Log",
-	"sap/base/util/merge",
 	"sap/ui/thirdparty/jquery"
 ], function(
+	FlexState,
+	Layer,
 	Utils,
 	LayerUtils,
 	ChangeRegistry,
@@ -32,7 +35,6 @@ sap.ui.define([
 	URLHandler,
 	Component,
 	Log,
-	merge,
 	jQuery
 ) {
 	"use strict";
@@ -45,7 +47,7 @@ sap.ui.define([
 	 * @author SAP SE
 	 * @experimental Since 1.56
 	 * @since 1.56
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @private
 	 * @ui5-restricted
 	 */
@@ -69,10 +71,11 @@ sap.ui.define([
 		 *
 		 * @param {sap.ui.core.Element} oControl - The control for which a variant management control has to be evaluated
 		 * @param {boolean} [bIgnoreVariantManagement=false] - If flag is set to true then variant management will be ignored
+		 * @param {boolean} [bUseStaticArea=false] - If flag is set to true then the static area is used to determine the variant management control
 		 * @returns {object} Returns a map with needed parameters
 		 * @private
 		 */
-		_determineParameters : function(oControl, bIgnoreVariantManagement) {
+		_determineParameters : function(oControl, bIgnoreVariantManagement, bUseStaticArea) {
 			var oAppComponent = Utils.getAppComponentForControl(oControl);
 			var oFlexController = FlexControllerFactory.createForControl(oAppComponent);
 			var oRootControl = oAppComponent.getRootControl();
@@ -83,11 +86,18 @@ sap.ui.define([
 			};
 
 			if (!bIgnoreVariantManagement) {
+				var aVMControls;
 				var oVMControl;
 				var aForControlTypes;
 				mParams.variantModel = oAppComponent.getModel(Utils.VARIANT_MODEL_NAME);
 				mParams.variantManagement = {};
-				jQuery.makeArray(mParams.rootControl.$().find(".sapUiFlVarMngmt")).map(function (oVariantManagementNode) {
+				if (!bUseStaticArea) {
+					aVMControls = jQuery.makeArray(mParams.rootControl.$().find(".sapUiFlVarMngmt"));
+				}
+				if (bUseStaticArea || aVMControls.length === 0) {
+					aVMControls = jQuery.makeArray(jQuery(sap.ui.getCore().getStaticAreaRef()).find(".sapUiFlVarMngmt"));
+				}
+				aVMControls.map(function (oVariantManagementNode) {
 					oVMControl = sap.ui.getCore().byId(oVariantManagementNode.id);
 					if (oVMControl.getMetadata().getName() === "sap.ui.fl.variants.VariantManagement") {
 						aForControlTypes = oVMControl.getFor();
@@ -174,9 +184,9 @@ sap.ui.define([
 		 * @public
 		 */
 		activateVariant : function(vElement, sVariantReference) {
-			var oElement;
 			return Promise.resolve()
 			.then(function () {
+				var oElement;
 				if (typeof vElement === 'string' || vElement instanceof String) {
 					oElement = Component.get(vElement);
 
@@ -205,9 +215,12 @@ sap.ui.define([
 					throw new Error("A valid control or component, and a valid variant/ID combination are required");
 				}
 
-				return oVariantModel.updateCurrentVariant(sVariantManagementReference, sVariantReference, oAppComponent);
+				// sap/fe is using this API very early during app start, sometimes before FlexState is initialized
+				return oVariantModel.waitForVMControlInit(sVariantManagementReference).then(function() {
+					return oVariantModel.updateCurrentVariant(sVariantManagementReference, sVariantReference, oAppComponent);
+				});
 			})
-			["catch"](function (oError) {
+			["catch"](function(oError) {
 				Log.error(oError);
 				return Promise.reject(oError);
 			});
@@ -242,6 +255,7 @@ sap.ui.define([
 		 * @param {object} mPropertyBag - Changes along with other settings that need to be added
 		 * @param {array} mPropertyBag.controlChanges - Array of control changes of type {@link sap.ui.fl.ControlPersonalizationAPI.PersonalizationChange}
 		 * @param {boolean} [mPropertyBag.ignoreVariantManagement=false] - If flag is set to true then variant management will be ignored
+		 * @param {boolean} [mPropertyBag.useStaticArea=false] - If flag is set to true then the static area is used to determine the variant management control
 		 *
 		 * @returns {Promise} Returns Promise resolving to an array of successfully applied changes,
 		 * after the changes have been written to the map of dirty changes and applied to the control
@@ -264,7 +278,7 @@ sap.ui.define([
 				function fnCheckCreateApplyChange() {
 					return this._checkChangeSpecificData(oChange, sLayer)
 						.then(function() {
-							var mParams = this._determineParameters(oChange.selectorControl, mPropertyBag.ignoreVariantManagement);
+							var mParams = this._determineParameters(oChange.selectorControl, mPropertyBag.ignoreVariantManagement, mPropertyBag.useStaticArea);
 							if (!mPropertyBag.ignoreVariantManagement) {
 								// check for preset variantReference
 								if (!oChange.changeSpecificData.variantReference) {
@@ -332,7 +346,7 @@ sap.ui.define([
 			});
 
 			var oFlexController = FlexControllerFactory.createForControl(oAppComponent);
-			return oFlexController.getComponentChanges({currentLayer: "USER", includeCtrlVariants: true})
+			return oFlexController.getComponentChanges({currentLayer: Layer.USER, includeCtrlVariants: true})
 			.then(function (aChanges) {
 				return aChanges
 					.filter(this._filterBySelectors.bind(this, oAppComponent, aIdsOfPassedControls))
@@ -392,7 +406,7 @@ sap.ui.define([
 				return sLocalId || sControlId;
 			});
 			var oFlexController = FlexControllerFactory.createForControl(oAppComponent);
-			return oFlexController.resetChanges("USER", undefined, oAppComponent, aSelectorIds, aChangeTypes);
+			return oFlexController.resetChanges(Layer.USER, undefined, oAppComponent, aSelectorIds, aChangeTypes);
 		},
 
 		/**
@@ -413,10 +427,11 @@ sap.ui.define([
 				return Promise.reject(sErrorMessage);
 			}
 			var mParameters = ControlPersonalizationAPI._determineParameters(oManagedObject);
+			var oAppComponent = Utils.getAppComponentForControl(oManagedObject);
 			var aVariantManagementReferences = Object.keys(mParameters.variantManagement).reduce(function (aReferences, sVariantForAssociationId) {
 				return aReferences.concat([mParameters.variantManagement[sVariantForAssociationId]]);
 			}, []);
-			return mParameters.flexController.saveSequenceOfDirtyChanges(aChanges)
+			return mParameters.flexController.saveSequenceOfDirtyChanges(aChanges, oAppComponent)
 				.then(function(oResponse) {
 					mParameters.variantModel.checkDirtyStateForControlModels(aVariantManagementReferences);
 					return oResponse;

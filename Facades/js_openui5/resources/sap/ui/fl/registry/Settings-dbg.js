@@ -1,19 +1,15 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /*global Error */
 
 sap.ui.define([
-	"sap/ui/fl/write/_internal/CompatibilityConnector",
-	"sap/ui/fl/Utils",
-	"sap/base/util/UriParameters",
+	"sap/ui/fl/write/_internal/Storage",
 	"sap/base/Log"
 ], function(
-	CompatibilityConnector,
-	Utils,
-	UriParameters,
+	Storage,
 	Log
 ) {
 	"use strict";
@@ -104,13 +100,13 @@ sap.ui.define([
 	};
 
 	/**
-	 * Sends request to the back end for settings content. Stores content into internal setting instance and returns the instance.
+	 * Sends request to the back end for settings content; Stores content into internal setting instance and returns the instance.
 	 *
 	 * @returns {Promise} With parameter <code>oInstance</code> of type {sap.ui.fl.registry.Settings}
 	 * @private
 	 */
 	Settings._loadSettings = function() {
-		var oLoadingPromise = CompatibilityConnector.loadSettings().then(function (oSettings) {
+		var oLoadingPromise = Storage.loadFeatures().then(function (oSettings) {
 			if (!oSettings) {
 				Log.error("The request for flexibility settings failed; A default response is generated and returned to consuming APIs");
 				// in case the back end cannot respond resolve with a default response
@@ -119,7 +115,9 @@ sap.ui.define([
 					isVariantSharingEnabled: false,
 					isAtoAvailable: false,
 					isAtoEnabled: false,
+					isAppVariantSaveAsEnabled: false,
 					isProductiveSystem: true,
+					versioning: {},
 					_bFlexChangeMode: false,
 					_bFlexibilityAdaptationButtonAllowed: false
 				};
@@ -134,7 +132,7 @@ sap.ui.define([
 	/**
 	 * Writes the data received from the storage into an internal instance and then returns the settings object within a Promise.
 	 *
-	 * @param oSettings - Data received from the storage
+	 * @param {object} oSettings - Data received from the storage
 	 * @returns {Promise} with parameter <code>oInstance</code> of type {sap.ui.fl.registry.Settings}
 	 * @protected
 	 *
@@ -169,11 +167,7 @@ sap.ui.define([
 	 * @public
 	 */
 	Settings.prototype._getBooleanProperty = function(sPropertyName) {
-		var bValue = false;
-		if (this._oSettings[sPropertyName]) {
-			bValue = this._oSettings[sPropertyName];
-		}
-		return bValue;
+		return this._oSettings[sPropertyName] || false;
 	};
 
 	/**
@@ -184,6 +178,28 @@ sap.ui.define([
 	 */
 	Settings.prototype.isKeyUser = function() {
 		return this._getBooleanProperty("isKeyUser");
+	};
+
+	/**
+	 * Returns a flag if save as app variants is enabled in the backend
+	 *
+	 * @returns {boolean} true if the underlying ABAP system allows app variants, false if not supported.
+	 * @public
+	 */
+	Settings.prototype.isAppVariantSaveAsEnabled = function() {
+		return this._getBooleanProperty("isAppVariantSaveAsEnabled");
+	};
+
+	/**
+	 * Returns a flag if the versioning is enabled for a given layer.
+	 *
+	 * @param {string} sLayer - Layer to check.
+	 * @returns {boolean} true if versioning is supported in the given layer.
+	 * @public
+	 */
+	Settings.prototype.isVersioningEnabled = function(sLayer) {
+		// there may be a versioning information for all layers
+		return !!(this._oSettings.versioning[sLayer] || this._oSettings.versioning["ALL"]);
 	};
 
 	/**

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -13,7 +13,7 @@ sap.ui.define([
 	'./library',
 	'sap/ui/core/Element',
 	'./utils/TableUtils',
-	"./plugins/BindingSelectionPlugin",
+	"./plugins/BindingSelection",
 	"sap/base/Log",
 	"sap/base/assert"
 ],
@@ -40,7 +40,7 @@ sap.ui.define([
 	 * @class
 	 * The TreeTable control provides a comprehensive set of features to display hierarchical data.
 	 * @extends sap.ui.table.Table
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -71,7 +71,7 @@ sap.ui.define([
 			 *   });
 			 * </pre>
 			 *
-			 * @deprecated As of version 1.46.3, replaced by the corresponding binding parameter <code>numberOfExpandedLevels</code>.
+			 * @deprecated As of version 1.46.3, replaced by the <code>numberOfExpandedLevels</code> binding parameter
 			 */
 			expandFirstLevel : {type : "boolean", defaultValue : false, deprecated: true},
 
@@ -92,6 +92,18 @@ sap.ui.define([
 			 * <b>Note:</b> collapseRecursive is currently <b>not</b> supported if your OData service exposes the hierarchy annotation <code>hierarchy-descendant-count-for</code>.
 			 * In this case the value of the collapseRecursive property is ignored.
 			 * For more information about the OData hierarchy annotations, please see the <b>SAP Annotations for OData Version 2.0</b> specification.
+			 *
+			 * Example:
+			 * <pre>
+			 *   oTable.bindRows({
+			 *     path: "...",
+			 *     parameters: {
+			 *       collapseRecursive: true
+			 *     }
+			 *   });
+			 * </pre>
+			 *
+			 * @deprecated As of version 1.76, replaced by the <code>collapseRecursive</code> binding parameter
 			 */
 			collapseRecursive : {type: "boolean", defaultValue: true},
 
@@ -100,6 +112,18 @@ sap.ui.define([
 			 * This property is only supported when the TreeTable uses an underlying odata services with hierarchy annotations.
 			 * This property is only supported with sap.ui.model.odata.v2.ODataModel
 			 * The hierarchy annotations may also be provided locally as a parameter for the ODataTreeBinding.
+			 *
+			 * Example:
+			 * <pre>
+			 *   oTable.bindRows({
+			 *     path: "...",
+			 *     parameters: {
+			 *       rootLevel: 1
+			 *     }
+			 *   });
+			 * </pre>
+			 *
+			 * @deprecated As of version 1.76, replaced by the <code>rootLevel</code> binding parameter
 			 */
 			rootLevel : {type: "int", group: "Data", defaultValue: 0}
 		},
@@ -138,27 +162,61 @@ sap.ui.define([
 	TreeTable.prototype.init = function() {
 		Table.prototype.init.apply(this, arguments);
 		TableUtils.Grouping.setTreeMode(this);
+		TableUtils.Hook.register(this, TableUtils.Hook.Keys.Row.UpdateState, this._updateRowState, this);
 	};
 
-	TreeTable.prototype.bindRows = function(oBindingInfo) {
-		oBindingInfo = Table._getSanitizedBindingInfo(arguments);
-
-		if (oBindingInfo) {
-			if (!oBindingInfo.parameters) {
-				oBindingInfo.parameters = {};
-			}
-
-			oBindingInfo.parameters.rootLevel = this.getRootLevel();
-			oBindingInfo.parameters.collapseRecursive = this.getCollapseRecursive();
-
-			// If the number of expanded levels is not specified in the binding parameters, we use the corresponding table property
-			// to determine the value.
-			if (!("numberOfExpandedLevels" in oBindingInfo.parameters)) {
-				oBindingInfo.parameters.numberOfExpandedLevels = this.getExpandFirstLevel() ? 1 : 0;
-			}
+	TreeTable.prototype._bindRows = function(oBindingInfo) {
+		if (!oBindingInfo.parameters) {
+			oBindingInfo.parameters = {};
 		}
 
-		return Table.prototype.bindRows.call(this, oBindingInfo);
+		if (!("rootLevel" in oBindingInfo.parameters)) {
+			oBindingInfo.parameters.rootLevel = this.getRootLevel();
+		}
+
+		if (!("collapseRecursive" in oBindingInfo.parameters)) {
+			oBindingInfo.parameters.collapseRecursive = this.getCollapseRecursive();
+		}
+
+		if (!("numberOfExpandedLevels" in oBindingInfo.parameters)) {
+			oBindingInfo.parameters.numberOfExpandedLevels = this.getExpandFirstLevel() ? 1 : 0;
+		}
+
+		return Table.prototype._bindRows.call(this, oBindingInfo);
+	};
+
+	TreeTable.prototype._updateRowState = function(oState) {
+		var oBinding = this.getBinding("rows");
+		var oNode = oState.context;
+
+		oState.context = oNode.context; // The TreeTable requests nodes from the binding.
+
+		if (!oState.context) {
+			return;
+		}
+
+		oState.level = oNode.level + 1;
+
+		if (oBinding.nodeHasChildren) {
+			oState.expandable = oBinding.nodeHasChildren(oNode);
+		} else {
+			oState.expandable = oBinding.hasChildren(oNode.context);
+		}
+
+		oState.expanded = oNode.nodeState.expanded;
+
+		if (TableUtils.Grouping.isGroupMode(this)) {
+			var sHeaderProp = this.getGroupHeaderProperty();
+
+			if (sHeaderProp) {
+				oState.title = oState.context.getProperty(sHeaderProp);
+			}
+
+			if (oState.expandable) {
+				oState.type = oState.Type.GroupHeader;
+				oState.contentHidden = true;
+			}
+		}
 	};
 
 	/**
@@ -215,6 +273,18 @@ sap.ui.define([
 		} else {
 			return [];
 		}
+	};
+
+	TreeTable.prototype._getRowContexts = function() {
+		var iOldTotalRowCount = this._getTotalRowCount();
+		var aRowContexts = Table.prototype._getRowContexts.apply(this, arguments);
+		var iNewTotalRowCount = this._getTotalRowCount();
+
+		if (TableUtils.isVariableRowHeightEnabled(this) && iOldTotalRowCount !== iNewTotalRowCount) {
+			return Table.prototype._getRowContexts.apply(this, arguments);
+		}
+
+		return aRowContexts;
 	};
 
 	TreeTable.prototype._onGroupHeaderChanged = function(iRowIndex, bExpanded) {
@@ -518,7 +588,7 @@ sap.ui.define([
 	};
 
 	TreeTable.prototype._createLegacySelectionPlugin = function() {
-		return new BindingSelectionPlugin(this);
+		return new BindingSelectionPlugin();
 	};
 
 	return TreeTable;

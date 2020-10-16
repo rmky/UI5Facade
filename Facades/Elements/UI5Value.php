@@ -1,7 +1,6 @@
 <?php
 namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Widgets\Value;
 use exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface;
 use exface\UI5Facade\Facades\Interfaces\UI5CompoundControlInterface;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryLiveReferenceTrait;
@@ -11,14 +10,16 @@ use exface\Core\Widgets\Input;
 /**
  * Generates sap.m.Text controls for Value widgets
  * 
- * @method Value getWidget()
+ * @method \exface\Core\Widgets\Value getWidget()
  *
  * @author Andrej Kabachnik
  *        
  */
 class UI5Value extends UI5AbstractElement implements UI5ValueBindingInterface, UI5CompoundControlInterface
 {
-    use JqueryLiveReferenceTrait;
+    use JqueryLiveReferenceTrait {
+        registerLiveReferenceAtLinkedElement as registerLiveReferenceAtLinkedElementViaTrait;
+    }
     
     private $valueBindingPath = null;
     
@@ -26,20 +27,7 @@ class UI5Value extends UI5AbstractElement implements UI5ValueBindingInterface, U
     
     private $valueBindingDisabled = false;
     
-    /**
-     * 
-     * {@inheritDoc}
-     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::init()
-     */
-    protected function init()
-    {
-        parent::init();
-        
-        // If the input's value is bound to another element via an expression, we need to make sure, that other element will
-        // change the input's value every time it changes itself. This needs to be done on init() to make sure, the other element
-        // has not generated it's JS code yet!
-        $this->registerLiveReferenceAtLinkedElement();
-    }
+    private $valueBoundToModel = null;
     
     /**
      * 
@@ -144,11 +132,30 @@ JS;
     }
     
     /**
+     * Returns TRUE if the value of the control should be bound to the default model.
+     * 
+     * This actually depends on meny factors:
+     * - you can force value binding programmatically via setValueBoundToModel(). For example,
+     * table cell widgets MUST be bound to model, so table columns call this method on their
+     * cell widgets.
+     * - you can set binding options like setValueBindingPath() which means using a binding
+     * implicitly
+     * - same happens if the prefill model has a binding for this widget
+     * - on the other hand, widgets, that have static values should not have a binding unless
+     * any of the above forces it
+     * 
+     * If none of the above applies, the element is concidered to have a binding unless there
+     * is a binding conflict in the model (i.e. other widgets use the same binding name). This
+     * is mainly for historical reasons - not sure, if it's still required.
      * 
      * @return boolean
      */
     protected function isValueBoundToModel()
     {
+        if ($this->valueBoundToModel !== null) {
+            return $this->valueBoundToModel;
+        }
+        
         $widget = $this->getWidget();
         $model = $this->getView()->getModel();
         
@@ -158,7 +165,7 @@ JS;
         }
         
         // If the the binding was disabled explicitly, return false
-        if ($this->getValueBindingDisabled() === true) {
+        if ($this->isValueBindingDisabled() === true) {
             return false;
         }
         
@@ -173,7 +180,28 @@ JS;
             return false;
         }
         
+        if ($model->hasBindingConflict($widget, $this->getValueBindingWidgetPropertyName())) {
+            return false;
+        }
+        
         return true;
+    }
+    
+    /**
+     * Forces value binding on or off for this control.
+     * 
+     * Note: `setValueBoundToModel(false)` and `setValueBindingDisabled(true)` have the same
+     * effect, but not `setValueBoundToModel(true)` and `setValueBindingDisabled(false)`
+     * because `setValueBindingDisabled(false)` does not force binding - it merely reinstantiates
+     * the automatic detection algorithm if it was disabled previously.
+     * 
+     * @param bool $trueOrFalse
+     * @return UI5Value
+     */
+    public function setValueBoundToModel(bool $trueOrFalse) : UI5Value
+    {
+        $this->valueBoundToModel = $trueOrFalse;
+        return $this;
     }
     
     /**
@@ -211,6 +239,7 @@ JS;
     public function setValueBindingPath($string)
     {
         $this->valueBindingPath = $string;
+        $this->setValueBoundToModel(true);
         return $this;
     }
     
@@ -250,6 +279,7 @@ JS;
     public function setValueBindingPrefix(string $value) : UI5ValueBindingInterface
     {
         $this->valueBindingPrefix = $value;
+        $this->setValueBoundToModel(true);
         return $this;
     }
     
@@ -323,9 +353,9 @@ JS;
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface::getValueBindingDisabled()
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface::isValueBindingDisabled()
      */
-    public function getValueBindingDisabled() : bool
+    public function isValueBindingDisabled() : bool
     {
         return $this->valueBindingDisabled;
     }
@@ -334,10 +364,40 @@ JS;
      * 
      * {@inheritDoc}
      * @see \exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface::setValueBindingDisabled()
+     * 
+     * Note: there is also setValueBoundToModel() with forces binding on or off regardless
+     * of any other parameters.
+     * 
+     * Note: `setValueBoundToModel(false)` and `setValueBindingDisabled(true)` have the same
+     * effect, but not `setValueBoundToModel(true)` and `setValueBindingDisabled(false)`
+     * because `setValueBindingDisabled(false)` does not force binding - it merely reinstantiates
+     * the automatic detection algorithm if it was disabled previously.
+     * 
+     * @see setValueBoundToModel()
      */
     public function setValueBindingDisabled(bool $value) : UI5ValueBindingInterface
     {
         $this->valueBindingDisabled = $value;
         return $this;
+    }
+    
+    /**
+     * {@inheritdoc}
+     * @see JqueryLiveReferenceTrait::registerLiveReferenceAtLinkedElement()
+     */
+    public function registerLiveReferenceAtLinkedElement() 
+    {
+        $this->registerLiveReferenceAtLinkedElementViaTrait();
+        // Also refresh the live reference each time the view is prefilled!
+        $this->getController()->addOnViewPrefilledScript($this->buildJsLiveReference());
+    }
+    
+    /**
+     * @return void
+     */
+    protected function registerConditionalBehaviors()
+    {
+        $this->registerLiveReferenceAtLinkedElement();
+        return;
     }
 }

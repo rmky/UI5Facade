@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -9,16 +9,31 @@ sap.ui.define([
 	"sap/ui/base/ManagedObject",
 	"sap/ui/dt/ElementUtil",
 	"sap/ui/dt/DOMUtil",
-	"sap/base/util/merge"
+	"sap/base/util/merge",
+	"sap/base/util/ObjectPath",
+	"sap/base/util/includes"
 ],
 function(
 	jQuery,
 	ManagedObject,
 	ElementUtil,
 	DOMUtil,
-	merge
+	merge,
+	ObjectPath,
+	includes
 ) {
 	"use strict";
+
+	function evaluateAction(vAction, oElement) {
+		if (typeof (vAction) === "function") {
+			vAction = vAction(oElement);
+		}
+
+		if (typeof (vAction) === "string") {
+			return { changeType : vAction };
+		}
+		return vAction;
+	}
 
 	/**
 	 * Constructor for a new DesignTimeMetadata.
@@ -31,7 +46,7 @@ function(
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @private
@@ -142,29 +157,24 @@ function(
 	 * Returns action sAction part of designTime metadata (object or changeType string)
 	 * @param  {string} sAction action name
 	 * @param  {object} oElement element instance
-	 * @return {map} part of designTimeMetada, which describes sAction in a map format
+	 * @param {string} [sSubAction] Sub-action
+	 * @return {map} part of designTimeMetadata, which describes sAction in a map format
 	 * @public
 	 */
-	DesignTimeMetadata.prototype.getAction = function(sAction, oElement) {
+	DesignTimeMetadata.prototype.getAction = function(sAction, oElement, sSubAction) {
 		var mData = this.getData();
-		if (mData.actions && mData.actions[sAction]) {
-			var vAction = mData.actions[sAction];
-			if (typeof (vAction) === "function") {
-				vAction = vAction(oElement);
-			}
-
-			if (typeof (vAction) === "string") {
-				return { changeType : vAction };
-			}
-			return vAction;
+		var aActionPath = ["actions", sAction];
+		if (sSubAction) {
+			aActionPath.push(sSubAction);
 		}
+		return evaluateAction(ObjectPath.get(aActionPath, mData), oElement);
 	};
 
 	/**
 	 * Returns a locale-specific string value for the given key sKey.
 	 *
 	 * The text is searched in this resource bundle according to the fallback chain described in
-	 * {@link jQuery.sap.util.ResourceBundle}. If no text could be found, the key itself is used as text.
+	 * {@link module:sap/base/i18n/ResourceBundle}. If no text could be found, the key itself is used as text.
 	 *
 	 * If text parameters are given, then any occurrences of the pattern "{<i>n</i>}" with <i>n</i> being an integer
 	 * are replaced by the parameter value with index <i>n</i>.  Note: This replacement is also applied if no text had been found (key).
@@ -233,6 +243,35 @@ function(
 
 	DesignTimeMetadata.prototype.getControllerExtensionTemplate = function() {
 		return this.getData().controllerExtensionTemplate;
+	};
+
+	/**
+	 * Returns responsible element from the designTimeMetadata
+	 * @param {sap.ui.core.Element} oElement Source element
+	 * @returns {sap.ui.core.Element|undefined} Responsible element if available
+	 * @public
+	 */
+	DesignTimeMetadata.prototype.getResponsibleElement = function(oElement) {
+		var mData = this.getData();
+		var fnResponsibleElement = ObjectPath.get(["actions", "getResponsibleElement"], mData);
+		if (fnResponsibleElement) {
+			return fnResponsibleElement(oElement);
+		}
+	};
+
+	/**
+	 * Returns true if responsible element action is available in the designTimeMetadata
+	 * @param {string} [sActionName] - Action name
+	 * @returns {boolean} Indicates if action is available
+	 * @public
+	 */
+	DesignTimeMetadata.prototype.isResponsibleActionAvailable = function(sActionName) {
+		var mData = this.getData();
+		var aActionsFromResponsibleElement = ObjectPath.get(["actions", "actionsFromResponsibleElement"], mData);
+		if (aActionsFromResponsibleElement) {
+			return includes(aActionsFromResponsibleElement, sActionName);
+		}
+		return false;
 	};
 
 	return DesignTimeMetadata;

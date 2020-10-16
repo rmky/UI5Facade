@@ -1,20 +1,16 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	"sap/ui/fl/Cache",
 	"sap/ui/fl/FakeLrepConnector",
-	"sap/ui/fl/apply/_internal/connectors/LocalStorageConnector",
 	"sap/ui/fl/write/_internal/connectors/LocalStorageConnector"
 ],
 function(
-	Cache,
 	FakeLrepConnector,
-	ApplyLocalStorageConnector,
-	WriteLocalStorageConnector
+	LocalStorageConnector
 ) {
 	"use strict";
 
@@ -24,7 +20,7 @@ function(
 	 * @class
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @private
 	 * @static
@@ -42,10 +38,10 @@ function(
 		},
 		forTesting: {
 			spyWrite: function (sandbox, assert) {
-				return FakeLrepConnector.forTesting.spyMethod(sandbox, assert, WriteLocalStorageConnector, "write");
+				return FakeLrepConnector.forTesting.spyMethod(sandbox, assert, LocalStorageConnector, "write");
 			},
 			getNumberOfChanges: function (sReference) {
-				return FakeLrepConnector.forTesting.getNumberOfChanges(ApplyLocalStorageConnector, sReference);
+				return FakeLrepConnector.forTesting.getNumberOfChanges(LocalStorageConnector, sReference);
 			},
 			synchronous: {
 				clearAll: function () {

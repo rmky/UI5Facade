@@ -1,6 +1,6 @@
 /*!
 * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
 */
 
@@ -17,6 +17,8 @@ sap.ui.define([
 	'./StandardListItem',
 	'./Dialog',
 	'./Button',
+	'./ToggleButton',
+	'./Title',
 	'./Label',
 	'./NavContainer',
 	'./Bar',
@@ -24,6 +26,7 @@ sap.ui.define([
 	'./Page',
 	'./ViewSettingsItem',
 	'sap/ui/base/ManagedObject',
+	'sap/ui/base/ManagedObjectObserver',
 	'sap/ui/base/EventProvider',
 	'sap/ui/Device',
 	'sap/ui/core/InvisibleText',
@@ -46,6 +49,8 @@ function(
 	StandardListItem,
 	Dialog,
 	Button,
+	ToggleButton,
+	Title,
 	Label,
 	NavContainer,
 	Bar,
@@ -53,6 +58,7 @@ function(
 	Page,
 	ViewSettingsItem,
 	ManagedObject,
+	ManagedObjectObserver,
 	EventProvider,
 	Device,
 	InvisibleText,
@@ -74,6 +80,9 @@ function(
 
 	// shortcut for sap.m.TitleAlignment
 	var TitleAlignment = library.TitleAlignment;
+
+	// shortcut for sap.m.ButtonType
+	var ButtonType = library.ButtonType;
 
 	var LIST_ITEM_SUFFIX = "-list-item";
 
@@ -103,13 +112,14 @@ function(
 	 * the footer toolbar if they refer to a table. Place group, sort, and filter buttons
 	 * in the footer toolbar if they refer to a master list.
 	 *
-	 * <b>Note:</b> Reset button, when used in <code>ViewSettingsDialog</code> without custom tabs,
-	 * is enabled when there are some Filters or presetFilters selected as well as there are changes
-	 * in Sort by, Sort order, Group By or Group order values compared to initial state of the dialog,
-	 * and disabled, if there are no changes or filters set. If the <code>ViewSettingsDialog</code>
-	 * have one or more custom tabs, the Reset button is always enabled, because there is no way
-	 * to determine the initial state of the custom tabs content and compare to their current state
-	 * in order to determine enable/disable state of the Reset button.
+	 * <b>Note:</b> If <code>ViewSettingsDialog</code> is used without custom tabs or custom items
+	 * in any of its aggregations, then Reset button is enabled if the user selects any Filters or
+	 * presetFilters or changes any of the Sort by, Sort order, Group by, or Group order values.
+	 * When <code>ViewSettingsDialog</code> is used with custom tabs or custom items
+	 * in any of its aggregations (sortItems, groupItems, filterItems or presetFilterItems),
+	 * the Reset button is always enabled, because there is no way to determine
+	 * the initial state of the custom tabs and compare it to their current state in order to
+	 * determine the enable/disable state of the Reset button.
 	 *
 	 * <h3>Usage</h3>
 	 *
@@ -136,7 +146,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -346,6 +356,8 @@ function(
 		this._sCustomTabsButtonsIdPrefix    = '-custom-button-';
 		this._sTitleLabelId                 = sId + "-title";
 		this._sFilterDetailTitleLabelId     = sId + "-detailtitle";
+		this._oFiltersSelectedOnly			= {};
+		this._oKeylessFilters				= {};
 
 		/* setup a name map between the sortItems
 		 aggregation and an sap.m.List with items
@@ -400,6 +412,7 @@ function(
 		this._filterContent                 = null;
 		this._sCustomTabsButtonsIdPrefix    = null;
 		this._fnFilterSearchCallback        = null;
+		this._oKeylessFilters               = null;
 
 		// sap.ui.core.Popup removes its content on close()/destroy() automatically from the static UIArea,
 		// but only if it added it there itself. As we did that, we have to remove it also on our own
@@ -517,6 +530,9 @@ function(
 		}
 		if (this._oStringFilter) {
 			this._oStringFilter = null;
+		}
+		if (this._oSelectedFilterKeys) {
+			this._oSelectedFilterKeys = null;
 		}
 	};
 
@@ -716,7 +732,7 @@ function(
 	 */
 	ViewSettingsDialog.prototype.setTitle = function(sTitle) {
 		this._getTitleLabel().setText(sTitle);
-		this.setProperty("title", sTitle, true);
+		this.setProperty("title", sTitle);
 		return this;
 	};
 
@@ -746,6 +762,10 @@ function(
 			this._attachItemPropertyChange(sType, oObject);
 		} else {
 			this._attachItemEventHandlers(sAggregationName, oObject);
+		}
+
+		if (sAggregationName === "filterItems") {
+			this._observeItem(oObject);
 		}
 
 		return this;
@@ -782,6 +802,10 @@ function(
 			this._attachItemEventHandlers(sAggregationName, oObject);
 		}
 
+		if (sAggregationName === "filterItems") {
+			this._observeItem(oObject);
+		}
+
 		return this;
 	};
 
@@ -797,6 +821,13 @@ function(
 			var oRemovedListItem = oList.removeItem(oListItem);
 			oRemovedListItem.destroy();
 			this._detachItemPropertyChange(vRemovedObject);
+		}
+
+		if (sAggregationName === "filterItems") {
+			this._unobserveItem(vRemovedObject);
+			if (!this.getFilterItems().length) {
+				this._disconnectAndDestroyFilterItemsObserver();
+			}
 		}
 
 		return vRemovedObject;
@@ -823,6 +854,10 @@ function(
 			}, this);
 		}
 
+		if (sAggregationName === "filterItems") {
+			this._disconnectAndDestroyFilterItemsObserver();
+		}
+
 		return vRemovedObjects;
 	};
 
@@ -837,6 +872,10 @@ function(
 			if (oList) {
 				oList.destroyItems();
 			}
+		}
+
+		if (sAggregationName === "filterItems") {
+			this._disconnectAndDestroyFilterItemsObserver();
 		}
 
 		return this;
@@ -869,6 +908,60 @@ function(
 
 			oListItem.getMetadata().getAllProperties()[sListProp].set(oListItem, vListPropVal);
 		}, this);
+	};
+
+	/**
+	 * Returns the ManagedObjectObserver for the filterItems
+	 *
+	 * @return {sap.ui.base.ManagedObjectObserver} the filterItems observer object
+	 * @private
+	 */
+	ViewSettingsDialog.prototype._getFilterItemsObserver = function () {
+		if (!this._oFilterItemsObserver) {
+			this._oFilterItemsObserver = new ManagedObjectObserver(function() {
+				if (this._oSelectedFilterKeys) {
+					this.setSelectedFilterCompoundKeys(this._oSelectedFilterKeys);
+				}
+			}.bind(this));
+		}
+		return this._oFilterItemsObserver;
+	};
+
+	/**
+	 * Observes the items aggregation of the passed filterItem
+	 *
+	 * @param {sap.m.ViewSettingsDialogFilterItem} oFilterItem the filterItem, which aggregation will be observed
+	 * @private
+	 */
+	ViewSettingsDialog.prototype._observeItem = function (oFilterItem) {
+		this._getFilterItemsObserver().observe(oFilterItem, {
+			aggregations: ["items"]
+		});
+	};
+
+	/**
+	 * Unobserves the items aggregation of the passed filterItem
+	 *
+	 * @param {sap.m.ViewSettingsDialogFilterItem} oFilterItem the filterItem, which aggregation will be unobserved
+	 * @private
+	 */
+	ViewSettingsDialog.prototype._unobserveItem = function (oFilterItem) {
+		this._getFilterItemsObserver().unobserve(oFilterItem, {
+			aggregations: ["items"]
+		});
+	};
+
+	/**
+	 * Disconnects and destroys the ManagedObjectObserver observing the used filterItem
+	 *
+	 * @private
+	 */
+	ViewSettingsDialog.prototype._disconnectAndDestroyFilterItemsObserver = function () {
+		if (this._oFilterItemsObserver) {
+			this._oFilterItemsObserver.disconnect();
+			this._oFilterItemsObserver.destroy();
+			this._oFilterItemsObserver = null;
+		}
 	};
 
 	/**
@@ -1403,12 +1496,13 @@ function(
 			sParentKey,
 			oFilterItem;
 
+		this._oKeylessFilters = {};
+
 		for (i = 0; i < aSelectedFilterItems.length; i++) {
 			oFilterItem = aSelectedFilterItems[i];
 			if (oFilterItem instanceof sap.m.ViewSettingsCustomItem) {
 				sKey = oFilterItem.getKey();
 				oSelectedFilterKeys[sKey] = oFilterItem.getSelected();
-
 			} else {
 				sKey = oFilterItem.getKey();
 				sParentKey = oFilterItem.getParent().getKey();
@@ -1416,6 +1510,13 @@ function(
 					oSelectedFilterKeys[sParentKey] = {};
 				}
 				oSelectedFilterKeys[sParentKey][sKey] = oFilterItem.getSelected();
+				if (sKey === "") {
+					// store additional data for keyless items in order to ease restore
+					if (!this._oKeylessFilters[sParentKey]) {
+						this._oKeylessFilters[sParentKey] = {};
+					}
+					this._oKeylessFilters[sParentKey][oFilterItem.getText()] = true;
+				}
 			}
 		}
 
@@ -1511,57 +1612,64 @@ function(
 	 * @since 1.42
 	 */
 	ViewSettingsDialog.prototype.setSelectedFilterCompoundKeys = function(oSelectedFilterKeys) {
-		var aFilterItems = this.getFilterItems();
-		var fnGetSelectedItemFromFilterKey = function (aFilterItems, oFilterKeys, sKey) {
-			if (!oFilterKeys.hasOwnProperty(sKey)) {
-				return;
-			}
+		var aFilterItems = this.getFilterItems(),
+			sParentKey,
+			sKey,
+			sText,
+			oParentItem,
+			oSelectedSubFilterKeys,
+			aSubFilterItems,
+			bMultiSelect,
+			bSelected,
+			bOneSelected,
+			iIndex;
 
-			var oItem = getViewSettingsItemByKey(aFilterItems, sKey);
+		this._oSelectedFilterKeys = oSelectedFilterKeys;
 
-			return oItem;
-		};
-
-		// clear preset filters (only one mode is allowed, preset filters or filters)
 		if (Object.keys(oSelectedFilterKeys).length) {
+
+			// clear preset filters (only one mode is allowed, preset filters or filters)
 			this._clearPresetFilter();
-		}
 
-		// loop through the provided object array {key -> subKey -> boolean}
-		for (var sParentKey in oSelectedFilterKeys) { // filter key
-			var oParentItem = fnGetSelectedItemFromFilterKey(aFilterItems, oSelectedFilterKeys, sParentKey);
-
-			if (!oParentItem) {
-				Log.warning('No filter with key "' + sParentKey);
-				continue;
-			}
-
-			if (oParentItem instanceof sap.m.ViewSettingsCustomItem) {
-				oParentItem.setProperty('selected', oSelectedFilterKeys[sParentKey], true);
-			} else if (oParentItem instanceof sap.m.ViewSettingsFilterItem) {
-				var oSelectedSubFilterKeys = oSelectedFilterKeys[sParentKey];
-				var aSubFilterItems = oParentItem.getItems();
-				var bMultiSelect = oParentItem.getMultiSelect();
-
-				for (var sKey in oSelectedSubFilterKeys) {
-					var oItem = fnGetSelectedItemFromFilterKey(aSubFilterItems, oSelectedSubFilterKeys, sKey);
-
-					if (!oItem) {
-						Log.warning('No filter with key "' + sKey);
-						continue;
+			// loop through the provided object array {key -> subKey -> boolean}
+			for (sParentKey in oSelectedFilterKeys) { // filter key
+				oParentItem = null;
+				for (iIndex = 0; iIndex < aFilterItems.length; iIndex++) {
+					sKey = aFilterItems[iIndex].getKey();
+					if ( sKey === sParentKey) {
+						oParentItem = aFilterItems[iIndex];
+						break;
 					}
-
-					if (!bMultiSelect) {
-						aSubFilterItems.forEach(function(item) {
-							item.setProperty('selected', false, true);
-						});
+				}
+				if (oParentItem instanceof sap.m.ViewSettingsCustomItem) {
+					oParentItem.setProperty('selected', oSelectedFilterKeys[sParentKey], true);
+				} else if (oParentItem instanceof sap.m.ViewSettingsFilterItem) {
+					oSelectedSubFilterKeys = oSelectedFilterKeys[sParentKey];
+					aSubFilterItems = oParentItem.getItems();
+					bMultiSelect = oParentItem.getMultiSelect();
+					bOneSelected = false;
+					// loop through the sub-items
+					for (iIndex = 0; iIndex < aSubFilterItems.length; iIndex++) {
+						sKey = aSubFilterItems[iIndex].getKey();
+						sText = aSubFilterItems[iIndex].getText();
+						if ((sKey !== "" && oSelectedSubFilterKeys[sKey]) ||
+							(sKey === "" && this._oKeylessFilters[sParentKey]
+										 && this._oKeylessFilters[sParentKey][sText])) {
+							// get passed value; respect multi-select
+							bSelected = bOneSelected ? false : oSelectedSubFilterKeys[sKey];
+						} else {
+							// clear omitted sub-items
+							bSelected = false;
+						}
+						aSubFilterItems[iIndex].setProperty("selected", bSelected, true);
+						if (bSelected && !bMultiSelect) {
+							// if not multi-select, only one TRUE value can be set
+							bOneSelected = true;
+						}
 					}
-
-					oItem.setProperty('selected', oSelectedSubFilterKeys[sKey], true);
 				}
 			}
 		}
-
 		return this;
 	};
 
@@ -1574,6 +1682,36 @@ function(
 	/* =========================================================== */
 
 	/**
+	 * Checks if there is a custom item in the given aggregation, one of sortItems, groupItems, filterItems or presetFilterItems.
+	 * @private
+	 */
+	ViewSettingsDialog.prototype._checkForInnerCustomItems = function(aItems) {
+		for (var i = 0; i < aItems.length; i++) {
+			if (aItems[i].isA("sap.m.ViewSettingsCustomItem")) {
+				return true;
+			}
+		}
+		return false;
+	};
+
+	/**
+	 * Checks if there is a custom tab or a custom item in the aggregations sortItems, groupItems, filterItems and presetFilterItems.
+	 * @private
+	 */
+	ViewSettingsDialog.prototype._checkForCustomItems = function() {
+		var aSortItems = this.getSortItems(),
+			aGroupItems = this.getGroupItems(),
+			aFilterItems = this.getFilterItems(),
+			aPresetFilterItems = this.getPresetFilterItems();
+
+		return this.getAggregation("customTabs").length ||
+			aSortItems.length && this._checkForInnerCustomItems(aSortItems) ||
+			aGroupItems.length && this._checkForInnerCustomItems(aGroupItems) ||
+			aFilterItems.length && this._checkForInnerCustomItems(aFilterItems) ||
+			aPresetFilterItems.length && this._checkForInnerCustomItems(aPresetFilterItems);
+	};
+
+	/**
 	 * Checks if there are changes made since the initial VSD open and enables/disables reset buttons accordingly
 	 * @private
 	 */
@@ -1581,7 +1719,7 @@ function(
 		var bChanges = false,
 			oFilterKeys = this.getSelectedFilterItems();
 
-		if (this.getAggregation("customTabs").length > 0) {
+		if (this._checkForCustomItems()) {
 			// there are custom tabs defined, enable Reset button in any case
 			bChanges = true;
 		} else {
@@ -1667,7 +1805,7 @@ function(
 				titleAlignment		: this.getTitleAlignment(),
 				beginButton         : new Button(this.getId() + "-acceptbutton", {
 					text : this._rb.getText("VIEWSETTINGS_ACCEPT"),
-					type: sap.m.ButtonType.Emphasized
+					type: ButtonType.Emphasized
 				}).attachPress(this._onConfirm, this),
 				endButton           : new Button(this.getId() + "-cancelbutton", {
 					text : this._rb.getText("VIEWSETTINGS_CANCEL")
@@ -2039,7 +2177,11 @@ function(
 		}
 
 		this._filterSearchField = this._getFilterSearchField(this._filterDetailList);
-		this._getPage2().addContent(this._filterSearchField.addStyleClass('sapMVSDFilterSearchField'));
+		this._showOnlySelectedButton = this._getShowOnlySelectedButton();
+		this._searchBar = new Toolbar({
+			content: [ this._filterSearchField.addStyleClass('sapMVSDFilterSearchField').addStyleClass('sapMTBShrinkItem'), this._showOnlySelectedButton ]
+		});
+		this._getPage2().addContent(this._searchBar);
 		// add this css style for recognizing when after the sap.m.Bar is SearchField, so we can remove the bar border
 		this._getPage2().getCustomHeader().addStyleClass('sapMVSDBarWithSearch');
 
@@ -2054,7 +2196,7 @@ function(
 				content: [ this._selectAllCheckBox ]
 			}).addStyleClass('sapMVSDFilterHeaderToolbar'));
 		}
-
+		this._setFilterDetailItemsVisibility(this._filterDetailList, true);
 		this._getPage2().addContent(this._filterDetailList);
 	};
 
@@ -2852,6 +2994,7 @@ function(
 					var oVSDItem = oItem.data("item");
 					oVSDItem.setSelected(bSelected);
 				});
+
 				// enable/disable reset button if necessary
 				this._checkResetStatus();
 			}.bind(this)
@@ -2893,29 +3036,89 @@ function(
 	};
 
 	/**
+	 * Determines whether or not the passed oItem is visible based on what is entered in the Search field.
+	 *
+	 * @param {sap.m.StandardListItem} oItem An item from the filter details
+	 * @returns {boolean} visibility of the oItem
+	 * @private
+	 */
+	ViewSettingsDialog.prototype._visibilityBySearchField = function(oItem) {
+		var sQuery = this._filterSearchField.getValue(),
+			fnStringFilter = this._getStringFilter(),
+			bTitleSatisfiesTheQuery = fnStringFilter(sQuery, oItem.getTitle());
+		return bTitleSatisfiesTheQuery;
+	};
+
+	/**
+	 * Determines whether or not the passed oItem is visible based on Show only selected button state.
+	 *
+	 * @param {sap.m.StandardListItem} oItem an item from the filter details
+	 * @returns {boolean} visibility of the oItem
+	 * @private
+	 */
+	ViewSettingsDialog.prototype._visibilityByToggleButton = function(oItem) {
+		var bTitleSatisfiesTheToggleButton = this._showOnlySelectedButton.getPressed() ? oItem.getSelected() : true;
+		return bTitleSatisfiesTheToggleButton;
+	};
+
+	/**
 	 * Creates the filter items search field.
 	 *
-	 * @param {Array} oFilterDetailList The actual list created for the detail filter page
+	 * @param {object} oFilterDetailList The actual list created for the detail filter page
 	 * @returns {sap.m.SearchField} A search field instance
 	 * @private
 	 */
 	ViewSettingsDialog.prototype._getFilterSearchField = function(oFilterDetailList) {
 		var oFilterSearchField = new SearchField({
-				liveChange: function(oEvent) {
-					var sQuery = oEvent.getParameter('newValue'),
-						fnStringFilter = this._getStringFilter();
-
-					oFilterDetailList.getItems().forEach(function (oItem) {
-						var bTitleSatisfiesTheQuery = fnStringFilter(sQuery, oItem.getTitle());
-						oItem.setVisible(bTitleSatisfiesTheQuery);
-					});
-
-					//update Select All checkbox
-					this._updateSelectAllCheckBoxState();
+				liveChange: function() {
+					this._setFilterDetailItemsVisibility(oFilterDetailList);
 				}.bind(this)
 			});
 
 		return oFilterSearchField;
+	};
+
+	/**
+	 * Sets visibility of filter detail items depending on both Search field and Show only selected button state
+	 *
+	 * @param {object} oFilterDetailList The actual list created for the detail filter page
+	 * @param {boolean} bSkipSearch if <code>true</code>, skip the search field part (in initial phase)
+	 * @private
+	*/
+	ViewSettingsDialog.prototype._setFilterDetailItemsVisibility = function(oFilterDetailList, bSkipSearch) {
+		oFilterDetailList.getItems().forEach(function (oItem) {
+			oItem.setVisible(this._visibilityByToggleButton(oItem) && (bSkipSearch || this._visibilityBySearchField(oItem)));
+		}.bind(this));
+		//update Select All checkbox
+		this._updateSelectAllCheckBoxState();
+	};
+
+	/**
+	 * Creates the Show only selected Toggle Button.
+	 *
+	 * @returns {sap.m.ToggleButton} A search field instance
+	 * @private
+	 */
+	ViewSettingsDialog.prototype._getShowOnlySelectedButton = function() {
+		var bPressedForFilter = this._oContentItem && this._oFiltersSelectedOnly[this._oContentItem.getId()] ? true : false,
+			oShowOnlySelectedButton = new ToggleButton({
+				icon : IconPool.getIconURI("multi-select"),
+				tooltip: this._rb.getText("SHOW_SELECTED_ONLY"),
+				type : ButtonType.Transparent,
+				pressed: bPressedForFilter,
+				press: function() {
+					var bPressed = this._showOnlySelectedButton.getPressed(),
+						sFilterIndex = this._oContentItem.getId();
+					if (bPressed) { // "remember" this filter "Show only selected" button
+						this._oFiltersSelectedOnly[sFilterIndex] = true;
+					} else { // "forget" this filter "Show only selected" button
+						delete this._oFiltersSelectedOnly[sFilterIndex];
+					}
+					this._setFilterDetailItemsVisibility(this._filterDetailList);
+				}.bind(this)
+			});
+
+		return oShowOnlySelectedButton;
 	};
 
 	/**

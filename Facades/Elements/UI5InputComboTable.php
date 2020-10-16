@@ -1,31 +1,30 @@
 <?php
 namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Widgets\InputComboTable;
-use exface\Core\Widgets\DataColumn;
-use exface\Core\Exceptions\Widgets\WidgetHasNoUidColumnError;
 use exface\Core\Exceptions\Widgets\WidgetLogicError;
-use exface\Core\Factories\DataSheetFactory;
 use exface\Core\DataTypes\UrlDataType;
 use exface\Core\Interfaces\DataTypes\DataTypeInterface;
 use exface\Core\Exceptions\Facades\FacadeLogicError;
-use exface\UI5Facade\Facades\Elements\UI5ValueHelpDialog;
 use exface\Core\Interfaces\Widgets\iShowDataColumn;
 use exface\Core\Interfaces\Widgets\iShowSingleAttribute;
-use exface\UI5Facade\UI5Controller;
-use exface\Core\CommonLogic\Model\RelationPath;
+use exface\Core\Interfaces\Actions\ActionInterface;
+use exface\Core\Exceptions\Widgets\WidgetConfigurationError;
 
 /**
- * Generates OpenUI5 selects
+ * Generates sap.m.Input with tabular autosuggest and value help.
  *
- * @method InputComboTable getWidget()
+ * @method \exface\Core\Widgets\InputComboTable\InputComboTable getWidget()
  *
  * @author Andrej Kabachnik
  *        
  */
 class UI5InputComboTable extends UI5Input
 {
-    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5Value::init()
+     */
     protected function init()
     {
         parent::init();
@@ -42,7 +41,7 @@ class UI5InputComboTable extends UI5Input
             }
             $onChange = <<<JS
 
-                        var oInput = oEvent.getSource();
+                        var oInput = oEvent !== undefined ? oEvent.getSource() : sap.ui.getCore().byId('{$this->getId()}');
                         if (oInput.getValue() !== '' && $missingKeyCheckJs){
                             oInput.fireSuggest({suggestValue: {q: oInput.getValue()}});
                             oEvent.cancelBubble();
@@ -107,12 +106,13 @@ JS;
         .{$this->buildJsSetSelectedKeyMethod($this->escapeJsTextValue($value), $widget->getValueText())}
 JS;
             }
-        } else {
+        } elseif ($widget->getValueAttribute() !== $widget->getTextAttribute()) {
             // If the value is to be taken from a model, we need to check if both - key
             // and value are there. If not, the value needs to be fetched from the server.
+            // NOTE: in sap.m.MultiInput there are no tokens yet, so we tell the getter
+            // method not to rely on the explicitly!!!
             $missingValueJs = <<<JS
-            
-            var sKey = sap.ui.getCore().byId('{$this->getId()}').{$this->buildJsValueGetterMethod()};
+            var sKey = oInput.{$this->buildJsValueGetterMethod(false)};
             var sVal = oInput.getValue();
             if (sKey !== '' && sVal === '') {
                 {$this->buildJsValueSetter('sKey')};
@@ -128,7 +128,7 @@ JS;
 JS;
             // Also do the check with every prefill (the model-change-trigger for some reason does not
             // work on non-maximized dialogs, but this check does)
-            $this->getController()->addOnViewPrefilledScript("var oInput = sap.ui.getCore().byId('{$this->getId()}'); " . $missingValueJs);
+            $this->getController()->addOnViewPrefilledScript("setTimeout(function(){var oInput = sap.ui.getCore().byId('{$this->getId()}'); {$missingValueJs} }, 0);");
             
             // Finally, if the value is bound to model, but the text is not, all the above logic will only
             // work once, because after that one time, there will be a text (value) and it won't change
@@ -146,6 +146,9 @@ JS;
                 var oKeyBinding = new sap.ui.model.Binding(oModel, '{$this->getValueBindingPath()}', oModel.getContext('{$this->getValueBindingPath()}'));
                 oKeyBinding.attachChange(function(){
                     if (oInput.getSelectedKey() == '') {
+                        if (oInput.destroyTokens !== undefined) {
+                            oInput.destroyTokens();
+                        }
                         oInput.setValue('');
                     }
                 });
@@ -218,6 +221,12 @@ JS;
         
         $control = $widget->getMultiSelect() ? 'sap.m.MultiInput' : 'sap.m.Input';
         
+        if ($widget->isRelation()) {
+            $vhpOptions = "showValueHelp: true, valueHelpRequest: {$this->buildJsPropertyValueHelpRequest()}";
+        } else {
+            $vhpOptions = "showValueHelp: false";
+        }
+        
         return <<<JS
 
 	   new {$control}("{$this->getId()}", {
@@ -226,12 +235,12 @@ JS;
 			textFormatMode: "ValueKey",
 			showSuggestion: true,
             maxSuggestionWidth: "400px",
-            startSuggestion: 1,
+            startSuggestion: function(){
+                return sap.ui.Device.system.phone ? 0 : 1;
+            }(),
             showTableSuggestionValueHelp: false,
             filterSuggests: false,
-            showValueHelp: true,
-            valueHelpRequest: {$this->buildJsPropertyValueHelpRequest()}
-			suggest: {$this->buildJsPropertySuggest($oControllerJs)},
+            suggest: {$this->getController()->buildJsMethodCallFromView('onSuggest', $this, $oControllerJs)},
             suggestionRows: {
                 path: "{$this->getModelNameForAutosuggest()}>/rows",
                 template: new sap.m.ColumnListItem({
@@ -243,39 +252,12 @@ JS;
             suggestionItemSelected: {$this->buildJsPropertySuggestionItemSelected($value_idx, $text_idx)}
 			suggestionColumns: [
 				{$columns}
-            ]
+            ],
+            {$vhpOptions}
         })
         .setModel(new sap.ui.model.json.JSONModel(), "{$this->getModelNameForAutosuggest()}")
         {$value_init_js}
         {$this->buildJsPseudoEventHandlers()}
-JS;
-    }
-	
-    /**
-     * Returns the function to be called for autosuggest.
-     * 
-     * This makes an AJAX requests to fetch suggestions. Normally the
-     * event parameter "suggestValue" will contain the text typed by
-     * the user and will be used as the autosuggest query. 
-     * 
-     * To make the programmatic value setter work, there is also a 
-     * possibility to pass an object instead of text when firing the 
-     * suggest event automatically (see buildJsDataSetterMethod()).
-     * In this case, the properties of that object will be used as 
-     * parameters of the AJAX request directly. This also will "silence"
-     * the request and make the control refresh it's value automatically
-     * if the expected suggestion rows (matching the filter) will be
-     * returned. This way, setting just the value (key) will lead to
-     * a silent autosuggest and the selection of the correkt text value.
-     * 
-     * @return string
-     */
-    protected function buildJsPropertySuggest(string $oControllerJs)
-    {        
-        return <<<JS
-            function(oEvent) {
-                {$this->getController()->buildJsMethodCallFromController('onSuggest', $this, 'oEvent', $oControllerJs)}
-    		}
 JS;
     }
                 
@@ -347,7 +329,24 @@ JS;
         return $btnEl->buildJsClickViewEventHandlerCall() . ',';
     }
      
+    
+	
     /**
+     * Returns the function to be called for autosuggest.
+     * 
+     * This makes an AJAX requests to fetch suggestions. Normally the
+     * event parameter "suggestValue" will contain the text typed by
+     * the user and will be used as the autosuggest query. 
+     * 
+     * To make the programmatic value setter work, there is also a 
+     * possibility to pass an object instead of text when firing the 
+     * suggest event automatically (see buildJsDataSetterMethod()).
+     * In this case, the properties of that object will be used as 
+     * parameters of the AJAX request directly. This also will "silence"
+     * the request and make the control refresh it's value automatically
+     * if the expected suggestion rows (matching the filter) will be
+     * returned. This way, setting just the value (key) will lead to
+     * a silent autosuggest and the selection of the correkt text value.
      * 
      * @param string $oEventJs
      * @return string
@@ -357,27 +356,56 @@ JS;
         $widget = $this->getWidget();
         $configuratorElement = $this->getFacade()->getElement($widget->getTable()->getConfiguratorWidget());
         $serverAdapter = $this->getFacade()->getElement($widget->getTable())->getServerAdapter();
+        $delim = json_encode($widget->getMultiSelectValueDelimiter());
         
+        // NOTE: in sap.m.MultiInput there are no tokens yet, so we tell the getter
+        // method not to rely on the explicitly!!!
         $onSuggestLoadedJs = <<<JS
                             
                 if (silent) {
                     var data = oModel.getProperty('/rows');
-                    var curKey = oInput.{$this->buildJsValueGetterMethod()};
-                    if (parseInt(oModel.getProperty("/recordsTotal")) == 1 && (curKey === '' || data[0]['{$widget->getValueColumn()->getDataColumnName()}'] == curKey)) {
+                    var curKey = oInput.{$this->buildJsValueGetterMethod(false)};
+                    var curKeys = curKey.split({$delim});
+                    var iRowsCnt = parseInt(oModel.getProperty("/recordsTotal"));
+                    var aFoundKeys = [];
+                    if (iRowsCnt === 1 && (curKey === '' || data[0]['{$widget->getValueColumn()->getDataColumnName()}'] == curKey)) {
                         oInput.{$this->buildJsSetSelectedKeyMethod("data[0]['{$widget->getValueColumn()->getDataColumnName()}']", "data[0]['{$widget->getTextColumn()->getDataColumnName()}']")}
                         oInput.closeSuggestions();
                         oInput.setValueState(sap.ui.core.ValueState.None);
+                    } else if (iRowsCnt > 0 && iRowsCnt === curKeys.length && oInput.addToken !== undefined) {
+                        oInput.destroyTokens();
+                        curKeys.forEach(function(sKey) {
+                            sKey = sKey.trim();
+                            data.forEach(function(oRow) {
+                                if (oRow['{$widget->getValueColumn()->getDataColumnName()}'] == sKey) {
+                                    oInput.addToken(new sap.m.Token({key: sKey, text: oRow['{$widget->getTextColumn()->getDataColumnName()}']}));
+                                    aFoundKeys.push(sKey);
+                                }
+                            });
+                        });
+                        oInput.closeSuggestions();
+                        if (aFoundKeys.length === curKeys.length) {
+                            oInput.setValueState(sap.ui.core.ValueState.None);
+                        } else {
+                            oInput.setValueState(sap.ui.core.ValueState.Error);
+                        }
                     } else {
                         oInput.setSelectedKey("");
                         oInput.setValueState(sap.ui.core.ValueState.Error);
                     }
                 }
                 {$this->buildJsBusyIconHide()}
+
+                if (oSuggestTable) {
+                    oSuggestTable.setBusy(false);
+                }
+                
 JS;
         
         return <<<JS
 
                 var oInput = {$oEventJs}.getSource();
+                var oSuggestTable = sap.ui.getCore().byId('{$this->getId()}-popup-table');
                 var q = {$oEventJs}.getParameter("suggestValue");
                 var fnCallback = {$oEventJs}.getParameter("onLoaded");
                 var qParams = {};
@@ -412,6 +440,10 @@ JS;
                 if (silent) {
                     {$this->buildJsBusyIconShow()}
                 }
+
+                if (oSuggestTable) {
+                    oSuggestTable.setBusyIndicatorDelay(0).setBusy(true);
+                }
                 
                 {$serverAdapter->buildJsServerRequest($widget->getLazyLoadingAction(), 'oModel', 'params', $onSuggestLoadedJs, $this->buildJsBusyIconHide())}
 
@@ -441,14 +473,26 @@ JS;
     }
     
     /**
+     * Returns the JS method to get the current value.
      * 
-     * {@inheritDoc}
+     * The additional parameter $useTokensIfMultiSelect controls, how sap.m.MultiInput is handled.
+     * For some reason it's methods getTokens() and getSelectedKey() are not in sync. So if the
+     * tokens are not initialized yet, getSelectedKey() must be used - that's the one that is
+     * bound to the model actually.
+     * 
+     * @param bool $useTokensIfMultiSelect
+     * @return string
+     * 
      * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsValueGetterMethod()
      */
-    public function buildJsValueGetterMethod()
+    public function buildJsValueGetterMethod(bool $useTokensIfMultiSelect = true)
     {
-        if ($this->getWidget()->getMultiSelect() === false) {
-            return "getSelectedKey()";
+        if ($this->getWidget()->getMultiSelect() === false || $useTokensIfMultiSelect === false) {
+            if ($this->getWidget()->getValueAttribute() === $this->getWidget()->getTextAttribute()) {
+                return "getValue()";
+            } else {            
+                return "getSelectedKey()";
+            }
         } else {
             $delim = $this->getWidget()->getMultiSelectTextDelimiter();
             return "getTokens().reduce(function(sList, oToken, iIdx, aTokens){ return sList + (sList !== '' ? '$delim' : '') + oToken.getKey() }, '')";
@@ -512,12 +556,15 @@ JS;
         // above will recognize this and use merge this object with the request parameters, so
         // we can directly tell it to use our input as a value column filter instead of a regular
         // suggest string.
-        return "(function(){
+        return "(function(){console.log('value setter');
             var oInput = sap.ui.getCore().byId('{$this->getId()}');
             var val = {$valueJs};
             if (val == undefined || val === null || val === '') {
                 oInput.{$this->buildJsEmptyMethod('val', '""')};
             } else {
+                if (oInput.destroyTokens !== undefined) {
+                    oInput.destroyTokens();
+                }
                 oInput
                 .setSelectedKey(val)
                 .fireSuggest({$this->buildJsFireSuggestParamForSilentKeyLookup('val')});
@@ -560,7 +607,7 @@ JS;
         if ($this->getWidget()->getMultiSelect() === false) {
             return "setValue('').setSelectedKey('')";
         } else {
-            return "removeAllTokens()";
+            return "setValue('').setSelectedKey('').destroyTokens()";
         }
     }
     
@@ -588,7 +635,7 @@ JS;
             }
             $js = "{$setValue}setSelectedKey($keyJs)";
         } else {
-            $js = "addToken(new sap.m.Token({key: $keyJs, text: $valueJs}))";
+            $js = "setSelectedKey($keyJs).addToken(new sap.m.Token({key: $keyJs, text: $valueJs}))";
         }
         
         if ($lookupKeyValue === true) {
@@ -637,16 +684,14 @@ JS;
     {
         $widget = $this->getWidget();
         
-        if ($widget instanceof iShowSingleAttribute && $widget instanceof iShowDataColumn && $widget->isBoundToAttribute()) {
+        $parentSetter = parent::buildJsDataSetter($jsData);
+        $colName = $this->getWidget()->getValueAttributeAlias();
+    
+        // The '!' in front of the IFFE is required because it would not get executed stand alone
+        // resulting in a "SyntaxError: Function statements require a function name" instead.
+        return <<<JS
 
-            $parentSetter = parent::buildJsDataSetter($jsData);
-            $colName = $this->getWidget()->getValueAttributeAlias();
-        
-            // The '!' in front of the IFFE is required because it would not get executed stand alone
-            // resulting in a "SyntaxError: Function statements require a function name" instead.
-            return <<<JS
-
-!function() {
+!function() {console.log('data setter');
     var oData = {$jsData};
     if (oData !== undefined && Array.isArray(oData.rows) && oData.rows.length > 0) {
         if (oData.oId == "{$this->getWidget()->getTable()->getMetaObject()->getId()}") {
@@ -680,10 +725,68 @@ JS;
 }()
 
 JS;
-            } else {
-            $class = get_class($this);
-            return "console.warn('No data setter implemented for {$class}!')";
+    }
+    
+    public function buildJsDataGetter(ActionInterface $action = null)
+    {
+        // If the object of the action is the same as that of the widget, treat
+        // it as a regular input.
+        if ($action === null || $this->getMetaObject()->is($action->getMetaObject()) || $action->getInputMapper($this->getMetaObject()) !== null) {
+            return parent::buildJsDataGetter($action);
         }
+        
+        $widget = $this->getWidget();
+        // If it's another object, we need to decide, whether to place the data in a 
+        // subsheet.
+        if ($action->getMetaObject()->is($widget->getTableObject())) {
+            // FIXME not sure what to do if the action is based on the object of the table.
+            // This should be really important in lookup dialogs, but for now we just fall
+            // back to the generic input logic.
+            return parent::buildJsDataGetter($action);
+        } elseif ($relPath = $widget->findRelationPathFromObject($action->getMetaObject())) {
+            $relAlias = $relPath->toString();
+        }
+        
+        if ($relAlias === null || $relAlias === '') {
+            throw new WidgetConfigurationError($widget, 'Cannot use data from widget "' . $widget->getId() . '" with action on object "' . $action->getMetaObject()->getAliasWithNamespace() . '": no relation can be found from widget object to action object', '7CYA39T');
+        }
+        
+        if ($widget->getMultiSelect() === false) { 
+            $rows = "[{ {$widget->getDataColumnName()}: {$this->buildJsValueGetter()} }]";
+        } else {
+            $delim = str_replace("'", "\\'", $this->getWidget()->getMultiSelectTextDelimiter());
+            $rows = <<<JS
+                            function(){
+                                var aVals = ({$this->buildJsValueGetter()}).split('{$delim}');
+                                var aRows = [];
+                                aVals.forEach(function(sVal) {
+                                    if (sVal !== undefined && sVal !== null && sVal !== '') {
+                                        aRows.push({
+                                            {$widget->getDataColumnName()}: sVal
+                                        });
+                                    }
+                                })
+                                return aRows;
+                            }()
+
+JS;
+        }
+        
+        return <<<JS
+        
+            {
+                oId: '{$action->getMetaObject()->getId()}',
+                rows: [
+                    {
+                        '{$relAlias}': {
+                            oId: '{$widget->getMetaObject()->getId()}',
+                            rows: {$rows}
+                        }
+                    }
+                ]
+            }
+            
+JS;
     }
 }
 ?>

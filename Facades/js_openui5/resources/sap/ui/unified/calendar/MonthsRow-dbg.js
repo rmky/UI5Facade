@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -61,7 +61,7 @@ sap.ui.define([
 	 * The MontsRow works with JavaScript Date objects, but only the month and the year are used to display and interact.
 	 * As representation for a month, the 1st of the month will always be returned in the API.
 	 * @extends sap.ui.core.Control
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -741,7 +741,7 @@ sap.ui.define([
 			for ( var i = 0; i < aDomRefs.length; i++) {
 				var $DomRef = jQuery(aDomRefs[i]);
 				if ($DomRef.attr("data-sap-month") == this._oFormatYyyymm.format(oFocusedDate.toUTCJSDate(), true)) {
-					$DomRef.focus();
+					$DomRef.trigger("focus");
 					break;
 				}
 			}
@@ -1512,14 +1512,14 @@ sap.ui.define([
 
 	function _bindMousemove(){
 
-		jQuery(window.document).bind('mousemove', this._mouseMoveProxy);
+		jQuery(window.document).on('mousemove', this._mouseMoveProxy);
 		this._bMouseMove = true;
 
 	}
 
 	function _unbindMousemove(){
 
-		jQuery(window.document).unbind('mousemove', this._mouseMoveProxy);
+		jQuery(window.document).off('mousemove', this._mouseMoveProxy);
 		this._bMouseMove = undefined;
 
 	}

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -71,15 +71,6 @@ sap.ui.define(['sap/ui/core/ValueStateSupport', 'sap/ui/core/IndicationColorSupp
 				oAccAttributes.role = "button";
 			} else {
 				oAccAttributes.role = "group";
-			}
-
-			/* ARIA region adding the aria-describedby to ObjectStatus */
-
-			if (sState !== ValueState.None) {
-				oAccAttributes.describedby = {
-					value: oObjStatus.getId() + "sapSRH",
-					append: true
-				};
 			}
 
 			oRm.accessibilityState(oObjStatus, oAccAttributes);

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(["sap/ui/core/library"],
@@ -51,7 +51,12 @@ sap.ui.define(["sap/ui/core/library"],
 			oRm.accessibilityState(oOA, {
 				role: "link"
 			});
+			if (!oOA.getTitle() && oOA.getText()) {
+			// in case of title only or text only, allow 100% of width to be taken
+				oRm.class("sapMObjectAttributeTextOnly");
+			}
 		}
+
 
 		if (sTooltip) {
 			oRm.attr("title", sTooltip);

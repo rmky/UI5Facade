@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,7 +14,7 @@ sap.ui.define([], function() {
 	 * Note: Do not access the functions of this helper directly, but via <code>sap.ui.table.utils.TableUtils.Binding...</code>
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @namespace
 	 * @alias sap.ui.table.utils._BindingUtils
 	 * @private

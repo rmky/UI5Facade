@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -43,7 +43,7 @@ sap.ui.define([
 	 *
 	 * @extends sap.ui.core.Control
 	 * @implements sap.ui.core.IFormContent
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -78,7 +78,9 @@ sap.ui.define([
 			active : {type : "boolean", group : "Misc", defaultValue : false},
 
 			/**
-			 * Defines the text value state.
+			 * Defines the text value state. The allowed values are from the enum type
+			 * <code>sap.ui.core.ValueState</code>. Since version 1.66 the <code>state</code> property also accepts
+			 * values from enum type <code>sap.ui.core.IndicationColor</code>.
 			 */
 			state : {type : "string", group : "Misc", defaultValue : ValueState.None},
 
@@ -255,7 +257,13 @@ sap.ui.define([
 		}
 
 		return {
-			description: ((this.getTitle() || "") + " " + (this.getText() || "") + " " + (sState !== null ? sState : "") + " " + (this.getTooltip() || "")).trim()
+			description: (
+				(this.getTitle() || "") + " " +
+				(this.getText() || "") + " " +
+				(sState !== null ? sState : "") + " " +
+				(this.getTooltip() || "") + " " +
+				sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("OBJECT_STATUS")
+			).trim()
 		};
 	};
 

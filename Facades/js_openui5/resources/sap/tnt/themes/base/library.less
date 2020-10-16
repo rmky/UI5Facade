@@ -2,7 +2,7 @@
 
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -19,6 +19,12 @@
 @_sap_tnt_NavigationList_ItemHeight: 3rem;
 @_sap_tnt_NavigationList_NoIconsGroupPadding: 1rem;
 @_sap_tnt_NavigationList_NoIconsNestedItemPadding: 1rem;
+@_sap_tnt_NavigationList_ItemFocusBorder: 1px dotted @sapUiContentFocusColor;
+@_sap_tnt_NavigationList_ItemFocusBorderIE: 1px dashed @sapUiContentFocusColor;
+@_sap_tnt_NavigationList_SelectedItemBorderColor: @sapUiListSelectionBorderColor;
+@_sap_tnt_NavigationList_Collapsed_SelectedGroupBorderColor: @_sap_tnt_NavigationList_SelectedItemBorderColor;
+@_sap_tnt_NavigationList_Collapsed_GroupBorderColor: @sapUiListBorderColor;
+@_sap_tnt_NavigationList_GroupBottomBorderColor: @sapUiListBorderColor;
 
 .sapTntNavLI {
 	margin: 0;
@@ -37,36 +43,44 @@
 	height: @_sap_tnt_NavigationList_ItemHeight;
 
 	box-sizing: border-box;
-
-	display: -webkit-box;
-	display: -webkit-flex;
-	display: flex;
-
-	-webkit-box-align: center;
-	-webkit-align-items: center;
-	align-items: center;
-
 	cursor: pointer;
 	background-color: @sapUiListBackground;
 
-	& > span {
+	span {
 		cursor: pointer;
 	}
 
 	&.sapTntNavLIItemDisabled {
 		cursor: auto;
+	  	opacity: @sapContent_DisabledOpacity;
 
-		& > span {
+		span {
 			cursor: auto;
 		}
 	}
 
-	& > .sapMText {
+	.sapMText {
 		color: @sapUiListTextColor;
 	}
 
-	& > .sapUiIcon {
+	.sapUiIcon {
 		color: @sapUiContentIconColor;
+	}
+
+	a {
+		width : 100%;
+		height: 100%;
+		text-decoration: none;
+		outline: none;
+
+		display: -webkit-box;
+		display: -webkit-flex;
+		display: flex;
+
+		-webkit-box-align: center;
+		-webkit-align-items: center;
+		align-items: center;
+		pointer-events: none;
 	}
 }
 
@@ -75,43 +89,43 @@
 	display: block;
 }
 
-.sapTntNavLIPopup .sapTntNavLIGroupItem > .sapMText {
+.sapTntNavLIPopup .sapTntNavLIGroupItem .sapMText {
 	padding: 0 1rem;
 }
 
-.sapTntNavLIPopup .sapTntNavLIGroup > .sapMText {
+.sapTntNavLIPopup .sapTntNavLIGroup .sapMText {
 	margin: 0 1rem 0 0;
 }
 
 .sapTntNavLI {
-  span.sapTntNavLIGroupIcon {
-	outline: none;
-	-webkit-user-select: none; /* Chrome all / Safari all */
-	-moz-user-select: none; /* Firefox all */
-	-ms-user-select: none; /* IE 10+ */// TODO remove after 1.62 version
-	user-select: none;
-  }
+	span.sapTntNavLIGroupIcon {
+		outline: none;
+		-webkit-user-select: none; /* Chrome all / Safari all */
+		-moz-user-select: none; /* Firefox all */
+		-ms-user-select: none; /* IE 10+ */// TODO remove after the end of support for Internet Explorer
+		user-select: none;
+	}
 
-  img.sapTntNavLIGroupIcon {
-	height: 1.125rem;
-	width: 1.125rem;
-	padding: 0.6875rem 0.9375rem;
-  }
+	img.sapTntNavLIGroupIcon {
+		height: 1.125rem;
+		width: 1.125rem;
+		padding: 0.6875rem 0.9375rem;
+	}
 }
 
 .sapTntNavLIPopup {
-  span.sapTntNavLIGroupIcon {
-	width: 1rem;
-	visibility: hidden;
-	min-width: 1rem;
-  }
+	span.sapTntNavLIGroupIcon {
+		width: 1rem;
+		visibility: hidden;
+		min-width: 1rem;
+	}
 
-  img.sapTntNavLIGroupIcon {
-	width: 1rem;
-	visibility: hidden;
-	min-width: 1rem;
-	padding: 0;
-  }
+	img.sapTntNavLIGroupIcon {
+		width: 1rem;
+		visibility: hidden;
+		min-width: 1rem;
+		padding: 0;
+	}
 }
 
 .sapTntNavLI .sapTntNavLIExpandIcon {
@@ -119,10 +133,12 @@
 	padding: 0.75rem 0;
 	font-size: 0.875rem;
 
+	pointer-events: all;
+
 	outline: none;
 	-webkit-user-select: none;  /* Chrome all / Safari all */
 	-moz-user-select: none;     /* Firefox all */
-	-ms-user-select: none;      /* IE 10+ */// TODO remove after 1.62 version
+	-ms-user-select: none;      /* IE 10+ */// TODO remove after the end of support for Internet Explorer
 	user-select: none;
 }
 
@@ -143,6 +159,14 @@
 	border-bottom: 1px solid @sapUiListBorderColor;
 }
 
+.sapTntNavLI:not(.sapTntNavLIPopup) .sapTntNavLIGroup[aria-expanded="true"] {
+	border-color: @_sap_tnt_NavigationList_GroupBottomBorderColor;
+}
+
+.sapTntNavLICollapsed .sapTntNavLIGroup {
+	border-color: @_sap_tnt_NavigationList_Collapsed_GroupBorderColor;
+}
+
 .sapTntNavLIItem:not(.sapTntNavLIItemDisabled):hover {
 	background-color: @sapUiListHoverBackground;
 }
@@ -151,11 +175,11 @@
 .sapTntNavLI .sapTntNavLIGroupItem.sapTntNavLIItem:not(.sapTntNavLIItemDisabled):active{
 	background-color: @sapUiListActiveBackground;
 
-	& > .sapMText {
+	.sapMText {
 		color: @sapUiListActiveTextColor;
 	}
 
-	& > .sapUiIcon {
+	.sapUiIcon {
 		color: @sapUiListActiveTextColor;
 	}
 }
@@ -172,8 +196,23 @@
 	background-color: @sapUiListSelectionHoverBackground;
 }
 
-.sapTntNavLIGroupItem.sapTntNavLIItem:last-child {
+.sapTntNavLI:not(.sapTntNavLIPopup) .sapTntNavLIGroupItem.sapTntNavLIItem:last-child {
 	border-bottom: 1px solid @sapUiListBorderColor;
+
+	&.sapTntNavLIItemSelected {
+		border-color: @sapUiListSelectionBorderColor;
+	}
+}
+
+.sapTntNavLIItemSelected:not(.sapTntNavLIItemDisabled) {
+	border-bottom: 1px solid @_sap_tnt_NavigationList_SelectedItemBorderColor;
+}
+
+.sapTntNavLICollapsed,
+.sapTntNavLIPopup {
+	.sapTntNavLIGroup.sapTntNavLIItemSelected {
+		border-color: @_sap_tnt_NavigationList_Collapsed_SelectedGroupBorderColor;
+	}
 }
 
 .sapTntNavLI li:focus,
@@ -181,9 +220,9 @@
 	outline: none;
 }
 
-.sapTntNavLI li:focus > .sapTntNavLIItem::before,
+.sapTntNavLI li:focus .sapTntNavLIItem::before,
 .sapTntNavLIItem:focus::before {
-	border: 1px dotted @sapUiContentFocusColor;
+	border: @_sap_tnt_NavigationList_ItemFocusBorder;
 	position: absolute;
 	content: " ";
 	top: 1px;
@@ -194,11 +233,11 @@
 	pointer-events: none;
 }
 
-html[data-sap-ui-browser^="ie"].sap-desktop,// TODO remove after 1.62 version
+html[data-sap-ui-browser^="ie"].sap-desktop,// TODO remove after the end of support for Internet Explorer
 html[data-sap-ui-browser^="ed"].sap-desktop {
-	.sapTntNavLI li:focus > .sapTntNavLIItem::before,
+	.sapTntNavLI li:focus .sapTntNavLIItem::before,
 	.sapTntNavLIItem:focus::before {
-		border: 1px dashed @sapUiContentFocusColor;
+		border: @_sap_tnt_NavigationList_ItemFocusBorderIE;
 	}
 }
 
@@ -206,12 +245,12 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 .sapTntNavLI:not(.sapTntNavLINoIcons) {
 
 	span.sapTntNavLIGroupIcon {
-		min-width: 3rem;
+		min-width: 2.75rem;
 		padding: 0.6875rem 0;
 	}
 
-	.sapTntNavLIGroupItem > .sapMText {
-		padding-left: 3rem;
+	.sapTntNavLIGroupItem .sapMText {
+		padding-left: 2.75rem;
 	}
 }
 
@@ -223,7 +262,7 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 	}
 
 	// nested items
-	.sapTntNavLIGroupItem > .sapMText {
+	.sapTntNavLIGroupItem .sapMText {
 		padding-left: @_sap_tnt_NavigationList_NoIconsNestedItemPadding;
 	}
 }
@@ -235,11 +274,11 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 		height: 2rem;
 	}
 
-	.sapTntNavLIPopup .sapTntNavLIGroupItem > .sapMText {
+	.sapTntNavLIPopup .sapTntNavLIGroupItem .sapMText {
 		padding: 0 0.5rem;
 	}
 
-	.sapTntNavLIPopup .sapTntNavLIGroup > .sapMText {
+	.sapTntNavLIPopup .sapTntNavLIGroup .sapMText {
 		margin: 0 0.5rem 0 0;
 	}
 
@@ -260,11 +299,12 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 	.sapTntNavLI:not(.sapTntNavLINoIcons) {
 
 		span.sapTntNavLIGroupIcon {
-			min-width: 2rem;
-			padding: 0.5rem;
+			min-width: 2.75rem;
+			padding: 0.5rem 0;
 		}
 	}
 }
+
 /* END "NavigationList.less" */
 
 /* START "ToolHeader.less" */
@@ -272,9 +312,10 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 /* CSS for control sap.tnt/ToolHeader  */
 /* Base theme                          */
 /* =================================== */
-
-@_sap_tnt_ToolHeader_ITHOverflowButtonTop: 0.5rem;
 @_sap_tnt_ToolHeader_Height: 3rem;
+@_sap_tnt_ToolHeader_AvatarBackground: lighten(saturate(spin(@sapUiAccent6, 348), 36), 28);
+@_sap_tnt_ToolHeader_AvatarColor: @sapUiBaseText;
+@_sap_tnt_ToolHeader_BorderColor: contrast(@sapShellColor, @sapUiContentFocusColor, @sapUiContentContrastFocusColor, @sapContent_ContrastTextThreshold);
 
 .sapTntToolHeaderPopover.sapMOTAPopover.sapMPopover .sapMPopoverCont .sapMPopoverScroll,
 .sapTntToolHeaderPopover.sapMOTAPopover.sapMPopover .sapMPopoverCont .sapMPopoverScroll .sapMBtn {
@@ -285,13 +326,19 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 	height: @_sap_tnt_ToolHeader_Height;
 }
 
-.sapTntToolHeader .sapMITH {
-	height: 3rem;
+// ==========================================================================
+// sap.m.IconTabHeader overriding
+// ==========================================================================
+
+.sapMIBar.sapTntToolHeader .sapMBarChild.sapMITH {
+	height: @_sap_tnt_ToolHeader_Height;
 	box-shadow: none;
+	padding: 0 1rem;
+	flex: 1;
+	min-width: 0; // fixes Chrome flex issue
 
 	.sapMITBHead {
 		margin: 0;
-		padding: 0 1px;
 
 		.sapMITBText  {
 			font-size: @sapMFontLargeSize;
@@ -301,28 +348,32 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 			height: 0.75rem;
 		}
 	}
-
-	.sapMITBScrollContainer {
-		margin: 0 3.25rem 0 0.75rem;
-		padding-top: 0;
-	}
-
-	.sapMITBArrowScroll {
-		padding: 0;
-		visibility: hidden;
-	}
-
-	.sapMBtnInline {
-		top: 0;
-	}
-}
-
-.sapUiSizeCompact .sapTntToolHeader .sapMITH .sapMBtnInline {
-	top: @_sap_tnt_ToolHeader_ITHOverflowButtonTop;
 }
 
 .sap-phone .sapTntToolHeader .sapMITH .sapMITBHead .sapMITBFilter .sapMITBText + .sapMITBContentArrow  {
 	height: 0.825rem;
+}
+
+// ==========================================================================
+// sap.m.Avatar / sap.f.Avatar overriding
+// ==========================================================================
+
+.sapTntToolHeader .sapFAvatar {
+	background-color: @_sap_tnt_ToolHeader_AvatarBackground;
+	.sapFAvatarInitialsHolder,
+	.sapUiIcon  {
+		color: @_sap_tnt_ToolHeader_AvatarColor;
+	}
+}
+
+// ==========================================================================
+// sap.m.MenuButton overriding
+// ==========================================================================
+
+.sapTntToolHeader {
+	.sapMMenuBtn.sapMMenuBtnRegular .sapMBtnEmphasized.sapMBtnInner::after {
+		content: '\e287';
+	}
 }
 /* END "ToolHeader.less" */
 
@@ -331,6 +382,9 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 /* CSS for control sap.tnt/SideNavigation  */
 /* Base theme                              */
 /* ======================================= */
+
+@_sap_tnt_SideNavigation_NavigationSeparatorBackgroundColor: @sapUiGroupContentBorderColor;
+@_sap_tnt_SideNavigation_NavigationSeparatorHeight: 1px;
 
 .sapTntSideNavigation {
   display: -webkit-box;
@@ -359,38 +413,47 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 
 .sapTntSideNavigationNotExpanded {
 
-  .sapTntNavLIText, .sapTntNavLIExpandIcon  {
-    display: none;
-  }
-  .sapTntSideNavigationSeparator {
-    margin: 0.25rem 0.5rem;
-  }
+	.sapTntNavLIText, .sapTntNavLIExpandIcon  {
+		display: none;
+	}
+	.sapTntSideNavigationSeparator {
+		margin: 0.25rem 0.5rem 0.25rem 0.5rem;
+	}
 
-  .sapTntSideNavigationFlexible {
-    padding-right: 3rem;
-    width: 6rem;
-  }
+	.sapTntSideNavigationFlexible {
+		padding-right: 3rem;
+		width: 6rem;
+	}
+
+	.sapTnTNavLINotExpandedTriangle:not(.sapTntNavLIItemDisabled):after {
+		content: "";
+		width: 0;
+		height: 0;
+		border-left: 0.375rem solid transparent;
+		border-bottom: 0.375rem solid @sapUiContentIconColor;
+		position:absolute;
+		right: 0.1875rem;
+		bottom:0.125rem;
+	}
 }
 
 .sapTntSideNavigationFlexible {
-  -webkit-box-flex: 1;
-  -webkit-flex-grow: 1;
-  flex-grow: 1;
-
-  -webkit-flex-basis: 100%;
-  flex-basis: 100%;
-
-  position: relative;
-  overflow: hidden;
-
-  box-sizing: border-box;
+	-webkit-box-flex: 1;
+	-webkit-flex-grow: 1;
+	flex-grow: 1;
+	-webkit-flex-basis: 100%;
+	flex-basis: 100%;
+	position: relative;
+	overflow: hidden;
+	box-sizing: border-box;
+	outline: none;
 }
 
 .sapTntSideNavigationSeparator {
-  margin: 0.25rem 1rem;
-  height: 1px;
-  min-height: 1px;
-   background-color: @sapUiToolbarSeparatorColor;
+	margin: 0.25rem 0.875rem 0.25rem 0.875rem;
+	height: @_sap_tnt_SideNavigation_NavigationSeparatorHeight;
+	min-height: @_sap_tnt_SideNavigation_NavigationSeparatorHeight;
+	background-color: @_sap_tnt_SideNavigation_NavigationSeparatorBackgroundColor;
 }
 
 .sapTntSideNavigationFixed {
@@ -412,7 +475,7 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
   outline: none;
   -webkit-user-select: none;  /* Chrome all / Safari all */
   -moz-user-select: none;     /* Firefox all */
-  -ms-user-select: none;      /* IE 10+ */// TODO remove after 1.62 version
+  -ms-user-select: none;      /* IE 10+ */// TODO remove after the end of support for Internet Explorer
   user-select: none;
   color: @sapUiContentIconColor;
 }
@@ -450,12 +513,12 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
   .sapTntSideNavigationNotExpanded {
 
     .sapTntSideNavigationSeparator {
-      margin: 0.125rem 0.25rem;
+     	margin: 0.25rem 0.5rem 0.25rem 0.5rem;
     }
   }
 
   .sapTntSideNavigationSeparator {
-    margin: 0.125rem 0.5rem;
+	margin: 0.25rem 0.5rem 0.25rem 0.5rem;
   }
 
   .sapTntSideNavigationScrollIcon {
@@ -776,8 +839,9 @@ html[dir=rtl] {
 @_sap_tnt_InfoLabel_Margin: 0.9375rem;
 @_sap_tnt_InfoLabel_NoTextPadding: 0.5625rem;
 @_sap_tnt_InfoLabel_NoTextDisplayOnlyPadding: 0.5rem;
-@_sap_tnt_InfoLabel_LineHeight: 1.125rem;
+@_sap_tnt_InfoLabel_LineHeight: 1rem;
 @_sap_tnt_InfoLabel_LineHeightDisplayOnly: 1rem;
+@_sap_tnt_InfoLabel_NarrowPadding: 0 0.3125rem;
 
 /* ==========================================================================
    Root element
@@ -806,7 +870,7 @@ html[dir=rtl] {
 }
 
 .sapTntInfoLabelRenderModeNarrow{
-	padding: 0 0.3125rem;
+	padding: @_sap_tnt_InfoLabel_NarrowPadding
 }
 
 /* ==========================================================================
@@ -831,12 +895,41 @@ html[dir=rtl] {
 		}
    }
 
+   /* ==========================================================================
+   InfoLabel With Icon
+   ========================================================================== */
+
+.sapTntInfoLabel.sapTntInfoLabelWithIcon {
+	padding: @_sap_tnt_InfoLabel_NarrowPadding;
+
+	.sapTntInfoLabelInner .sapTntInfoLabelText {
+		vertical-align: top;
+	}
+
+	.sapUiIcon {
+		padding-right: 0.1875rem;
+		line-height: @_sap_tnt_InfoLabel_LineHeight;
+	}
+
+	&.sapTntInfoLabelNoText {
+		padding: @_sap_tnt_InfoLabel_NarrowPadding;
+
+		.sapUiIcon {
+				padding-right: 0;
+		}
+	}
+}
+
 /* ==========================================================================
    InfoLabel in Form
    ========================================================================== */
 
 .sapUiFormM:not(.sapUiFormEdit) .sapUiFormResGridCont > div .sapTntInfoLabel {
 	font-size: 1rem;
+}
+
+.sapUiFormM:not(.sapUiFormEdit) .sapUiFormResGridCont > div .sapTntInfoLabel.sapTntInfoLabelWithIcon .sapUiIcon {
+	font-size: @sapMFontSmallSize;
 }
 
 .sapUiFormEdit .sapTntInfoLabel:not(.sapTntInfoLabelDisplayOnly) {
@@ -846,5 +939,17 @@ html[dir=rtl] {
 /* Compact size */
 .sapUiSizeCompact .sapUiFormEdit .sapTntInfoLabel:not(.sapTntInfoLabelDisplayOnly) {
 	margin: 0.4375rem 0;
+}
+
+.sapUiFormResGridCont .sapTntInfoLabel.sapTntInfoLabelWithIcon.sapTntInfoLabelDisplayOnly .sapUiIcon {
+	line-height: 0.875rem;
+}
+
+/* ==========================================================================
+   InfoLabel in Table
+   ========================================================================== */
+
+.sapMListTbl .sapTntInfoLabel.sapTntInfoLabelWithIcon .sapUiIcon:not(.sapMLIBImgNav):not(.sapMBtnIcon) {
+	font-size: @sapMFontSmallSize;
 }
 /* END "InfoLabel.less" */

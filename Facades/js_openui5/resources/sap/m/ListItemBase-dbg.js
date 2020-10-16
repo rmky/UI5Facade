@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -74,7 +74,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -527,6 +527,11 @@ function(
 
 		this._oDeleteControl._bExcludeFromTabChain = true;
 
+		// prevent disabling of internal controls by the sap.ui.core.EnabledPropagator
+		this._oDeleteControl.getEnabled = function() {
+			return true;
+		};
+
 		return this._oDeleteControl;
 	};
 
@@ -559,6 +564,11 @@ function(
 		}, this);
 
 		this._oDetailControl._bExcludeFromTabChain = true;
+
+		// prevent disabling of internal controls by the sap.ui.core.EnabledPropagator
+		this._oDetailControl.getEnabled = function() {
+			return true;
+		};
 
 		return this._oDetailControl;
 	};
@@ -607,6 +617,11 @@ function(
 			this.informList("Select", bSelected);
 		}, this);
 
+		// prevent disabling of internal controls by the sap.ui.core.EnabledPropagator
+		this._oSingleSelectControl.getEnabled = function() {
+			return true;
+		};
+
 		return this._oSingleSelectControl;
 	};
 
@@ -638,6 +653,11 @@ function(
 			this.setSelected(bSelected);
 			this.informList("Select", bSelected);
 		}, this);
+
+		// prevent disabling of internal controls by the sap.ui.core.EnabledPropagator
+		this._oMultiSelectControl.getEnabled = function() {
+			return true;
+		};
 
 		return this._oMultiSelectControl;
 	};
@@ -1139,7 +1159,7 @@ function(
 		} else if ($Tabbables.length) {
 			var iFocusPos = oList._iLastFocusPosOfItem || 0;
 			iFocusPos = $Tabbables[iFocusPos] ? iFocusPos : -1;
-			$Tabbables.eq(iFocusPos).focus();
+			$Tabbables.eq(iFocusPos).trigger("focus");
 		}
 
 		oEvent.preventDefault();

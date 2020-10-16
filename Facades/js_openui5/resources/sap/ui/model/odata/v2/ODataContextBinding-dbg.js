@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -24,10 +24,10 @@ sap.ui.define([
 	 * @param {sap.ui.model.Model} oModel
 	 * @param {string} sPath
 	 * @param {sap.ui.model.Context} oContext
-	 * @param {map} [mParameters] A map which contains additional parameters for the binding.
+	 * @param {object} [mParameters] A map which contains additional parameters for the binding.
 	 * @param {string} [mParameters.expand] For the OData <code>$expand</code> query option parameter which should be included in the request
 	 * @param {string} [mParameters.select] For the OData <code>$select</code> query option parameter which should be included in the request
-	 * @param {map} [mParameters.custom] An optional map of custom query parameters. Custom parameters must not start with <code>$</code>.
+	 * @param {Object<string,string>} [mParameters.custom] An optional map of custom query parameters. Custom parameters must not start with <code>$</code>.
 	 * @param {boolean} [mParameters.createPreliminaryContext] Whether a preliminary Context will be created
 	 * @param {boolean} [mParameters.usePreliminaryContext] Whether a preliminary Context will be used
 	 * @abstract
@@ -132,13 +132,13 @@ sap.ui.define([
 	/**
 	 * @see sap.ui.model.ContextBinding.prototype.checkUpdate
 	 *
-	 * @param {boolean} bForceUpdate
+	 * @param {boolean} bForceUpdate unused
 	 */
-	ODataContextBinding.prototype.checkUpdate = function(bForceUpdate) {
+	ODataContextBinding.prototype.checkUpdate = function(/*bForceUpdate*/) {
 		var oContext,
+			mParameters = this.mParameters,
 			bPreliminary = this.oContext && this.oContext.isPreliminary();
 
-		// If binding is initial or a request is pending, nothing to do here
 		if (this.bInitial || this.bPendingRequest) {
 			return;
 		}
@@ -148,24 +148,22 @@ sap.ui.define([
 			return;
 		}
 
-		// If context is preliminary and usePreliminary is not set, exit here
 		if (bPreliminary && !this.bUsePreliminaryContext) {
 			return;
 		}
 
-		// clone parameters and remove preliminaryContext flags as the preliminary context should never be created during #checkUpdate
-		// it should only be created during #initialize and #refresh
-		if (!this._mParameters && this.mParameters.createPreliminaryContext){
-			this._mParameters =  jQuery.extend({}, this.mParameters);
-			delete this._mParameters.usePreliminaryContext;
-			delete this._mParameters.createPreliminaryContext;
+		// a preliminary context must only be created from #initialize and #refresh
+		if (mParameters.createPreliminaryContext) {
+			mParameters = Object.assign({}, mParameters);
+			delete mParameters.createPreliminaryContext;
 		}
 
-		oContext = this.oModel.createBindingContext(this.sPath, this.oContext, this._mParameters);
-		//'null' is a valid value for navigation properties (e.g. if no entity is assigned). We also need to fire a change in this case
+		oContext = this.oModel.createBindingContext(this.sPath, this.oContext, mParameters);
+		// null is a valid value for navigation properties in case no entity is assigned =>
+		// We also need to fire a change in this case
 		if (oContext !== undefined && oContext !== this.oElementContext) {
 			this.oElementContext = oContext;
-			this._fireChange({ reason: ChangeReason.Context });
+			this._fireChange({reason : ChangeReason.Context});
 		}
 	};
 

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -18,7 +18,8 @@ sap.ui.define([
 	"sap/base/util/isEmptyObject",
 	"sap/base/Log",
 	"sap/ui/thirdparty/jquery",
-	"./RouterHashChanger"
+	"./RouterHashChanger",
+	"sap/ui/core/Component"
 ],
 	function(
 		library,
@@ -34,7 +35,8 @@ sap.ui.define([
 		isEmptyObject,
 		Log,
 		jQuery,
-		RouterHashChanger
+		RouterHashChanger,
+		Component
 	) {
 	"use strict";
 
@@ -168,7 +170,7 @@ sap.ui.define([
 		 *          }
 		 *     });
 		 * </pre>
-		 * @param {boolean} [oConfig.async=false] @since 1.34. Whether the views which are loaded within this router instance asyncly. The default value is set to false.
+		 * @param {boolean} [oConfig.async=false] @since 1.34. Whether the views which are loaded within this router instance asyncly
 		 * @param {sap.ui.core.UIComponent} [oOwner] the Component of all the views that will be created by this Router,<br/>
 		 * will get forwarded to the {@link sap.ui.core.routing.Views#constructor}.<br/>
 		 * If you are using the componentMetadata to define your routes you should skip this parameter.
@@ -194,7 +196,7 @@ sap.ui.define([
 		 *         path: "my.application.namespace",
 		 *         viewType: "XML"
 		 *     },
-		 *     // You should only use this constructor when you are not using a router with a component.
+		 *     // You should only use this constructor when you are using a router without a component.
 		 *     // Please use the metadata of a component to define your routes and targets.
 		 *     // The documentation can be found here: {@link sap.ui.core.UIComponent.extend}.
 		 *     null,
@@ -286,8 +288,51 @@ sap.ui.define([
 
 				this._oRouter.bypassed.add(jQuery.proxy(this._onBypassed, this));
 
-				if (oRouterHashChanger) {
-					this.setHashChanger(oRouterHashChanger);
+				if (!oRouterHashChanger) {
+					oRouterHashChanger = HashChanger.getInstance().createRouterHashChanger();
+				}
+				this.setHashChanger(oRouterHashChanger);
+
+				var oParentComponent = this._oOwner && Component.getOwnerComponentFor(this._oOwner);
+				var oParentRouter = oParentComponent && oParentComponent.getRouter();
+
+				if (oParentRouter) {
+					// attach titleChanged event and forward event parameters to parent router
+					this.attachTitleChanged(function(oEvent) {
+						if (this._oOwner && !this._oOwner._bRoutingPropagateTitle) {
+							return;
+						}
+
+						var mParameters = oEvent.getParameters(),
+							aNestedHistory,
+							mForwardParameters;
+
+						if (oParentRouter._fnTitleChangedFiredOnChild) {
+							// When the nested router informed its parent router to wait for the "titleChanged"
+							// event on the nested router, the nested router can now tell it parent to continue
+							// with its own "titleChanged" event
+							oParentRouter._fnTitleChangedFiredOnChild(mParameters);
+						} else {
+							// make a copy of the nested history to avoid changing the original value
+							aNestedHistory = mParameters.nestedHistory.slice();
+							aNestedHistory.unshift({
+								ownerComponentId: oParentRouter._oOwner.getId(),
+								history: oParentRouter.getTitleHistory()
+							});
+
+							mForwardParameters = {
+								// mark the event as propagated to avoid the self history modification
+								// in Router.prototype.fireTitleChanged
+								propagated: true,
+								title: mParameters.title,
+								history: mParameters.history,
+								// add its own history to the nested history information
+								nestedHistory: aNestedHistory
+							};
+
+							oParentRouter.fireTitleChanged(mForwardParameters);
+						}
+					});
 				}
 			},
 
@@ -336,10 +381,6 @@ sap.ui.define([
 				var that = this,
 					sHash;
 
-				if (!this.oHashChanger) {
-					this.oHashChanger = HashChanger.getInstance().createRouterHashChanger();
-				}
-
 				if (this._bIsInitialized) {
 					Log.warning("Router is already initialized.", this);
 					return this;
@@ -363,17 +404,7 @@ sap.ui.define([
 				if (this._oTargets) {
 					var oHomeRoute = this._oRoutes[this._oConfig.homeRoute];
 
-					this._oTargets.attachTitleChanged(function(oEvent) {
-
-						var oEventParameters = oEvent.getParameters();
-
-						if (oHomeRoute && isHomeRouteTarget(oEventParameters.name, oHomeRoute._oConfig.name)) {
-							oEventParameters.isHome = true;
-						}
-
-						this.fireTitleChanged(oEventParameters);
-
-					}, this);
+					this._oTargets.attachTitleChanged(this._forwardTitleChanged, this);
 
 					this._aHistory = [];
 
@@ -403,9 +434,24 @@ sap.ui.define([
 				return this;
 			},
 
+			_forwardTitleChanged: function(oEvent) {
+				var oParameters = oEvent.getParameters();
+				// create a new parameter object for firing the titleChanged event on Router
+				var oEventParameters = {
+					title: oParameters.title
+				};
+
+				var oHomeRoute = this._oRoutes[this._oConfig.homeRoute];
+
+				if (oHomeRoute && isHomeRouteTarget(oParameters.name, oHomeRoute._oConfig.name)) {
+					oEventParameters.isHome = true;
+				}
+
+				this.fireTitleChanged(oEventParameters);
+			},
 
 			/**
-			 * Stops to listen to the <code>hashChange</code> of the browser.
+			 * Stops to listen to the <code>hashchange</code> of the browser.
 			 *
 			 * If you want the router to start again, call {@link #initialize} again.
 			 * @returns { sap.ui.core.routing.Router } this for chaining.
@@ -424,12 +470,21 @@ sap.ui.define([
 					this.oHashChanger.detachEvent("hashReplaced", this.fnHashReplaced);
 				}
 
-				if (this._matchedRoute) {
-					this._matchedRoute.fireEvent("switched");
-					this._matchedRoute = null;
+				if (this._oTargets) {
+					this._oTargets.detachTitleChanged(this._forwardTitleChanged, this);
+
+					// remove the last saved title since the router is reset
+					this._oTargets._oLastTitleTarget = {};
+				}
+
+				if (this._oMatchedRoute) {
+					this._oMatchedRoute._routeSwitched();
+					this._oMatchedRoute = null;
 				}
 
 				this._bIsInitialized = false;
+
+				delete this._oPreviousTitleChangedRoute;
 
 				return this;
 
@@ -458,6 +513,19 @@ sap.ui.define([
 				return this._bIsInitialized === true;
 			},
 
+			/**
+			 * Returns the hash changer instance which is used in the router.
+			 *
+			 * This hash changer behaves differently than the hash changer that is returned by
+			 * {@link sap.ui.core.routing.HashChanger.getInstance}, especially when the router is created in a component
+			 * which is nested within another component. When this hash changer is used, the other hash parts which
+			 * belong to the parent components are kept in the browser hash, while the complete browser hash is changed
+			 * when it's changed by using the {@link sap.ui.core.routing.HashChanger.getInstance}.
+			 *
+			 * @returns {sap.ui.core.routing.RouterHashChanger} The hash changer
+			 * @public
+			 * @since 1.75
+			 */
 			getHashChanger: function() {
 				return this.oHashChanger;
 			},
@@ -531,22 +599,22 @@ sap.ui.define([
 			 *
 			 * @param {string} sName Name of the route
 			 * @param {object} [oParameters] Parameters for the route
-			 * @returns {string} The unencoded pattern with interpolated arguments
+			 * @returns {string | undefined} The unencoded pattern with interpolated arguments or <code>undefined</code> if no matching route can be determined
 			 * @public
 			 */
 			getURL : function (sName, oParameters) {
 				var oRoute = this.getRoute(sName);
-				if (!oRoute) {
+				if (oRoute) {
+					return oRoute.getURL(oParameters);
+				} else {
 					Log.warning("Route with name " + sName + " does not exist", this);
-					return;
 				}
-				return oRoute.getURL(oParameters);
 			},
 
 			/**
 			 * Returns whether the given hash can be matched by any of the routes in the router.
 			 *
-			 * @param {string} Hash which will be tested by the Router
+			 * @param {string} sHash which will be tested by the Router
 			 * @returns {boolean} Whether the hash can be matched
 			 * @public
 			 * @since 1.58.0
@@ -555,6 +623,47 @@ sap.ui.define([
 				return Object.keys(this._oRoutes).some(function(sRouteName) {
 					return this._oRoutes[sRouteName].match(sHash);
 				}.bind(this));
+			},
+
+			/**
+			 * Returns the first route which matches the given hash or <code>undefined</code> if no matching route can be determined
+			 *
+			 * @param {string} sHash The hash of the desired route
+			 * @returns {sap.ui.core.routing.Route|undefined} The matched route
+			 * @private
+			 * @ui5-restricted sap.ui.core
+			 */
+			getRouteByHash : function(sHash) {
+				for (var sRouteName in this._oRoutes) {
+					if (this._oRoutes.hasOwnProperty(sRouteName)) {
+						var oRoute = this.getRoute(sRouteName);
+						if (oRoute.match(sHash)) {
+							return oRoute;
+						}
+					}
+				}
+			},
+
+			/**
+			 * Returns a route info object containing the name and arguments of the route
+			 * which matches the given hash or <code>undefined</code>.
+			 *
+			 * @param {string} sHash The hash to be matched
+			 * @returns {object|undefined} An object containing the route <code>name</code> and the <code>arguments</code> or <code>undefined</code>
+			 * @public
+			 * @since 1.75
+			 */
+			getRouteInfoByHash : function(sHash) {
+				var oRoute = this.getRouteByHash(sHash);
+
+				if (!oRoute) {
+					return undefined;
+				}
+
+				return {
+					name: oRoute._oConfig.name,
+					arguments:  oRoute.getPatternArguments(sHash)
+				};
 			},
 
 			/**
@@ -645,10 +754,34 @@ sap.ui.define([
 			 * If the given route name can't be found, an error message is logged to the console and the hash will be
 			 * changed to the empty string.
 			 *
-			 * @param {string} sName
-			 *             Name of the route
-			 * @param {object} [oParameters]
-			 *             Parameters for the route
+			 * This method excecutes following steps:
+			 * 1. Interpolates the pattern with the given parameters
+			 * 2. Sets the interpolated pattern to the browser's hash
+			 * 3. Reacts to the browser's <code>hashchange</code> event to find out the route which matches the hash
+			 *
+			 * If there are multiple routes that have the same pattern,
+			 * the call of navTo with a specific route won't necessarily trigger the matching process of this route.
+			 * In the end, the first route in the router configuration list that matches the browser hash will be chosen.
+			 *
+			 * If the browser hash is already set with the interpolated pattern from the navTo call,
+			 * nothing will happen because the browser won't fire <code>hashchange</code> event in this case.
+			 *
+			 * @param {string} sName The name of the route
+			 * @param {object} [oParameters] The parameters for the route.
+			 * 				As of Version 1.75 the recommendation is naming the query parameter with a leading "?" character,
+			 * 				which is identical to the definition in the route's pattern. The old syntax without a leading
+			 * 				"?" character is deprecated.
+			 * 				e.g. <b>Route:</b> <code>{parameterName1}/:parameterName2:/{?queryParameterName}</code>
+			 *				<b>Parameter:</b>
+			 *				<pre>
+			 *				{
+			 *					parameterName1: "parameterValue1",
+			 *					parameterName2: "parameterValue2",
+			 * 					"?queryParameterName": {
+			 * 						queryParameterName1: "queryParameterValue1"
+			 * 					}
+			 * 				}
+			 * 				</pre>
 			 * @param {object} [oComponentTargetInfo]
 			 *             Information for route name and parameters of the router in nested components. When any target
 			 *             of the route which is specified with the <code>sName</code> parameter loads a component and a
@@ -661,13 +794,14 @@ sap.ui.define([
 			 *  used in the Route which is specified by <code>sName</code>.
 			 * @param {string} [oComponentTargetInfo.anyName.route] The name of the route which should be matched after this
 			 *  navTo call.
-			 * @param {object} [oComponentTargetInfo.anyName.parameters] The parameters which are needed by the route.
+			 * @param {object} [oComponentTargetInfo.anyName.parameters] The parameters for the route. See the
+			 * 				documentation of the <code>oParameters</code>.
 			 * @param {object} [oComponentTargetInfo.anyName.componentTargetInfo] The information for the targets within a
 			 *  nested component. This shares the same structure with the <code>oComponentTargetInfo</code> parameter.
 			 * @param {boolean} [bReplace=false]
-			 *             If set to <code>true</code>, the hash is replaced, and there will be no entry in the browser
-			 *             history, if set to <code>false</code>, the hash is set and the entry is stored in the browser
-			 *             history.
+			*             If set to <code>true</code>, the hash is replaced, and there will be no entry in the browser
+			*             history. If set to <code>false</code>, the hash is set and the entry is stored in the browser
+			*             history.
 			 * @public
 			 * @returns {sap.ui.core.routing.Router} this for chaining.
 			 */
@@ -717,7 +851,7 @@ sap.ui.define([
 			 * @returns {string} The name of the last matched route
 			 */
 			_getLastMatchedRouteName: function() {
-				return this._matchedRoute && this._matchedRoute._oConfig.name;
+				return this._oMatchedRoute && this._oMatchedRoute._oConfig.name;
 			},
 
 			/**
@@ -1167,6 +1301,16 @@ sap.ui.define([
 			 * @param {string} oEvent.getParameters.history.title The title
 			 * @param {string} oEvent.getParameters.history.hash The hash
 			 * @param {boolean} oEvent.getParameters.history.isHome The app home indicator
+			 * @param {array} oEvent.getParameters.nestedHistory An array which contains the title history information of the current router and of the router of the nested components,
+			 * 		so the application doesn't need to merge the <code>nestedHistory</code> with the <code>history</code> parameter together.
+			 * 		If a hierarchical control is used to show the title information (like the sap.m.Breadcrumbs control), the application can simply use the <code>nestedHistory</code>
+			 * 		to build up the control and doesn't need the <code>history</code> anymore.
+			 * @param {string} oEvent.getParameters.nestedHistory.ownerComponentId The id of the component which is associated to the history entries
+			 * @param {array} oEvent.getParameters.nestedHistory.history An array which contains the history of previous titles of the router of the associated component
+			 * @param {string} oEvent.getParameters.nestedHistory.history.title The title
+			 * @param {string} oEvent.getParameters.nestedHistory.history.hash The hash
+			 * @param {boolean} oEvent.getParameters.nestedHistory.history.isHome The app home indicator
+			 * @param {boolean} oEvent.getParameters.propagated Whether the titleChanged event is triggered by a nested component
 			 * @public
 			 */
 
@@ -1213,55 +1357,94 @@ sap.ui.define([
 
 			// private
 			fireTitleChanged : function(mParameters) {
-				var sDirection = History.getInstance().getDirection(),
-					sHash = this.oHashChanger.getHash(),
-					HistoryDirection = library.routing.HistoryDirection,
-					oLastHistoryEntry = this._aHistory[this._aHistory.length - 1],
-					oNewHistoryEntry;
-
-				// when back navigation, the last history state should be removed - except home route
-				if (sDirection === HistoryDirection.Backwards && oLastHistoryEntry && !oLastHistoryEntry.isHome) {
-					// but only if the last history entrie´s title is not the same as the current one
-					if (oLastHistoryEntry && oLastHistoryEntry.title !== mParameters.title) {
-						this._aHistory.pop();
-					}
-				} else if (oLastHistoryEntry && oLastHistoryEntry.hash == sHash) {
-					// if no actual navigation took place, we only need to update the title
-					oLastHistoryEntry.title = mParameters.title;
-
-					// check whether there's a duplicate history entry with the last history entry and remove it if there is
-					this._aHistory.some(function(oEntry, i, aHistory) {
-						if (i < aHistory.length - 1 && deepEqual(oEntry, oLastHistoryEntry)) {
-							return aHistory.splice(i, 1);
-						}
-					});
-				} else {
-					if (this._bLastHashReplaced) {
-						// if the current hash change is done via replacement, the last history entry should be removed
-						this._aHistory.pop();
-					}
-
-					oNewHistoryEntry = {
-						hash: sHash,
-						title: mParameters.title
-					};
-
-					// Array.some is sufficient here, as we ensure there is only one occurence
-					this._aHistory.some(function(oEntry, i, aHistory) {
-						if (deepEqual(oEntry, oNewHistoryEntry)) {
-							return aHistory.splice(i, 1);
-						}
-					});
-
-					// push new history state into the stack
-					this._aHistory.push(oNewHistoryEntry);
+				// if the router is stopped, don't fire any titleChanged event
+				if (this.isStopped()) {
+					return this;
 				}
 
-				mParameters.history = this._aHistory.slice(0, -1);
+				// whether to fired the event immediately
+				// If there's no promise to wait for, the event should be
+				// fired immediately
+				var bImmediateFire = !this._pWaitForTitleChangedOnChild;
 
-				this.fireEvent(Router.M_EVENTS.TITLE_CHANGED, mParameters);
+				if (!mParameters.propagated) {
+					mParameters.propagated = false;
 
-				this._bLastHashReplaced = false;
+					var sDirection = History.getInstance().getDirection(),
+						sHash = this.getHashChanger().getHash(),
+						HistoryDirection = library.routing.HistoryDirection,
+						oLastHistoryEntry = this._aHistory[this._aHistory.length - 1],
+						oNewHistoryEntry;
+
+					// when back navigation, the last history state should be removed - except home route
+					if (sDirection === HistoryDirection.Backwards && oLastHistoryEntry && !oLastHistoryEntry.isHome) {
+						// but only if the last history entrie´s title is not the same as the current one
+						if (oLastHistoryEntry && oLastHistoryEntry.title !== mParameters.title) {
+							this._aHistory.pop();
+						}
+					} else if (oLastHistoryEntry && oLastHistoryEntry.hash == sHash) {
+						// if no actual navigation took place, we only need to update the title
+						oLastHistoryEntry.title = mParameters.title;
+
+						// check whether there's a duplicate history entry with the last history entry and remove it if there is
+						this._aHistory.some(function(oEntry, i, aHistory) {
+							if (i < aHistory.length - 1 && deepEqual(oEntry, oLastHistoryEntry)) {
+								return aHistory.splice(i, 1);
+							}
+						});
+					} else {
+						if (this._bLastHashReplaced) {
+							// if the current hash change is done via replacement, the last history entry should be removed
+							this._aHistory.pop();
+						}
+
+						oNewHistoryEntry = {
+							hash: sHash,
+							title: mParameters.title
+						};
+
+						// Array.some is sufficient here, as we ensure there is only one occurence
+						this._aHistory.some(function(oEntry, i, aHistory) {
+							if (deepEqual(oEntry, oNewHistoryEntry)) {
+								return aHistory.splice(i, 1);
+							}
+						});
+
+						// push new history state into the stack
+						this._aHistory.push(oNewHistoryEntry);
+					}
+
+					mParameters.history = this._aHistory.slice(0, -1);
+					mParameters.nestedHistory = [{
+						history: this.getTitleHistory(),
+						ownerComponentId: this._oOwner && this._oOwner.getId()
+					}];
+
+					this._bLastHashReplaced = false;
+					this._oPreviousTitleChangedRoute = this._oMatchedRoute;
+
+					// The router's own titleChanged event is either scheduled or fired, the further route match in
+					// its child router should be propagated directly. Setting the following flag to false to let the
+					// event be propagated directly.
+					this._bFireTitleChanged = false;
+
+					if (this._pWaitForTitleChangedOnChild) {
+						this._pWaitForTitleChangedOnChild.then(function(oChildParameters) {
+							mParameters.title = oChildParameters.title;
+							mParameters.propagated = true;
+							// add all nestedHistory entry from the child to the current nestedHistory
+							Array.prototype.push.apply(mParameters.nestedHistory, oChildParameters.nestedHistory);
+
+							this._stopWaitingTitleChangedFromChild();
+
+							this.fireEvent(Router.M_EVENTS.TITLE_CHANGED, mParameters);
+						}.bind(this));
+					}
+				}
+
+				if (bImmediateFire) {
+					this.fireEvent(Router.M_EVENTS.TITLE_CHANGED, mParameters);
+				}
 
 				return this;
 			},
@@ -1285,6 +1468,19 @@ sap.ui.define([
 				return this._aHistory || [];
 			},
 
+			_waitForTitleChangedOn: function(oNestedRouter) {
+				if (this._bFireTitleChanged) {
+					this._pWaitForTitleChangedOnChild = new Promise(function(resolve) {
+						this._fnTitleChangedFiredOnChild = resolve;
+					}.bind(this));
+				}
+			},
+
+			_stopWaitingTitleChangedFromChild: function() {
+				delete this._pWaitForTitleChangedOnChild;
+				delete this._fnTitleChangedFiredOnChild;
+			},
+
 			/**
 			 * Centrally register this router instance under a given name to be able to access it from another context,
 			 * just by knowing the name.
@@ -1292,6 +1488,7 @@ sap.ui.define([
 			 * Use {@link sap.ui.core.routing.Router.getRouter Router.getRouter()} to retrieve the instance.
 			 *
 			 * @param {string} sName Name of the router instance
+			 * @returns {sap.ui.core.routing.Router} The router instance
 			 * @public
 			 */
 			register : function (sName) {

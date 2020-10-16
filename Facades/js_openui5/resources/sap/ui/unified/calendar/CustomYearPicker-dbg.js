@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -36,6 +36,11 @@ sap.ui.define([
 		oHeader.attachEvent("pressPrevious", this._handlePrevious, this);
 		oHeader.attachEvent("pressNext", this._handleNext, this);
 		oHeader.attachEvent("pressButton2", this._handleButton2, this);
+
+		this._afterHeaderRenderAdjustCSS = this._createOnAfterRenderingDelegate(oHeader);
+
+		oHeader.addDelegate(this._afterHeaderRenderAdjustCSS);
+
 		this.setAggregation("header",oHeader);
 	};
 
@@ -56,24 +61,23 @@ sap.ui.define([
 	};
 
 	CustomYearPicker.prototype._selectYear = function () {
-		var oDateRange = this.getSelectedDates()[0];
+		var oDateRange = this.getSelectedDates()[0],
+			oYearPicker = this._getYearPicker();
 
 		if (!oDateRange) {
 			oDateRange = new DateRange();
 		}
 
-		oDateRange.setStartDate(this.getAggregation("yearPicker").getDate());
-		this.addSelectedDate(oDateRange);
+		if (!oYearPicker.getIntervalSelection()) {
+			oDateRange.setStartDate(this._getYearPicker().getDate());
+			this.addSelectedDate(oDateRange);
+		}
 
 		this.fireSelect();
 	};
 
 	CustomYearPicker.prototype.onsapescape = function(oEvent) {
 		this.fireCancel();
-	};
-
-	CustomYearPicker.prototype._shouldFocusB2OnTabPrevious = function(oEvent) {
-		return false; //in Months view, the year picker button is not focusable
 	};
 
 	return CustomYearPicker;

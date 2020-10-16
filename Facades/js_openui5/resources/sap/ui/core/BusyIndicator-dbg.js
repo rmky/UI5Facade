@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -9,7 +9,6 @@ sap.ui.define([
 	'sap/ui/thirdparty/jquery',
 	'../base/EventProvider',
 	'./Popup',
-	'./Core',
 	'./BusyIndicatorUtils',
 	'sap/ui/core/library',
 	"sap/ui/performance/trace/FESR",
@@ -22,7 +21,6 @@ sap.ui.define([
 		jQuery,
 		EventProvider,
 		Popup,
-		Core,
 		BusyIndicatorUtils,
 		library,
 		FESR,
@@ -40,11 +38,11 @@ sap.ui.define([
 	 * Provides methods to show or hide a waiting animation covering the whole
 	 * page and blocking user interaction.
 	 * @namespace
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @public
 	 * @alias sap.ui.core.BusyIndicator
 	 */
-	var BusyIndicator = jQuery.extend( new EventProvider(), {
+	var BusyIndicator = Object.assign( new EventProvider(), {
 		oPopup: null,
 		oDomRef: null,
 		bOpenRequested: false,
@@ -151,7 +149,7 @@ sap.ui.define([
 	 */
 	BusyIndicator._onOpen = function(oEvent) {
 		// Grab the focus once opened
-		var oDomRef = (BusyIndicator.sDOM_ID ? window.document.getElementById(BusyIndicator.sDOM_ID) : null);
+		var oDomRef = document.getElementById(BusyIndicator.sDOM_ID);
 		oDomRef.style.height = "100%";
 		oDomRef.style.width = "100%";
 
@@ -162,8 +160,6 @@ sap.ui.define([
 		if (oDomRef) {
 			oDomRef.focus();
 		}
-
-		jQuery("body").attr("aria-busy", true);
 
 		// allow an event handler to do something with the indicator
 		// and fire it after everything necessary happened
@@ -287,8 +283,6 @@ sap.ui.define([
 		bi.bOpenRequested = false;
 
 		if (bi.oDomRef) { // only if the BusyIndicator was shown before!
-			jQuery("body").removeAttr("aria-busy");
-
 			// setting the BusyIndicator's DOM to invisible is not
 			// necessary here - it will be done by the Popup in 'oPopup.close(0)'
 

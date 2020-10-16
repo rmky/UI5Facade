@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -9,19 +9,25 @@ sap.ui.define([
 	"sap/ui/base/ManagedObjectMetadata",
 	"sap/base/util/ObjectPath",
 	"sap/ui/util/XMLHelper",
+	"sap/ui/core/XMLTemplateProcessor",
+	"sap/ui/core/util/XMLPreprocessor",
+	"sap/base/util/isPlainObject",
 	"sap/base/Log"
 ], function(
 	ManagedObject,
 	ManagedObjectMetadata,
 	ObjectPath,
 	XMLHelper,
+	XMLTemplateProcessor,
+	XMLPreprocessor,
+	isPlainObject,
 	Log
 ) {
 
 	"use strict";
 
 	/**
-	 * Abstract static utility class to access <code>ManageObjects</code> and <code>XMLNodes</code> that represent
+	 * Abstract static utility class to access <code>ManagedObjects</code> and <code>XMLNodes</code> that represent
 	 * <code>ManagedObjects</code> in a harmonized way.
 	 *
 	 * The class mirrors the <code>ManagedObject</code> API so that code that needs to work with <code>ManagedObjects</code>
@@ -32,37 +38,45 @@ sap.ui.define([
 	 *
 	 * @namespace sap.ui.core.util.reflection.BaseTreeModifier
 	 * @private
-	 * @ui5-restricted sap.ui.fl, sap.ui.rta, sap.ui.model.meta, control change handler and provider
+	 * @ui5-restricted sap.ui.fl, sap.ui.rta, sap.ui.model.meta, implementations of sap.ui.fl.interfaces.Delegate, control change handler and provider
 	 * @since 1.56.0
 	 */
 	return /** @lends sap.ui.core.util.reflection.BaseTreeModifier */{
 
-		/** Function determining the control targeted by the change.
-		* The function distinguishes between local IDs generated starting with 1.40 and the global IDs generated in previous versions.
-		*
-		* @param {object} oSelector - Target of a flexibility change
-		* @param {string} oSelector.id - ID of the control targeted by the change
-		* @param {boolean} oSelector.isLocalId - <code>true</code> if the ID within the selector is a local ID or a global ID
-		* @param {sap.ui.core.UIComponent} oAppComponent - Application component
-		* @param {Element} oView - For XML processing only: XML node of the view
-		* @returns {sap.ui.base.ManagedObject|Element} Control representation targeted within the selector
-		* @throws {Error} In case no control could be determined, an error is thrown
-		* @public
+		/**
+		 * Function determining the control targeted by the change.
+		 *
+		 * @param {object} oSelector - Target of a flexibility change
+		 * @param {string} [oSelector.id] - ID of the control targeted by the change. (name or id property is mandatory for selector)
+		 * @param {boolean} [oSelector.isLocalId] - <code>true</code> if the ID within the selector is a local ID or a global ID
+		 * @param {string} [oSelector.name] - Name of the extension point targeted by the change. (name or id property is mandatory for selector)
+		 * @param {sap.ui.core.UIComponent} oAppComponent - Application component
+		 * @param {Element} oView - For XML processing only: XML node of the view
+		 * @returns {sap.ui.base.ManagedObject|Element} Control representation targeted within the selector
+		 * @throws {Error} In case no control could be determined, an error is thrown
+		 * @public
 		*/
 		bySelector: function (oSelector, oAppComponent, oView) {
-			var sControlId = this.getControlIdBySelector(oSelector, oAppComponent);
+			var sControlId;
+			if (oSelector && oSelector.name) {
+				oView = oView || this.bySelector(oSelector.viewSelector, oAppComponent);
+				var oExtensionPointInfo = this.getExtensionPointInfo(oSelector.name, oView);
+				return oExtensionPointInfo ? oExtensionPointInfo.parent : undefined;
+			}
+			sControlId = this.getControlIdBySelector(oSelector, oAppComponent);
 			return this._byId(sControlId, oView);
 		},
 
-		/** Function determining the control ID from the selector.
-		* The function distinguishes between local IDs generated starting with 1.40 and the global IDs generated in previous versions.
-		* @param {object} oSelector - Target of a flexiblity change
-		* @param {string} oSelector.id - ID of the control targeted by the change
-		* @param {boolean} oSelector.isLocalId - <code>true</code> if the ID within the selector is a local ID or a global ID
-		* @param {sap.ui.core.UIComponent} oAppComponent - Application component
-		* @returns {string} ID of the control
-		* @throws {Error} In case no control could be determined, an error is thrown
-		* @protected
+		/**
+		 * Function determining the control ID from the selector.
+		 *
+		 * @param {object} oSelector - Target of a flexiblity change
+		 * @param {string} oSelector.id - ID of the control targeted by the change
+		 * @param {boolean} oSelector.isLocalId - <code>true</code> if the ID within the selector is a local ID or a global ID
+		 * @param {sap.ui.core.UIComponent} oAppComponent - Application component
+		 * @returns {string} ID of the control
+		 * @throws {Error} In case no control could be determined, an error is thrown
+		 * @protected
 		*/
 		getControlIdBySelector: function (oSelector, oAppComponent) {
 			if (!oSelector){
@@ -83,26 +97,13 @@ sap.ui.define([
 				} else {
 					throw new Error("App Component instance needed to get a control's ID from selector");
 				}
-			} else {
-				// does nothing except in the case of a FLP prefix
-				var pattern = /^application-[^-]*-[^-]*-component---/igm;
-				var bHasFlpPrefix = !!pattern.exec(oSelector.id);
-				if (bHasFlpPrefix) {
-					sControlId = sControlId.replace(/^application-[^-]*-[^-]*-component---/g, "");
-					if (oAppComponent) {
-					sControlId = oAppComponent.createId(sControlId);
-					} else {
-					throw new Error("App Component instance needed to get a control's ID from selector");
-					}
-				}
 			}
 
 			return sControlId;
 		},
 
-
-		/** Function for determining the selector that is used later to apply a change for a given control.
-		 * The function distinguishes between local IDs generated starting with 1.40 and the global IDs generated in previous versions.
+		/**
+		 * Function for determining the selector that is used later to apply a change for a given control.
 		 *
 		 * @param {sap.ui.base.ManagedObject|Element|string} vControl - Control or ID string for which the selector should be determined
 		 * @param {sap.ui.core.Component} oAppComponent - Application component, needed only if <code>vControl</code> is a string or XML node
@@ -349,6 +350,35 @@ sap.ui.define([
 			recurse.call(this, oRootNode, oRootNode, false);
 		},
 
+		_getSerializedValue: function (vPropertyValue) {
+			if (this._isSerializable(vPropertyValue) && typeof vPropertyValue !== "string") {
+				//not a property like aggregation
+				//type object can be json objects
+				//should not be already stringified
+				return JSON.stringify(vPropertyValue);
+			}
+			return vPropertyValue;
+		},
+
+		_isSerializable: function (vPropertyValue) {
+			// check for plain object, array, primitives
+			return isPlainObject(vPropertyValue) || Array.isArray(vPropertyValue) || Object(vPropertyValue) !== vPropertyValue;
+		},
+
+		_escapeCurlyBracketsInString: function (vPropertyValue) {
+			return typeof vPropertyValue === "string" ? vPropertyValue.replace(/({|})/g, "\\$&") : vPropertyValue;
+		},
+
+		_templateFragment: function(sFragmentName, mPreprocessorSettings) {
+			return Promise.resolve(
+				// process might be sync, therefore stay async and wrap result in a promise
+				XMLPreprocessor.process(
+					XMLTemplateProcessor.loadTemplate(sFragmentName, "fragment"),
+					{ name: sFragmentName },
+					mPreprocessorSettings
+				)
+			);
+		},
 		/**
 		 * Checks if there is a property binding and returns it if available, otherwise returns the value of the property.
 		 *
@@ -590,7 +620,7 @@ sap.ui.define([
 		 * See {@link sap.ui.base.ManagedObjectMetadata#getAllAggregations} method.
 		 *
 		 * @param {sap.ui.base.ManagedObject|Element} vControl - Control representation
-		 * @return {map} Map of aggregation info objects keyed by aggregation names
+		 * @return {Object<string,object>} Map of aggregation info objects keyed by aggregation names
 		 * @public
 		 */
 		getAllAggregations: function (vControl) {},
@@ -704,6 +734,20 @@ sap.ui.define([
 		instantiateFragment: function(sFragment, sNamespace, oView) {},
 
 		/**
+		 * Loads a fragment, processes the XML templating and turns the result into an array of nodes or controls.
+		 * See {@link sap.ui.core.util.XMLPreprocessor#process}
+		 *
+		 * @param {string} sFragmentName - XML fragment name (e.g. some.path.fragmentName)
+		 * @param {object} [mPreprocessorSettings={}] - Map/JSON object with initial property values, etc.
+		 * @param {object} mPreprocessorSettings.bindingContexts - Binding contexts relevant for template pre-processing
+		 * @param {object} mPreprocessorSettings.models - Models relevant for template pre-processing
+		 * @param {sap.ui.core.mvc.View} oView - View for the fragment, only needed on JS side
+		 * @returns {Promise.<Element[]|sap.ui.core.Element[]>} Array with the nodes/instances of the controls of the fragment
+		 * @public
+		 */
+		templateControlFragment: function(sFragmentName, mPreprocessorSettings, oView) {},
+
+		/**
 		 * Cleans up the resources associated with this object and all its aggregated children.
 		 * See {@link sap.ui.base.ManagedObject#destroy} method.
 		 *
@@ -711,6 +755,7 @@ sap.ui.define([
 		 * Applications should call this method if they don't need the object any longer.
 		 *
 		 * @param {sap.ui.base.ManagedObject|Element} vControl - Control representation
+		 * @param {boolean} [bSuppressInvalidate] if true, this ManagedObject is not marked as changed
 		 * @public
 		 */
 		destroy: function(vControl) {},
@@ -722,7 +767,56 @@ sap.ui.define([
 		 * @returns {string} Module path
 		 * @public
 		 */
-		getChangeHandlerModulePath: function(vControl) {},
+		getChangeHandlerModulePath: function(vControl) {
+			return this._getFlexCustomData(vControl, "flexibility");
+		},
+
+		/**
+		 * Gets the "sap.ui.fl" namespaced special settings in the custom data.
+		 *
+		 * The method is not to be used directly, but to be implemented by modifiers
+		 *
+		 * @param {sap.ui.base.ManagedObject|Element} vControl - Control representation
+		 * @protected
+		 * @abstract
+		 */
+		_getFlexCustomData : function(vControl) {},
+
+		/**
+		 * Object containing delegate information.
+		 *
+		 * @typedef {object} sap.ui.core.util.reflection.FlexDelegateInfo
+		 * @property {string} name Module name of the delegate
+		 * @property {object} payload Additional information for the delegate
+		 * @property {string} [payload.path] Relative/absolute path to a node in a UI5 model, optional if it can be derived by the delegate, e.g. from binding context
+		 * @property {string} [payload.modelName] Runtime model name, optional if default model is used (allows to support named models)
+		 * @property {any} [payload.something] Payload can contain additional delegate-specific keys and values (not just "something" as a key, the key can be defined as well as the values)
+		 * @private
+		 * @ui5-restricted sap.ui.fl, sap.ui.rta, sap.ui.model.meta, implementations of sap.ui.fl.interfaces.Delegate, control change handler and provider
+		 */
+
+		/**
+		 * Gets the flexibility delegate information placed at a control.
+		 *
+		 * @param {sap.ui.base.ManagedObject|Element} vControl - Control representation
+		 * @returns {sap.ui.core.util.reflection.FlexDelegateInfo} Delegate information
+		 * @public
+		 */
+		getFlexDelegate: function(vControl) {
+			var mDelegateInfo;
+			var sDelegate = this._getFlexCustomData(vControl, "delegate");
+			if (typeof sDelegate === "string") {
+				try {
+					mDelegateInfo = JSON.parse(sDelegate);
+					if (mDelegateInfo.payload === undefined){
+						mDelegateInfo.payload = {};
+					}
+				} catch (oError) {
+					Log.error("Flex Delegate for control " + this.getId(vControl) + " is malformed", oError.message);
+				}
+			}
+			return mDelegateInfo;
+		},
 
 		/**
 		 * Attaches event on the specified <code>ManagedObject</code>.
@@ -743,6 +837,16 @@ sap.ui.define([
 		 * @param {string} sFunctionPath - Absolute path to a function
 		 * @public
 		 */
-		detachEvent: function(oObject, sEventName, sFunctionPath) {}
+		detachEvent: function(oObject, sEventName, sFunctionPath) {},
+
+		/**
+		 * Returns an object containing parent control, aggregation name and index for controls to be added of the given extension point.
+		 *
+		 * @param {string} sExtensionPointName - Name of the extension point
+		 * @param {sap.ui.core.mvc.View|Element} oView - View control or XML node of the view
+		 * @returns {{parent: object, aggregation: string, index: number, defaultContent: array}} - Object containing parent control, aggregation name, index and the defaultContent of the extensionpoint if exists.
+		 * @experimental
+		 */
+		getExtensionPointInfo: function(sExtensionPointName, oView) {}
 	};
 });

@@ -1,6 +1,6 @@
 /*!
 * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
 */
 
@@ -51,29 +51,15 @@ sap.ui.define([
 		"use strict";
 
 		var oLogger = _OpaLogger.getLogger("sap.ui.test.Opa5"),
-			oPlugin = new OpaPlugin(),
 			oActionPipeline = new ActionPipeline(),
 			sFrameId = "OpaFrame",
 			oValidator = new _ParameterValidator({
 				errorPrefix: "sap.ui.test.Opa5#waitFor"
 			}),
-			aConfigValuesForWaitFor = [
-				"visible",
-				"enabled",
-				"viewNamespace",
-				"viewName",
-				"viewId",
-				"fragmentId",
-				"autoWait"
-			].concat(Opa._aConfigValuesForWaitFor),
-			aPropertiesThatShouldBePassedToOpaWaitFor = [
-				"check", "error", "success"
-			].concat(Opa._aConfigValuesForWaitFor),
+			aConfigValuesForWaitFor = Object.keys(_ValidationParameters.OPA5_WAITFOR_CONFIG),
+			aPropertiesThatShouldBePassedToOpaWaitFor = Object.keys(_ValidationParameters.OPA_WAITFOR),
 			aExtensions = [],
 			aEventProvider = new EventProvider();
-
-		var appUriParams = _OpaUriParameterParser._getAppParams();
-		var allUriParams = new URI().search(true);
 
 		/**
 		 * @class
@@ -90,16 +76,15 @@ sap.ui.define([
 		 * @author SAP SE
 		 * @since 1.22
 		 */
-		var Opa5 = Ui5Object.extend("sap.ui.test.Opa5",
-			$.extend({},
-				Opa.prototype,
-				{
-					constructor: function () {
-						Opa.apply(this, arguments);
-					}
-				}
-			)
-		);
+		var Opa5 = Ui5Object.extend("sap.ui.test.Opa5", $.extend({}, Opa.prototype, {
+			constructor: function () {
+				Opa.apply(this, arguments);
+			}
+		}));
+
+		Opa5._appUriParams = _OpaUriParameterParser._getAppParams();
+		Opa5._allUriParams = new URI().search(true);
+		Opa5._oPlugin = new OpaPlugin();
 
 		function iStartMyAppInAFrame() {
 			var that = this;
@@ -253,7 +238,7 @@ sap.ui.define([
 			var oParamsWaitForOptions = createWaitForObjectWithoutDefaults();
 			oParamsWaitForOptions.success = function () {
 				var uri = new URI();
-				uri.search(allUriParams);
+				uri.search(Opa5._allUriParams);
 				window.history.replaceState({}, "", uri.toString());
 			};
 
@@ -448,7 +433,7 @@ sap.ui.define([
 		 * The view that is searched in:
 		 * <pre>
 		 *     <code>
-		 *         &lt;core:View xmlns:core="sap.ui.core" xmlns="sap.m"&gt;
+		 *         &lt;mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m"&gt;
 		 *             &lt;Button id="myButton"&gt;
 		 *             &lt;/Button&gt;
 		 *             &lt;Button id="bar"&gt;
@@ -456,7 +441,7 @@ sap.ui.define([
 		 *             &lt;Button id="baz"&gt;
 		 *             &lt;/Button&gt;
 		 *             &lt;Image id="myImage"&gt;&lt;/Image&gt;
-		 *         &lt;/core:View&gt;
+		 *         &lt;/mvc:View&gt;
 		 *     </code>
 		 * </pre>
 		 *
@@ -558,6 +543,12 @@ sap.ui.define([
 		 *     <li> When autoWait is not used, the default value for options.enabled is false.</li>
 		 * </ul>
 		 * This means that if you use autoWait and you want to find a disabled control, you need to explicitly set options.enabled to false.
+		 * @param {boolean} [options.interactable=false] @since 1.80 If set to true, the {@link sap.ui.test.matchers.Interactable} matcher will be applied.
+		 * If autoWait is true, this option has no effect and interactable will always be true.
+		 * If autoWait is false, which is the default state, the value of the interactable property will have an effect.
+		 * When interactable is true, enabled will also be set to true, unless declared otherwise.
+		 * @param {boolean} [options.editable=false] @since 1.80 If set to true, Opa5 will match only editable controls.
+		 * If set to false, Opa5 will match both editable and non-editable controls.
 		 * @param {int} [options.timeout=15] (seconds) Specifies how long the waitFor function polls before it fails.O means it will wait forever.
 		 * @param {int} [options.debugTimeout=0] @since 1.47 (seconds) Specifies how long the waitFor function polls before it fails in debug mode.O means it will wait forever.
 		 * @param {int} [options.pollingInterval=400] (milliseconds) Specifies how often the waitFor function polls.
@@ -605,7 +596,7 @@ sap.ui.define([
 		 * That means actions will only be executed if:
 		 * <ul>
 		 *     <li>
-		 *         Controls and their parents are visible, enabled and not busy
+		 *         Controls and their parents are visible, not busy and not hidden behind a blocking layer
 		 *     </li>
 		 *     <li>
 		 *         The controls are not hidden behind static elements such as dialogs
@@ -646,9 +637,9 @@ sap.ui.define([
 		 * Executing multiple actions will not wait between actions for a control to become "Interactable" again.
 		 * If you need waiting between actions you need to split the actions into multiple 'waitFor' statements.
 		 * @param {boolean} [options.autoWait=false] @since 1.42 Only has an effect if set to true. Since 1.53 it can also be a plain object.
-		 * The waitFor statement will not execute success callbacks as long as there is pending asynchronous work such as for example:
+		 * When autoWait is true, the waitFor statement will not execute success callbacks as long as there is pending asynchronous work such as for example:
 		 * open XMLHTTPRequests (requests to a server), scheduled delayed work and promises, unfinished UI navigation.
-		 * In addition, the control must be {@link sap.ui.test.matchers.Interactable}
+		 * In addition, the control state will be checked with the {@link sap.ui.test.matchers.Interactable} matcher, and the control will have to be enabled.
 		 * So when autoWait is enabled, success behaves like an action in terms of waiting.
 		 * It is recommended to set this value to true for all your waitFor statements using:
 		 * <pre>
@@ -692,8 +683,10 @@ sap.ui.define([
 		 * @since 1.48 All config parameters could be overwritten from URL. Should be prefixed with 'opa'
 		 * and have uppercase first character. Like 'opaExecutionDelay=1000' will overwrite 'executionDelay'
 		 *
-		 * @returns {jQuery.promise} A promise that gets resolved on success.
-		 * If an error occurs, the promise is rejected with the options object. A detailed error message containing the stack trace and Opa logs is available in options.errorMessage.
+		 * @returns {object} an object extending a jQuery promise.
+		 * The object is essentially a jQuery promise with an additional "and" method that can be used for chaining waitFor statements.
+		 * The promise is resolved when the waitFor completes successfully.
+		 * The promise is rejected with the options object, if an error occurs. In this case, options.errorMessage will contain a detailed error message containing the stack trace and Opa logs.
 		 * @public
 		 */
 		Opa5.prototype.waitFor = function (options) {
@@ -706,7 +699,7 @@ sap.ui.define([
 			if (mExpansion) {
 				mExpansion.success = function (vControl) {
 					// right now, we assume that every declarative matcher matches exactly one control
-					var oControl = jQuery.isArray(vControl) ? vControl[0] : vControl;
+					var oControl = Array.isArray(vControl) ? vControl[0] : vControl;
 					var optionsForDependant = _substituteExpansion(options, aPath, oControl);
 					return Opa5.prototype.waitFor.call(this, optionsForDependant);
 				};
@@ -737,12 +730,12 @@ sap.ui.define([
 			oOptionsPassedToOpa = Opa._createFilteredOptions(aPropertiesThatShouldBePassedToOpaWaitFor, options);
 
 			oOptionsPassedToOpa.check = function () {
-				var bInteractable = !!options.actions || options.autoWait;
+				var bApplyAutoWait = !!options.actions || options.autoWait;
 				var oAutoWaiter = Opa5._getAutoWaiter();
 
 				oAutoWaiter.extendConfig(options.autoWait);
 
-				if (bInteractable && oAutoWaiter.hasToWait()) {
+				if (bApplyAutoWait && oAutoWaiter.hasToWait()) {
 					return false;
 				}
 
@@ -750,7 +743,7 @@ sap.ui.define([
 				var oPlugin = Opa5.getPlugin();
 				var oPluginOptions = $.extend({}, options, {
 					// ensure Interactable matcher is applied if autoWait is true or actions are specified
-					interactable: bInteractable
+					interactable: bApplyAutoWait || options.interactable
 				});
 
 				// even if we have no control the matchers may provide a value for vControl
@@ -840,7 +833,7 @@ sap.ui.define([
 		 * @public
 		 */
 		Opa5.getPlugin = function () {
-			return iFrameLauncher.getPlugin() || oPlugin;
+			return iFrameLauncher.getPlugin() || Opa5._oPlugin;
 		};
 
 		/**
@@ -998,7 +991,7 @@ sap.ui.define([
 			Opa.extendConfig(options);
 			// URL app params overwrite extendConfig app params
 			Opa.extendConfig({
-				appParams: appUriParams
+				appParams: Opa5._appUriParams
 			});
 			Opa5._getAutoWaiter().extendConfig(options.autoWait);
 		};
@@ -1014,6 +1007,7 @@ sap.ui.define([
 		 * 	<li>assertions: instance of OPA5</li>
 		 * 	<li>visible: true</li>
 		 * 	<li>enabled: false</li>
+		 * 	<li>editable: false</li>
 		 * 	<li>timeout : 15 seconds, 0 for infinite timeout</li>
 		 * 	<li>pollingInterval: 400 milliseconds</li>
 		 * 	<li>debugTimeout: 0 seconds, infinite timeout by default. This will be used instead of timeout if running in debug mode.</li>
@@ -1032,11 +1026,12 @@ sap.ui.define([
 				assertions: new Opa5(),
 				visible: true,
 				enabled: undefined,
+				editable: undefined,
 				autoWait: false,
 				_stackDropCount: 1
 			});
 			Opa.extendConfig({
-				appParams: appUriParams
+				appParams: Opa5._appUriParams
 			});
 		};
 
@@ -1095,85 +1090,110 @@ sap.ui.define([
 
 		/**
 		 * A map of QUnit-style assertions to be used in an opaTest.
-		 * Contains all methods available on QUnit.assert for the running QUnit version.
-		 * Available assertions are: ok, equal, propEqual, deepEqual, strictEqual and their negative counterparts.
-		 * You can define custom OPA5 assertions in the extensions section of {@link sap.ui.test.Opa5.extendConfig}
+		 *
+		 * Contains all methods available on <code>QUnit.assert</code> for the running QUnit version.
+		 * Available assertions are: <code>ok</code>, <code>equal</code>, <code>propEqual</code>,
+		 * <code>deepEqual</code>, <code>strictEqual</code> and their negative counterparts.
+		 * You can define custom OPA5 assertions in the extensions section of {@link sap.ui.test.Opa5.extendConfig}.
 		 *
 		 * Example usage:
-		 * oOpa5.waitFor({
-		 *   success: function () {
-		 *     Opa5.assert.ok(true, "Should be true");
-		 *   }
-		 * });
+		 * <pre>
+		 *   oOpa5.waitFor({
+		 *     success: function () {
+		 *       Opa5.assert.ok(true, "Should be true");
+		 *     }
+		 *   });
+		 * </pre>
 		 *
-		 * For more information, see  {@link sap.ui.test.opaQunit}.
+		 * For more information, see {@link module:sap/ui/test/opaQunit}.
 		 *
 		 * @name sap.ui.test.Opa5.assert
 		 * @public
 		 * @static
-		 * @type map
+		 * @type QUnit.Assert
 		 */
 
 		/**
-		 * Create a page object configured as arrangement, action and assertion to the Opa.config.
-		 * Use it to structure your arrangement, action and assertion based on parts of the screen to avoid name clashes and help to structure your tests.
-		 * @param {map} mPageObjects
-		 * @param {map} mPageObjects.<your-page-object-name> Multiple page objects are possible, provide at least actions or assertions
-		 * @param {function} [mPageObjects.<your-page-object-name>.viewName] When a viewName is given, all waitFors inside of the page object will get a viewName parameter.
-		 * Here is an example:
-		 * <pre>
-		 * 		<code>
-		 * 			Opa5.createPageObjects({
-		 * 				viewName: "myView",
-		 * 				onMyPageWithViewName: {
-		 * 					assertions: {
-		 * 						iWaitForAButtonInMyView: function () {
-		 * 							this.waitFor({
-		 * 								id: "myButton",
-		 * 								success: function (oButton) {
-		 * 									// the button is defined in the view myView
-		 * 								}
-		 * 							});
-		 * 						}
-		 * 					}
-		 * 				}
-		 *     </code>
-		 * </pre>
-		 * This saves you repeating the viewName in every waitFor statement of the page object.
-		 * It is possible to overwrite the viewName of the page object in a specific waitFor.
-		 * So if you have specified a <code>viewName: "myView"</code> in your page object
-		 * and you want to look for a control with a global id you may use <code>viewName: ""</code> in a waitFor
-		 * to overwrite the viewName of the page Object. Example:
-		 * <pre>
-		 * 		<code>
-		 * 			this.waitFor({
-		 * 				id: "myButton",
-		 * 				viewName: "",
-		 * 				success: function (oButton) {
-		 * 					// now a button with the global id "myButton" will be searched
-		 * 				}
-		 * 			});
-		 * 		</code>
-		 * </pre>
-		 * @param {function} [mPageObjects.<your-page-object-name>.viewId] When a viewId is given, all waitFors inside of the page object will get a viewId parameter.
-		 * Use when there are multiple views with the same viewName.
-		 * @param {function} [mPageObjects.<your-page-object-name>.baseClass] Base class for the page object's actions and assertions, default: Opa5
-		 * @param {function} [mPageObjects.<your-page-object-name>.namespace] Namespace prefix for the page object's actions and assertions, default: sap.ui.test.opa.pageObject. Use it if you use page objects from multiple projects in the same test build.
-		 * @param {map} [mPageObjects.<your-page-object-name>.actions] Can be used as an arrangement and action in Opa tests. Only the test knows if an action is used as arrangement or action
-		 * @param {function} mPageObjects.<your-page-object-name>.actions.<your-action-1> This is your custom implementation containing one or multiple waitFor statements
-		 * @param {function} mPageObjects.<your-page-object-name>.actions.<your-action-2> This is your custom implementation containing one or multiple waitFor statements
-		 * @param {map} [mPageObjects.<your-page-object-name>.assertions] Can be used as assertions in Opa tests
-		 * @param {function} mPageObjects.<your-page-object-name>.assertions.<your-assertions-1> This is your custom implementation containing one or multiple waitFor statements
-		 * @param {function} mPageObjects.<your-page-object-name>.assertions.<your-assertions-2> This is your custom implementation containing one or multiple waitFor statements
-		 * @returns {map} mPageObject The created page object. It will look like this:
-		 * <pre><code>
-		 *  {
-		 *   &lt;your-page-object-name&gt; : {
-		 *       actions: // an instance of baseClass or Opa5 with all the actions defined above
-		 *       assertions: // an instance of baseClass or Opa5 with all the assertions defined above
-		 *   }
-		 *  }
-		 * </code></pre>
+		 * Settings for a new page object, consisting of actions and assertions.
+		 *
+		 * @typedef {Object} sap.ui.test.PageObjectDefinition
+		 *
+		 * @property {string} [viewName]
+		 *   When a <code>viewName</code> is given, all <code>waitFor</code> calls inside of the page object
+		 *   will get a <code>viewName</code> parameter.
+		 *
+		 *   Example:
+		 *   <pre>
+		 *     Opa5.createPageObjects({
+		 *       viewName: "myView",
+		 *       onMyPageWithViewName: {
+		 *         assertions: {
+		 *           iWaitForAButtonInMyView: function () {
+		 *             this.waitFor({
+		 *               id: "myButton",
+		 *               success: function (oButton) {
+		 *                 // the button is defined in the view myView
+		 *               }
+		 *             });
+		 *           }
+		 *         }
+		 *       }
+		 *     });
+		 *   </pre>
+		 *   This saves you repeating the <code>viewName</code> in every <code>waitFor</code> statement of the page
+		 *   object. It is possible to overwrite the <code>viewName</code> of the page object in a specific
+		 *   <code>waitFor</code> call. So if you have specified a <code>viewName: "myView"</code> in your page
+		 *   object and you want to look for a control with a global ID, you may use <code>viewName: ""</code>
+		 *   in a <code>waitFor</code> to overwrite the <code>viewName</code> of the page object.
+		 *
+		 *   Example:
+		 *   <pre>
+		 *     // waits for a button with the global id "myButton"
+		 *     this.waitFor({
+		 *       id: "myButton",
+		 *       viewName: "",
+		 *       success: function (oButton) {
+		 *         // act when button is found
+		 *       }
+		 *     });
+		 *   </pre>
+		 * @property {string} [viewId]
+		 *   When a <code>viewId</code> is given, all <code>waitFor</code> calls inside of the page object will
+		 *   get a <code>viewId</code> parameter. Use when there are multiple views with the same viewName.
+		 * @property {function} [baseClass=sap.ui.test.Opa5]
+		 *   Base class for the page object's actions and assertions
+		 * @property {string} [namespace="sap.ui.test.opa.pageObject"]
+		 *   Namespace prefix for the page object's actions and assertions.
+		 *   Use it if you use page objects from multiple projects in the same test build.
+		 * @property {Object<string,function>} [actions]
+		 *   A map of functions that can be used as arrangement or action in Opa tests.
+		 *   Only the test decides whether a function is used as arrangement or action. Each function typically
+		 *   contains one or multiple <code>waitFor</code> statements.
+		 * @property {Object<string,function>} [assertions]
+		 *   A map of functions that can be used as assertions in Opa tests.
+		 * @public
+		 * @since 1.25
+		 */
+
+		/**
+		 * Creates a set of page objects, each consisting of actions and assertions and adds them to
+		 * the Opa configuration.
+		 *
+		 * Use page objects to structure your actions and assertions based on parts of the screen.
+		 * This helps to avoid name clashes and to structure your tests.
+		 *
+		 * @param {Object<string,sap.ui.test.PageObjectDefinition>} mPageObjects
+		 *   Multiple page objects are possible, provide at least actions or assertions
+		 * @returns {Object<string,Object>}
+		 *   The created page object. It will look like this:
+		 *   <pre>
+		 *     {
+		 *       &lt;your-page-object-name&gt; : {
+		 *         actions: // an instance of baseClass or Opa5 with all the actions defined above
+		 *         assertions: // an instance of baseClass or Opa5 with all the assertions defined above
+		 *       }
+		 *     }
+		 *   </pre>
 		 * @public
 		 * @since 1.25
 		 */
@@ -1227,7 +1247,8 @@ sap.ui.define([
 			includeStylesheet(sIFrameStyleLocation);
 			var oFrameLaunchOptions = $.extend({}, oOptions, {
 				frameId: sFrameId,
-				opaLogLevel: Opa.config.logLevel
+				opaLogLevel: Opa.config.logLevel,
+				disableHistoryOverride: Opa.config.disableHistoryOverride
 			});
 			return iFrameLauncher.launch(oFrameLaunchOptions);
 		}

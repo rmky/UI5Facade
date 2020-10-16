@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  *
  * @function
@@ -16,16 +16,17 @@ sap.ui.define(function () {
 				"tags": aTags.concat(["data"]),
 				"label": "{i18n>CARD_EDITOR.DATA.REQUEST.URL}",
 				"type": "string",
+				"defaultValue": "",
 				"path": sRelativePath + "data/request/url"
 			},
 			"DataRequestMode": {
 				"tags": aTags.concat(["data"]),
 				"label": "{i18n>CARD_EDITOR.DATA.REQUEST.MODE}",
-				"type": "enum",
-				"enum": [
-					"no-cors",
-					"same-origin",
-					"cors"
+				"type": "select",
+				"items": [
+					{ "key": "no-cors" },
+					{ "key": "same-origin" },
+					{ "key": "cors" }
 				],
 				"defaultValue": "cors",
 				"path": sRelativePath + "data/request/mode",
@@ -34,29 +35,29 @@ sap.ui.define(function () {
 			"DataRequestMethod": {
 				"tags": aTags.concat(["data"]),
 				"label": "{i18n>CARD_EDITOR.DATA.REQUEST.METHOD}",
-				"type": "enum",
-				"enum": [
-					"GET",
-					"POST"
+				"type": "select",
+				"items": [
+					{ "key": "GET" },
+					{ "key": "POST" }
 				],
 				"defaultValue": "GET",
 				"path": sRelativePath + "data/request/method",
 				"visible": "{= !!${context>" + sRelativePath + "data/request/url} }"
 			},
-			// "DataRequestParameters": {
-			// 	"tags": aTags.concat(["data"]),
-			// 	"label": "{i18n>CARD_EDITOR.DATA.REQUEST.PARAMETERS}",
-			// 	"type": "parameters",
-			// 	"path": sRelativePath + "data/request/parameters",
-			// 	"visible": "{= !!${context>" + sRelativePath + "data/request/url} }"
-			// },
-			// "DataRequestHeaders": {
-			// 	"tags": aTags.concat(["data"]),
-			// 	"label": "{i18n>CARD_EDITOR.DATA.REQUEST.HEADERS}",
-			// 	"type": "parameters",
-			// 	"path": sRelativePath + "data/request/headers",
-			// 	"visible": "{= !!${context>" + sRelativePath + "data/request/url} }"
-			// },
+			"DataRequestParameters": {
+				"tags": aTags.concat(["data"]),
+				"label": "{i18n>CARD_EDITOR.DATA.REQUEST.PARAMETERS}",
+				"type": "map",
+				"path": sRelativePath + "data/request/parameters",
+				"visible": "{= !!${context>" + sRelativePath + "data/request/url} }"
+			},
+			"DataRequestHeaders": {
+				"tags": aTags.concat(["data"]),
+				"label": "{i18n>CARD_EDITOR.DATA.REQUEST.HEADERS}",
+				"type": "map",
+				"path": sRelativePath + "data/request/headers",
+				"visible": "{= !!${context>" + sRelativePath + "data/request/url} }"
+			},
 			"DataRequestWithCredentials": {
 				"tags": aTags.concat(["data"]),
 				"label": "{i18n>CARD_EDITOR.DATA.REQUEST.WITHCREDENTIALS}",
@@ -69,13 +70,22 @@ sap.ui.define(function () {
 				"tags": aTags.concat(["data"]),
 				"label": "{i18n>CARD_EDITOR.DATA.JSON}",
 				"type": "json",
-				"path": sRelativePath + "data/json"
+				"path": sRelativePath + "data/json",
+				"visible": "{= !${context>" + sRelativePath + "data/request/url} }"
 			},
 			"DataPath": {
 				"tags": aTags.concat(["data"]),
 				"label": "{i18n>CARD_EDITOR.DATA.PATH}",
 				"type": "string",
-				"path": sRelativePath + "data/path"
+				"path": sRelativePath + "data/path",
+				"validators": {
+					"dataPathPattern": {
+						"type": "pattern",
+						"config": {
+							"pattern": "^[a-zA-Z0-9_\\.\\-/|\\@\\#]*$"
+						}
+					}
+				}
 			},
 			"DataServiceName": {
 				"tags": aTags.concat(["data"]),
@@ -84,13 +94,13 @@ sap.ui.define(function () {
 				"path": sRelativePath + "data/service/name",
 				"visible": false // Currently undocumented
 			},
-			// "DataServiceParameters": {
-			// 	"tags": aTags.concat(["data"]),
-			// 	"label": "{i18n>CARD_EDITOR.DATA.SERVICE.PARAMETERS}",
-			// 	"type": "parameters",
-			// 	"path": sRelativePath + "data/service/parameters",
-			// 	"visible": false // Currently undocumented
-			// },
+			"DataServiceParameters": {
+				"tags": aTags.concat(["data"]),
+				"label": "{i18n>CARD_EDITOR.DATA.SERVICE.PARAMETERS}",
+				"type": "map",
+				"path": sRelativePath + "data/service/parameters",
+				"visible": false // Currently undocumented
+			},
 			"DataUpdateInterval": {
 				"tags": aTags.concat(["data"]),
 				"label": "{i18n>CARD_EDITOR.DATA.UPDATEINTERVAL}",

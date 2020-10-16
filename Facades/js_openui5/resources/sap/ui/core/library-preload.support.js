@@ -1,7 +1,7 @@
 //@ui5-bundle sap/ui/core/library-preload.support.js
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -12,9 +12,10 @@ sap.ui.predefine('sap/ui/core/library.support',[
 	"./rules/Config.support",
 	"./rules/Model.support",
 	"./rules/View.support",
-	"./rules/App.support"
+	"./rules/App.support",
+	"./rules/Rendering.support"
 ],
-	function(MiscSupport, ConfigSupport, ModelSupport, ViewSupport, AppSupport) {
+	function(MiscSupport, ConfigSupport, ModelSupport, ViewSupport, AppSupport, RenderingSupport) {
 	"use strict";
 
 	return {
@@ -25,13 +26,14 @@ sap.ui.predefine('sap/ui/core/library.support',[
 			ConfigSupport,
 			ModelSupport,
 			ViewSupport,
-			AppSupport
+			AppSupport,
+			RenderingSupport
 		]
 	};
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -371,11 +373,50 @@ sap.ui.predefine('sap/ui/core/rules/App.support',["sap/ui/support/library", "sap
 		}
 	};
 
-	return [oControllerSyncCodeCheckRule, oGlobalAPIRule, oJquerySapRule, oSyncFactoryLoadingRule, oGlobalSyncXhrRule, oDeprecatedAPIRule, oControllerExtensionRule];
+	/**
+	 * With jQuery 3.x we provide a compatibility layer to bridge gaps between jQuery 3.x and 2.x.
+	 * Our compatibility module logs warnings when deprecated jQuery APIs are used.
+	 */
+	var oJQueryThreeDeprecationRule = {
+		id: "jQueryThreeDeprecation",
+		audiences: [Audiences.Application, Audiences.Control, Audiences.Internal],
+		categories: [Categories.Usage],
+		enabled: true,
+		minversion: "1.79",
+		title: "Usage of deprecated jQuery API",
+		description: "With the upgrade from jQuery 2.x to jQuery 3.x, some jQuery APIs have been deprecated and might be removed in future jQuery versions. To be future-proof for jQuery 4.x, the deprecated API calls should be removed or replaced with current alternatives.",
+		resolution: "Please see the browser console warnings containing the string 'JQMIGRATE' to identify the code locations which cause the issue. Please also see the jQuery migration guide for further information on the deprecated APIs and their newer alternatives.",
+		resolutionurls: [{
+			text: "jQuery Migrate",
+			href: "https://github.com/jquery/jquery-migrate"
+		},
+		{
+			text: "jQuery 3 Upgrade Guide",
+			href: "https://jquery.com/upgrade-guide/3.0/"
+		},
+		{
+			text: "jQuery 3 Migrate warnings",
+			href: "https://github.com/jquery/jquery-migrate"
+		}],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			var oLoggedObjects = oScope.getLoggedObjects("jQueryThreeDeprecation");
+			oLoggedObjects.forEach(function(oLoggedObject) {
+				oIssueManager.addIssue({
+					severity: Severity.Medium,
+					details: oLoggedObject.message,
+					context: {
+						id: "WEBPAGE"
+					}
+				});
+			});
+		}
+	};
+
+	return [oControllerSyncCodeCheckRule, oGlobalAPIRule, oJquerySapRule, oSyncFactoryLoadingRule, oGlobalSyncXhrRule, oDeprecatedAPIRule, oControllerExtensionRule, oJQueryThreeDeprecationRule];
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -848,7 +889,7 @@ sap.ui.predefine('sap/ui/core/rules/Config.support',[
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -933,7 +974,7 @@ sap.ui.predefine('sap/ui/core/rules/CoreHelper.support',["sap/ui/thirdparty/jque
 	}, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -1164,7 +1205,7 @@ sap.ui.predefine('sap/ui/core/rules/Misc.support',["sap/ui/support/library", "./
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -1188,6 +1229,7 @@ sap.ui.predefine('sap/ui/core/rules/Model.support',[
 		CompositeBinding
 	) {
 	"use strict";
+	/*eslint max-nested-callbacks: 0 */
 
 	// shortcuts
 	var Categories = SupportLib.Categories; // Accessibility, Performance, Memory, ...
@@ -1211,8 +1253,8 @@ sap.ui.predefine('sap/ui/core/rules/Model.support',[
 	// Rule Definitions
 	//**********************************************************
 	/**
-	 * Checks whether there are bindings for models where the model is available but a binding has no result
-	 * It checks the path structure and checks for typos
+	 * Checks whether there are bindings for models where the model is available but a binding has no result.
+	 * It checks the path structure and checks for typos.
 	 */
 	var oBindingPathSyntaxValidation = {
 		id: "bindingPathSyntaxValidation",
@@ -1321,7 +1363,77 @@ sap.ui.predefine('sap/ui/core/rules/Model.support',[
 }, true);
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
+ * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
+ */
+/**
+ * Defines support rules related to the view.
+ */
+sap.ui.predefine('sap/ui/core/rules/Rendering.support',[
+		"sap/ui/support/library",
+		"sap/ui/core/RenderManager"
+	],
+	function(SupportLib, RenderManager) {
+	"use strict";
+
+	// shortcuts
+	var Categories = SupportLib.Categories;
+	var Severity = SupportLib.Severity;
+	var Audiences = SupportLib.Audiences;
+
+	//**********************************************************
+	// Rule Definitions
+	//**********************************************************
+
+	/**
+	 * Checks for renderers not using semantic rendering
+	 */
+	var oRendererInterfaceVersion = {
+		id: "semanticRenderingNotUsed",
+		audiences: [Audiences.Control],
+		categories: [Categories.Performance],
+		enabled: true,
+		minversion: "-",
+		title: "Control and renderer not migrated to modern rendering syntax",
+		description: "Controls must use modern rendering syntax.",
+		resolution: "Control and renderer must be migrated to modern rendering syntax. For more information consult with documentation.",
+		resolutionurls: [{
+			text: "Documentation: RenderManager syntax",
+			href: "https://sapui5.hana.ondemand.com/#/api/sap.ui.core.RenderManager"
+		}],
+		check: function(oIssueManager, oCoreFacade, oScope) {
+			var aControls = oScope.getElements().filter(function (oElement) { return oElement.isA("sap.ui.core.Control"); });
+
+			aControls.forEach(function (oControl) {
+				// The XMLView is excluded for now to not produce false-positive results
+				// Due to the possibility of mixing XHTML and UI5 content in the XML content,
+				// the XMLViewRenderer cannot be migrated fully to API version 2 yet.
+				if (RenderManager.getApiVersion(oControl.getRenderer()) < 2 && !oControl.isA("sap.ui.core.mvc.XMLView")) {
+					var sControlName = oControl.getMetadata().getName();
+
+					oIssueManager.addIssue({
+						severity: Severity.Medium,
+						category: Categories.Performance,
+						details: "The control '" + sControlName + "' is not migrated to modern rendering syntax. " +
+										 "This means it cannot benefit from UI5's modern, DOM-based rendering engine. " +
+										 "Please consult with the referred documentation regarding the modern API of RenderManager.",
+						context: {
+							id: oControl.getId()
+						}
+					});
+
+				}
+			});
+		}
+	};
+
+	return [
+		oRendererInterfaceVersion
+	];
+}, true);
+/*!
+ * OpenUI5
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**

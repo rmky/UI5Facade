@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -13,6 +13,7 @@ sap.ui.define([
 	'./BusyIndicatorUtils',
 	'./BlockLayerUtils',
 	"sap/base/Log",
+	"sap/ui/performance/trace/Interaction",
 	"sap/ui/thirdparty/jquery"
 ],
 	function(
@@ -23,6 +24,7 @@ sap.ui.define([
 		BusyIndicatorUtils,
 		BlockLayerUtils,
 		Log,
+		Interaction,
 		jQuery
 	) {
 	"use strict";
@@ -69,13 +71,13 @@ sap.ui.define([
 	 *     rendering or when the control is destroyed).</li>
 	 * </ul>
 	 *
-	 * See section "{@link topic:91f1703b6f4d1014b6dd926db0e91070 Developing OpenUI5/SAPUI5 Controls}"
+	 * See section "{@link topic:8dcab0011d274051808f959800cabf9f Developing Controls}"
 	 * in the documentation for an introduction to control development.
 	 *
 	 * @extends sap.ui.core.Element
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @alias sap.ui.core.Control
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
@@ -195,21 +197,22 @@ sap.ui.define([
 	 *
 	 * Example:
 	 * <pre>
-	 * Control.extend('sap.mylib.MyControl', {
+	 * Control.extend("sap.mylib.MyControl", {
 	 *   metadata : {
-	 *     library : 'sap.mylib',
+	 *     library : "sap.mylib",
 	 *     properties : {
-	 *       text : 'string',
-	 *       width : 'sap.ui.core.CSSSize'
-	 *     },
-	 *     renderer: {
-	 *       render: function(oRM, oControl) {
-	 *         oRM.openTag("div", oControl);
-	 *         oRM.style("width", oControl.getWidth());
-	 *         oRM.openEnd();
-	 *         oRM.text(oControl.getText());
-	 *         oRM.closeTag("div");
-	 *       }
+	 *       text : "string",
+	 *       width : "sap.ui.core.CSSSize"
+	 *     }
+	 *   },
+	 *   renderer: {
+	 *     apiVersion: 2,
+	 *     render: function(oRM, oControl) {
+	 *       oRM.openStart("div", oControl);
+	 *       oRM.style("width", oControl.getWidth());
+	 *       oRM.openEnd();
+	 *       oRM.text(oControl.getText());
+	 *       oRM.close("div");
 	 *     }
 	 *   }
 	 * });
@@ -241,6 +244,11 @@ sap.ui.define([
 	 *
 	 * If the resulting renderer is incomplete (has no <code>render</code> function) or if it cannot be found at all,
 	 * rendering of the control will be skipped.
+	 *
+	 * <b>Note:</b> The <code>apiVersion: 2</code> flag is required to enable in-place rendering technology.
+	 * Before setting this property, please ensure that the constraints documented in section "Contract for
+	 * Renderer.apiVersion 2" of the {@link sap.ui.core.RenderManager RenderManager} API documentation are
+	 * fulfilled.
 	 *
 	 * @param {string} sClassName fully qualified name of the class that is described by this metadata object
 	 * @param {object} oStaticInfo static info to construct the metadata from
@@ -292,7 +300,7 @@ sap.ui.define([
 	 * @private
 	 */
 	Control.prototype.isActive = function() {
-		return ((this.sId ? window.document.getElementById(this.sId) : null)) != null;
+		return document.getElementById(this.sId) != null;
 	};
 
 	/**
@@ -527,7 +535,7 @@ sap.ui.define([
 
 				if (!this._sapui_bInAfterRenderingPhase) {
 					// if control is rendered, directly call bind()
-					this.$().bind(sEventType, fnProxy);
+					this.$().on(sEventType, fnProxy);
 				}
 			}
 		}
@@ -560,7 +568,7 @@ sap.ui.define([
 						if ( oParamSet.sEventType === sEventType  && oParamSet.fnHandler === fnHandler  &&  oParamSet.oListener === oListener ) {
 							this.aBindParameters.splice(i, 1);
 							// if control is rendered, directly call unbind()
-							$.unbind(sEventType, oParamSet.fnProxy);
+							$.off(sEventType, oParamSet.fnProxy);
 						}
 					}
 				}
@@ -860,6 +868,13 @@ sap.ui.define([
 	 * The block-layer code is able to recognize that a new block-layer is not needed.
 	 */
 	function fnAddStandaloneBusyIndicator () {
+		// if there's already a busy block state, remove it first before creating a new one
+		// the existing busy block state can't be reused, because the block layer DOM is removed by the renderer. A new
+		// block layer needs to be created
+		if (this._oBusyBlockState) {
+			BlockLayerUtils.unblock(this._oBusyBlockState);
+		}
+
 		this._oBusyBlockState = BlockLayerUtils.block(this, this.getId() + "-busyIndicator", this._sBusySection);
 		BusyIndicatorUtils.addHTML(this._oBusyBlockState, this.getBusyIndicatorSize());
 	}
@@ -892,8 +907,6 @@ sap.ui.define([
 		var $this = this.$(this._sBusySection);
 
 		$this.removeClass('sapUiLocalBusy');
-		//Unset the actual DOM Element´s 'aria-busy'
-		$this.removeAttr('aria-busy');
 
 		if (this._sBlockSection === this._sBusySection) {
 			if (!this.getBlocked() && !this.getBusy()) {
@@ -986,6 +999,10 @@ sap.ui.define([
 	/**
 	 * Set the controls busy state.
 	 *
+	 * <b>Note:</b> The busy state can't be set on controls (e.g. sap.m.ColumnListItem)
+	 * which renderings have the following tags as DOM root element:
+	 * area|base|br|col|embed|hr|img|input|keygen|link|menuitem|meta|param|source|track|wbr|tr
+	 *
 	 * @param {boolean} bBusy The new busy state to be set
 	 * @return {sap.ui.core.Control} <code>this</code> to allow method chaining
 	 * @public
@@ -1002,6 +1019,7 @@ sap.ui.define([
 		this.setProperty("busy", bBusy, /*bSuppressInvalidate*/ true);
 
 		if (bBusy) {
+			Interaction.notifyShowBusyIndicator(this);
 			this.addDelegate(oRenderingDelegate, false, this);
 		} else {
 			this.removeDelegate(oRenderingDelegate);
@@ -1025,6 +1043,7 @@ sap.ui.define([
 			}
 		} else {
 			fnRemoveBusyIndicator.call(this);
+			Interaction.notifyHideBusyIndicator(this);
 		}
 		return this;
 	};

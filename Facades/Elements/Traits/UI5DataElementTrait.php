@@ -13,6 +13,7 @@ use exface\Core\Interfaces\Widgets\iHaveColumns;
 use exface\Core\Interfaces\Widgets\iShowData;
 use exface\Core\Widgets\Dialog;
 use exface\Core\DataTypes\WidgetVisibilityDataType;
+use exface\UI5Facade\Facades\Elements\UI5DataPaginator;
 
 /**
  * This trait helps wrap thrid-party data widgets (like charts, image galleries, etc.) in 
@@ -140,8 +141,12 @@ trait UI5DataElementTrait {
         $this->registerExternalModules($this->getController());
         
         $controller->addMethod('onUpdateFilterSummary', $this, '', $this->buildJsFilterSummaryUpdater());
-        $controller->addMethod('onLoadData', $this, 'oControlEvent, keep_page_pos', $this->buildJsDataLoader());
+        $controller->addMethod('onLoadData', $this, 'oControlEvent, bKeepPagingPos', $this->buildJsDataLoader());
         $this->initConfiguratorControl($controller);
+        
+        if ($this->hasPaginator()) {
+            $this->getPaginatorElement()->registerControllerMethods();
+        }
         
         // Reload the data every time the view is shown. This is important, because otherwise 
         // old rows may still be visible if a dialog is open, closed and then reopened for another 
@@ -231,9 +236,15 @@ JS;
     protected function buildJsPanelWrapper(string $contentConstructorsJs, string $oControllerJs = 'oController', string $toolbar = null)  : string
     {
         $toolbar = $toolbar ?? $this->buildJsToolbar($oControllerJs);
+        $hDim = $this->getWidget()->getHeight();
+        if (! $hDim->isUndefined()) {
+            $height = $this->getHeight();
+        } else {
+            $height = '100%';
+        }
         return <<<JS
         new sap.m.Panel({
-            height: "100%",
+            height: "$height",
             headerToolbar: [
                 {$toolbar}.addStyleClass("sapMTBHeader-CTX")
             ],
@@ -470,7 +481,7 @@ JS;
      *
      * @return string
      */
-    protected function buildJsDataLoader($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'keep_page_pos')
+    protected function buildJsDataLoader($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'bKeepPagingPos')
     {
         $widget = $this->getWidget();
         if ($widget instanceof iShowData && $widget->isEditable()) {
@@ -519,13 +530,42 @@ JS;
                 return $js;
     }
     
-    
+    /**
+     *
+     * @return string
+     */
+    protected function buildJsDataLoaderFromLocal($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'bKeepPagingPos')
+    {
+        $widget = $this->getWidget();
+        $data = $widget->prepareDataSheetToRead($widget->getValuesDataSheet());
+        if (! $data->isFresh()) {
+            $data->dataRead();
+        }
+        
+        // Since non-lazy loading means all the data is embedded in the view, we need to make
+        // sure the the view is not cached: so we destroy the view after it was hidden!
+        $this->getController()->addOnHideViewScript($this->getController()->getView()->buildJsViewGetter($this). '.destroy();', false);
+        
+        // FIXME make filtering, sorting, pagination, etc. work in non-lazy mode too!
+        
+        return <<<JS
+        
+                try {
+        			var data = {$this->getFacade()->encodeData($this->getFacade()->buildResponseData($data, $widget))};
+        		} catch (err){
+                    console.error('Cannot load data into widget {$this->getId()}!');
+                    return;
+        		}
+                sap.ui.getCore().byId("{$this->getId()}").getModel().setData(data);
+                
+JS;
+    }
     
     /**
      *
      * @return string
      */
-    protected function buildJsDataLoaderFromServer($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'keep_page_pos')
+    protected function buildJsDataLoaderFromServer($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'bKeepPagingPos')
     {
         $widget = $this->getWidget();
         
@@ -594,12 +634,44 @@ JS;
     {
         return $this->buildJsDataResetter();
     }
-                
-    protected function buildJsDataLoaderParams(string $oControlEventJsVar = 'oControlEvent', string $oParamsJs = 'params') : string
+       
+    /**
+     * Returns control-specific parameters for the data loader AJAX request.
+     * 
+     * @param string $oControlEventJsVar
+     * @param string $oParamsJs
+     * @return string
+     */
+    protected function buildJsDataLoaderParams(string $oControlEventJsVar = 'oControlEvent', string $oParamsJs = 'params', $keepPagePosJsVar = 'bKeepPagingPos') : string
     {
-        return '';
+        return $this->buildJsDataLoaderParamsPaging($oParamsJs, $keepPagePosJsVar);
     }
     
+    /**
+     * Adds pagination parameters to the JS object $oParamsJs holding the AJAX request parameters.
+     * 
+     * @param string $oParamsJs
+     * @param string $keepPagePosJsVar
+     * @return string
+     */
+    protected function buildJsDataLoaderParamsPaging(string $oParamsJs = 'params', $keepPagePosJsVar = 'bKeepPagingPos') : string
+    {
+        $paginationSwitch = $this->getDataWidget()->isPaged() ? 'true' : 'false';
+        
+        return <<<JS
+        
+        		// Add pagination
+                if ({$paginationSwitch}) {
+                    var paginator = {$this->getPaginatorElement()->buildJsGetPaginator('oController')};
+                    if (typeof {$keepPagePosJsVar} === 'undefined' || ! {$keepPagePosJsVar}) {
+                        paginator.resetAll();
+                    }
+                    {$oParamsJs}.start = paginator.start;
+                    {$oParamsJs}.length = paginator.pageSize;
+                }
+                
+JS;
+    }
     
     protected function buildJsDataLoaderOnLoaded(string $oModelJs = 'oModel') : string
     {
@@ -785,10 +857,15 @@ JS;
             $top_buttons .= $this->getFacade()->getElement($btn)->buildJsConstructor() . ',';
         }
         
+        // Add a title. If the dynamic page is actually the view, the title should be the name
+        // of the page, the view represents - otherwise it's the caption of the table widget.
+        // Since the back-button is also only shown when the dynamic page is the view itself,
+        // we can use the corresponding getter here.
+        $caption = $this->getDynamicPageShowBackButton() ? $this->getWidget()->getPage()->getName() : $this->getCaption();
         $title = <<<JS
         
                             new sap.m.Title({
-                                text: "{$this->getCaption()}"
+                                text: "{$this->escapeJsTextValue($caption)}"
                             })
                             
 JS;
@@ -961,7 +1038,8 @@ JS;
         $filter_checks = '';
         foreach ($this->getDataWidget()->getFilters() as $fltr) {
             $elem = $this->getFacade()->getElement($fltr);
-            $filter_checks .= 'if(' . $elem->buildJsValueGetter() . ") {filtersCount++; filtersList += (filtersList == '' ? '' : ', ') + '{$elem->getCaption()}';} \n";
+            $filterName = $this->escapeJsTextValue($elem->getCaption());
+            $filter_checks .= "if({$elem->buildJsValueGetter()}) {filtersCount++; filtersList += (filtersList == '' ? '' : ', ') + \"{$filterName}\";} \n";
         }
         return <<<JS
                 var filtersCount = 0;
@@ -1277,5 +1355,23 @@ JS;
             })();
             
 JS;
+    }
+    
+    /**
+     *
+     * @return bool
+     */
+    protected function hasPaginator() : bool
+    {
+        return ($this->getDataWidget() instanceof Data);
+    }
+    
+    /**
+     *
+     * @return UI5DataPaginator
+     */
+    protected function getPaginatorElement() : UI5DataPaginator
+    {
+        return $this->getFacade()->getElement($this->getDataWidget()->getPaginator());
     }
 }

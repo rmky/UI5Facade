@@ -90,9 +90,11 @@ class UI5Button extends UI5AbstractElement
         
         return <<<JS
 
-new sap.m.Button("{$this->getId()}", { 
-    {$this->buildJsProperties()}
-}).addStyleClass("{$this->buildCssElementClass()}")
+        new sap.m.Button("{$this->getId()}", { 
+            {$this->buildJsProperties()}
+        })
+        .addStyleClass("{$this->buildCssElementClass()}")
+        {$this->buildJsPseudoEventHandlers()}
 
 JS;
     }
@@ -276,6 +278,7 @@ JS;
                                             if (oDialog instanceof sap.m.Dialog) {
                                                 oDialog.attachAfterClose(function() {
                                                     {$this->buildJsInputRefresh($widget)}
+                                                    {$this->buildJsCloseDialogFixMissingEvents('oView', 'oParentView')}
                                                 });
                                                 oDialog.open();
                                             } else {
@@ -349,6 +352,38 @@ JS;
                             			oEvent.backData = {};
                             			$oViewJs._handleEvent(oEvent);
 
+JS;
+    }
+    
+    protected function buildJsCloseDialogFixMissingEvents(string $oViewJs, string $oParentViewJs) : string
+    {
+        return <<<JS
+        
+                                        var oNavInfo = {
+                            				from: $oViewJs,
+                            				fromId: $oViewJs,
+                            				to: $oParentViewJs || null,
+                            				toId: ($oParentViewJs !== undefined ? $oParentViewJs.getId() : null),
+                            				firstTime: true,
+                            				isTo: false,
+                            				isBack: false,
+                            				isBackToTop: false,
+                            				isBackToPage: false,
+                            				direction: "initial"
+                            			};
+                            			
+                            			oEvent = jQuery.Event("BeforeHide", oNavInfo);
+                            			oEvent.srcControl = this;
+                            			oEvent.data = {};
+                            			oEvent.backData = {};
+                            			$oViewJs._handleEvent(oEvent);
+                            			
+                                        oEvent = jQuery.Event("AfterHide", oNavInfo);
+                            			oEvent.srcControl = this;
+                            			oEvent.data = {};
+                            			oEvent.backData = {};
+                            			$oViewJs._handleEvent(oEvent);
+                            			
 JS;
     }
     

@@ -1,12 +1,12 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 //Provides the locale object sap.ui.core.LocaleData
-sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType', './Locale', 'sap/base/assert', 'sap/base/util/LoaderExtensions'],
-	function(jQuery, BaseObject, CalendarType, Locale, assert, LoaderExtensions) {
+sap.ui.define(['sap/base/util/extend', 'sap/ui/base/Object', './CalendarType', './Locale', 'sap/base/assert', 'sap/base/util/LoaderExtensions'],
+	function(extend, BaseObject, CalendarType, Locale, assert, LoaderExtensions) {
 	"use strict";
 
 	/**
@@ -18,7 +18,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 	 *
 	 * @extends sap.ui.base.Object
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @public
 	 * @alias sap.ui.core.LocaleData
 	 */
@@ -30,6 +30,10 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 			this.mData = getData(oLocale);
 		},
 
+		/**
+		 * @private
+		 * @ui5-restricted UI5 Web Components
+		 */
 		_get: function() {
 			return this._getDeep(this.mData, arguments);
 		},
@@ -833,11 +837,26 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 		/**
 		 * Get currency format pattern.
 		 *
+		 * CLDR format pattern:
+		 *
+		 * @example standard with currency symbol in front of the number
+		 * ¤#,##0.00
+		 * $100,000.00
+		 * $-100,000.00
+		 *
+		 * @example accounting with negative number pattern after the semicolon
+		 * ¤#,##0.00;(¤#,##0.00)
+		 * $100,000.00
+		 * ($100,000.00)
+		 *
+		 * @see http://cldr.unicode.org/translation/numbers-currency/number-patterns
+		 *
 		 * @param {string} sContext the context of the currency pattern (standard or accounting)
 		 * @returns {string} The pattern
 		 * @public
 		 */
 		getCurrencyPattern: function(sContext) {
+			// Undocumented contexts for NumberFormat internal use: "sap-standard" and "sap-accounting"
 			return this._get("currencyFormat")[sContext] || this._get("currencyFormat").standard;
 		},
 
@@ -1367,12 +1386,14 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 		getCurrencyFormat: function(sStyle, sNumber, sPlural) {
 
 			var sFormat;
-			var oFormats;
+			var oFormats = this._get("currencyFormat-" + sStyle);
 
-			switch (sStyle) {
-			default: //short
+			// Defaults to "short" if not found
+			if (!oFormats) {
+				if (sStyle === "sap-short") {
+					throw new Error("Failed to get CLDR data for property \"currencyFormat-sap-short\"");
+				}
 				oFormats = this._get("currencyFormat-short");
-				break;
 			}
 
 			if (oFormats) {
@@ -3364,7 +3385,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/ui/base/Object', './CalendarType
 			var mData = this._getDeep(this.mData, arguments);
 			var mCustomData = this._getDeep(this.mCustomData, arguments);
 
-			return jQuery.extend({}, mData, mCustomData);
+			return extend({}, mData, mCustomData);
 		}
 	});
 

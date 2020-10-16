@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -9,14 +9,16 @@ sap.ui.define([
 	"sap/ui/fl/Utils",
 	"sap/base/Log",
 	"sap/base/util/merge",
-	"sap/ui/fl/write/api/ChangesWriteAPI"
+	"sap/ui/fl/write/api/ChangesWriteAPI",
+	"sap/base/util/values"
 ], function(
 	BaseCommand,
 	JsControlTreeModifier,
 	flUtils,
 	Log,
 	merge,
-	ChangesWriteAPI
+	ChangesWriteAPI,
+	objectValues
 ) {
 	"use strict";
 
@@ -27,7 +29,7 @@ sap.ui.define([
 	 * @extends sap.ui.rta.command.BaseCommand
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @private
@@ -136,18 +138,23 @@ sap.ui.define([
 	};
 
 	/**
-	 * This method converts command constructor parameters into change specific data.
-	 * Default implementation of this method below is for commands, which do not have specific constructor parameters
-	 * @return {object} Returns the <code>SpecificChangeInfo</code> for change handler
+	 * This method converts all command constructor parameters that are flagged with group 'content' into change specific data.
+	 * @return {object} Returns the <code>ChangeSpecificInfo</code> for change handler
 	 * @protected
 	 */
 	FlexCommand.prototype._getChangeSpecificData = function() {
-		return {
-			changeType : this.getChangeType(),
-			selector : {
-				id : this.getElementId()
-			}
+		var mProperties = this.getMetadata().getProperties();
+		var mChangeSpecificData = {
+			changeType : this.getChangeType()
 		};
+		objectValues(mProperties)
+			.filter(function (oProperty) {
+				return oProperty.group === "content";
+			})
+			.forEach(function (oProperty) {
+				mChangeSpecificData[oProperty.name] = oProperty.get(this);
+			}, this);
+		return mChangeSpecificData;
 	};
 
 	/**
@@ -249,4 +256,4 @@ sap.ui.define([
 	};
 
 	return FlexCommand;
-}, /* bExport= */true);
+});

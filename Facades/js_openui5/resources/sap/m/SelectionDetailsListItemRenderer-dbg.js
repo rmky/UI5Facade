@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define(["sap/ui/core/Renderer", "sap/m/ListItemBaseRenderer"], function(Renderer, ListItemBaseRenderer) {
@@ -21,14 +21,14 @@ sap.ui.define(["sap/ui/core/Renderer", "sap/m/ListItemBaseRenderer"], function(R
 
 	try {
 		var oParser = new DOMParser();
-		bIsDOMParserSupported = oParser.parseFromString("<svg />", "text/html") !== null;
+		bIsDOMParserSupported = oParser.parseFromString("<svg/>", "text/html") !== null;
 	} catch (ex) {
 		bIsDOMParserSupported = false;
 	}
 
 	var fnParseSvgString;
 
-	// Most browsers support DOMParser for text/html. Sadly our voter job uses phantomjs. This is a fix for phantomjs.
+	// Most browsers support DOMParser for text/html. Sadly our voter job uses p-h-a-n-t-o-m-j-s. This is a fix for p-h-a-n-t-o-m-j-s.
 	if (bIsDOMParserSupported) {
 		fnParseSvgString = function (sString) {
 			var oParser = new DOMParser(),

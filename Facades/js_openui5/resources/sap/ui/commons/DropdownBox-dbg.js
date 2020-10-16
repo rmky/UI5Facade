@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -36,7 +36,7 @@ sap.ui.define([
 	 * The control provides a field that allows end users to an entry out of a list of pre-defined items.
 	 * The choosable items can be provided in the form of a complete <code>ListBox</code>, single <code>ListItems</code>.
 	 * @extends sap.ui.commons.ComboBox
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -1177,7 +1177,7 @@ sap.ui.define([
 
 		if (!Device.browser.msie) {
 			// because in IE already async made in ComboBox
-			jQuery(this.getInputDomRef()).focus();
+			jQuery(this.getInputDomRef()).trigger("focus");
 		} else {
 			this._bFocusByOpen = true;
 		}

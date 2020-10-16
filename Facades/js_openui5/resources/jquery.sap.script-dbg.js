@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -47,7 +47,7 @@ sap.ui.define([
 	/**
 	 * Sorts the given array in-place and removes any duplicates (identified by "===").
 	 *
-	 * Use <code>jQuery.unique()</code> for arrays of DOMElements.
+	 * Use <code>jQuery.uniqueSort()</code> for arrays of DOMElements.
 	 *
 	 * @param {Array} a An Array of any type
 	 * @return {Array} Same array as given (for chaining)
@@ -268,7 +268,7 @@ sap.ui.define([
 	 * Use {@link jQuery.sap.getUriParameters} to create an instance of jQuery.sap.util.UriParameters.
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @since 0.9.0
 	 * @name jQuery.sap.util.UriParameters
 	 * @public
@@ -334,7 +334,7 @@ sap.ui.define([
 	 */
 	jQuery.sap.delayedCall = function delayedCall(iDelay, oObject, method, aParameters) {
 		return setTimeout(function(){
-			if (jQuery.type(method) == "string") {
+			if (typeof method === "string") {
 				method = oObject[method];
 			}
 			method.apply(oObject, aParameters || []);
@@ -368,7 +368,7 @@ sap.ui.define([
 	 */
 	jQuery.sap.intervalCall = function intervalCall(iInterval, oObject, method, aParameters) {
 		return setInterval(function(){
-			if (jQuery.type(method) == "string") {
+			if (typeof method === "string") {
 				method = oObject[method];
 			}
 			method.apply(oObject, aParameters || []);

@@ -2,24 +2,21 @@
 namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement;
-use exface\UI5Facade\Facades\UI5Facade;
 use exface\Core\CommonLogic\Constants\Icons;
 use exface\Core\Interfaces\Widgets\iHaveValue;
-use exface\Core\Factories\UiPageFactory;
 use exface\Core\DataTypes\StringDataType;
 use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
 use exface\Core\Exceptions\LogicException;
-use exface\UI5Facade\Facades\Elements\ServerAdapters\UI5FacadeServerAdapter;
-use exface\UI5Facade\Facades\Elements\ServerAdapters\OData2ServerAdapter;
 use exface\UI5Facade\Facades\Interfaces\UI5ServerAdapterInterface;
 use exface\Core\Interfaces\Widgets\iCanPreloadData;
 use exface\UI5Facade\Facades\Elements\ServerAdapters\PreloadServerAdapter;
 use exface\UI5Facade\Facades\Interfaces\UI5ViewInterface;
 use exface\Core\Interfaces\Widgets\iHaveIcon;
+use exface\UI5Facade\Facades\Interfaces\UI5ModelInterface;
 
 /**
  *
- * @method UI5Facade getFacade()
+ * @method \exface\UI5Facade\Facades\UI5Facade getFacade()
  *        
  * @author Andrej Kabachnik
  *        
@@ -275,7 +272,18 @@ JS;
         if ($text === null || $text === '') {
             return $text;
         }
-        return trim(json_encode(str_replace(['\u'], ['&#92;u'], $text)), "\"");
+        
+        // json_encode() escapes " and ' really well
+        $escaped = json_encode(str_replace(['\u'], ['&#92;u'], $text));
+        // however, the result is enclosed in double quotes if it's a string. If so, we
+        // need to remove the first an last character (the quotes). Note: trim() won't
+        // work here because if the $text was already beginning or ending with " it will
+        // get trimmed off too!
+        if (substr($escaped, 0, 1) === '"') {
+            $escaped = substr($escaped, 1, -1);   
+        }
+        
+        return $escaped;
     }
     
     /**

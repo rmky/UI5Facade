@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -8,6 +8,7 @@ sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/fl/support/apps/contentbrowser/lrepConnector/LRepConnector",
 	"sap/ui/fl/support/apps/contentbrowser/utils/DataUtils",
+	"sap/ui/fl/Layer",
 	"sap/m/Dialog",
 	"sap/m/Text",
 	"sap/m/Button",
@@ -17,6 +18,7 @@ sap.ui.define([
 	Controller,
 	LRepConnector,
 	DataUtils,
+	Layer,
 	Dialog,
 	Text,
 	Button,
@@ -34,7 +36,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.support.apps.contentbrowser.controller.ContentDetailsEdit
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @experimental Since 1.45
 	 */
 	return Controller.extend("sap.ui.fl.support.apps.contentbrowser.controller.ContentDetailsEdit", {
@@ -152,7 +154,7 @@ sap.ui.define([
 				//when content is not in JSON format (Ex: js or code_ext file), package is undefined but does not break the code.
 			}
 
-			if ((sLayer === "USER") ||
+			if ((sLayer === Layer.USER) ||
 				(sLayer === "LOAD") ||
 				(sLayer === "VENDOR_LOAD") ||
 				(!sTransportIdFromContent && (!sPackageFromContent || sPackageFromContent === "$TMP"))) {
@@ -162,7 +164,7 @@ sap.ui.define([
 				sTransportId = sTransportIdFromContent;
 				this._saveFile(sLayer, oContentData.namespace, oContentData.fileName, oContentData.fileType, oContentData.data, sTransportId, sPackageName);
 			} else {
-				var isPackageVisible = !!(sLayer === "VENDOR" || sLayer === "CUSTOMER_BASE");
+				var isPackageVisible = !!(sLayer === Layer.VENDOR || sLayer === Layer.CUSTOMER_BASE);
 				var oPackageInput = new Input({visible: isPackageVisible, placeholder: "Package name (Only necessary for cross client content)" });
 				var oTransportInput = new Input({placeholder: "Transport ID or ATO_NOTIFICATION" });
 				var oDialog = new Dialog({

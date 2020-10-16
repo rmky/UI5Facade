@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -24,7 +24,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/ValueStateSupport', 'sap/ui/
 	 * TextField Renderer
 	 * @namespace
 	 * @author SAP
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @since 0.9.0
 	 */
 	var TextFieldRenderer = {};
@@ -187,7 +187,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/ValueStateSupport', 'sap/ui/
 				rm.writeEscaped(oTextField.getValue());
 			}
 			rm.write("\"");
-			rm.write("/>");
+			rm.write(">");
 		}
 
 		if (this.getInnerTagName) {

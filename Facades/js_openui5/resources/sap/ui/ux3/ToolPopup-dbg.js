@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -63,7 +63,7 @@ sap.ui.define([
          *
          * @namespace
          * @author SAP SE
-         * @version 1.73.1
+         * @version 1.82.0
          *
          * @constructor
          * @public
@@ -576,11 +576,11 @@ sap.ui.define([
                     // Compare the initial focus id with the current focus that is
                     // stored in the FocusHandler in the core.
                     // If the initial focus was set properly already by the Popup
-                    // don't focus twice. Because Internet Explorer will be confused with// TODO remove after 1.62 version
+                    // don't focus twice. Because Internet Explorer will be confused with// TODO remove after the end of support for Internet Explorer
                     // two focusin and focusout events
                     if (sInitFocusId !== sap.ui.getCore().getCurrentFocusedControlId()) {
                         var oControl = jQuery(document.getElementById(sInitFocusId));
-                        oControl.focus();
+                        oControl.trigger("focus");
                     }
                 }
 
@@ -1103,8 +1103,8 @@ sap.ui.define([
                     // Okay, we have the control
                     if (oFocusCtrl instanceof sap.ui.commons.Button) {
                         var $FocusCtrl = oFocusCtrl.$();
-                        $FocusCtrl.click();
-                        $FocusCtrl.focus();
+                        $FocusCtrl.trigger("click");
+                        $FocusCtrl.trigger("focus");
                     }
                 }
 

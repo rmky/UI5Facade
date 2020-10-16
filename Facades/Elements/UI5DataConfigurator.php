@@ -194,7 +194,6 @@ JS;
                     title: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.SORTING')}",
                     visible: true,
                     type: "sort",
-                    /*containerQuery: true,*/
                     layoutMode: "Desktop",
                     items: {
                         path: '{$this->getModelNameForConfig()}>/sortables',
@@ -336,7 +335,6 @@ JS;
                     var oPanel = new sap.m.P13nFilterPanel("{$this->getId()}_AdvancedSearchPanel", {
                         title: "{$this->translate('WIDGET.DATATABLE.SETTINGS_DIALOG.ADVANCED_SEARCH')}",
                         visible: true,
-                        /*containerQuery: true, */
                         layoutMode: "Desktop",
                         addFilterItem: function(oEvent){
                             var oParameters = oEvent.getParameters();

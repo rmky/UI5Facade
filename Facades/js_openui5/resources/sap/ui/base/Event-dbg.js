@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -23,7 +23,7 @@ sap.ui.define(['./Object', "sap/base/assert"],
 	 * @extends sap.ui.base.Object
 	 * @implements sap.ui.base.Poolable
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @alias sap.ui.base.Event
 	 * @public
 	 */
@@ -57,7 +57,7 @@ sap.ui.define(['./Object', "sap/base/assert"],
 	 */
 	Event.prototype.init = function(sId, oSource, oParameters) {
 		assert(typeof sId === "string", "Event.init: sId must be a string");
-		assert(sap.ui.require('sap/ui/base/EventProvider') && oSource instanceof sap.ui.require('sap/ui/base/EventProvider'), "Event.init: oSource must be an EventProvider");
+		assert(BaseObject.isA(oSource, 'sap.ui.base.EventProvider'), "Event.init: oSource must be an EventProvider");
 
 		this.sId = sId;
 		this.oSource = oSource;

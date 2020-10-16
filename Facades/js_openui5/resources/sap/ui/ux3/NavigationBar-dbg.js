@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -62,7 +62,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -251,9 +251,9 @@ sap.ui.define([
 		this._iSoredScrollPosition = this.$("list").scrollLeft();
 
 		if (Device.browser.firefox) { // TODO: feature detection... not used yet because of performance implications (may involve creating elements)
-			this.$().unbind("DOMMouseScroll", this._handleScroll);
+			this.$().off("DOMMouseScroll", this._handleScroll);
 		} else {
-			this.$().unbind("mousewheel", this._handleScroll);
+			this.$().off("mousewheel", this._handleScroll);
 		}
 
 		var arrow = this.getDomRef("arrow");
@@ -305,9 +305,9 @@ sap.ui.define([
 
 		// bind a scroll handler to the workset item area
 		if (Device.browser.firefox) { // TODO: feature detection... not used yet because of performance implications (may involve creating elements)
-			jQuery(oDomRef).bind("DOMMouseScroll", jQuery.proxy(this._handleScroll, this));
+			jQuery(oDomRef).on("DOMMouseScroll", jQuery.proxy(this._handleScroll, this));
 		} else {
-			jQuery(oDomRef).bind("mousewheel", jQuery.proxy(this._handleScroll, this));
+			jQuery(oDomRef).on("mousewheel", jQuery.proxy(this._handleScroll, this));
 		}
 
 		this._calculatePositions();

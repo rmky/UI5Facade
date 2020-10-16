@@ -2,7 +2,7 @@
 
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -13,10 +13,10 @@
 /******************************************************************
 	Style of the DT Overlays - base Theme
 *******************************************************************/
-@_sap_ui_dt_Overlay_FocusColor : @sapUiContentFocusColor;		//#000
-@_sap_ui_dt_Overlay_TargetZoneColor : @sapUiSelected;			//#2e9cea
-@_sap_ui_dt_Overlay_SelectionColor : lighten(@sapUiBlue,10);	//#3333ff
-@_sap_ui_dt_Overlay_CuttedColor : @sapUiWhite;					//#fff
+@_sap_ui_dt_Overlay_FocusColor : @sapUiContentFocusColor; //#000
+@_sap_ui_dt_Overlay_TargetZoneColor : @sapUiSelected; //#2e9cea
+@_sap_ui_dt_Overlay_SelectionColor : lighten(@sapUiBlue,10); //#3333ff
+@_sap_ui_dt_Overlay_CuttedColor : @sapUiWhite; //#fff
 
 #overlay-container {
 	position: absolute;
@@ -51,7 +51,7 @@
 	&:focus {
 		&:before {
 			content: " ";
-			border: 1px dotted @_sap_ui_dt_Overlay_FocusColor;
+			border: 0.0625rem dotted @_sap_ui_dt_Overlay_FocusColor; //1px
 		}
 	}
 }
@@ -70,16 +70,16 @@
 .sapUiDtOverlayTargetZone {
 	&:after {
 		content: " ";
-		outline: 2px dashed @_sap_ui_dt_Overlay_TargetZoneColor;
-		outline-offset: -2px;
+		outline: 0.125rem dashed @_sap_ui_dt_Overlay_TargetZoneColor; //2px
+		outline-offset: -0.125rem; //2px
 	}
 }
 
 .sapUiDtOverlaySelected {
 	&:after {
 		content: " ";
-		outline: 2px dashed @_sap_ui_dt_Overlay_SelectionColor;
-		outline-offset: -2px;
+		outline: 0.125rem dashed @_sap_ui_dt_Overlay_SelectionColor; //2px
+		outline-offset: -0.125rem; //2px
 	}
 }
 
@@ -134,8 +134,8 @@
 /******************************************************************
 	Style of the DT Contextmenu - base Theme
 *******************************************************************/
-@_sap_ui_dt_ContextMenu_BoxShadow: @sapUiUx3ToolPopupShadow;			// 0px 6px 12px 0px fade(black, 30);
-@_sap_ui_dt_ContextMenu_FocusColor: @sapUiWhite;						// #fff
+@_sap_ui_dt_ContextMenu_BoxShadow: @sapUiUx3ToolPopupShadow; //0px 6px 12px 0px fade(black, 30);
+@_sap_ui_dt_ContextMenu_FocusColor: @sapUiContentFocusColor; //#000
 
 .sapUiDtContextMenu {
 
@@ -145,6 +145,22 @@
 
 	.sapMBtnInner {
 		text-align: left;
+		text-shadow: none;
+		display: block;
+	}
+	.sapMBtn {
+		padding-left: 0.0625rem; //1px
+		padding-right: 0.0625rem; //1px
+	}
+
+	.sapMBtn:focus > .sapMFocusable,
+	&.sapMBtn:focus > .sapMFocusable {
+		border: 0.0625rem dotted @_sap_ui_dt_ContextMenu_FocusColor; //1px
+		outline: none;
+	}
+
+	.sapMBtn.sapMBtnDisabled {
+		opacity: 0.5;
 	}
 
 	&.sapMPopover, .sapMPopover {
@@ -152,7 +168,7 @@
 		min-width: 0;
 		transition: box-shadow .25s;
 		box-shadow: @_sap_ui_dt_ContextMenu_BoxShadow;
-		padding: 0.2rem;
+		padding: 0.1875rem; //3px
 
 		&.sapUiDtContextMenuVisible {
 			opacity: 1;
@@ -160,49 +176,57 @@
 	}
 
 	&.sapMPopoverArr, .sapMPopoverArr {
-		bottom: -9px;
-		left: 13px!important;
+		bottom: -0.5rem; //8px
+		left: 0.75rem !important; //12px
 
 		&:after {
 			box-shadow: none;
-			width: 0.7rem;
-			height: 0.7rem;
+			width: 0.75rem; //12px
+			height: 0.75rem; //12px
 		}
 
 		&.sapMPopoverArrUp {
-			top: -9px;
+			top: -0.5rem; //8px
 		}
 	}
-	&.sapUiDtContextMenuRightArrow{
+
+	&.sapUiDtContextMenuRightArrow {
 		&.sapMPopoverArr, .sapMPopoverArr {
-			left: unset!important;
-			right: 13px!important;
+			left: unset !important;
+			right: 0.75rem !important; //12px
 		}
 	}
 }
 
-.sapUiSizeCozy .sapUiDtContextMenu.sapUiDtContextMenuRightArrow{
-	&.sapMPopoverArr, .sapMPopoverArr {
-		left: unset!important;
-		right: 16px!important;
+.sapUiSizeCozy {
+
+	.sapUiDtContextMenu {
+
+		&.sapMPopoverArr, .sapMPopoverArr {
+			left: 1.375rem !important; //16px
+		}
+		.sapMBtn {
+			margin-left: 0.125rem; //2px
+			margin-right: 0.125rem; //2px
+		}
+		&.sapUiDtContextMenuRightArrow {
+			&.sapMPopoverArr, .sapMPopoverArr {
+				left: unset !important;
+				right: 1.375rem !important; //16px
+			}
+		}
 	}
+
 }
 
-.sapUiSizeCozy .sapUiDtContextMenu{
-	&.sapMPopoverArr, .sapMPopoverArr {
-		left: 16px !important;
-	}
+// Special handling for IE and EDGE Browsers
+html[data-sap-ui-browser^="ie"] .sapUiDtContextMenu .sapMBtn:focus .sapMBtnFocusDiv,
+html[data-sap-ui-browser^="ed"] .sapUiDtContextMenu .sapMBtn:focus .sapMBtnFocusDiv {
+	border: none;
 }
-
-html.sap-desktop .sapUiDtContextMenu .sapMBtn:focus > .sapMFocusable,
-html.sap-desktop .sapUiDtContextMenu.sapMBtn:focus > .sapMFocusable {
-	border: 1px dotted @_sap_ui_dt_ContextMenu_FocusColor;
-	outline: none;
-}
-
-.sapUiSizeCompact .sapUiDtContextMenu .sapMBtn {
-	padding-left: 1px;
-	padding-right: 1px;
+// because the Button-Control sets a specific rule for IE, we have to define the display here again
+html[data-sap-ui-browser*='ie'] .sapUiDtContextMenu .sapMBtnInner {
+	display: block;
 }
 /* END "ContextMenu.less" */
 

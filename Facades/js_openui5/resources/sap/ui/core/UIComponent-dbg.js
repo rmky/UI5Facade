@@ -1,6 +1,6 @@
 /*
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -55,7 +55,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Component
 	 * @abstract
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @alias sap.ui.core.UIComponent
 	 * @since 1.9.2
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
@@ -73,9 +73,14 @@ sap.ui.define([
 				}
 
 				// save the _routerHashChanger for the creation of Router
-				if (mSettings && mSettings._routerHashChanger) {
+				if (mSettings && mSettings.hasOwnProperty("_routerHashChanger")) {
 					this._oRouterHashChanger = mSettings._routerHashChanger;
 					delete mSettings._routerHashChanger;
+				}
+
+				if (mSettings && mSettings.hasOwnProperty("_propagateTitle")){
+					this._bRoutingPropagateTitle = mSettings._propagateTitle;
+					delete mSettings._propagateTitle;
 				}
 
 				Component.apply(this, arguments);
@@ -219,9 +224,9 @@ sap.ui.define([
 	 *            <b>Note: Configuring the routing in the metadata in the source code is deprecated.
 	 *            Better create an application descriptor (manifest.json) instead for your component.</b>
 	 *
-	 * @param {function} [FNMetaImpl}
-	 *            Constructor function for the metadata object. If not given, it defaults to
-	 *            <code>sap.ui.core.UIComponentMetadata</code> (which is not public).
+	 * @param {function} [FNMetaImpl=sap.ui.core.ComponentMetadata]
+	 *            Constructor function for the metadata object. If not given, it defaults to an
+	 *            internal subclass of <code>sap.ui.core.ComponentMetadata</code>.
 	 * @name sap.ui.core.UIComponent.extend
 	 * @function
 	 * @public
@@ -538,7 +543,7 @@ sap.ui.define([
 	 * Subclasses are not limited to views as return type but may return any control, but only a single control
 	 * (can be the root of a larger control tree, however).
 	 *
-	 * @returns {sap.ui.core.mvc.View|sap.ui.core.Control} Root control of the UI tree or <code>null</code> if none is configured
+	 * @returns {sap.ui.core.Control|null} Root control of the UI tree or <code>null</code> if none is configured
 	 * @throws {Error} When the root view configuration could not be interpreted; subclasses might throw errors also for other reasons
 	 * @public
 	 */

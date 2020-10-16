@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -43,7 +43,7 @@ sap.ui.define([
 	 * @class
 	 * Allows to split the screen into two areas. Make sure that the container for the splitter has an absolute height or set an absolute height for the splitter using the height property. Otherwise the height of the splitter is calculated by the height of its contents.
 	 * @extends sap.ui.core.Control
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -377,7 +377,7 @@ sap.ui.define([
 
 		var oJBody = jQuery(document.body);
 			// Fix for IE text selection while dragging
-		oJBody.bind("selectstart",jQuery.proxy(this.splitterSelectStart,this));
+		oJBody.on("selectstart",jQuery.proxy(this.splitterSelectStart,this));
 
 		var offset = jQuery(this.splitterBar).offset();
 		var height = jQuery(this.splitterBar).height();
@@ -404,11 +404,11 @@ sap.ui.define([
 				"<div id=\"" + this.getId() + "_overlay\" style =\"left: 0px;" +
 						" right: 0px; bottom: 0px; top: 0px; position:fixed; z-index:" + iZIndex + "\" ></div>");
 
-		jQuery(document).bind("mouseup", jQuery.proxy(this.onGhostMouseRelease, this));
-		jQuery(document).bind("mousemove", jQuery.proxy(this.onGhostMouseMove, this));
+		jQuery(document).on("mouseup", jQuery.proxy(this.onGhostMouseRelease, this));
+		jQuery(document).on("mousemove", jQuery.proxy(this.onGhostMouseMove, this));
 
 		// focus splitter bar
-		jQuery(this.splitterBar).focus();
+		jQuery(this.splitterBar).trigger("focus");
 
 		// cancel the event
 		oEvent.preventDefault();
@@ -469,10 +469,10 @@ sap.ui.define([
 		jQuery(document.getElementById(this.getId() + "_overlay")).remove();
 
 		var oJBody = jQuery(document.body);
-		oJBody.unbind("selectstart", this.splitterSelectStart);
+		oJBody.off("selectstart", this.splitterSelectStart);
 
-		jQuery(document).unbind("mouseup", this.onGhostMouseRelease);
-		jQuery(document).unbind("mousemove", this.onGhostMouseMove);
+		jQuery(document).off("mouseup", this.onGhostMouseRelease);
+		jQuery(document).off("mousemove", this.onGhostMouseMove);
 
 	};
 

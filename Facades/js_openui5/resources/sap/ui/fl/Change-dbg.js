@@ -1,26 +1,28 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"sap/ui/thirdparty/jquery",
 	"sap/ui/base/ManagedObject",
+	"sap/ui/fl/Layer",
 	"sap/ui/fl/Utils",
 	"sap/ui/fl/LayerUtils",
 	"sap/ui/fl/registry/Settings",
 	"sap/base/Log",
-	"sap/ui/fl/descriptorRelated/api/DescriptorInlineChangeFactory",
+	"sap/ui/fl/apply/_internal/appVariant/DescriptorChangeTypes",
 	"sap/base/util/includes"
 ], function (
 	jQuery,
 	ManagedObject,
+	Layer,
 	Utils,
 	LayerUtils,
 	Settings,
 	Log,
-	DescriptorInlineChangeFactory,
+	DescriptorChangeTypes,
 	includes
 ) {
 	"use strict";
@@ -46,20 +48,17 @@ sap.ui.define([
 
 			this._oDefinition = oFile;
 			this._sRequest = '';
-			this._bUserDependent = (oFile.layer === "USER");
+			this._bUserDependent = (oFile.layer === Layer.USER);
 			this._vRevertData = null;
 			this._aUndoOperations = null;
+			this._oExtensionPointInfo = null;
 			this.setState(Change.states.NEW);
-			this.setModuleName(oFile.moduleName);
 			this.setInitialApplyState();
 			this._oChangeProcessingPromises = {};
 		},
 		metadata : {
 			properties : {
 				state : {
-					type: "string"
-				},
-				moduleName: {
 					type: "string"
 				},
 				/**
@@ -119,7 +118,17 @@ sap.ui.define([
 
 	Change.prototype.setInitialApplyState = function() {
 		this._aQueuedProcesses = [];
+		delete this._ignoreOnce;
 		this.setApplyState(Change.applyState.INITIAL);
+	};
+
+	Change.prototype.isInInitialState = function() {
+		return (this._aQueuedProcesses.length === 0) && (this.getApplyState() === Change.applyState.INITIAL);
+	};
+
+	Change.prototype.isValidForDependencyMap = function() {
+		//Change without id in selector should be skipped from adding dependencies process
+		return this._oDefinition.selector && this._oDefinition.selector.id;
 	};
 
 	Change.prototype.startApplying = function() {
@@ -337,23 +346,6 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns the context in which the change should be applied.
-	 *
-	 * @returns {Object[]} context - List of objects to determine the context
-	 * @returns {string} selector  - Key of the context
-	 * @returns {string} operator - Instructions on how the values should be compared
-	 * @returns {Object} value - Values given for comparison
-	 *
-	 * @public
-	 */
-	Change.prototype.getContext = function () {
-		if (this._oDefinition && this._oDefinition.context) {
-			return this._oDefinition.context;
-		}
-		return "";
-	};
-
-	/**
 	 * Returns the ABAP package name.
 	 * @returns {string} ABAP package that the change is assigned to
 	 *
@@ -383,6 +375,28 @@ sap.ui.define([
 	 */
 	Change.prototype.setNamespace = function (sNamespace) {
 		this._oDefinition.namespace = sNamespace;
+	};
+
+	/**
+	 * Returns the name of module which this change refers to (XML or JS).
+	 *
+	 * @returns {String} Module name
+	 *
+	 * @public
+	 */
+	Change.prototype.getModuleName = function () {
+		return this._oDefinition.moduleName;
+	};
+
+	/**
+	 * Sets the module name.
+	 *
+	 * @param {string} sModuleName - Module name of the change file
+	 *
+	 * @public
+	 */
+	Change.prototype.setModuleName = function (sModuleName) {
+		this._oDefinition.moduleName = sModuleName;
 	};
 
 	/**
@@ -471,6 +485,10 @@ sap.ui.define([
 		return this._oDefinition.selector;
 	};
 
+	Change.prototype.setSelector = function (oSelector) {
+		this._oDefinition.selector = oSelector;
+	};
+
 	/**
 	 * Returns the source system of the change.
 	 *
@@ -521,6 +539,17 @@ sap.ui.define([
 			}
 		}
 		return "";
+	};
+
+	/**
+	 * Returns all texts.
+	 *
+	 * @returns {object} All texts
+	 *
+	 * @function
+	 */
+	Change.prototype.getTexts = function () {
+		return this._oDefinition.texts;
 	};
 
 	/**
@@ -581,7 +610,7 @@ sap.ui.define([
 	/**
 	 * Returns <code>true</code> if the label is read only. The label might be read only because of the current layer or because the logon language differs from the original language of the change file.
 	 *
-	 * @returns {boolean} <code>true</code> if the the label is read only
+	 * @returns {boolean} <code>true</code> if the label is read only
 	 *
 	 * @public
 	 */
@@ -990,6 +1019,14 @@ sap.ui.define([
 		this._aUndoOperations = aData;
 	};
 
+	Change.prototype.getExtensionPointInfo = function() {
+		return this._oExtensionPointInfo;
+	};
+
+	Change.prototype.setExtensionPointInfo = function(oExtensionPointInfo) {
+		this._oExtensionPointInfo = oExtensionPointInfo;
+	};
+
 	/**
 	 * Resets the undo operations
 	 * @public
@@ -1012,7 +1049,6 @@ sap.ui.define([
 	 * @param {String}  [oPropertyBag.id] - Name/ID of the file; if it's not set, it's created implicitly
 	 * @param {Boolean} [oPropertyBag.isVariant] - Name of the component
 	 * @param {Boolean} [oPropertyBag.isUserDependent] - <code>true</code> in case of end user changes
-	 * @param {String}  [oPropertyBag.context] - ID of the context
 	 * @param {Object}  [oPropertyBag.dependentSelector] - List of selectors saved under an alias for creating the dependencies between changes
 	 * @param {Object}  [oPropertyBag.validAppVersions] - Application versions where the change is active
 	 * @param {String}  [oPropertyBag.reference] - Application component name
@@ -1020,7 +1056,7 @@ sap.ui.define([
 	 * @param {String}  [oPropertyBag.projectId] - Project ID of the change file
 	 * @param {String}  [oPropertyBag.moduleName] - Name of the module which this changes refers to (XML or JS)
 	 * @param {String}  [oPropertyBag.generator] - Tool that is used to generate the change file
-	 * @param {Boolean}  [oPropertyBag.jsOnly] - Indicates that the change can only be applied with the JS modifier
+	 * @param {Boolean} [oPropertyBag.jsOnly] - Indicates that the change can only be applied with the JS modifier
 	 * @param {Object}  [oPropertyBag.oDataInformation] - Object with information about the oData service
 	 * @param {String}  [oPropertyBag.oDataInformation.propertyName] - Name of the OData property
 	 * @param {String}  [oPropertyBag.oDataInformation.entityType] - Name of the OData entity type that the property belongs to
@@ -1061,8 +1097,6 @@ sap.ui.define([
 			projectId: oPropertyBag.projectId || (oPropertyBag.reference && oPropertyBag.reference.replace(".Component", "")) || "",
 			creation: "",
 			originalLanguage: Utils.getCurrentLanguage(),
-			conditions: {},
-			context: oPropertyBag.context || "",
 			support: {
 				generator: oPropertyBag.generator || "Change.createInitialFileContent",
 				service: oPropertyBag.service || "",
@@ -1077,7 +1111,7 @@ sap.ui.define([
 			jsOnly: oPropertyBag.jsOnly || false,
 			variantReference: oPropertyBag.variantReference || "",
 			// since not all storage implementations know about all app descriptor change types, we store a flag if this change type changes a descriptor
-			appDescriptorChange: includes(DescriptorInlineChangeFactory.getDescriptorChangeTypes(), oPropertyBag.changeType)
+			appDescriptorChange: includes(DescriptorChangeTypes.getChangeTypes(), oPropertyBag.changeType)
 		};
 
 		return oNewFile;

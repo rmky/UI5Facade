@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  *
  * @private
@@ -17,8 +17,8 @@ sap.ui.define([
 		// List Card
 		"listMaxItems": {
 			"tags": ["content"],
-			"label": "{i18n>CARD_EDITOR.LIST.MAXITEMS}",
-			"type": "number",
+			"label": "{i18n>CARD_EDITOR.MAXITEMS}",
+			"type": "integer",
 			"path": "content/maxItems",
 			"visible": "{= ${context>type} === 'List' }"
 		},
@@ -26,7 +26,7 @@ sap.ui.define([
 		// List Card Item
 		"listItemTitle": {
 			"tags": ["content", "listItem"],
-			"label": "{i18n>CARD_EDITOR.LIST_ITEM.TITLE}",
+			"label": "{i18n>CARD_EDITOR.TITLE}",
 			"type": "string",
 			"path": "content/item/title",
 			"visible": "{= ${context>type} === 'List' }"
@@ -48,29 +48,65 @@ sap.ui.define([
 		"listItemInfoState": {
 			"tags": ["content", "listItem"],
 			"label": "{i18n>CARD_EDITOR.LIST_ITEM.INFO.STATE}",
-			"type": "enum",
-			"enum": [
-				"Success",
-				"Error",
-				"Warning",
-				"None",
-				"Information"
+			"type": "select",
+			"items": [
+				{
+					"key": "Success",
+					"title": "{i18n>CARD_EDITOR.STATE.SUCCESS}"
+				},
+				{   "key": "Error",
+					"title": "{i18n>CARD_EDITOR.STATE.ERROR}"
+				},
+				{
+					"key": "Warning",
+					"title": "{i18n>CARD_EDITOR.STATE.WARNING}"
+				},
+				{
+					"key": "None",
+					"title": "{i18n>CARD_EDITOR.STATE.NONE}"
+				},
+				{
+					"key": "Information",
+					"title": "{i18n>CARD_EDITOR.STATE.INFORMATION}"
+				}
 			],
-			"default": "None",
+			"defaultValue": "None",
 			"path": "content/item/info/state",
 			"visible": "{= ${context>type} === 'List' }"
 		},
 		"listItemHighlight": {
 			"tags": ["content", "listItem"],
 			"label": "{i18n>CARD_EDITOR.LIST_ITEM.HIGHLIGHT}",
-			"type": "string",
+			"type": "select",
+			"items": [
+				{
+					"key": "Success",
+					"title": "{i18n>CARD_EDITOR.STATE.SUCCESS}"
+				},
+				{   "key": "Error",
+					"title": "{i18n>CARD_EDITOR.STATE.ERROR}"
+				},
+				{
+					"key": "Warning",
+					"title": "{i18n>CARD_EDITOR.STATE.WARNING}"
+				},
+				{
+					"key": "None",
+					"title": "{i18n>CARD_EDITOR.STATE.NONE}"
+				},
+				{
+					"key": "Information",
+					"title": "{i18n>CARD_EDITOR.STATE.INFORMATION}"
+				}
+			],
+			"defaultValue": "None",
 			"path": "content/item/highlight",
 			"visible": "{= ${context>type} === 'List' }"
 		},
 		"listItemIcon": {
 			"tags": ["content", "listItem"],
 			"label": "{i18n>CARD_EDITOR.LIST_ITEM.ICON}",
-			"type": "icon",
+			"type": "simpleicon",
 			"path": "content/item/icon/src",
 			"visible": "{= ${context>type} === 'List' }"
 		},

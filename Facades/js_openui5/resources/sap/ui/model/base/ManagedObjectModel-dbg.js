@@ -1,6 +1,6 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -63,16 +63,16 @@ sap.ui.define([
 	}
 
 	/**
-	 * Traverse in the recorded node stack of an object retrievel to tha last used
-	 * managed object in oder to be able to get the value/binding to use this
-	 * for further retrietment
-	 * @param aNodeStack
-	 * @returns {array} an array containing:
+	 * Traverses the recorded node stack of an object retrieval to the last used
+	 * managed object to get the value/binding to use this for further treatment.
+	 *
+	 * @param {Object[]} aNodeStack
+	 * @returns {array} An array containing:
 	 * <ul>
 	 *     <li>the last managed object</li>
 	 *     <li>a map with the value of the last direct child and its path</li>
 	 *     <li>an array of the remaining parts in the traversal</li>
-	 *     <li>a string that represents the reimaining path from the last managed object to the value</li>
+	 *     <li>a string that represents the remaining path from the last managed object to the value</li>
 	 *  </ul>
 	 *
 	 */
@@ -93,8 +93,8 @@ sap.ui.define([
 	/**
 	 * Serialize the object to a string to support change detection
 	 *
-	 * @param vObject
-	 * @returns {string} a serialization of the object to a string
+	 * @param {Object} vObject
+	 * @returns {string} A serialization of the object to a string
 	 * @private
 	 */
 	function _stringify(vObject) {
@@ -126,6 +126,31 @@ sap.ui.define([
 		constructor: function() {
 			JSONListBinding.apply(this, arguments);
 			this._getOriginOfManagedObjectModelBinding();
+		},
+		/**
+		 * Checks if this list binding might by affected by changes inside the given control.
+		 * This means the control is inside the subtree spanned by the managed object whose
+		 * aggregation or property represents this list binding.
+		 *
+		 * @param {sap.ui.base.ManagedObject} oControl The possible descendant
+		 * @returns {boolean}
+		 *    <code>true</code> if the list binding might be affected by changes inside the given
+		 *    control, <code>false</code> otherwise
+		 * @private
+		 */
+		_mightBeAffectedByChangesInside : function(oControl) {
+			while ( oControl ) {
+				if ( oControl.getParent() === this._oOriginMO ) {
+					// Note: No check for _sParentAggregation because of possible aggregation
+					// forwarding.
+					return true;
+				}
+				// Note: For aggregation forwarding the parent is hopefully contained in the
+				// origin managed object otherwise this binding is not refreshed correct
+				oControl = oControl.getParent();
+			}
+
+			return false;
 		},
 		/**
 		 * Use the id of the ManagedObject instance as the unique key to identify
@@ -497,11 +522,11 @@ sap.ui.define([
 	/**
 	 * Returns the object for a given path and/or context, if exists.
 	 *
-	 * @type sap.ui.base.ManagedObject
+	 * Private for now, might become public later.
 	 * @param {string} sPath the path
 	 * @param {string} [oContext] the context
-	 * @returns The object for a given path and/or context, if exists, <code>null</code> otherwise.
-	 * @private Might become public later
+	 * @returns {sap.ui.base.ManagedObject} The object for a given path and/or context, if exists, <code>null</code> otherwise.
+	 * @private
 	 */
 	ManagedObjectModel.prototype.getManagedObject = function (sPath, oContext) {
 		if (sPath instanceof Context) {
@@ -518,8 +543,7 @@ sap.ui.define([
 	/**
 	 * Returns the managed object that is the basis for this model.
 	 *
-	 * @type sap.ui.base.ManagedObject
-	 * @returns The managed object that is basis for the model
+	 * @returns {sap.ui.base.ManagedObject} The managed object that is basis for the model
 	 * @private
 	 */
 	ManagedObjectModel.prototype.getRootObject = function () {
@@ -941,6 +965,14 @@ sap.ui.define([
 					_adaptDeepChildObservation(this, oChange.child, mAggregations[sKey], false);
 				}
 			}
+		} else if (oChange.type === "property") {
+			// list bindings can be affected
+			this.aBindings.forEach(function (oBinding) {
+				if (oBinding._mightBeAffectedByChangesInside
+					&& oBinding._mightBeAffectedByChangesInside(oChange.object)) {
+					oBinding.checkUpdate(true/*bForceUpdate*/);
+				}
+			});
 		}
 
 		this.checkUpdate();

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -611,7 +611,8 @@ sap.ui.define([
 	};
 
 	ObjectPageHeader.prototype.onBeforeRendering = function () {
-		var oSideBtn = this.getSideContentButton();
+		var oSideBtn = this.getSideContentButton(),
+			that = this;
 		if (oSideBtn && !oSideBtn.getTooltip()) {
 			oSideBtn.setTooltip(this.oLibraryResourceBundleOP.getText("TOOLTIP_OP_SHOW_SIDE_CONTENT"));
 		}
@@ -652,6 +653,9 @@ sap.ui.define([
 						if (!this._getInternalVisible()) {
 							this.$().hide();
 						}
+
+						that._resizeIdentifierLineContainer(that.$());
+
 					};
 				}
 
@@ -728,6 +732,11 @@ sap.ui.define([
 
 	ObjectPageHeader.prototype.onAfterRendering = function () {
 		var $objectImage = this._lazyLoadInternalAggregation("_objectImage").$();
+
+		if (this._adaptLayoutTimeout) {
+			clearTimeout(this._adaptLayoutTimeout);
+		}
+
 		this._adaptLayout();
 
 		this._clearImageNotFoundHandler();
@@ -760,12 +769,12 @@ sap.ui.define([
 			if (oAction instanceof Button) {
 				var oActionSheetButton = this._oActionSheetButtonMap[oAction.getId()];
 				if (bAttach) {
-					oAction.attachEvent("_change", this._adaptLayout, this);
+					oAction.attachEvent("_change", this._adaptLayoutDelayed, this);
 					if (oActionSheetButton) {
 						oActionSheetButton.attachEvent("_change", this._adaptOverflow, this);
 					}
 				} else {
-					oAction.detachEvent("_change", this._adaptLayout, this);
+					oAction.detachEvent("_change", this._adaptLayoutDelayed, this);
 					if (oActionSheetButton) {
 						oActionSheetButton.detachEvent("_change", this._adaptOverflow, this);
 					}
@@ -837,20 +846,7 @@ sap.ui.define([
 	 */
 	ObjectPageHeader.prototype._adaptLayout = function (oEvent) {
 
-		this._adaptLayoutForDomElement(null, oEvent);
-	};
-
-	/**
-	 * Adapts the layout of the given headerTitle domElement
-	 *
-	 * @param {object} $headerDomRef The reference to the header dom element
-	 * @param {object} oEvent The event of child-element that brought the need to adapt the headerTitle layout
-	 *
-	 * @private
-	 */
-	ObjectPageHeader.prototype._adaptLayoutForDomElement = function ($headerDomRef, oEvent) {
-
-		var $identifierLine = this._findById($headerDomRef, "identifierLine"),
+		var $identifierLine = this.$("identifierLine"),
 			iIdentifierContWidth = $identifierLine.width(),
 			iActionsWidth = this._getActionsWidth(), // the width off all actions without hidden one
 			iActionsContProportion = iActionsWidth / iIdentifierContWidth, // the percentage(proportion) that action buttons take from the available space
@@ -885,13 +881,20 @@ sap.ui.define([
 			$overflowButton.hide();
 		}
 
-		this._adaptObjectPageHeaderIndentifierLine($headerDomRef);
+		this._adaptObjectPageHeaderIndentifierLine(this.$());
 	};
 
+	/**
+	 * Adapts title/subtitle container and action buttons and overflow button with a delay.
+	 * As this method may be called multiple times in one JavaScript tick, every time it clears
+	 * the previous timeout, if any, and sets a new one, so it will be executed only once.
+	 * @private
+	 */
 	ObjectPageHeader.prototype._adaptLayoutDelayed = function () {
 		if (this._adaptLayoutTimeout) {
 			clearTimeout(this._adaptLayoutTimeout);
 		}
+
 		this._adaptLayoutTimeout = setTimeout(function() {
 			this._adaptLayoutTimeout = null;
 			this._adaptLayout();
@@ -899,53 +902,30 @@ sap.ui.define([
 	};
 
 	/**
-	 * Adapt title/subtitle container and action buttons
+	 * Adapt title/subtitle container
+	 * @param {jQuery} $domRef the original or the cloned dom element of the headerTitle
+	 * The cloned dom element is used for pre-calculating the expected height of the header in an alternative [to the current] state
 	 * @private
 	 */
 	ObjectPageHeader.prototype._adaptObjectPageHeaderIndentifierLine = function ($domRef) {
 
 		var $identifierLine = this._findById($domRef, "identifierLine"),
-			$title = $identifierLine.find(".sapUxAPObjectPageHeaderIdentifierTitle"),
-			iIdentifierContWidth = $identifierLine.width(),
-			$subtitle = this._findById($domRef, "subtitle"),
-			$innerTitle = this._findById($domRef, "innerTitle"),
-			$identifierLineContainer = this._findById($domRef, "identifierLineContainer"),
-			iSubtitleBottom,
-			iTitleBottom,
-			sOriginalHeight = null,
-			$actions = this._findById($domRef, "actions"),
-			$imageContainer = $domRef ? $domRef.find(".sapUxAPObjectPageHeaderObjectImageContainer") : this.$().find(".sapUxAPObjectPageHeaderObjectImageContainer"),
-			iActionsAndImageWidth = $actions.width() + $imageContainer.width(),
-			iPixelTolerance = this.$().parents().hasClass('sapUiSizeCompact') ? 7 : 3;  // the tolerance of pixels from which we can tell that the title and subtitle are on the same row
+			$title = $identifierLine.find(".sapUxAPObjectPageHeaderIdentifierTitle");
 
 		this._adaptObjectPageHeaderTitle($title);
 
-		if ($subtitle.length) {
-			if ($subtitle.hasClass("sapOPHSubtitleBlock")) {
+		this._resizeIdentifierLineContainer($domRef);
+	};
 
-				// save the original height and
-				// set the height of the wrapping div to a constant value before temporarily changing its inner state
-				// to avoid flickering (as the temporary inner change will affect its height as well)
-				sOriginalHeight = $identifierLine.get(0).style.height;
-				$identifierLine.css("height", $identifierLine.height());
+	ObjectPageHeader.prototype._resizeIdentifierLineContainer = function ($domRef) {
+		var $identifierLineContainer = this._findById($domRef, "identifierLineContainer"),
+			$actions = this._findById($domRef, "actions"),
+			$identifierLine = this._findById($domRef, "identifierLine"),
+			iIdentifierContWidth = $identifierLine.width(),
+			$imageContainer = $domRef ? $domRef.find(".sapUxAPObjectPageHeaderObjectImageContainer") : this.$().find(".sapUxAPObjectPageHeaderObjectImageContainer"),
+			iActionsAndImageWidth = $actions.width() + $imageContainer.width();
 
-				// temporarily toggle the default subtitle display
-				$subtitle.removeClass("sapOPHSubtitleBlock");
-			}
-
-			iSubtitleBottom = $subtitle.outerHeight() + $subtitle.position().top;
-			iTitleBottom = $innerTitle.outerHeight() + $innerTitle.position().top;
-			// check if subtitle is below the title and add it a display block class
-			if (Math.abs(iSubtitleBottom - iTitleBottom) > iPixelTolerance) {
-				$subtitle.addClass("sapOPHSubtitleBlock");
-			}
-
-			if (sOriginalHeight !== null) { // restore the original height
-				$identifierLine.get(0).style.height = sOriginalHeight;
-			}
-		}
-
-		$identifierLineContainer.width((0.95 - (iActionsAndImageWidth / iIdentifierContWidth)) * 100 + "%");
+			$identifierLineContainer.width((0.95 - (iActionsAndImageWidth / iIdentifierContWidth)) * 100 + "%");
 	};
 
 	/**
@@ -1060,8 +1040,7 @@ sap.ui.define([
 
 	/**
 	 * Finds the sub-element with the given <code>sId</code> contained
-	 * within <code>$headerDomRef</code> (if <code>$headerDomRef</code> is supplied) or
-	 * globally, prepended with own id (if <code>$headerDomRef</code> is not supplied)
+	 * within <code>$headerDomRef</code>
 	 *
 	 * @param {object} jQuery reference to the header dom element
 	 * @param {string} the id of the element to be found
@@ -1072,17 +1051,14 @@ sap.ui.define([
 	ObjectPageHeader.prototype._findById = function ($headerDomRef, sId) {
 		var sEscapedId;
 
-		if (!sId) {
+		if (!sId || !$headerDomRef) {
 			return null;
 		}
 
-		if ($headerDomRef) {
-			sId = this.getId() + '-' + sId;
-			sEscapedId = "#" + sId.replace(/(:|\.)/g,'\\$1');
-			return $headerDomRef.find(sEscapedId);
-		}
+		sId = this.getId() + '-' + sId;
+		sEscapedId = "#" + sId.replace(/(:|\.)/g,'\\$1');
+		return $headerDomRef.find(sEscapedId);
 
-		return this.$(sId); //if no dom reference then search within its own id-space (prepended with own id)
 	};
 
 	/**

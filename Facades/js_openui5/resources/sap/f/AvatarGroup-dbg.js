@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,8 +14,9 @@ sap.ui.define([
 	"sap/m/Button",
 	"sap/m/library",
 	"sap/ui/core/ResizeHandler",
-	"sap/ui/events/KeyCodes"
-], function(library, Control, ItemNavigation, Rem, AvatarGroupRenderer, Button, mLibrary, ResizeHandler, KeyCodes) {
+	"sap/ui/events/KeyCodes",
+	"sap/ui/core/Core"
+], function(library, Control, ItemNavigation, Rem, AvatarGroupRenderer, Button, mLibrary, ResizeHandler, KeyCodes, Core) {
 	"use strict";
 
 	var AvatarGroupType = library.AvatarGroupType;
@@ -96,7 +97,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -215,7 +216,10 @@ sap.ui.define([
 
 		this._detachResizeHandlers();
 		this._attachResizeHandlers();
-		this._onResize();
+
+		if (Core.isThemeApplied()) {
+			this._onResize();
+		}
 
 		if (this._shouldShowMoreButton()) {
 			this._oShowMoreButton.$().attr("role", "button");
@@ -228,6 +232,10 @@ sap.ui.define([
 		}
 
 		this._updateAccState();
+	};
+
+	AvatarGroup.prototype.onThemeChanged = function () {
+		this._onResize();
 	};
 
 	AvatarGroup.prototype._getResourceBundle = function () {
@@ -428,7 +436,7 @@ sap.ui.define([
 	 * @private
 	 */
 	AvatarGroup.prototype._getWidth = function () {
-		return this.$().width();
+		return Math.ceil(this.$().width());
 	};
 
 	/**

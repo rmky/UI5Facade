@@ -1,16 +1,14 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
 	"sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor",
-	"sap/ui/core/Fragment",
-	"sap/m/Input"
+	"sap/ui/core/Fragment"
 ], function (
 	BasePropertyEditor,
-	Fragment,
-	Input
+	Fragment
 ) {
 	"use strict";
 
@@ -19,42 +17,32 @@ sap.ui.define([
 	 * Constructor for a new <code>JsonEditor</code>.
 	 * This allows to set json text values for a specified property of a JSON object.
 	 * The editor is rendered as a {@link sap.ui.CodeEditor} inside a {@link sap.m.Dialog}.
-	 * To get notified about changes made with the editor, you can use the <code>attachPropertyChange</code> method,
+	 * To get notified about changes made with the editor, you can use the <code>attachValueChange</code> method,
 	 * which passes the current property state as an object to the provided callback function when the user saves changes in the dialog.
 	 *
 	 * @extends sap.ui.integration.designtime.baseEditor.propertyEditor.BasePropertyEditor
 	 * @alias sap.ui.integration.designtime.baseEditor.propertyEditor.jsonEditor.JsonEditor
 	 * @author SAP SE
 	 * @since 1.72
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @private
 	 * @experimental 1.72
 	 * @ui5-restricted
 	 */
 	var JsonEditor = BasePropertyEditor.extend("sap.ui.integration.designtime.baseEditor.propertyEditor.jsonEditor.JsonEditor", {
-		constructor: function() {
-			BasePropertyEditor.prototype.constructor.apply(this, arguments);
-			this._oInput = new Input({
-				value: {
-					path: 'value',
-					formatter: JSON.stringify
-				},
-				showSuggestion: true,
-				showValueHelp: true,
-				valueHelpRequest: this._openJsonEditor.bind(this)
-			});
-			this._oInput.attachLiveChange(function() {
-				var oJsonValue = this._parseJson(this._oInput.getValue());
-				if (oJsonValue instanceof Error) {
-					this._oInput.setValueState("Error");
-					this._oInput.setValueStateText("Error: " + oJsonValue);
-				} else {
-					this._oInput.setValueState("None");
-					this.firePropertyChange(oJsonValue);
-				}
-			}, this);
-			this.addContent(this._oInput);
+		xmlFragment: "sap.ui.integration.designtime.baseEditor.propertyEditor.jsonEditor.JsonEditor",
+
+		_onLiveChange: function() {
+			var oInput = this.getContent();
+			var oJsonValue = this._parseJson(oInput.getValue());
+			if (oJsonValue instanceof Error) {
+				oInput.setValueState("Error");
+				oInput.setValueStateText("Error: " + oJsonValue);
+			} else {
+				oInput.setValueState("None");
+				this.setValue(oJsonValue);
+			}
 		},
 
 		_parseJson: function (sJson) {
@@ -69,7 +57,7 @@ sap.ui.define([
 		_openJsonEditor: function () {
 			if (!this._oDialog) {
 				return Fragment.load({
-					name: "sap.ui.integration.designtime.baseEditor.propertyEditor.jsonEditor.Editor",
+					name: "sap.ui.integration.designtime.baseEditor.propertyEditor.jsonEditor.JsonEditorDialog",
 					controller: this
 				}).then(function (oDialog) {
 					this._oDialog = oDialog;
@@ -91,7 +79,7 @@ sap.ui.define([
 		},
 
 		_openDialog: function () {
-			var sInlineEditorCode = this._oInput.getValue();
+			var sInlineEditorCode = this.getContent().getValue();
 			try {
 				var sCode = JSON.stringify(JSON.parse(sInlineEditorCode), 0, "\t");
 				this._oEditor.setValue(sCode);
@@ -134,19 +122,22 @@ sap.ui.define([
 		},
 
 		onSave: function () {
+			var oInput = this.getContent();
 			if (this._oCode) {
-				this.firePropertyChange(this._oCode);
-				this._oInput.setValueState("None");
+				this.setValue(this._oCode);
+				oInput.setValueState("None");
 				// Explicitly set the value of the inline editor here because
 				// the model might not have changed if invalid (unsynchronized) changes
 				// are corrected in the editor dialog
-				this._oInput.setValue(JSON.stringify(this._oCode));
+				oInput.setValue(JSON.stringify(this._oCode));
 			}
 			this._oDialog.close();
 		},
 
 		renderer: BasePropertyEditor.getMetadata().getRenderer().render
 	});
+
+	JsonEditor.configMetadata = Object.assign({}, BasePropertyEditor.configMetadata);
 
 	return JsonEditor;
 });

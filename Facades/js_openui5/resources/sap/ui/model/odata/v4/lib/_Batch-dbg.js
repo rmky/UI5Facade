@@ -1,20 +1,19 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 //Provides class sap.ui.model.odata.v4.lib._Batch
 sap.ui.define([
-	"jquery.sap.script",
 	"./_Helper",
 	"sap/base/strings/escapeRegExp"
-], function (jQuery, _Helper, escapeRegExp) {
+], function (_Helper, escapeRegExp) {
 	"use strict";
 
 	var mAllowedChangeSetMethods = {"POST" : true, "PUT" : true, "PATCH" : true, "DELETE" : true},
 		oBatch,
-		rContentIdReference = /\$\d+/,
+		rContentIdReference = /^\$\d+/,
 		rHeaderParameter = /(\S*?)=(?:"(.+)"|(\S+))/;
 
 	/**
@@ -76,7 +75,7 @@ sap.ui.define([
 	 */
 	function getChangeSetContentType(sMimeTypeHeaders) {
 		var sContentType = getHeaderValue(sMimeTypeHeaders, "content-type");
-		return sContentType.indexOf("multipart/mixed;") === 0 ? sContentType : undefined;
+		return sContentType.startsWith("multipart/mixed;") ? sContentType : undefined;
 	}
 
 	/**
@@ -244,8 +243,8 @@ sap.ui.define([
 	 * @returns {object}
 	 *   The $batch request object with the following structure
 	 *   <ul>
-	 *     <li><code>body</code>: {string[]} Array of strings representing batch request body
-	 *     <li><code>batchBoundary</code>: {string} Batch boundary value
+	 *     <li> <code>body</code>: {string[]} Array of strings representing batch request body
+	 *     <li> <code>batchBoundary</code>: {string} Batch boundary value
 	 *   </ul>
 	 */
 	function _serializeBatchRequest(aRequests, iChangeSetIndex) {
@@ -280,8 +279,11 @@ sap.ui.define([
 						". Change set must contain only POST, PUT, PATCH or DELETE requests.");
 				}
 
-				// adjust URL if it contains Content-ID reference by adding the change set index
-				sUrl = sUrl.replace(rContentIdReference, "$&." + iChangeSetIndex);
+				if (iChangeSetIndex !== undefined && sUrl[0] === "$") {
+					// adjust URL if it starts with a Content-ID reference by adding the change set
+					// index
+					sUrl = sUrl.replace(rContentIdReference, "$&." + iChangeSetIndex);
+				}
 
 				aRequestBody = aRequestBody.concat(
 					"Content-Type:application/http\r\n",
@@ -312,18 +314,18 @@ sap.ui.define([
 		 * @returns {object[]} Array containing responses from the batch response body. Each of the
 		 *   returned responses has the following structure:
 		 *   <ul>
-		 *     <li><code>status</code>: {number} HTTP status code
-		 *     <li><code>statusText</code>: {string} (optional) HTTP status text
-		 *     <li><code>headers</code>: {object} Map of the response headers
-		 *     <li><code>responseText</code>: {string} Response body
+		 *     <li> <code>status</code>: {number} HTTP status code
+		 *     <li> <code>statusText</code>: {string} (optional) HTTP status text
+		 *     <li> <code>headers</code>: {object} Map of the response headers
+		 *     <li> <code>responseText</code>: {string} Response body
 		 *   </ul>
 		 *   If the specified <code>sResponseBody</code> contains responses for change sets, then
 		 *   the corresponding response objects will be returned in a nested array.
 		 * @throws {Error}
 		 *   <ul>
-		 *     <li>If <code>sContentType</code> parameter does not represent "multipart/mixed"
+		 *     <li> If <code>sContentType</code> parameter does not represent "multipart/mixed"
 		 *       media type with "boundary" parameter
-		 *     <li>If "charset" parameter of "Content-Type" header of a nested response has value
+		 *     <li> If "charset" parameter of "Content-Type" header of a nested response has value
 		 *       other than "utf-8".
 		 *   </ul>
 		 */
@@ -354,12 +356,12 @@ sap.ui.define([
 		 *   either without "charset" parameter or with "charset" parameter having value "UTF-8".
 		 * @returns {object} Object containing the following properties:
 		 *   <ul>
-		 *     <li><code>body</code>: Batch request body
-		 *     <li><code>headers</code>: Batch-specific request headers
-		 *     <ul>
-		 *       <li><code>Content-Type</code>: Value for the 'Content-Type' header
-		 *       <li><code>MIME-Version</code>: Value for the 'MIME-Version' header
-		 *     </ul>
+		 *     <li> <code>body</code>: Batch request body
+		 *     <li> <code>headers</code>: Batch-specific request headers
+		 *       <ul>
+		 *         <li> <code>Content-Type</code>: Value for the 'Content-Type' header
+		 *         <li> <code>MIME-Version</code>: Value for the 'MIME-Version' header
+		 *       </ul>
 		 *   </ul>
 		 * @example
 		 *   var oBatchRequest = Batch.serializeBatchRequest([

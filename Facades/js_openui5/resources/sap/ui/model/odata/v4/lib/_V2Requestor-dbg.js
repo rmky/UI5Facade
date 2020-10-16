@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 //Provides mixin sap.ui.model.odata.v4.lib._V2Requestor
@@ -9,9 +9,8 @@ sap.ui.define([
 	"./_Parser",
 	"sap/ui/core/CalendarType",
 	"sap/ui/core/format/DateFormat",
-	"sap/ui/model/odata/ODataUtils",
-	"sap/ui/thirdparty/jquery"
-], function (_Helper, _Parser, CalendarType, DateFormat, ODataUtils, jQuery) {
+	"sap/ui/model/odata/ODataUtils"
+], function (_Helper, _Parser, CalendarType, DateFormat, ODataUtils) {
 	"use strict";
 
 	var // Example: "/Date(1395705600000)/", matching group: ticks in milliseconds
@@ -969,7 +968,7 @@ sap.ui.define([
 	// "static" functions
 	//*********************************************************************************************
 	function asV2Requestor(oRequestor) {
-		jQuery.extend(oRequestor, _V2Requestor.prototype);
+		Object.assign(oRequestor, _V2Requestor.prototype);
 		oRequestor.oModelInterface.reportBoundMessages = function () {};
 		oRequestor.oModelInterface.reportUnboundMessages = function () {};
 	}

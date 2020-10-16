@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,7 +14,7 @@ sap.ui.define([
 	"./ViewRenderer",
 	"sap/base/assert",
 	"sap/base/Log",
-	"sap/ui/thirdparty/jquery"
+	"sap/base/util/extend"
 ],
 	function(
 		ManagedObject,
@@ -25,7 +25,7 @@ sap.ui.define([
 		ViewRenderer,
 		assert,
 		Log,
-		jQuery
+		extend
 	) {
 	"use strict";
 
@@ -42,6 +42,9 @@ sap.ui.define([
 	/**
 	 * Constructor for a new View.
 	 *
+	 * Applications should not call the constructor directly, but use one of the view factories instead,
+	 * e.g. {@link #.create View.create}.
+	 *
 	 * @param {string} [sId] ID for the new control, generated automatically if no ID is given
 	 * @param {object} [mSettings] Initial settings for the new control
 	 *
@@ -56,7 +59,7 @@ sap.ui.define([
 	 * Also see {@link topic:91f28be26f4d1014b6dd926db0e91070 "Support for Unique IDs"} in the documentation.
 	 *
 	 * @extends sap.ui.core.Control
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @public
 	 * @alias sap.ui.core.mvc.View
@@ -240,7 +243,7 @@ sap.ui.define([
 				 return new Promise(function(resolve, reject) {
 					sap.ui.require([sPreprocessorName], function(oPreprocessorImpl) {
 						resolve(oPreprocessorImpl);
-					});
+					}, reject);
 				});
 			} else {
 				return sap.ui.requireSync(sPreprocessorName);
@@ -276,7 +279,7 @@ sap.ui.define([
 		//clone static preprocessor settings
 		if (View._mPreprocessors[sViewType] && View._mPreprocessors[sViewType][sType]) {
 			aGlobalPreprocessors = View._mPreprocessors[sViewType][sType].map(function(oProcessor) {
-				return jQuery.extend({}, oProcessor);
+				return Object.assign({}, oProcessor);
 			});
 		}
 
@@ -292,7 +295,7 @@ sap.ui.define([
 			var bIsOnDemand = !aLocalPreprocessors[i].preprocessor;
 			if (bIsOnDemand && oOnDemandPreprocessor) {
 				// ondemand preprocessor activated - extend the local config
-				aPreprocessors.unshift(jQuery.extend(aLocalPreprocessors[i], oOnDemandPreprocessor));
+				aPreprocessors.unshift(extend(aLocalPreprocessors[i], oOnDemandPreprocessor));
 			} else if (!bIsOnDemand) {
 				aPreprocessors.push(aLocalPreprocessors[i]);
 			}
@@ -315,7 +318,7 @@ sap.ui.define([
 		}
 
 		// shallow copy to avoid issues when manipulating the internal object structure
-		oView.mPreprocessors = jQuery.extend({}, mSettings.preprocessors);
+		oView.mPreprocessors = Object.assign({}, mSettings.preprocessors);
 		for (var _sType in oViewClass.PreprocessorType) {
 			// build the array structure
 			var sType = oViewClass.PreprocessorType[_sType];
@@ -449,7 +452,7 @@ sap.ui.define([
 					}
 					var mCustomSettings = CustomizingConfiguration.getCustomProperties(that.sViewName, sId, that);
 					if (mCustomSettings) {
-						mSettings = jQuery.extend(mSettings, mCustomSettings); // override original property initialization with customized property values
+						mSettings = extend(mSettings, mCustomSettings); // override original property initialization with customized property values
 					}
 				}
 			};
@@ -691,9 +694,9 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns the preprocessors for a view instance.
+	 * Returns the preprocessors for this view instance.
 	 *
-	 * @returns {map} mPreprocessors A map containing the view preprocessors
+	 * @returns {Object<string,sap.ui.core.mvc.View.Preprocessor[]>} A map containing the view preprocessors, keyed by their type
 	 *
 	 * @private
 	 */
@@ -878,7 +881,7 @@ sap.ui.define([
 	 */
 
 	/**
-	 * Creates a view of the given type, name and with the given id.
+	 * Creates a view of the given type, name and with the given ID.
 	 *
 	 * If the option <code>viewName</code> is given, the corresponding view module is loaded if needed.
 	 *
@@ -890,33 +893,45 @@ sap.ui.define([
 	 * <li>{@link sap.ui.core.mvc.HTMLView.create}</li>
 	 * </ul>
 	 *
-	 * @param {object} oOptions A parameter object for the view instantiation. Specialized view types could bring in additional parameters.
-	 * @param {string} [oOptions.id] Specifies an ID for the View instance. If no ID is given, an ID will be generated.
-	 * @param {string} [oOptions.viewName] Name of the view resource in module name notation (without suffix)
-	 * @param {sap.ui.core.mvc.ViewType} [oOptions.type] Specifies what kind of view will be instantiated. All valid
-	 * view types are listed in the enumeration  {@link sap.ui.core.mvc.ViewType}.
-	 * @param {any} [oOptions.viewData] The view data can hold user specific data. This data is available
-	 * during the whole lifecycle of the view and the controller
-	 * @param {any} [oOptions.definition] The view definition. Only supported for XML and HTML views.
-	 * See also {@link sap.ui.core.mvc.XMLView.create} and {@link sap.ui.core.mvc.HTMLView.create} for more information.
-	 * @param {object} [oOptions.preprocessors] Can hold a map from the specified preprocessor type (e.g. "xml") to an array of
-	 * preprocessor configurations; each configuration consists of a <code>preprocessor</code> property (optional when
-	 * registered as on-demand preprocessor) and may contain further preprocessor-specific settings. The preprocessor can
-	 * be either a module name as string implementation of {@link sap.ui.core.mvc.View.Preprocessor} or a function according to
-	 * {@link sap.ui.core.mvc.View.Preprocessor.process}. Do not set properties starting with underscore like <code>_sProperty</code>
-	 * property, these are reserved for internal purposes. When several preprocessors are provided for one hook, it has to be made
-	 * sure that they do not conflict when being processed serially.
-	 * <strong>Note</strong>: These preprocessors are only available to this instance. For global or
-	 * on-demand availability use {@link sap.ui.core.mvc.XMLView.registerPreprocessor}.
-	 * <strong>Note</strong>: Please note that preprocessors in general are currently only available
-	 * to XMLViews
-	 * @param {sap.ui.core.mvc.Controller} [oOptions.controller] Controller instance to be used for this view.
-	 * The given controller instance overrides the controller defined in the view definition. Sharing a controller instance
-	 * between multiple views is not supported.
+	 * @param {object} oOptions
+	 *     Options for the view instantiation. Can contain any settings that are documented for the
+	 *     {@link sap.ui.core.mvc.View}; specialized view types could bring in additional settings.
+	 * @param {string} [oOptions.id]
+	 *     Specifies an ID for the View instance. If no ID is given, one will be generated
+	 * @param {string} [oOptions.viewName]
+	 *     Name of the view resource in module name notation (dot-separated, without suffix); either
+	 *     <code>viewName</code> or <code>definition</code> must be given
+	 * @param {any} [oOptions.definition]
+	 *     The view definition. Only supported for XML and HTML views. See also {@link sap.ui.core.mvc.XMLView.create}
+	 *     and {@link sap.ui.core.mvc.HTMLView.create} for more information
+	 * @param {sap.ui.core.mvc.ViewType} [oOptions.type]
+	 *     Specifies what kind of view will be instantiated. All valid view types are listed in the enumeration
+	 *     {@link sap.ui.core.mvc.ViewType}.
+	 * @param {any} [oOptions.viewData]
+	 *     A general purpose data bag, which is under full control of the caller. It can be retrieved with the
+	 *     {@link sap.ui.core.mvc.View#getViewData} method during the whole lifecycle of the view and controller.
+	 *     In contrast to data propagated from the parent control (e.g. models, binding contexts),
+	 *     <code>viewData</code> can already be accessed at construction time, e.g. in the <code>onInit</code> hook of
+	 *     the controller. Propagated data can only be accessed after the view has been added to the control hierarchy.
+	 * @param {object} [oOptions.preprocessors]
+	 *     Can hold a map from the specified preprocessor type (e.g. "xml") to an array of preprocessor configurations;
+	 *     each configuration consists of a <code>preprocessor</code> property (optional when registered as on-demand
+	 *     preprocessor) and may contain further preprocessor-specific settings. The preprocessor can be either a module
+	 *     name as string implementation of {@link sap.ui.core.mvc.View.Preprocessor} or a function according to
+	 *     {@link sap.ui.core.mvc.View.Preprocessor.process}. Do not set properties starting with underscore like
+	 *     <code>_sProperty</code> property, these are reserved for internal purposes. When several preprocessors are
+	 *     provided for one hook, it has to be made sure that they do not conflict when being processed serially.
+	 *
+	 *     <strong>Note</strong>: These preprocessors are only available to this instance. For global or
+	 *     on-demand availability use {@link sap.ui.core.mvc.XMLView.registerPreprocessor}.
+	 *     <strong>Note</strong>: Please note that preprocessors in general are currently only available to XMLViews
+	 * @param {sap.ui.core.mvc.Controller} [oOptions.controller]
+	 *     Controller instance to be used for this view. The given controller instance overrides the controller defined
+	 *     in the view definition. Sharing a controller instance between multiple views is not supported.
 	 * @public
 	 * @static
 	 * @since 1.56.0
-	 * @return {Promise<sap.ui.core.mvc.View>} a Promise which resolves with the created View instance
+	 * @returns {Promise<sap.ui.core.mvc.View>} A Promise which resolves with the created View instance
 	 */
 	View.create = function(oOptions) {
 		var mParameters = merge({}, oOptions);
@@ -939,9 +954,7 @@ sap.ui.define([
 			 var sViewClass = getViewClassName(mParameters);
 			 sap.ui.require([sViewClass], function(ViewClass){
 				 resolve(ViewClass);
-			 }, function(oError) {
-				 reject(oError);
-			 });
+			 }, reject);
 		})
 		.then(function(ViewClass) {
 			// Activate the asynchronous processing for XMLViews
@@ -969,7 +982,7 @@ sap.ui.define([
 	View._legacyCreate = viewFactory;
 
 	/**
-	 * Creates a view of the given type, name and with the given id.
+	 * Creates a view of the given type, name and with the given ID.
 	 *
 	 * The <code>vView</code> configuration object can have the following properties for the view
 	 * instantiation:
@@ -1014,6 +1027,7 @@ sap.ui.define([
 	 * @static
 	 * @deprecated since 1.56: Use {@link sap.ui.core.mvc.View.create View.create} instead
 	 * @return {sap.ui.core.mvc.View} the created View instance
+	 * @ui5-global-only
 	 */
 	sap.ui.view = function(sId, vView, sType /* used by factory functions */) {
 		var fnLogDeprecation = function(sMethod) {
@@ -1025,7 +1039,7 @@ sap.ui.define([
 			sName = sName || (vView && vView.name);
 
 			Log[sMethod](
-				"Do not use deprecated view factory functions (" + sName + ")." +
+				"Do not use deprecated view factory functions (" + sName + "). " +
 				"Use the static create function on the view module instead: [XML|JS|HTML|JSON|]View.create().",
 				"sap.ui.view",
 				null,
@@ -1090,7 +1104,7 @@ sap.ui.define([
 			var customViewConfig = CustomizingConfiguration.getViewReplacement(oView.viewName, ManagedObject._sOwnerId);
 			if (customViewConfig) {
 				Log.info("Customizing: View replacement for view '" + oView.viewName + "' found and applied: " + customViewConfig.viewName + " (type: " + customViewConfig.type + ")");
-				jQuery.extend(oView, customViewConfig);
+				extend(oView, customViewConfig);
 			} else {
 				Log.debug("Customizing: no View replacement found for view '" + oView.viewName + "'.");
 			}

@@ -57,13 +57,13 @@ JS;
     /**
      * Returns the output of buildJsRefresh() of the connected data widget
      * 
-     * @param boolean $keep_page_pos
+     * @param boolean $bKeepPagingPos
      * @param string $oControllerJsVar
      * @return string
      */
-    protected function buildJsDataRefresh($keep_page_pos = false, string $oControllerJsVar = 'oController') : string
+    protected function buildJsDataRefresh($bKeepPagingPos = false, string $oControllerJsVar = 'oController') : string
     {
-        return $this->getFacade()->getElement($this->getWidget()->getDataWidget())->buildJsRefresh($keep_page_pos, $oControllerJsVar);
+        return $this->getFacade()->getElement($this->getWidget()->getDataWidget())->buildJsRefresh($bKeepPagingPos, $oControllerJsVar);
     }
     
     /**

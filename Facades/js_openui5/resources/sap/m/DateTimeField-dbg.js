@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -52,7 +52,7 @@ sap.ui.define([
 	 * @extends sap.m.InputBase
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -113,7 +113,7 @@ sap.ui.define([
 		if (sValue === sOldValue) {
 			return this;
 		} else {
-			this._lastValue = sValue;
+			this.setLastValue(sValue);
 		}
 
 		// set the property in any case but check validity on output
@@ -153,7 +153,7 @@ sap.ui.define([
 
 	DateTimeField.prototype.setDateValue = function (oDate) {
 
-		if (this._isValidDate(oDate)) {
+		if (!this._isValidDate(oDate)) {
 			throw new Error("Date must be a JavaScript date object; " + this);
 		}
 
@@ -167,7 +167,7 @@ sap.ui.define([
 		var sValue = this._formatValue(oDate, true);
 
 		if (sValue !== this.getValue()) {
-			this._lastValue = sValue;
+			this.setLastValue(sValue);
 		}
 		// set the property in any case but check validity on output
 		this.setProperty("value", sValue);
@@ -291,6 +291,7 @@ sap.ui.define([
 		return this._getFormatter(bDisplayFormat).parse(sValue);
 	};
 
+	/* The bValueFormat variable defines whether the result is in valueFormat(true) or displayFormat(false) */
 	DateTimeField.prototype._formatValue = function (oDate, bValueFormat) {
 		if (!oDate) {
 			return "";
@@ -322,6 +323,7 @@ sap.ui.define([
 			return oBindingType.formatValue(oDate, "string");
 		}
 
+		/* The logic of _getFormatter function expects the opposite boolean variable of bValueFormat */
 		return this._getFormatter(!bValueFormat).format(oDate);
 	};
 
@@ -346,6 +348,7 @@ sap.ui.define([
 		return "short";
 	};
 
+	/* The bDisplayFormat variable defines whether the result is in displayFormat(true) or valueFormat(false) */
 	DateTimeField.prototype._getFormatter = function (bDisplayFormat) {
 		var sPattern = this._getBoundValueTypePattern(),
 			bRelative = false, // if true strings like "Tomorrow" are parsed fine
@@ -453,12 +456,8 @@ sap.ui.define([
 
 	// Cross frame check for a date should be performed here otherwise setDateValue would fail in OPA tests
 	// because Date object in the test is different than the Date object in the application (due to the iframe).
-	// We can use jQuery.type or this method:
-	// function isValidDate (date) {
-	//	return date && Object.prototype.toString.call(date) === "[object Date]" && !isNaN(date);
-	//}
 	DateTimeField.prototype._isValidDate = function (oDate) {
-		return oDate && jQuery.type(oDate) !== "date";
+		return !oDate || Object.prototype.toString.call(oDate) === "[object Date]";
 	};
 
 

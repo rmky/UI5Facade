@@ -63,7 +63,7 @@
 	"WIDGET.FILELIST.ERROR_FILENAME_TOO_LONG": "Dateiname zu lang: max. %length% Zeichen erlaubt!",
 	"WIDGET.FILELIST.ERROR_DELETE": "Löschen fehlgeschlagen: unbekannter Fehler.",
 	
-	"WIDGET.FORM.FILL_REQUIRED_FIELDS": "Bitte alle Pflichtfelder ausfüllen!",
+	"WIDGET.FORM.MESSAGE_VALIDATION_FAILED": "Bitte alle markierten Felder kontrollieren: die Eingaben scheinen nicht korrekt zu sein!",
 	
 	"WIDGET.INPUTPASSWORD.CONFIRM": "Passwort bestätigen",
 	"WIDGET.INPUTPASSWORD.DONT_MATCH": "Passwörter stimmen nicht überein",

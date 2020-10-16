@@ -139,7 +139,7 @@ JS;
      */
     public function buildJsValidationError()
     {        
-        $output = $this->buildJsShowMessageError(json_encode($this->translate('WIDGET.FORM.FILL_REQUIRED_FIELDS'))) . ';';
+        $output = $this->buildJsShowMessageError(json_encode($this->translate('WIDGET.FORM.MESSAGE_VALIDATION_FAILED'))) . ';';
         foreach ($this->getWidgetsToValidate() as $child) {
             $el = $this->getFacade()->getElement($child);
             $validator = $el->buildJsValidator();

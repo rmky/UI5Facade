@@ -62,7 +62,7 @@
 	"WIDGET.FILELIST.ERROR_FILENAME_TOO_LONG": "File name too long: max. %length% characters allowed!",
 	"WIDGET.FILELIST.ERROR_DELETE": "Delete failed: unknown error in UI5.",
 	
-	"WIDGET.FORM.FILL_REQUIRED_FIELDS": "Заполните все обязательные поля!",
+	"WIDGET.FORM.MESSAGE_VALIDATION_FAILED": "Проверьте все подсвеченные поля: они заполнены неверно!",
 	
 	"WIDGET.INPUTPASSWORD.CONFIRM": "Подвтердите пароль",	
 	"WIDGET.INPUTPASSWORD.DONT_MATCH": "Пароли не совпадают",

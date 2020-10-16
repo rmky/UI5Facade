@@ -62,7 +62,7 @@
 	"WIDGET.FILELIST.ERROR_FILENAME_TOO_LONG": "File name too long: max. %length% characters allowed!",
 	"WIDGET.FILELIST.ERROR_DELETE": "Delete failed: unknown error in UI5.",
 	
-	"WIDGET.FORM.FILL_REQUIRED_FIELDS": "Please fill all required fields!",
+	"WIDGET.FORM.MESSAGE_VALIDATION_FAILED": "Please check all marked fields: it seems, they were not filled correctly!",
 	
 	"WIDGET.INPUTPASSWORD.CONFIRM": "Confirm password",	
 	"WIDGET.INPUTPASSWORD.DONT_MATCH": "Passwords do not match",

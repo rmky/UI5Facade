@@ -311,12 +311,11 @@ const exfLauncher = {};
 													}),
 													new sap.m.StandardListItem({
 														title: "{i18n>WEBAPP.SHELL.NETWORK.SYNC_MENU_ERRORS} ({/_network/syncErrorCnt})",
-														type: "Active",
-														type: "Active",
+														type: "{= ${/_network/online} > 0 ? 'Active' : 'Inactive' }",
+														//blocked: "{= ${/_network/online} > 0 ? false : true }", //Deprecated as of version 1.69.
 														press: function(){
 															var oTable = new sap.m.Table({
 																fixedLayout: false,
-																mode: sap.m.ListMode.MultiSelect,
 																headerToolbar: [
 																	new sap.m.OverflowToolbar({
 																		design: "Transparent",
@@ -327,7 +326,15 @@ const exfLauncher = {};
 																		]
 																	})
 																],
+																footerText: 'Geräte ID: {/_network/deviceId}',
 																columns: [
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
+																				text: 'Message ID'
+																			})
+																		]
+																	}),
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
@@ -352,63 +359,61 @@ const exfLauncher = {};
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				text: 'Status'
+																				text: 'Error LogId'
 																			})
 																		]
 																	}),
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				text: 'Sync Versuche'
-																			})
-																		]
-																	}),
-																	new sap.m.Column({
-																		header: [
-																			new sap.m.Label({
-																				text: 'Response'
+																				text: 'Queue name'
 																			})
 																		]
 																	})
 																],
 																items: {
-																	path: "/data",
+																	path: "errorModel>/data",
 																	template: new sap.m.ColumnListItem({
 																		cells: [
 																			new sap.m.Text({
-																				text: "{object}"
+																				text: "{errorModel>MESSAGE_ID}"
 																			}),
 																			new sap.m.Text({
-																				text: "{action_alias}"
+																				text: "{errorModel>OBJECT_ALIAS}"
 																			}),
 																			new sap.m.Text({
-																				text: "{triggered}"
+																				text: "{errorModel>ACTION_ALIAS}"
 																			}),
 																			new sap.m.Text({
-																				text: "{status}"
+																				text: "{errorModel>TASK_ASSIGNED_ON}"
 																			}),
 																			new sap.m.Text({
-																				text: "{tries}"
+																				text: "{errorModel>ERROR_LOGID}"
 																			}),
 																			new sap.m.Text({
-																				text: "{response}"
+																				text: "{errorModel>QUEUE__NAME}"
 																			})
 																		]
 																	})
 																}
 															})
+															.setModel(oButton.getModel())
+															.setModel(oButton.getModel('i18n'), 'i18n');
 															
-															exfPreloader.getActionQueueData('error')
+															_oLauncher.loadErrorData()
 															.then(function(data){
+																console.log('Loaded Error Data');
 																var oData = {};
-																oData.data = data;
-																oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
-																_oLauncher.contextBar.getComponent().showDialog('Offline action queue', oTable, undefined, undefined, true);
-															})
-															.catch(function(data){
-																var oData = {};
-																oData.data = data;
-																oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
+																if (data.rows !== undefined) {
+																	var rows = data.rows;
+																	for (var i = 0; i < rows.length; i++) {
+																		if (rows[i].TASK_ASSIGNED_ON !== undefined) {
+																			rows[i].TASK_ASSIGNED_ON = new Date(rows[i].TASK_ASSIGNED_ON).toLocaleString();
+																		}
+																	}
+																	oData.data = rows;
+																}
+																oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}(), 'errorModel');
 																_oLauncher.contextBar.getComponent().showDialog('Offline action queue', oTable, undefined, undefined, true);
 															})
 														}
@@ -816,4 +821,68 @@ const exfLauncher = {};
 		dialog.open();
 		return;
 	};
+	
+	this.loadErrorData = function() {
+		console.log('Load Error Data');
+		var body = {
+				action: "exface.Core.ReadData",
+				resource: "exface.core.user-failed-tasks",
+				element: "TaskQueue_table",
+				object: "0x11ea8f3c9ff2c5e68f3c8c04ba002958",
+				sort: "TASK_ASSIGNED_ON",
+				order: "asc",
+				webapp: "exface.core.user-failed-tasks"
+		};
+		var data = {
+				oId: "0x11ea8f3c9ff2c5e68f3c8c04ba002958"				
+		};
+		var conditions = [];
+		var cond = {
+				expression: "STATUS",
+				comparator: "==",
+				value: "70",
+				object_alias: "exface.Core.QUEUED_TASK"
+		};
+		conditions.push(cond);
+		
+		cond = {
+				expression: "OWNER",
+				comparator: "==",
+				value: "",
+				object_alias: "exface.Core.QUEUED_TASK"
+		};
+		conditions.push(cond);
+		
+		cond = {
+				expression: "PRODUCER",
+				comparator: "==",
+				value: exfPreloader.getDeviceId(),
+				object_alias: "exface.Core.QUEUED_TASK"
+		};
+		conditions.push(cond);
+		
+		var filters = {
+				operator: "AND",
+				conditions: conditions
+		};
+		data.filters = filters;
+		body.data = data;
+		var params = $.param(body);
+		
+		return fetch('/powerui/api/ui5?' + params, {
+			method: 'GET'
+		})
+		.then(function(response){
+			if (response.ok) {
+				return response.json();
+			}
+			else {
+				return {};
+			}
+		})
+		.catch(function(error){
+			console.error(error);
+			return {};
+		})
+	}
 }).apply(exfLauncher);

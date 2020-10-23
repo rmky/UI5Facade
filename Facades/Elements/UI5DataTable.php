@@ -146,7 +146,8 @@ JS;
     				content: [
                         {$this->getPaginatorElement()->buildJsConstructor($oControllerJs)},
                         new sap.m.ToolbarSpacer(),
-                        {$this->buildJsConfiguratorButtonConstructor($oControllerJs, 'Transparent')}
+                        {$this->buildJsConfiguratorButtonConstructor($oControllerJs, 'Transparent')},
+                        {$this->buildJsHelpButtonConstructor($oControllerJs, 'Transparent')}
                     ]
                 })
                 

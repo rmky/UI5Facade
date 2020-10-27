@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -11,14 +11,14 @@
 
 sap.ui.define([
 	"jquery.sap.global",
+	"sap/ui/VersionInfo",
 	"sap/ui/support/supportRules/RuleSet",
-	"sap/ui/support/supportRules/WindowCommunicationBus",
+	"sap/ui/support/supportRules/CommunicationBus",
 	"sap/ui/support/supportRules/WCBChannels",
 	"sap/ui/support/supportRules/RuleSerializer",
 	"sap/ui/support/supportRules/Constants",
 	"sap/ui/support/supportRules/util/Utils"
-],
-	function (jQuery, RuleSet, CommunicationBus, channelNames, RuleSerializer, constants, Utils) {
+], function (jQuery, VersionInfo, RuleSet, CommunicationBus, channelNames, RuleSerializer, constants, Utils) {
 		"use strict";
 
 		// can be put in a util container
@@ -79,25 +79,31 @@ sap.ui.define([
 				oLibNamesWithRulesPromise = this._fetchLibraryNamesWithSupportRules(mLoadedLibraries);
 
 			var oMainPromise = new Promise(function (resolve) {
-				RuleSet.versionInfo = sap.ui.getVersionInfo();
 
-				oLibNamesWithRulesPromise.then(function (oLibNamesWithRules) {
-					var libFetchPromises = that._fetchLibraryFiles(oLibNamesWithRules, RuleSetLoader._fetchRuleSet);
+				// VersionInfo.load() returns the web application's version.
+				// Temp Workaround: Using the core library's version correctly returns the version of the framework
+				VersionInfo.load({ library: "sap.ui.core" }).then(function (oCoreLibInfo) {
+					RuleSet.versionInfo = oCoreLibInfo;
 
-					Promise.all(libFetchPromises).then(function () {
-						that._bRulesCreated = true;
-						CommunicationBus.publish(channelNames.UPDATE_SUPPORT_RULES,
-							{
-							sRuleSet: RuleSerializer.serialize(that._mRuleSets),
-							oVersionInfo: RuleSet.versionInfo
+					oLibNamesWithRulesPromise.then(function (oLibNamesWithRules) {
+						var libFetchPromises = that._fetchLibraryFiles(oLibNamesWithRules, RuleSetLoader._fetchRuleSet);
+
+						Promise.all(libFetchPromises).then(function () {
+							that._bRulesCreated = true;
+							CommunicationBus.publish(channelNames.UPDATE_SUPPORT_RULES, {
+								sRuleSet: RuleSerializer.serialize(that._mRuleSets),
+								oVersionInfo: RuleSet.versionInfo
+							});
+							resolve();
+
+							if (fnReadyCbk && typeof fnReadyCbk === "function") {
+								fnReadyCbk();
+							}
 						});
-						resolve();
-
-						if (fnReadyCbk && typeof fnReadyCbk === "function") {
-							fnReadyCbk();
-						}
 					});
+
 				});
+
 			});
 
 			return oMainPromise;

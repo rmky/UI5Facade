@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -43,7 +43,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -275,7 +275,7 @@ sap.ui.define([
 			// set the focus on the last focused dom ref of the item navigation or
 			// in case if not set yet (tab previous into item nav) then we set the
 			// focus to the root domref
-			jQuery(this._oItemNavigation.getFocusedDomRef() || this._oItemNavigation.getRootDomRef()).focus();
+			jQuery(this._oItemNavigation.getFocusedDomRef() || this._oItemNavigation.getRootDomRef()).trigger("focus");
 		}
 	};
 
@@ -298,7 +298,7 @@ sap.ui.define([
 		} else {
 			if (this._oItemNavigation.getFocusedDomRef() === oEvent.target) {
 				this._bIgnoreFocusIn = true;
-				$this.find(".sapUiCrslAfter").focus();
+				$this.find(".sapUiCrslAfter").trigger("focus");
 				this._bIgnoreFocusIn = false;
 			}
 		}
@@ -324,7 +324,7 @@ sap.ui.define([
 			if (this._oItemNavigation.getFocusedDomRef() === oEvent.target &&
 					containsOrEquals($this.find(".sapUiCrslScl").get(0), oEvent.target)) {
 				this._bIgnoreFocusIn = true;
-				$this.find(".sapUiCrslBefore").focus();
+				$this.find(".sapUiCrslBefore").trigger("focus");
 				this._bIgnoreFocusIn = false;
 			}
 		}
@@ -449,7 +449,7 @@ sap.ui.define([
 			this.$("scrolllist").attr("aria-activedescendant", jQuery(this._oItemNavigation.getFocusedDomRef()).attr("id"));
 
 			// set the focus to the active control
-			jQuery(oDomRef).focus();
+			jQuery(oDomRef).trigger("focus");
 		}
 	};
 

@@ -1,19 +1,16 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
+
 sap.ui.define([
-	"sap/base/util/merge",
-	"sap/ui/fl/apply/connectors/BaseConnector",
 	"sap/ui/fl/apply/_internal/connectors/ObjectStorageUtils",
-	"sap/ui/fl/apply/_internal/connectors/Utils"
+	"sap/ui/fl/initial/_internal/StorageUtils"
 ], function(
-	merge,
-	BaseConnector,
 	ObjectStorageUtils,
-	ApplyUtils
+	StorageUtils
 ) {
 	"use strict";
 
@@ -31,15 +28,19 @@ sap.ui.define([
 	 * Base Connector for requesting data from session or local storage
 	 *
 	 * @namespace sap.ui.fl.apply._internal.connectors.ObjectStorageConnector
+	 * @implements {sap.ui.fl.interfaces.BaseLoadConnector}
 	 * @since 1.70
 	 * @private
-	 * @ui5-restricted sap.ui.fl.apply._internal.Storage, sap.ui.fl.write._internal.Storage
+	 * @ui5-restricted sap.ui.fl.apply._internal.Storage, sap.ui.fl.write._internal.Storage, WebIDE
 	 */
-	var ObjectStorageConnector = merge({}, BaseConnector, /** @lends sap.ui.fl.apply._internal.connectors.ObjectStorageConnector */ {
+	return {
 		/**
 		 * can be either window.sessionStorage or window.localStorage
 		 */
 		oStorage: undefined,
+		layers: [
+			"ALL"
+		],
 
 		/**
 		 * Provides the flex data stored in the session or local storage;
@@ -54,11 +55,9 @@ sap.ui.define([
 				storage: this.oStorage,
 				reference: mPropertyBag.reference
 			}).then(function (aFlexObjects) {
-				var mGroupedFlexObjects = ApplyUtils.getGroupedFlexObjects(aFlexObjects);
-				return ApplyUtils.filterAndSortResponses(mGroupedFlexObjects);
+				var mGroupedFlexObjects = StorageUtils.getGroupedFlexObjects(aFlexObjects);
+				return StorageUtils.filterAndSortResponses(mGroupedFlexObjects);
 			});
 		}
-	});
-
-	return ObjectStorageConnector;
-}, true);
+	};
+});

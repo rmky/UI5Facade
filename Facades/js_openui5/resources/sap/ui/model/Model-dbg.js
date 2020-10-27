@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -16,6 +16,7 @@ sap.ui.define([
 	function(MessageProcessor, BindingMode, Context, Filter, deepEqual, each) {
 	"use strict";
 
+	/*global Set */
 
 	/**
 	 * The SAPUI5 Data Binding API.
@@ -45,7 +46,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.message.MessageProcessor
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @public
 	 * @alias sap.ui.model.Model
@@ -55,22 +56,38 @@ sap.ui.define([
 		constructor : function () {
 			MessageProcessor.apply(this, arguments);
 
-			this.oData = {};
-			this.bDestroyed = false;
+			// active bindings, i.e. bindings with an attached change handler, see
+			// Binding#attachChange
 			this.aBindings = [];
+			// bindings to be removed after a timeout
+			this.oBindingsToRemove = new Set();
+			// maps the absolute binding path to a context instance
 			this.mContexts = {};
-			this.iSizeLimit = 100;
+			// the data
+			this.oData = {};
+			// the default binding mode
 			this.sDefaultBindingMode = BindingMode.TwoWay;
-			this.mSupportedBindingModes = {"OneWay": true, "TwoWay": true, "OneTime": true};
-			this.mUnsupportedFilterOperators = {};
+			// whether this model is destroyed
+			this.bDestroyed = false;
+			// stored parameter for an upcoming #checkUpdate; needed for async case
+			this.bForceUpdate = undefined;
+			// whether to use the legacy path syntax handling
 			this.bLegacySyntax = false;
+			// maps a resolved binding path to an array of sap.ui.core.message.Message
+			this.mMessages = {};
+			// the id of the timeout for removing bindings
+			this.sRemoveTimer = null;
+			// the model's size limit
+			this.iSizeLimit = 100;
+			// maps a sap.ui.model.BindingMode to true if the binding mode is supported
+			this.mSupportedBindingModes = {"OneWay" : true, "TwoWay" : true, "OneTime" : true};
+			// maps a sap.ui.model.FilterOperator to true if the filter operator is not supported
+			this.mUnsupportedFilterOperators = {};
+			// the id of the timeout for calling #checkUpdate
 			this.sUpdateTimer = null;
-			this.sRemoveTimer;
-			this.aBindingsToRemove = [];
 		},
 
 		metadata : {
-
 			"abstract" : true,
 			publicMethods : [
 				// methods
@@ -78,19 +95,16 @@ sap.ui.define([
 				"getDefaultBindingMode", "setDefaultBindingMode", "isBindingModeSupported", "attachParseError", "detachParseError",
 				"attachRequestCompleted", "detachRequestCompleted", "attachRequestFailed", "detachRequestFailed", "attachRequestSent",
 				"detachRequestSent", "attachPropertyChange", "detachPropertyChange", "setSizeLimit", "refresh", "isList", "getObject"
-		  ]
-
-		  /* the following would save code, but requires the new ManagedObject (1.9.1)
-		  , events : {
+			]
+			/* the following would save code, but requires the new ManagedObject (1.9.1)
+			, events : {
 				"parseError" : {},
 				"requestFailed" : {},
 				"requestSent" : {},
 				"requestCompleted" ; {}
-		  }
-		  */
-
+			}
+			*/
 		}
-
 	});
 
 
@@ -654,6 +668,7 @@ sap.ui.define([
 	 *         sPath the path to where to read the attribute value
 	 * @param {object}
 	 *		   [oContext=null] the context with which the path should be resolved
+	 * @returns {any} Value of the addressed property
 	 * @public
 	 */
 
@@ -753,14 +768,12 @@ sap.ui.define([
 	 * Cleanup bindings.
 	 */
 	Model.prototype._cleanUpBindings = function() {
-		var that = this;
-		if (this.sRemoveTimer) {
+		var oBindingsToRemove = this.oBindingsToRemove;
+		if (oBindingsToRemove.size > 0) {
 			this.aBindings = this.aBindings.filter(function(oBinding) {
-				return that.aBindingsToRemove.indexOf(oBinding) === -1;
+				return !oBindingsToRemove.has(oBinding);
 			});
-			clearTimeout(this.sRemoveTimer);
-			this.sRemoveTimer = null;
-			this.aBindingsToRemove = [];
+			oBindingsToRemove.clear();
 		}
 	};
 
@@ -791,9 +804,12 @@ sap.ui.define([
 	 * @param {sap.ui.model.Binding} oBinding The binding to be removed
 	 */
 	Model.prototype.removeBinding = function(oBinding) {
-		this.aBindingsToRemove.push(oBinding);
-		if (!this.sRemoveTimer) {
-			this.sRemoveTimer = setTimeout(this._cleanUpBindings.bind(this), 0);
+		this.oBindingsToRemove.add(oBinding);
+		if (!this.sRemoveTimer ) {
+			this.sRemoveTimer = setTimeout(function() {
+				this.sRemoveTimer = null;
+				this._cleanUpBindings();
+			}.bind(this), 0);
 		}
 	};
 
@@ -907,16 +923,26 @@ sap.ui.define([
 	};
 
 	/**
-	 * Private method iterating the registered bindings of this model instance and initiating their check for update.
+	 * Calls {@link sap.ui.model.Binding#checkUpdate} on all active bindings of this model. With
+	 * <code>bAsync</code> set to <code>true</code> this method is called in a new task via
+	 * <code>setTimeout</code>. Multiple asynchronous calls lead to a single synchronous call where
+	 * <code>bForceUpdate</code> is <code>true</code> if at least one of the asynchronous calls was
+	 * with <code>bForceUpdate=true</code>.
+	 *
 	 * @param {boolean} bForceUpdate
+	 *   The parameter <code>bForceUpdate</code> for the <code>checkUpdate</code> call on the
+	 *   bindings
 	 * @param {boolean} bAsync
+	 *   Whether this function is called in a new task via <code>setTimeout</code>
+	 *
 	 * @private
 	 */
 	Model.prototype.checkUpdate = function(bForceUpdate, bAsync) {
 		if (bAsync) {
+			this.bForceUpdate = this.bForceUpdate || bForceUpdate;
 			if (!this.sUpdateTimer) {
 				this.sUpdateTimer = setTimeout(function() {
-					this.checkUpdate(bForceUpdate);
+					this.checkUpdate(this.bForceUpdate);
 				}.bind(this), 0);
 			}
 			return;
@@ -924,6 +950,7 @@ sap.ui.define([
 		if (this.sUpdateTimer) {
 			clearTimeout(this.sUpdateTimer);
 			this.sUpdateTimer = null;
+			this.bForceUpdate = undefined;
 		}
 		var aBindings = this.getBindings();
 		each(aBindings, function(iIndex, oBinding) {
@@ -932,12 +959,16 @@ sap.ui.define([
 	};
 
 	/**
-	 * Sets messages.
+	 * Sets the messages for this model and notifies the bindings if the new messages differ from
+	 * the current model messages.
 	 *
-	 * @param {object} mMessages Messages for this model
+	 * @param {Object<string,sap.ui.core.message.Message[]>} [mMessages={}]
+	 *   The new messages for the model, mapping a binding path to an array of
+	 *   {@link sap.ui.core.message.Message} objects
+	 *
 	 * @public
 	 */
-	Model.prototype.setMessages = function(mMessages) {
+	Model.prototype.setMessages = function (mMessages) {
 		mMessages = mMessages || {};
 		if (!deepEqual(this.mMessages, mMessages)) {
 			this.mMessages = mMessages;
@@ -946,30 +977,55 @@ sap.ui.define([
 	};
 
 	/**
-	 * Get messages for a given path.
+	 * Returns model messages for which the target matches the given resolved binding path.
 	 *
-	 * @param {string} sPath The binding path
-	 * @param {boolean} bStartsWithMatching The set of relevant messages is found through a String#startsWith matching
+	 * @param {string} sPath
+	 *   The resolved binding path
+	 * @param {boolean} [bPrefixMatch]
+	 *   Whether also messages with a target starting with the given path are returned, not just the
+	 *   messages with a target identical to the given path
+	 * @returns {sap.ui.core.message.Message[]}
+	 *   An array of messages matching the given path; may be empty but not <code>null</code> or
+	 *   <code>undefined</code>
 	 * @protected
 	 */
-	Model.prototype.getMessagesByPath = function(sPath, bStartsWithMatching) {
-		var aMessages = [], that = this;
+	Model.prototype.getMessagesByPath = function (sPath, bPrefixMatch) {
+		var oMessageSet = new Set(),
+			that = this;
 
-		if (this.mMessages) {
-			if (bStartsWithMatching){
-				Object.keys(this.mMessages).forEach(function(sMessagePath){
-					that.mMessages[sMessagePath].forEach(function(oMessage){
-						if (oMessage.fullTarget.startsWith(sPath)){
-							aMessages.push(oMessage);
-						}
-					});
-				});
-				return aMessages;
-			} else {
-				return this.mMessages[sPath] || [];
-			}
+		if (!bPrefixMatch) {
+			return this.mMessages[sPath] || [];
 		}
-		return null;
+
+		Object.keys(this.mMessages).forEach(function (sMessagePath) {
+			that.filterMatchingMessages(sMessagePath, sPath).forEach(function (oMessage) {
+				oMessageSet.add(oMessage);
+			});
+		});
+
+		return Array.from(oMessageSet);
+	};
+
+	/**
+	 * Returns an array of messages for the given message target matching the given resolved binding
+	 * path prefix.
+	 *
+	 * @param {string} sMessageTarget
+	 *   The messages target used as key in <code>this.mMessages</code>
+	 * @param {string} sPathPrefix
+	 *   The resolved binding path prefix
+	 * @returns {sap.ui.core.message.Message[]}
+	 *   The matching message objects, or an empty array, if no messages match.
+	 *
+	 * @private
+	 */
+	Model.prototype.filterMatchingMessages = function (sMessageTarget, sPathPrefix) {
+		if (sMessageTarget === sPathPrefix
+				|| sMessageTarget.startsWith(sPathPrefix === "/" ? sPathPrefix : sPathPrefix + "/")
+		) {
+			return this.mMessages[sMessageTarget];
+		}
+		return [];
 	};
 
 	/**
@@ -1002,7 +1058,7 @@ sap.ui.define([
 		if (this.sRemoveTimer) {
 			clearTimeout(this.sRemoveTimer);
 			this.sRemoveTimer = null;
-			this.aBindingsToRemove = [];
+			this.oBindingsToRemove.clear();
 		}
 		if (this.sUpdateTimer) {
 			clearTimeout(this.sUpdateTimer);
@@ -1072,6 +1128,24 @@ sap.ui.define([
 			}
 		}.bind(this));
 	};
+
+	/**
+	 * Returns messages of this model associated with the given context, that is messages belonging
+	 * to the object referred to by this context or a child object of that object. The messages are
+	 * sorted by their {@link sap.ui.core.message.Message#getType type} according to the type's
+	 * severity in a way that messages with highest severity come first.
+	 *
+	 * @param {sap.ui.model.Context} oContext The context to retrieve messages for
+	 * @returns {sap.ui.core.message.Message[]}
+	 *   The messages associated with this context sorted by severity; empty array in case no
+	 *   messages exist
+	 *
+	 * @abstract
+	 * @function
+	 * @name sap.ui.model.Model.prototype.getMessages
+	 * @public
+	 * @since 1.76.0
+	 */
 
 	/**
 	 * Traverses the given filter tree.

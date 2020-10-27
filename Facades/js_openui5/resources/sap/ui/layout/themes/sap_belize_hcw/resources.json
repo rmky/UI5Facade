@@ -3,78 +3,103 @@
 	"resources": [
 		{
 			"name": ".theming",
+			"size": 93,
 			"theme": "sap_belize_hcw"
 		},
 		{
 			"name": "BlockLayoutCell.less",
+			"size": 281,
 			"designtime": true,
 			"theme": "sap_belize_hcw"
 		},
 		{
 			"name": "FormLayout.less",
+			"size": 268,
 			"designtime": true,
 			"theme": "sap_belize_hcw"
 		},
 		{
 			"name": "GridLayout.less",
+			"size": 263,
 			"designtime": true,
 			"theme": "sap_belize_hcw"
 		},
 		{
 			"name": "ResponsiveGridLayout.less",
+			"size": 317,
 			"designtime": true,
 			"theme": "sap_belize_hcw"
 		},
 		{
 			"name": "ResponsiveLayout.less",
-			"designtime": true,
-			"theme": "sap_belize_hcw"
-		},
-		{
-			"name": "ResponsiveSplitter.less",
+			"size": 300,
 			"designtime": true,
 			"theme": "sap_belize_hcw"
 		},
 		{
 			"name": "SimpleForm.less",
+			"size": 268,
 			"designtime": true,
 			"theme": "sap_belize_hcw"
 		},
 		{
 			"name": "Splitter.less",
+			"size": 1036,
 			"designtime": true,
 			"theme": "sap_belize_hcw"
 		},
 		{
-			"name": "library-RTL-dbg.css",
-			"isDebug": true,
+			"name": "css_variables.css",
+			"size": 5522,
+			"theme": "sap_belize_hcw"
+		},
+		{
+			"name": "css_variables.less",
+			"size": 87854,
+			"designtime": true,
+			"theme": "sap_belize_hcw"
+		},
+		{
+			"name": "css_variables.source.less",
+			"size": 87480,
+			"designtime": true,
 			"theme": "sap_belize_hcw"
 		},
 		{
 			"name": "library-RTL.css",
-			"theme": "sap_belize_hcw"
-		},
-		{
-			"name": "library-dbg.css",
-			"isDebug": true,
+			"size": 162073,
 			"theme": "sap_belize_hcw"
 		},
 		{
 			"name": "library-parameters.json",
+			"size": 2414,
 			"theme": "sap_belize_hcw"
 		},
 		{
 			"name": "library.css",
+			"size": 161618,
 			"theme": "sap_belize_hcw"
 		},
 		{
 			"name": "library.less",
+			"size": 3714,
 			"designtime": true,
 			"theme": "sap_belize_hcw"
 		},
 		{
 			"name": "library.source.less",
+			"size": 541,
 			"designtime": true,
+			"theme": "sap_belize_hcw"
+		},
+		{
+			"name": "library_skeleton-RTL.css",
+			"size": 161960,
+			"theme": "sap_belize_hcw"
+		},
+		{
+			"name": "library_skeleton.css",
+			"size": 161505,
 			"theme": "sap_belize_hcw"
 		}
 	]

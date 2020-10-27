@@ -2,24 +2,21 @@
 namespace exface\UI5Facade\Facades\Elements;
 
 use exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement;
-use exface\UI5Facade\Facades\UI5Facade;
 use exface\Core\CommonLogic\Constants\Icons;
 use exface\Core\Interfaces\Widgets\iHaveValue;
-use exface\Core\Factories\UiPageFactory;
 use exface\Core\DataTypes\StringDataType;
 use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
 use exface\Core\Exceptions\LogicException;
-use exface\UI5Facade\Facades\Elements\ServerAdapters\UI5FacadeServerAdapter;
-use exface\UI5Facade\Facades\Elements\ServerAdapters\OData2ServerAdapter;
 use exface\UI5Facade\Facades\Interfaces\UI5ServerAdapterInterface;
 use exface\Core\Interfaces\Widgets\iCanPreloadData;
 use exface\UI5Facade\Facades\Elements\ServerAdapters\PreloadServerAdapter;
 use exface\UI5Facade\Facades\Interfaces\UI5ViewInterface;
 use exface\Core\Interfaces\Widgets\iHaveIcon;
+use exface\UI5Facade\Facades\Interfaces\UI5ModelInterface;
 
 /**
  *
- * @method UI5Facade getFacade()
+ * @method \exface\UI5Facade\Facades\UI5Facade getFacade()
  *        
  * @author Andrej Kabachnik
  *        

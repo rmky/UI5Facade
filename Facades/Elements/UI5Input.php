@@ -5,6 +5,7 @@ use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryDisableConditionTrait;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryInputValidationTrait;
 use exface\Core\Interfaces\Widgets\iHaveValue;
 use exface\Core\DataTypes\BooleanDataType;
+use exface\Core\Widgets\Filter;
 
 /**
  * Generates sap.m.Input fow `Input` widgets.
@@ -45,7 +46,6 @@ class UI5Input extends UI5Value
     {
         $this->registerConditionalBehaviors();
         $this->registerOnChangeValidation();
-        $this->registerChangeEventOnBindingChange($this->buildJsValueBindingPropertyName());
         return $this->buildJsLabelWrapper($this->buildJsConstructorForMainControl($oControllerJs));
     }
     
@@ -249,11 +249,12 @@ JS;
     
     protected function registerConditionalBehaviors()
     {
+        parent::registerConditionalBehaviors();
         $contoller = $this->getController();
         // Register conditional reactions
         $this->registerDisableConditionAtLinkedElement();
         $contoller->addOnInitScript($this->buildJsDisableConditionInitializer());
-        
+        $this->registerLiveReferenceAtLinkedElement();
         return;
     }
     
@@ -264,7 +265,8 @@ JS;
      */
     public function buildJsValidationError()
     {
-        if ($this->getWidget()->isHidden() === true) {
+        $widget = $this->getWidget();
+        if ($widget->isHidden() === true && ! ($widget->hasParent() && $widget->getParent() instanceof Filter)) {
             return $this->buildJsShowError(json_encode('Error in hidden field "' . $this->getCaption() . '": ' . $this->getValidationErrorText()));
         } else {
             return "sap.ui.getCore().byId('{$this->getId()}').setValueState('Error')";
@@ -327,6 +329,10 @@ JS;
         return "sap.ui.getCore().byId('{$this->getId()}').focus()";
     }
     
+    /**
+     * 
+     * @return string
+     */
     protected function buildJsSetFocusToNext() : string
     {
         return <<<JS
@@ -343,12 +349,27 @@ JS;
 JS;
     }
     
-    protected function buildJsPseudoEventHandlers()
+    /**
+     * 
+     * @return bool
+     */
+    public function getAdvanceFocusOnEnter() : bool
     {
         if ($facadeOptUxon = $this->getWidget()->getFacadeOptions($this->getFacade())) {
-            if (BooleanDataType::cast($facadeOptUxon->getProperty('advance_focus_on_enter')) === true) {
-                $this->addPseudoEventHandler('onsapenter', $this->buildJsSetFocusToNext());
-            }
+            return BooleanDataType::cast($facadeOptUxon->getProperty('advance_focus_on_enter'));
+        }
+        return false;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsPseudoEventHandlers()
+     */
+    protected function buildJsPseudoEventHandlers()
+    {
+        if ($this->getAdvanceFocusOnEnter()) {
+            $this->addPseudoEventHandler('onsapenter', $this->buildJsSetFocusToNext());
         }
         return parent::buildJsPseudoEventHandlers();
     }

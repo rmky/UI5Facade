@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -23,7 +23,7 @@ sap.ui.define(["sap/ui/core/library"],
 	 * @namespace
 	 * @name sap.ui.support
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @public
 	 */
@@ -41,7 +41,7 @@ sap.ui.define(["sap/ui/core/library"],
 		controls: [],
 		elements: [],
 		noLibraryCSS: true,
-		version: "1.73.1",
+		version: "1.82.0",
 		extensions: {
 			//Configuration used for rule loading of Support Assistant
 			"sap.ui.support": {
@@ -53,7 +53,7 @@ sap.ui.define(["sap/ui/core/library"],
 	/**
 	 * Defines severity types.
 	 * @enum {string}
-	 * @since 1.73.1
+	 * @since 1.82.0
 	 * @public
 	 */
 	sap.ui.support.Severity = {
@@ -77,7 +77,7 @@ sap.ui.define(["sap/ui/core/library"],
 	/**
 	 * Defines the Audiences.
 	 * @enum {string}
-	 * @since 1.73.1
+	 * @since 1.82.0
 	 * @public
 	 */
 	sap.ui.support.Audiences = {
@@ -101,7 +101,7 @@ sap.ui.define(["sap/ui/core/library"],
 	/**
 	 * Issue Categories.
 	 * @enum {string}
-	 * @since 1.73.1
+	 * @since 1.82.0
 	 * @public
 	 */
 	sap.ui.support.Categories = {
@@ -170,7 +170,7 @@ sap.ui.define(["sap/ui/core/library"],
 	/**
 	 * Analysis history formats.
 	 * @enum {string}
-	 * @since 1.73.1
+	 * @since 1.82.0
 	 * @public
 	 */
 	sap.ui.support.HistoryFormats = {
@@ -189,7 +189,7 @@ sap.ui.define(["sap/ui/core/library"],
 	/**
 	 * Contains the available system presets.
 	 * @enum {object}
-	 * @since 1.73.1
+	 * @since 1.82.0
 	 * @public
 	 */
 	sap.ui.support.SystemPresets = {

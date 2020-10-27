@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -76,7 +76,7 @@ function(
 	 * @implements sap.ui.core.Label, sap.ui.core.IShrinkable
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -242,7 +242,7 @@ function(
 	 * Gets a map of texts which should be hyphenated.
 	 *
 	 * @private
-	 * @returns {map} The texts to be hyphenated.
+	 * @returns {Object<string,string>} The texts to be hyphenated.
 	 */
 	Label.prototype.getTextsToBeHyphenated = function () {
 		return {

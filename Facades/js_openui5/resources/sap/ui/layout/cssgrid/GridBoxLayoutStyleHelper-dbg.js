@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -11,13 +11,12 @@ sap.ui.define([], function() {
 	 * Handles dynamic style changes of items when sap.ui.layout.cssgrid.GridBoxLayout is used.
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @private
 	 * @constructor
 	 */
 	var GridBoxLayoutStyleHelper = {};
-
 	GridBoxLayoutStyleHelper._mInstanceStyles = {};
 
 	/**
@@ -42,9 +41,9 @@ sap.ui.define([], function() {
 		if (!oHelper) {
 			oHelper = document.createElement("style");
 			oHelper.id = "sapUiLayoutCSSGridGridBoxLayoutStyleHelper";
-			oHelper.type = "text/css";
-			document.getElementsByTagName("head")[0].appendChild(oHelper);
+			document.head.appendChild(oHelper);
 		}
+
 		return oHelper;
 	};
 

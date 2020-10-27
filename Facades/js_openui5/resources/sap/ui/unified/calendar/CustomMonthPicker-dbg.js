@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -39,11 +39,12 @@ sap.ui.define([
 		oHeader.attachEvent("pressPrevious", this._handlePrevious, this);
 		oHeader.attachEvent("pressNext", this._handleNext, this);
 		oHeader.attachEvent("pressButton2", this._handleButton2, this);
-		this.setAggregation("header",oHeader);
-	};
 
-	CustomMonthPicker.prototype._shouldFocusB2OnTabNext = function(oEvent) {
-		return containsOrEquals(this.getDomRef("content"), oEvent.target);
+		this._afterHeaderRenderAdjustCSS = this._createOnAfterRenderingDelegate(oHeader);
+
+		oHeader.addDelegate(this._afterHeaderRenderAdjustCSS);
+
+		this.setAggregation("header",oHeader);
 	};
 
 	CustomMonthPicker.prototype.onBeforeRendering = function () {
@@ -54,12 +55,16 @@ sap.ui.define([
 	};
 
 	CustomMonthPicker.prototype.onAfterRendering = function () {
-		this._showMonthPicker();
+		this._showMonthPicker(undefined, true);
 	};
 
 	CustomMonthPicker.prototype._selectYear = function () {
-		var oFocusedDate = this._getFocusedDate();
-		oFocusedDate.setYear(this.getAggregation("yearPicker").getYear());
+		var oMonthPicker = this._getMonthPicker(),
+			oYearPicker = this._getYearPicker(),
+			oFocusedDate = this._getFocusedDate();
+
+		oFocusedDate.setYear(oYearPicker.getYear());
+		oMonthPicker._setYear(oFocusedDate.getYear());
 
 		this._focusDate(oFocusedDate, true);
 
@@ -67,18 +72,20 @@ sap.ui.define([
 	};
 
 	CustomMonthPicker.prototype._selectMonth = function () {
-		var oMonthPicker = this.getAggregation("monthPicker");
-		var oSelectedDate = this.getSelectedDates()[0];
-		var oFocusedDate = this._getFocusedDate();
-
-		oFocusedDate.setMonth(oMonthPicker.getMonth());
+		var oMonthPicker = this._getMonthPicker(),
+			oSelectedDate = this.getSelectedDates()[0],
+			oFocusedDate = this._getFocusedDate();
 
 		if (!oSelectedDate) {
 			oSelectedDate = new DateRange();
 		}
 
-		oSelectedDate.setStartDate(oFocusedDate.toLocalJSDate());
-		this.addSelectedDate(oSelectedDate);
+		if (!oMonthPicker.getIntervalSelection()) {
+			oFocusedDate.setMonth(oMonthPicker.getMonth());
+
+			oSelectedDate.setStartDate(oFocusedDate.toLocalJSDate());
+			this.addSelectedDate(oSelectedDate);
+		}
 
 		this.fireSelect();
 	};

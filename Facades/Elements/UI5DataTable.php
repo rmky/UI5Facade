@@ -121,7 +121,11 @@ class UI5DataTable extends UI5AbstractElement
                                 {$this->buildJsCellsForMTable()}
                             ]
                         }),
-            		}
+            		},
+                    contextMenu: [
+                        // A context menu is required for the contextmenu browser event to fire!
+                        new sap.ui.unified.Menu()
+                    ]
                 })
                 {$this->buildJsClickListeners('oController')}
                 {$this->buildJsPseudoEventHandlers()}
@@ -138,7 +142,6 @@ JS;
         $visible = $this->getWidget()->isPaged() === false || $this->getWidget()->getHideFooter() === true ? 'false' : 'true';
         return <<<JS
                 new sap.m.OverflowToolbar({
-                    design: "Info",
                     visible: {$visible},
     				content: [
                         {$this->getPaginatorElement()->buildJsConstructor($oControllerJs)},
@@ -291,33 +294,6 @@ JS;
         }
         
         return $column_defs;
-    }
-    
-    /**
-     *
-     * @return string
-     */
-    protected function buildJsDataLoaderFromLocal($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'bKeepPagingPos')
-    {
-        $widget = $this->getWidget();
-        $data = $widget->prepareDataSheetToRead($widget->getValuesDataSheet());
-        if (! $data->isFresh()) {
-            $data->dataRead();
-        }
-        
-        // FIXME make filtering, sorting, pagination, etc. work in lazy mode too!
-        
-        return <<<JS
-        
-                try {
-        			var data = {$this->getFacade()->encodeData($this->getFacade()->buildResponseData($data, $widget))};
-        		} catch (err){
-                    console.error('Cannot load data into widget {$this->getId()}!');
-                    return;
-        		}
-                sap.ui.getCore().byId("{$this->getId()}").getModel().setData(data);
-                
-JS;
     }
     
     /**
@@ -620,6 +596,10 @@ JS;
         }
         
         // Right click. Currently only supports one double click action - the first one in the list of buttons
+        // Theoretically the sap.m.ListBase has it's own support for a context menu, but that triggers
+        // the browser context menu too. Could not find a way to avoid it, so we use a custom context
+        // menu here. This requires an empty menu in the contextMenu property of the list control - 
+        // see. buildJsConstructorForMTable()
         if ($rightclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_RIGHT_CLICK)[0]) {
             $rightclick_script = $this->getFacade()->getElement($rightclick_button)->buildJsClickEventHandlerCall($oControllerJsVar);
         } else {
@@ -636,7 +616,7 @@ JS;
                 oEvent.preventDefault();
                 {$rightclick_script}
         	})
-        	
+            	
 JS;
         }
         
@@ -688,7 +668,14 @@ JS;
                 new sap.ui.unified.Menu({
                     items: [
                         {$this->buildJsContextMenuButtons($buttons)}
-                    ]
+                    ],
+                    itemSelect: function(oEvent) {
+                        var oMenu = oEvent.getSource();
+                        var oItem = oEvent.getParameters().item;
+                        if (! oItem.getSubmenu()) {
+                            oMenu.destroy();
+                        }
+                    }
                 })
 JS;
     }
@@ -759,6 +746,9 @@ JS;
                         new sap.ui.unified.MenuItem({
                             icon: "{$btn_element->buildCssIconClass($button->getIcon())}",
                             text: "{$button->getCaption()}",
+                            enabled: function(){
+                                return sap.ui.getCore().byId('{$btn_element->getId()}').getEnabled();
+                            }(),
                             {$select}
                             {$startsSectionProperty}
                         })

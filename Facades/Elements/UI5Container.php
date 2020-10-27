@@ -52,7 +52,7 @@ class UI5Container extends UI5AbstractElement
             content: [
                 {$contentJs}
             ]
-        }).addStyleClass("sapUiNoMargin sapUiNoContentPadding")
+        }).addStyleClass("sapUiNoMargin sapUiNoContentPadding {$this->buildCssElementClass()}")
 
 JS;
     }
@@ -139,6 +139,7 @@ JS;
      */
     public function buildJsValidationError()
     {        
+        $output = $this->buildJsShowMessageError(json_encode($this->translate('WIDGET.FORM.MESSAGE_VALIDATION_FAILED'))) . ';';
         foreach ($this->getWidgetsToValidate() as $child) {
             $el = $this->getFacade()->getElement($child);
             $validator = $el->buildJsValidator();

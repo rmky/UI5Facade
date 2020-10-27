@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -119,7 +119,7 @@ sap.ui.define([
 		 * @since 1.44.0
 		 *
 		 * @author SAP SE
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 *
 		 * @public
 		 * @alias sap.m.HeaderContainer
@@ -312,7 +312,7 @@ sap.ui.define([
 							this._oItemNavigation = new HeaderContainerItemNavigator();
 							this.addDelegate(this._oItemNavigation);
 							this._oItemNavigation.attachEvent(ItemNavigation.Events.BorderReached, this._handleBorderReached, this);
-							this._oItemNavigation.attachEvent(ItemNavigation.Events.AfterFocus, this._handleBorderReached, this);
+							this._oItemNavigation.attachEvent(ItemNavigation.Events.AfterFocus, this._handleAfterFocus, this);
 							this._oItemNavigation.attachEvent(ItemNavigation.Events.BeforeFocus, this._handleBeforeFocus, this);
 							if (Device.browser.msie || Device.browser.edge) {
 								this._oItemNavigation.attachEvent(ItemNavigation.Events.FocusAgain, this._handleFocusAgain, this);
@@ -393,7 +393,7 @@ sap.ui.define([
 			if (!oToCell || oFromCell && oFromCell.id !== oToCell.id) { // attempt to jump out of HeaderContainer
 				var sTabIndex = this.$().attr("tabindex"); // save tabindex
 				this.$().attr("tabindex", "0");
-				this.$().focus(); // set focus before the control
+				this.$().trigger("focus"); // set focus before the control
 				if (!sTabIndex) { // restore tabindex
 					this.$().removeAttr("tabindex");
 				} else {
@@ -692,7 +692,8 @@ sap.ui.define([
 				var bScrollForward = false;
 
 				var realHeight = oBarHead.scrollHeight;
-				var availableHeight = oBarHead.clientHeight;
+				//Take height using offsetHeight to handle Different Browsers Compatibility for a empty Header container during Vertical Orientation.
+				var availableHeight = oBarHead.offsetHeight;
 
 				if (Math.abs(realHeight - availableHeight) === 1) {
 					realHeight = availableHeight;
@@ -778,7 +779,8 @@ sap.ui.define([
 				var bScrollForward = false;
 
 				var realWidth = oBarHead.scrollWidth;
-				var availableWidth = oBarHead.clientWidth;
+				//Take width using offsetWidth to handle Different Browsers Compatibility for a empty Header container during Horizontal Orientation.
+				var availableWidth = oBarHead.offsetWidth;
 
 				if (Math.abs(realWidth - availableWidth) === 1) {
 					realWidth = availableWidth;
@@ -896,7 +898,30 @@ sap.ui.define([
 			}
 		};
 
+		HeaderContainer.prototype._handleAfterFocus = function (oEvt) {
+			//For Edge and IE on mousedown input element not getting focused.Hence setting focus manually.
+			var oSrcEvent = oEvt.getParameter("event");
+			if ((Device.browser.msie || Device.browser.edge) && oSrcEvent.type === "mousedown" && oSrcEvent.srcControl instanceof sap.m.Input) {
+				oSrcEvent.srcControl.focus();
+			}
+			if (Device.browser.msie && this.bScrollInProcess) {
+				return;
+			}
+			var iIndex = oEvt.getParameter("index");
+			if (iIndex === 0) {
+				this._scroll(this._getScrollValue(false), this.getScrollTime());
+			} else if (iIndex === this._filterVisibleItems().length - 1) {
+				this._scroll(this._getScrollValue(true), this.getScrollTime());
+			}
+
+		};
+
 		HeaderContainer.prototype._handleFocusAgain = function (oEvt) {
+			//For Edge and IE on mousedown input element not getting focused.Hence setting focus manually.
+			var oSrcEvent = oEvt.getParameter("event");
+			if ((Device.browser.msie || Device.browser.edge) && oSrcEvent.type === "mousedown" && oSrcEvent.srcControl instanceof sap.m.Input) {
+				oSrcEvent.srcControl.focus();
+			}
 			oEvt.getParameter("event").preventDefault();
 		};
 
@@ -1001,7 +1026,7 @@ sap.ui.define([
 			var $Tabbables = oRelatedControl.getTabbables ? oRelatedControl.getTabbables() : $LastFocused.find(":sapTabbable");
 
 			// get the last tabbable item or itself and focus
-			$Tabbables.eq(-1).add($LastFocused).eq(-1).focus();
+			$Tabbables.eq(-1).add($LastFocused).eq(-1).trigger("focus");
 		};
 
 		return HeaderContainer;

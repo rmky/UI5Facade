@@ -1,17 +1,18 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	"sap/ui/base/ManagedObject"
+	"sap/ui/base/ManagedObject",
+	"sap/ui/dt/OverlayRegistry"
 ],
 function(
-	ManagedObject
+	ManagedObject,
+	OverlayRegistry
 ) {
 	"use strict";
-
 	/**
 	 * Constructor for a new Plugin.
 	 *
@@ -25,7 +26,7 @@ function(
 	 * @extends sap.ui.base.ManagedObject
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @private
@@ -224,7 +225,6 @@ function(
 	 * Retrieve the action name related to the plugin
 	 * Method to be overwritten by the different plugins
 	 *
-	 * @override
 	 * @public
 	 */
 	Plugin.prototype.getActionName = function() {};
@@ -332,22 +332,85 @@ function(
 	 * @return {object[]} Returns an array with the object containing the required data for a context menu item
 	 */
 	Plugin.prototype._getMenuItems = function (aElementOverlays, mPropertyBag) {
-		var oElementOverlay = aElementOverlays[0]; // by default we get menu items only for the first overlay
-		var mAction = this.getAction(oElementOverlay);
-		if (!mAction || !this.isAvailable(aElementOverlays)) {
-			return [];
-		}
-
-		return [{
+		var oMenuItem = this.enhanceItemWithResponsibleElement({
 			id: mPropertyBag.pluginId,
-			text: this.getActionText(oElementOverlay, mAction, mPropertyBag.pluginId),
 			handler: this.handler.bind(this),
 			enabled: this.isEnabled.bind(this),
 			rank: mPropertyBag.rank,
 			icon: mPropertyBag.icon,
 			group: mPropertyBag.group
-		}];
+		}, aElementOverlays);
+
+		var aResponsibleElementOverlays = oMenuItem.responsible || aElementOverlays;
+		var oResponsibleElementOverlay = aResponsibleElementOverlays[0];
+
+		var mAction = this.getAction(oResponsibleElementOverlay);
+		if (!mAction || !this.isAvailable(aResponsibleElementOverlays)) {
+			return [];
+		}
+
+		oMenuItem.text = this.getActionText(oResponsibleElementOverlay, mAction, mPropertyBag.pluginId);
+		return [oMenuItem];
+	};
+
+	/**
+	 * Returns true if the plugin action from a responsible element is available on the element overlay
+	 *
+	 * @param {sap.ui.dt.ElementOverlay} oElementOverlay - Element overlay
+	 * @param {string} [sActionName] - Action name
+	 * @return {boolean} Indicates if the action is enabled
+	 */
+	Plugin.prototype.isResponsibleElementActionAvailable = function (oElementOverlay, sActionName) {
+		var oDesignTimeMetadata = oElementOverlay.getDesignTimeMetadata();
+		if (oDesignTimeMetadata) {
+			// TODO: support for sub actions required
+			return oDesignTimeMetadata.isResponsibleActionAvailable(sActionName || this.getActionName());
+		}
+		return false;
+	};
+
+	/**
+	 * Generic function to retrieve the responsible element overlay
+	 * from design time metadata of a source element overlay
+	 *
+	 * @param {sap.ui.dt.ElementOverlay} oElementOverlay - Source element overlay
+	 * @return {sap.ui.dt.ElementOverlay} Returns the element overlay of the responsible element
+	 */
+	Plugin.prototype.getResponsibleElementOverlay = function(oElementOverlay) {
+		var oElement = oElementOverlay.getElement();
+		var oDesignTimeMetadata = oElementOverlay.getDesignTimeMetadata();
+		if (oDesignTimeMetadata) {
+			var oResponsibleElement = oDesignTimeMetadata.getResponsibleElement(oElement);
+			if (oResponsibleElement) {
+				try {
+					return OverlayRegistry.getOverlay(oResponsibleElement);
+				} catch (oError) {
+					return oElementOverlay;
+				}
+			}
+		}
+		return oElementOverlay;
+	};
+
+	/**
+	 * Enhances a context menu item with the responsible element overlay if applicable
+	 *
+	 * @param {object} oMenuItem - Menu item
+	 * @param {sap.ui.dt.ElementOverlay[]} aElementOverlays - Source element overlays
+	 * @param {string[]} [aActionNames] - Action names
+	 * @return {object} Enhanced menu item
+	 */
+	Plugin.prototype.enhanceItemWithResponsibleElement = function(oMenuItem, aElementOverlays, aActionNames) {
+		var aResponsibleElementOverlays = [];
+		var aActionsFromResponsibleElement = aActionNames || [this.getActionName()];
+		var bEnhanceMenuItem = aActionsFromResponsibleElement.some(function (sActionName) {
+			if (this.isResponsibleElementActionAvailable(aElementOverlays[0], sActionName)) {
+				aResponsibleElementOverlays = aElementOverlays.map(this.getResponsibleElementOverlay.bind(this));
+				return true;
+			}
+		}.bind(this));
+		return Object.assign(oMenuItem, bEnhanceMenuItem && {responsible: aResponsibleElementOverlays});
 	};
 
 	return Plugin;
-}, /* bExport= */ true);
+});

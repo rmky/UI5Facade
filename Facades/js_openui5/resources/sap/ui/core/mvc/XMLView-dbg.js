@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -9,7 +9,7 @@ sap.ui.define([
 	'sap/ui/thirdparty/jquery',
 	'./View',
 	"./XMLViewRenderer",
-	"sap/base/util/merge",
+	"sap/base/util/deepExtend",
 	'sap/ui/base/ManagedObject',
 	'sap/ui/core/XMLTemplateProcessor',
 	'sap/ui/core/library',
@@ -20,13 +20,14 @@ sap.ui.define([
 	'sap/ui/util/XMLHelper',
 	'sap/base/strings/hash',
 	'sap/base/Log',
-	'sap/base/util/LoaderExtensions'
+	'sap/base/util/LoaderExtensions',
+	"sap/ui/performance/trace/Interaction"
 ],
 	function(
 		jQuery,
 		View,
 		XMLViewRenderer,
-		merge,
+		deepExtend,
 		ManagedObject,
 		XMLTemplateProcessor,
 		library,
@@ -37,7 +38,8 @@ sap.ui.define([
 		XMLHelper,
 		hash,
 		Log,
-		LoaderExtensions
+		LoaderExtensions,
+		Interaction
 	) {
 	"use strict";
 
@@ -69,7 +71,7 @@ sap.ui.define([
 	 * control's dependents aggregation or add it by using {@link sap.ui.core.mvc.XMLView#addDependent}.
 	 *
 	 * @extends sap.ui.core.mvc.View
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @public
 	 * @alias sap.ui.core.mvc.XMLView
@@ -156,13 +158,14 @@ sap.ui.define([
 		 * @param {object} [vView.cache] Cache configuration, only for <code>async</code> views; caching gets active
 		 * when this object is provided with vView.cache.keys array; keys are used to store data in the cache and for
 		 * invalidation of the cache
-		 * @param {Array.<(string|Promise)>} [vView.cache.keys] Array with strings or Promises resolving with strings
+		 * @param {Array<(string|Promise<string>)>} [vView.cache.keys] Array with strings or Promises resolving with strings
 		 * @param {object} [vView.preprocessors] Preprocessors configuration, see {@link sap.ui.core.mvc.View}
 		 * @param {sap.ui.core.mvc.Controller} [vView.controller] Controller instance to be used for this view
 		 * @public
 		 * @static
 		 * @deprecated since 1.56: Use {@link sap.ui.core.mvc.XMLView.create XMLView.create} instead
-		 * @return {sap.ui.core.mvc.XMLView} the created XMLView instance
+		 * @returns {sap.ui.core.mvc.XMLView} the created XMLView instance
+		 * @ui5-global-only
 		 */
 		sap.ui.xmlview = function(sId, vView) {
 			return sap.ui.view(sId, vView, ViewType.XML);
@@ -202,16 +205,16 @@ sap.ui.define([
 		 * @param {object} [oOptions.cache] - Cache configuration; caching gets active when this object is provided
 		 *                     with vView.cache.keys array; keys are used to store data in the cache and for invalidation
 		 *                     of the cache.
-		 * @param {Array.<(string|Promise)>} [oOptions.cache.keys] - Array with strings or Promises resolving with strings
+		 * @param {Array<(string|Promise<string>)>} [oOptions.cache.keys] - Array with strings or Promises resolving with strings
 		 * @param {object} [oOptions.preprocessors] Preprocessors configuration, see {@link sap.ui.core.mvc.View}
 		 *                     <strong>Note</strong>: These preprocessors are only available to this instance.
 		 *                     For global or on-demand availability use {@link sap.ui.core.mvc.XMLView.registerPreprocessor}.
 		 * @public
 		 * @static
-		 * @return {Promise<sap.ui.core.mvc.XMLView>} A Promise that resolves with the view instance or rejects with any thrown error.
+		 * @returns {Promise<sap.ui.core.mvc.XMLView>} A Promise that resolves with the view instance or rejects with any thrown error.
 		 */
 		XMLView.create = function (oOptions) {
-			var mParameters = merge({}, oOptions);
+			var mParameters = deepExtend({}, oOptions);
 
 			// mapping renamed parameters
 			mParameters.viewContent = mParameters.definition;
@@ -291,7 +294,7 @@ sap.ui.define([
 		 *
 		 * @param oView
 		 * @param mSettings
-		 * @return {undefined|Promise} will return a Promise if ResourceModel is instantiated asynchronously, otherwise undefined
+		 * @returns {undefined|Promise} will return a Promise if ResourceModel is instantiated asynchronously, otherwise undefined
 		 */
 		function setResourceModel(oView, mSettings) {
 			if ((oView._resourceBundleName || oView._resourceBundleUrl) && (!mSettings.models || !mSettings.models[oView._resourceBundleAlias])) {
@@ -305,7 +308,7 @@ sap.ui.define([
 				// if ResourceBundle was created with async flag vBundle will be a Promise
 				if (vBundle instanceof Promise) {
 					return vBundle.then(function() {
-						oView.setModel(oModel, mSettings.resourceBundleAlias);
+						oView.setModel(oModel, oView._resourceBundleAlias);
 					});
 				}
 				oView.setModel(oModel, oView._resourceBundleAlias);
@@ -380,12 +383,12 @@ sap.ui.define([
 		}
 
 		function getCacheKeyPrefixes(oView, oRootComponent) {
-				var sComponentName = oRootComponent && oRootComponent.getMetadata().getName();
-				return [
-					sComponentName || window.location.host + window.location.pathname,
-					oView.getId(),
-					sap.ui.getCore().getConfiguration().getLanguageTag()
-				];
+			var sComponentName = oRootComponent && oRootComponent.getMetadata().getName();
+			return [
+				sComponentName || window.location.host + window.location.pathname,
+				oView.getId(),
+				sap.ui.getCore().getConfiguration().getLanguageTag()
+			].concat(oRootComponent && oRootComponent.getActiveTerminologies() || []);
 		}
 
 		function getCacheKeyProviders(oView) {
@@ -452,7 +455,7 @@ sap.ui.define([
 					mCacheOutput.xml = XMLHelper.parse(mCacheOutput.xml, "application/xml").documentElement;
 					if (mCacheOutput.additionalData) {
 						// extend the additionalData which was passed into cache configuration dynamically
-						jQuery.extend(true, mCacheInput.additionalData, mCacheOutput.additionalData);
+						deepExtend(mCacheInput.additionalData, mCacheOutput.additionalData);
 					}
 					return mCacheOutput;
 				}
@@ -463,7 +466,7 @@ sap.ui.define([
  		* This function initialized the view settings.
  		*
  		* @param {object} mSettings with view settings
- 		* @return {Promise|null} will be returned if running in async mode
+ 		* @returns {Promise|null} will be returned if running in async mode
  		*/
 		XMLView.prototype.initViewSettings = function(mSettings) {
 			var that = this, _xContent;
@@ -472,7 +475,7 @@ sap.ui.define([
 				that._xContent = xContent;
 
 				if (View._supportInfo) {
-					View._supportInfo({context: that._xContent, env: {caller:"view", viewinfo: jQuery.extend(true, {}, that), settings: jQuery.extend(true, {}, mSettings || {}), type: "xmlview"}});
+					View._supportInfo({context: that._xContent, env: {caller:"view", viewinfo: deepExtend({}, that), settings: deepExtend({}, mSettings || {}), type: "xmlview"}});
 				}
 
 				// extract the properties of the view from the XML element
@@ -513,9 +516,11 @@ sap.ui.define([
 			}
 
 			function runPreprocessorsAsync(xContent) {
+				var fnDone = Interaction.notifyAsyncStep("VIEW PREPROCESSING");
 				return that.runPreprocessor("xml", xContent).then(function(xContent) {
 					return runViewxmlPreprocessor(xContent, /*bAsync=*/true);
-				});
+				})
+				.finally(fnDone);
 			}
 
 			function loadResourceAsync(sResourceName) {
@@ -609,6 +614,16 @@ sap.ui.define([
 			}
 		};
 
+		XMLView.prototype.onBeforeRendering = function() {
+			// make sure to preserve the content if not preserved yet
+			var oDomRef = this.getDomRef();
+			if (oDomRef && !RenderManager.isPreservedContent(oDomRef)) {
+				RenderManager.preserveContent(oDomRef, /* bPreserveRoot= */ true);
+			}
+
+			View.prototype.onBeforeRendering.apply(this, arguments);
+		};
+
 		XMLView.prototype.exit = function() {
 			if (this.oAfterRenderingNotifier) {
 				this.oAfterRenderingNotifier.destroy();
@@ -633,13 +648,14 @@ sap.ui.define([
 			if (!this.oAsyncState) {
 				this._aParsedContent = fnRunWithPreprocessor(XMLTemplateProcessor.parseTemplate.bind(null, this._xContent, this));
 			} else {
+				var fnDone = Interaction.notifyAsyncStep("VIEW PROCESSING");
 				return XMLTemplateProcessor.parseTemplatePromise(this._xContent, this, true, {
 					fnRunWithPreprocessor: fnRunWithPreprocessor
 				}).then(function(aParsedContent) {
 					that._aParsedContent = aParsedContent;
 					// allow rendering of preserve content
 					delete that.oAsyncState.suppressPreserve;
-				});
+				}).finally(fnDone);
 			}
 		};
 
@@ -690,7 +706,7 @@ sap.ui.define([
 
 		XMLView.prototype._onChildRerenderedEmpty = function(oControl, oElement) {
 			// when the render manager notifies us about an empty child rendering, we replace the old DOM with a dummy
-			jQuery(oElement).replaceWith('<div id="' + RenderPrefixes.Dummy + oControl.getId() + '" class="sapUiHidden"/>');
+			jQuery(oElement).replaceWith('<div id="' + RenderPrefixes.Dummy + oControl.getId() + '" class="sapUiHidden"></div>');
 			return true; // indicates that we have taken care
 		};
 
@@ -777,8 +793,11 @@ sap.ui.define([
 			metadata: {
 				library: "sap.ui.core"
 			},
-			renderer: function(oRM, oControl) {
-				oRM.text(""); // onAfterRendering is only called if control produces output
+			renderer: {
+				apiVersion: 2,
+				render: function(oRM, oControl) {
+					oRM.text(""); // onAfterRendering is only called if control produces output
+				}
 			}
 		});
 

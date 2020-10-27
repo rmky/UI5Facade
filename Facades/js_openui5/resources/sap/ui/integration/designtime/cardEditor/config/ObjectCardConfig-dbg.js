@@ -1,15 +1,17 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  *
  * @private
  * @experimental
  */
 sap.ui.define([
-	"sap/ui/integration/designtime/cardEditor/config/generateActionConfig"
+	"sap/ui/integration/designtime/cardEditor/config/generateActionConfig",
+	"sap/ui/integration/designtime/cardEditor/util/CommonPatterns"
 ], function (
-	generateActionConfig
+	generateActionConfig,
+	CommonPatterns
 ) {
 	"use strict";
 
@@ -20,10 +22,11 @@ sap.ui.define([
 			"label": "{i18n>CARD_EDITOR.OBJECT.GROUPS}",
 			"type": "array",
 			"path": "content/groups",
-			"itemLabel": "{i18n>CARD_EDITOR.OBJECT.GROUP}",
+			"itemLabel": "{title}",
+			"addItemLabel": "{i18n>CARD_EDITOR.OBJECT.GROUP}",
 			"template": {
 				"title": {
-					"label": "{i18n>CARD_EDITOR.OBJECT.GROUP.TITLE}",
+					"label": "{i18n>CARD_EDITOR.TITLE}",
 					"type": "string",
 					"path": "title"
 				},
@@ -32,17 +35,18 @@ sap.ui.define([
 					"label": "{i18n>CARD_EDITOR.OBJECT.GROUP.ITEMS}",
 					"type": "array",
 					"path": "items",
-					"itemLabel": "{i18n>CARD_EDITOR.OBJECT.GROUP.ITEM}",
+					"itemLabel": "{label}",
+					"addItemLabel": "{i18n>CARD_EDITOR.OBJECT.GROUP.ITEM}",
 					"template": {
 						"icon": {
 							"tags": ["content", "objectGroupItem"],
-							"label": "{i18n>CARD_EDITOR.OBJECT.GROUP.ITEM.ICON}",
+							"label": "{i18n>CARD_EDITOR.ICON}",
 							"type": "icon",
-							"path": "icon/src"
+							"path": "icon"
 						},
 						"label": {
 							"tags": ["content", "objectGroupItem"],
-							"label": "{i18n>CARD_EDITOR.OBJECT.GROUP.ITEM.LABEL}",
+							"label": "{i18n>CARD_EDITOR.LABEL}",
 							"type": "string",
 							"path": "label"
 						},
@@ -50,43 +54,75 @@ sap.ui.define([
 							"tags": ["content", "objectGroupItem"],
 							"label": "{i18n>CARD_EDITOR.OBJECT.GROUP.ITEM.VALUE}",
 							"type": "string",
-							"path": "value"
+							"path": "value",
+							"validators": {
+								"emailPattern": {
+									"type": "pattern",
+									"config": {
+										"pattern": CommonPatterns.email,
+										"modifiers": "i"
+									},
+									"errorMessage": "CARD_EDITOR.VALIDATOR.INVALID_EMAIL",
+									"isEnabled": "{= ${type} === 'email'}"
+								}
+							}
 						},
 						"type": {
 							"tags": ["content", "objectGroupItem"],
-							"label": "{i18n>CARD_EDITOR.OBJECT.GROUP.ITEM.TYPE}",
-							"type": "enum",
-							"enum": [
-								"phone",
-								"email",
-								"link",
-								"text"
+							"label": "{i18n>CARD_EDITOR.LABEL.TYPE}",
+							"type": "select",
+							"items": [
+								{
+									"key": "phone",
+									"title": "{i18n>CARD_EDITOR.OBJECT.GROUP.TYPE.PHONE}"
+								},
+								{
+									"key": "email",
+									"title": "{i18n>CARD_EDITOR.OBJECT.GROUP.TYPE.EMAIL}"
+								},
+								{
+									"key": "link",
+									"title": "{i18n>CARD_EDITOR.OBJECT.GROUP.TYPE.LINK}"
+								},
+								{
+									"key": "text",
+									"title": "{i18n>CARD_EDITOR.OBJECT.GROUP.TYPE.TEXT}"
+								}
 							],
-							"default": "text",
+							"defaultValue": "text",
 							"path": "type"
 						},
 						"url": {
 							"tags": ["content", "objectGroupItem"],
-							"label": "{i18n>CARD_EDITOR.OBJECT.GROUP.ITEM.URL}",
+							"label": "{i18n>CARD_EDITOR.LABEL.URL}",
 							"type": "string",
-							"path": "url"
+							"path": "url",
+							"visible": "{= ${type} === 'link'}"
 						},
 						"target": {
 							"tags": ["content", "objectGroupItem"],
-							"label": "{i18n>CARD_EDITOR.OBJECT.GROUP.ITEM.TARGET}",
-							"type": "enum",
-							"enum": [
-								"_blank",
-								"_self"
+							"label": "{i18n>CARD_EDITOR.TARGET}",
+							"type": "select",
+							"items": [
+								{
+									"key":"_blank",
+									"description": "{i18n>CARD_EDITOR.TARGET.BLANK}"
+								},
+								{
+									"key":"_self",
+									"description": "{i18n>CARD_EDITOR.TARGET.SELF}"
+								}
 							],
-							"default": "_blank",
-							"path": "target"
+							"defaultValue": "_blank",
+							"path": "target",
+							"visible": "{= ${type} === 'link' && !!${url}}"
 						},
 						"emailSubject": {
 							"tags": ["content", "objectGroupItem"],
 							"label": "{i18n>CARD_EDITOR.OBJECT.GROUP.ITEM.EMAILSUBJECT}",
 							"type": "string",
-							"path": "emailSubject"
+							"path": "emailSubject",
+							"visible": "{= ${type} === 'email'}"
 						}
 					}
 				}

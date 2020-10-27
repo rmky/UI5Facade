@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -12,11 +12,11 @@ sap.ui.define([], function() {
 	 * Provides the default renderer for the controls that have set their <code>visible</code> property to <code>false</code>.
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @alias module:sap/ui/core/InvisibleRenderer
 	 * @since 1.66.0
 	 * @protected
-	 * @static
+	 * @namespace
 	 */
 	var InvisibleRenderer = {
 		apiVersion: 2

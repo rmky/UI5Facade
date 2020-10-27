@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -39,7 +39,7 @@ sap.ui.define(["sap/ui/core/library", "sap/m/HyphenationSupport"],
 
 		oRm.openStart(sTag, oTitle);
 		oRm.class("sapMTitle");
-		oRm.class("sapMTitleStyle" + (oTitle.getTitleStyle() || TitleLevel.Auto));
+		oRm.class("sapMTitleStyle" + oTitle.getTitleStyle());
 		oRm.class(oTitle.getWrapping() ? "sapMTitleWrap" : "sapMTitleNoWrap");
 		oRm.class("sapUiSelectable");
 
@@ -66,14 +66,13 @@ sap.ui.define(["sap/ui/core/library", "sap/m/HyphenationSupport"],
 
 		if (bAutoLevel) {
 			oRm.attr("role", "heading");
-			oRm.attr("aria-level", "2");
+			oRm.attr("aria-level", oTitle._getAriaLevel());
 		}
 
 		HyphenationSupport.writeHyphenationClass(oRm, oTitle);
 
 		oRm.openEnd();
-		oRm.openStart("span");
-		oRm.attr("id", oTitle.getId() + "-inner");
+		oRm.openStart("span", oTitle.getId() + "-inner");
 		oRm.openEnd();
 
 		oRm.text(sText);

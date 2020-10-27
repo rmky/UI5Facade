@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -35,7 +35,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.PopupInterface
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -210,9 +210,9 @@ sap.ui.define([
 		if (oShell) {
 			this._bFocusEventsRegistered = true;
 			oShell.syncWithCanvasSize(this.getId(), true, fnFocusFirst, fnFocusLast, fnApplyChanges);
-			this.$("firstFocusDummyPaneFw").attr("tabindex", "0").focusin(jQuery.proxy(oShell.focusFirstHdr,oShell));
-			this.$("firstFocusDummyPaneBw").attr("tabindex", "0").focusin(jQuery.proxy(oShell.focusLastTool,oShell));
-			this.$("LastFocusDummyPane").attr("tabindex", "0").focusin(jQuery.proxy(oShell.focusPaneStart,oShell));
+			this.$("firstFocusDummyPaneFw").attr("tabindex", "0").on("focusin", jQuery.proxy(oShell.focusFirstHdr,oShell));
+			this.$("firstFocusDummyPaneBw").attr("tabindex", "0").on("focusin", jQuery.proxy(oShell.focusLastTool,oShell));
+			this.$("LastFocusDummyPane").attr("tabindex", "0").on("focusin", jQuery.proxy(oShell.focusPaneStart,oShell));
 		} else {
 			this.$().css("bottom", "0").css("top", "0").css("left", "0").css("right", "0");
 		}
@@ -228,9 +228,9 @@ sap.ui.define([
 		}
 		if (this._bFocusEventsRegistered) {
 			this._bFocusEventsRegistered = false;
-			this.$("firstFocusDummyPaneFw").removeAttr("tabindex").unbind("focusin");
-			this.$("firstFocusDummyPaneBw").removeAttr("tabindex").unbind("focusin");
-			this.$("LastFocusDummyPane").removeAttr("tabindex").unbind("focusin");
+			this.$("firstFocusDummyPaneFw").removeAttr("tabindex").off("focusin");
+			this.$("firstFocusDummyPaneBw").removeAttr("tabindex").off("focusin");
+			this.$("LastFocusDummyPane").removeAttr("tabindex").off("focusin");
 		}
 	};
 

@@ -1,6 +1,6 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -9,7 +9,7 @@ sap.ui.define([
 	"sap/ui/fl/StandardVariant",
 	"sap/ui/fl/apply/api/SmartVariantManagementApplyAPI",
 	"sap/ui/fl/ChangePersistenceFactory",
-	"sap/ui/fl/transport/TransportSelection"
+	"sap/ui/fl/write/_internal/transport/TransportSelection"
 ], function(
 	DefaultVariant,
 	StandardVariant,
@@ -162,7 +162,7 @@ sap.ui.define([
 		 * Opens Transport Dialog for transport selection.
 		 * @private
 		 * @experimental
-		 * @returns {sap.ui.fl.transport.TransportSelection} TransportSelection dialog.
+		 * @returns {sap.ui.fl.write._internal.transport.TransportSelection} TransportSelection dialog.
 		 */
 		_getTransportSelection: function() {
 			return new TransportSelection();

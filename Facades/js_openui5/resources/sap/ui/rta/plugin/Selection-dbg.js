@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -32,7 +32,7 @@ function (
 	 * @class The Selection plugin allows you to select or focus overlays with mouse or keyboard and navigate to others.
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -352,4 +352,4 @@ function (
 	}
 
 	return Selection;
-}, /* bExport= */true);
+});

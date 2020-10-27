@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -45,7 +45,11 @@ sap.ui.define([
 			properties: {
 
 				/**
-				 * Section Title
+				 * Defines the title of the respective section/subsection.
+				 *
+				 * <b>Note:</b> If a subsection is the only one (or the only one visible) within a section, its title is
+				 * displayed instead of the section title. This behavior is true even if the <code>showTitle</code>
+				 * propeprty of {@link sap.uxap.ObjectPageSubSection} is set to <code>false</code>.
 				 */
 				title: {type: "string", group: "Appearance", defaultValue: null},
 
@@ -86,7 +90,8 @@ sap.ui.define([
 				 */
 				customAnchorBarButton: {type: "sap.m.Button", multiple: false}
 			}
-		}
+		},
+		renderer: null // control has no renderer (it is an abstract class)
 	});
 
 	/**
@@ -386,13 +391,13 @@ sap.ui.define([
 			if (aSubSections.length === 1) {
 				oLastFocusedEl = oFirstSubSection._oLastFocusedControlF7;
 				if (oLastFocusedEl) {
-					oLastFocusedEl.$().focus();
+					oLastFocusedEl.$().trigger("focus");
 				} else {
 					oFirstSubSection.$().firstFocusableDomRef().focus();
 				}
 			} else {
 				if (oFirstSubSection.getActions().length) {
-					oFirstSubSection.getActions()[0].$().focus();
+					oFirstSubSection.getActions()[0].$().trigger("focus");
 				}
 			}
 		}

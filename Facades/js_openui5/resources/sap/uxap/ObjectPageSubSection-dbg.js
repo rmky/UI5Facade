@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -90,6 +90,16 @@ sap.ui.define([
 
 			library: "sap.uxap",
 			properties: {
+				/**
+				 * Determines whether to display the <code>SubSection</code> title or not.
+				 *
+				 * <b>Note:</b> If a subsection is the only one (or the only one visible) within a section, its title is
+				 * displayed instead of the section title even if this property is set to <code>false</code>.
+				 * To hide the title of a subsection which is the only one (or the only one visible), you need to set the
+				 * <code>showTitle</code> properties to <code>false</code> for both the section and its subsection.
+				 * @since 1.77
+				 */
+				showTitle: {type: "boolean", group: "Appearance", defaultValue: true},
 
 				/**
 				 * A mode property that will be passed to the controls in the blocks and moreBlocks aggregations. Only relevant if these aggregations use Object page blocks.
@@ -439,6 +449,13 @@ sap.ui.define([
 			this._oSeeMoreButton = null;
 		}
 
+		if (this._oSeeLessButton) {
+			this._oSeeLessButton.destroy();
+			this._oSeeLessButton = null;
+		}
+
+		this._oCurrentlyVisibleSeeMoreLessButton = null;
+
 		this._cleanProxiedAggregations();
 
 		if (ObjectPageSectionBase.prototype.exit) {
@@ -458,6 +475,11 @@ sap.ui.define([
 		}
 
 		this._$spacer = jQuery(document.getElementById(oObjectPageLayout.getId() + "-spacer"));
+
+		if (this._bShouldFocusSeeMoreLessButton) {
+			this._bShouldFocusSeeMoreLessButton = false;
+			this._oCurrentlyVisibleSeeMoreLessButton.focus();
+		}
 	};
 
 	ObjectPageSubSection.prototype.onBeforeRendering = function () {
@@ -534,8 +556,7 @@ sap.ui.define([
 
 	ObjectPageSubSection.prototype.refreshSeeMoreVisibility = function () {
 		var oSeeMoreControl = this._getSeeMoreButton(),
-			$seeMoreControl = oSeeMoreControl.$(),
-			$this = this.$();
+			oSeeLessControl = this._getSeeLessButton();
 
 		this._bBlockHasMore = !!this.getMoreBlocks().length;
 		if (!this._bBlockHasMore) {
@@ -549,18 +570,10 @@ sap.ui.define([
 			});
 		}
 
-		//if the subsection is already rendered, don't rerender it all for showing a more button
-		if ($this.length) {
-			$this.toggleClass("sapUxAPObjectPageSubSectionWithSeeMore", this._bBlockHasMore);
-		}
-
 		this.toggleStyleClass("sapUxAPObjectPageSubSectionWithSeeMore", this._bBlockHasMore);
 
-		if ($seeMoreControl.length) {
-			$seeMoreControl.toggleClass("sapUxAPSubSectionSeeMoreButtonVisible", this._bBlockHasMore);
-		}
-
 		oSeeMoreControl.toggleStyleClass("sapUxAPSubSectionSeeMoreButtonVisible", this._bBlockHasMore);
+		oSeeLessControl.toggleStyleClass("sapUxAPSubSectionSeeMoreButtonVisible", this._bBlockHasMore);
 
 		return this._bBlockHasMore;
 	};
@@ -609,16 +622,16 @@ sap.ui.define([
 	ObjectPageSubSection.prototype._handleInteractiveElF7 = function () {
 		//If there are more sub sections focus current subsection otherwise focus the parent section
 		if (this.getParent().getSubSections().length > 1) {
-			this.$().focus();
+			this.$().trigger("focus");
 		} else {
-			this.getParent().$().focus();
+			this.getParent().$().trigger("focus");
 		}
 	};
 
 	//It's used when F7 key is pressed and the focus is on SubSection
 	ObjectPageSubSection.prototype._handleSubSectionF7 = function (oEvent) {
 		if (this._oLastFocusedControlF7) {
-			this._oLastFocusedControlF7.$().focus();
+			this._oLastFocusedControlF7.$().trigger("focus");
 		} else {
 			this.$().firstFocusableDomRef().focus();
 		}
@@ -905,7 +918,7 @@ sap.ui.define([
 	 ************************************************************************************/
 
 	/**
-	 * build the control that will used internally for the see more / see less
+	 * Builds the control that is used internally for the see more / see less button
 	 * @private
 	 */
 	ObjectPageSubSection.prototype._getSeeMoreButton = function () {
@@ -913,11 +926,29 @@ sap.ui.define([
 			this._oSeeMoreButton = new Button(this.getId() + "--seeMore", {
 				type: ButtonType.Transparent,
 				iconFirst: false,
+				text: ObjectPageSubSection._getLibraryResourceBundle().getText("SHOW_MORE"),
 				ariaLabelledBy: this.getId()
 			}).addStyleClass("sapUxAPSubSectionSeeMoreButton").attachPress(this._seeMoreLessControlPressHandler, this);
 		}
 
 		return this._oSeeMoreButton;
+	};
+
+	/**
+	 * Builds the control that is used internally for the see more / see less button
+	 * @private
+	 */
+	ObjectPageSubSection.prototype._getSeeLessButton = function () {
+		if (!this._oSeeLessButton) {
+			this._oSeeLessButton = new Button(this.getId() + "--seeLess", {
+				type: ButtonType.Transparent,
+				iconFirst: false,
+				text: ObjectPageSubSection._getLibraryResourceBundle().getText("SHOW_LESS"),
+				ariaLabelledBy: this.getId()
+			}).addStyleClass("sapUxAPSubSectionSeeMoreButton").attachPress(this._seeMoreLessControlPressHandler, this);
+		}
+
+		return this._oSeeLessButton;
 	};
 
 	/**
@@ -945,14 +976,7 @@ sap.ui.define([
 		}
 		this._switchSubSectionMode(sTargetMode);
 
-		//in case of the last subsection of an objectpage we need to compensate its height change while rerendering)
-		if (this._$spacer.length > 0) {
-			this._$spacer.height(this._$spacer.height() + this.$().height());
-		}
-
-		//need to re-render the subsection in order to render all the blocks with the appropriate mode & layout
-		//0000811842 2014
-		this.rerender();
+		this._bShouldFocusSeeMoreLessButton = true;
 	};
 
 	/**
@@ -964,11 +988,13 @@ sap.ui.define([
 		sSwitchToMode = this.validateProperty("mode", sSwitchToMode);
 
 		if (sSwitchToMode === ObjectPageSubSectionMode.Collapsed) {
-			this.setProperty("mode", ObjectPageSubSectionMode.Collapsed, true);
-			this._getSeeMoreButton().setText(ObjectPageSubSection._getLibraryResourceBundle().getText("SEE_MORE"));
+			this.setProperty("mode", ObjectPageSubSectionMode.Collapsed);
+			this._oCurrentlyVisibleSeeMoreLessButton = this._getSeeMoreButton().setVisible(true);
+			this._getSeeLessButton().setVisible(false);
 		} else {
-			this.setProperty("mode", ObjectPageSubSectionMode.Expanded, true);
-			this._getSeeMoreButton().setText(ObjectPageSubSection._getLibraryResourceBundle().getText("SEE_LESS"));
+			this.setProperty("mode", ObjectPageSubSectionMode.Expanded);
+			this._getSeeMoreButton().setVisible(false);
+			this._oCurrentlyVisibleSeeMoreLessButton = this._getSeeLessButton().setVisible(true);
 		}
 	};
 
@@ -1021,6 +1047,10 @@ sap.ui.define([
 	};
 
 	ObjectPageSubSection.prototype._updateShowHideState = function (bHide) {
+		if (this._getIsHidden() === bHide) {
+			return this;
+		}
+
 		this.$().children(this._sMoreContainerSelector).toggle(!bHide);
 
 		return ObjectPageSectionBase.prototype._updateShowHideState.call(this, bHide);

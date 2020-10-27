@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -82,7 +82,7 @@ sap.ui.define(['sap/ui/core/library', 'sap/ui/core/ValueStateSupport', 'sap/ui/D
 			oRm.style("width", oCheckBox.getWidth());
 		}
 
-		var sTooltip = ValueStateSupport.enrichTooltip(oCheckBox, oCheckBox.getTooltip_AsString());
+		var sTooltip = this.getTooltipText(oCheckBox);
 
 		if (sTooltip) {
 			oRm.attr("title", sTooltip);
@@ -168,6 +168,22 @@ sap.ui.define(['sap/ui/core/library', 'sap/ui/core/ValueStateSupport', 'sap/ui/D
 		oRm.close("div");
 	};
 
+	/**
+	 * Returns the correct value of the tooltip.
+	 *
+	 * @param {sap.m.CheckBox} oCheckBox CheckBox instance
+	 * @returns {string} The correct tooltip value
+	 */
+	CheckBoxRenderer.getTooltipText = function (oCheckBox) {
+		var sValueStateText = oCheckBox.getProperty("valueStateText"),
+			sTooltipText = oCheckBox.getTooltip_AsString();
+
+		if (sValueStateText) {
+			return (sTooltipText ? sTooltipText + " - " : "") + sValueStateText;
+		} else {
+			return ValueStateSupport.enrichTooltip(oCheckBox, sTooltipText);
+		}
+	};
 
 	return CheckBoxRenderer;
 

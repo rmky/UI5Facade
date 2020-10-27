@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -21,6 +21,7 @@ sap.ui.define([
 		},
 		sClassName = "sap.ui.model.odata.v4.lib._Requestor",
 		_Requestor,
+		rSystemQueryOptionWithPlaceholder = /(\$\w+)=~/g,
 		rTimeout = /^\d+$/;
 
 	/**
@@ -178,6 +179,38 @@ sap.ui.define([
 	};
 
 	/**
+	 * Adds the given query options to the resource path.
+	 *
+	 * @param {string} sResourcePath The resource path with possible query options and placeholders
+	 * @param {string} sMetaPath The absolute meta path matching the resource path
+	 * @param {object} mQueryOptions Query options to add to the resource path
+	 * @returns {string} The resource path with the query options
+	 *
+	 * @private
+	 */
+	Requestor.prototype.addQueryString = function (sResourcePath, sMetaPath, mQueryOptions) {
+		var sQueryString;
+
+		mQueryOptions = this.convertQueryOptions(sMetaPath, mQueryOptions, false, true);
+		sResourcePath = sResourcePath.replace(rSystemQueryOptionWithPlaceholder,
+			function (unused, sOption) {
+				var sValue = mQueryOptions[sOption];
+
+				delete mQueryOptions[sOption];
+
+				return sOption + "=" + sValue;
+			});
+
+		sQueryString = _Helper.buildQuery(mQueryOptions);
+		if (!sQueryString) {
+			return sResourcePath;
+		}
+
+		return sResourcePath +
+			(sResourcePath.includes("?") ? "&" + sQueryString.slice(1) : sQueryString);
+	};
+
+	/**
 	 * Called when a batch request for the given group ID has been sent.
 	 *
 	 * @param {string} sGroupId
@@ -282,6 +315,8 @@ sap.ui.define([
 	 * <code>canceled = true</code>. They are canceled in reverse order to properly undo stacked
 	 * changes (like multiple PATCHes for the same property).
 	 *
+	 * Additionally cancels all modifying group locks so that they won't create a request.
+	 *
 	 * @param {string} sGroupId
 	 *   The group ID to be canceled
 	 * @throws {Error}
@@ -297,6 +332,7 @@ sap.ui.define([
 		this.cancelChangesByFilter(function () {
 			return true;
 		}, sGroupId);
+		this.cancelGroupLocks(sGroupId);
 	};
 
 	/**
@@ -358,6 +394,23 @@ sap.ui.define([
 			}
 		}
 		return bCanceled;
+	};
+
+	/**
+	 * Cancels all modifying and locked group locks for the given group ID or for all groups.
+	 * Requests that are later created using such a canceled group lock will be rejected.
+	 *
+	 * @param {string} [sGroupId]
+	 *   The ID of the group from which the locks shall be canceled; if not given all groups are
+	 *   processed
+	 */
+	Requestor.prototype.cancelGroupLocks = function (sGroupId) {
+		this.aLockedGroupLocks.forEach(function (oGroupLock) {
+			if ((!sGroupId || sGroupId === oGroupLock.getGroupId())
+					&& oGroupLock.isModifying() && oGroupLock.isLocked()) {
+				oGroupLock.cancel();
+			}
+		});
 	};
 
 	/**
@@ -445,7 +498,7 @@ sap.ui.define([
 			return aChangeSet.some(function (oCandidate) {
 				if (oCandidate.method === "PATCH"
 						&& oCandidate.headers["If-Match"] === oChange.headers["If-Match"]) {
-					jQuery.extend(true, oCandidate.body, oChange.body);
+					_Helper.merge(oCandidate.body, oChange.body);
 					oChange.$resolve(oCandidate.$promise);
 					return true;
 				}
@@ -657,7 +710,7 @@ sap.ui.define([
 
 	/**
 	 * Converts the known OData system query options from map or array notation to a string. All
-	 * other parameters are simply passed through.
+	 * other parameters and placeholders are simply passed through.
 	 * May be overwritten for other OData service versions.
 	 *
 	 * @param {string} sMetaPath
@@ -685,7 +738,9 @@ sap.ui.define([
 
 			switch (sKey) {
 				case "$expand":
-					vValue = that.convertExpand(vValue, bSortExpandSelect);
+					if (vValue !== "~") {
+						vValue = that.convertExpand(vValue, bSortExpandSelect);
+					}
 					break;
 				case "$select":
 					if (Array.isArray(vValue)) {
@@ -952,6 +1007,48 @@ sap.ui.define([
 	};
 
 	/**
+	 * Merges all GET requests that are marked as mergeable, have the same resource path and the
+	 * same query options besides $expand and $select. One request with the merged $expand and
+	 * $select is left in the queue and all merged requests get the response of this one remaining
+	 * request.
+	 *
+	 * @param {object[]} aRequests The batch queue
+	 * @returns {object[]} The adjusted batch queue
+	 */
+	Requestor.prototype.mergeGetRequests = function (aRequests) {
+		var aResultingRequests = [],
+			that = this;
+
+		function merge(oRequest) {
+			return oRequest.$queryOptions && aResultingRequests.some(function (oCandidate) {
+				if (oCandidate.$queryOptions && oRequest.url === oCandidate.url) {
+					_Helper.aggregateQueryOptions(oCandidate.$queryOptions, oRequest.$queryOptions);
+					oRequest.$resolve(oCandidate.$promise);
+
+					return true;
+				}
+
+				return false;
+			});
+		}
+
+		aRequests.forEach(function (oRequest) {
+			if (!merge(oRequest)) {
+				aResultingRequests.push(oRequest);
+			}
+		});
+		aResultingRequests.forEach(function (oRequest) {
+			if (oRequest.$queryOptions) {
+				oRequest.url
+					= that.addQueryString(oRequest.url, oRequest.$metaPath, oRequest.$queryOptions);
+			}
+		});
+		aResultingRequests.iChangeSet = aRequests.iChangeSet;
+
+		return aResultingRequests;
+	};
+
+	/**
 	 * Sends an OData batch request containing all requests referenced by the given group ID and
 	 * processes the responses by dispatching them to the appropriate handlers.
 	 *
@@ -1038,7 +1135,9 @@ sap.ui.define([
 							return;
 						}
 					} else { // e.g. 204 No Content
-						oResponse = {/*null object pattern*/};
+						// With GET it must be visible that there is no content, with the other
+						// methods it must be possible to insert the ETag from the header
+						oResponse = vRequest.method === "GET" ? null : {};
 					}
 					that.reportUnboundMessagesAsJSON(vRequest.url,
 						getResponseHeader.call(vResponse, "sap-messages"));
@@ -1059,6 +1158,7 @@ sap.ui.define([
 		}
 
 		this.batchRequestSent(sGroupId, bHasChanges);
+		aRequests = this.mergeGetRequests(aRequests);
 		return this.sendBatch(_Requestor.cleanBatch(aRequests))
 			.then(function (aResponses) {
 				visit(aRequests, aResponses);
@@ -1106,6 +1206,8 @@ sap.ui.define([
 	 *   Whether the created lock is locked
 	 * @param {boolean} [bModifying]
 	 *   Whether the reason for the group lock is a modifying request
+	 * @param {function} [fnCancel]
+	 *   Function that is called when the group lock is canceled
 	 * @returns {sap.ui.model.odata.v4.lib._GroupLock}
 	 *   The group lock
 	 * @throws {Error}
@@ -1113,10 +1215,11 @@ sap.ui.define([
 	 *
 	 * @public
 	 */
-	Requestor.prototype.lockGroup = function (sGroupId, oOwner, bLocked, bModifying) {
+	Requestor.prototype.lockGroup = function (sGroupId, oOwner, bLocked, bModifying, fnCancel) {
 		var oGroupLock;
 
-		oGroupLock = new _GroupLock(sGroupId, oOwner, bLocked, bModifying, this.getSerialNumber());
+		oGroupLock = new _GroupLock(sGroupId, oOwner, bLocked, bModifying, this.getSerialNumber(),
+			fnCancel);
 		if (bLocked) {
 			this.aLockedGroupLocks.push(oGroupLock);
 		}
@@ -1150,7 +1253,13 @@ sap.ui.define([
 					method : "HEAD",
 					headers : Object.assign({}, that.mHeaders, {"X-CSRF-Token" : "Fetch"})
 				}).then(function (oData, sTextStatus, jqXHR) {
-					that.mHeaders["X-CSRF-Token"] = jqXHR.getResponseHeader("X-CSRF-Token");
+					var sCsrfToken = jqXHR.getResponseHeader("X-CSRF-Token");
+
+					if (sCsrfToken) {
+						that.mHeaders["X-CSRF-Token"] = sCsrfToken;
+					} else {
+						delete that.mHeaders["X-CSRF-Token"];
+					}
 					that.oSecurityTokenPromise = null;
 					fnResolve();
 				}, function (jqXHR, sTextStatus, sErrorMessage) {
@@ -1253,24 +1362,27 @@ sap.ui.define([
 	};
 
 	/**
-	 * Removes the pending POST request with the given body from the given group. Only requests for
-	 * which the <code>$cancel</code> callback is defined are removed.
+	 * Removes the pending POST request for the given entity from the given group. Only requests
+	 * for which the <code>$cancel</code> callback is defined are removed.
 	 *
-	 * The request's promise is rejected with an error with property <code>canceled = true</code>.
+	 * The request's promise is rejected with an error with a property <code>canceled = true</code>.
 	 *
 	 * @param {string} sGroupId
 	 *   The ID of the group containing the request
-	 * @param {object} oBody
-	 *   The body of the request
+	 * @param {object} oEntity
+	 *   The entity of the request containing a private annotation <code>postBody</code> identifying
+	 *   the POST body
 	 * @throws {Error}
 	 *   If the request is not in the queue, assuming that it has been submitted already
 	 *
 	 * @private
 	 */
-	Requestor.prototype.removePost = function (sGroupId, oBody) {
-		var bCanceled = this.cancelChangesByFilter(function (oChangeRequest) {
-			return oChangeRequest.body === oBody;
-		}, sGroupId);
+	Requestor.prototype.removePost = function (sGroupId, oEntity) {
+		var oBody = _Helper.getPrivateAnnotation(oEntity, "postBody"),
+			bCanceled = this.cancelChangesByFilter(function (oChangeRequest) {
+				return oChangeRequest.body === oBody;
+			}, sGroupId);
+
 		if (!bCanceled) {
 			throw new Error("Cannot reset the changes, the batch request is running");
 		}
@@ -1300,14 +1412,14 @@ sap.ui.define([
 	 * @param {string} sMethod
 	 *   HTTP method, e.g. "GET"
 	 * @param {string} sResourcePath
-	 *   A resource path relative to the service URL for which this requestor has been created;
-	 *   use "$batch" to send a batch request
+	 *   A resource path relative to the service URL for which this requestor has been created
 	 * @param {sap.ui.model.odata.v4.lib._GroupLock} [oGroupLock]
 	 *   A lock for the group to associate the request with; if no lock is given or its group ID has
 	 *   {@link sap.ui.model.odata.v4.SubmitMode.Direct}, the request is sent immediately; for all
 	 *   other group ID values, the request is added to the given group and you can use
 	 *   {@link #submitBatch} to send all requests in that group. This group lock will be unlocked
-	 *   immediately, even if the request itself is queued.
+	 *   immediately, even if the request itself is queued. The request is rejected if the lock is
+	 *   already canceled.
 	 * @param {object} [mHeaders]
 	 *   Map of request-specific headers, overriding both the mandatory OData V4 headers and the
 	 *   default headers given to the factory. This map of headers must not contain
@@ -1333,15 +1445,21 @@ sap.ui.define([
 	 * @param {boolean} [bAtFront=false]
 	 *   Whether the request is added at the front of the first change set (ignored for method
 	 *   "GET")
+	 * @param {object} [mQueryOptions]
+	 *   Query options if it is allowed to merge this request with another request having the same
+	 *   sResourcePath (only allowed for GET requests); the resulting resource path is the path from
+	 *   sResourcePath plus the merged query options; may only contain $expand and $select
 	 * @returns {Promise}
-	 *   A promise on the outcome of the HTTP request
+	 *   A promise on the outcome of the HTTP request; it will be rejected with an error having the
+	 *   property <code>canceled = true</code> instead of sending a request if
+	 *   <code>oGroupLock</code> is already canceled.
 	 * @throws {Error}
 	 *   If group ID is '$cached'. The error has a property <code>$cached = true</code>
 	 *
 	 * @public
 	 */
 	Requestor.prototype.request = function (sMethod, sResourcePath, oGroupLock, mHeaders, oPayload,
-			fnSubmit, fnCancel, sMetaPath, sOriginalResourcePath, bAtFront) {
+			fnSubmit, fnCancel, sMetaPath, sOriginalResourcePath, bAtFront, mQueryOptions) {
 		var iChangeSetNo,
 			oError,
 			sGroupId = oGroupLock && oGroupLock.getGroupId() || "$direct",
@@ -1354,6 +1472,15 @@ sap.ui.define([
 			oError = new Error("Unexpected request: " + sMethod + " " + sResourcePath);
 			oError.$cached = true;
 			throw oError; // fail synchronously!
+		}
+
+		if (oGroupLock && oGroupLock.isCanceled()) {
+			if (fnCancel) {
+				fnCancel();
+			}
+			oError = new Error("Request already canceled");
+			oError.canceled = true;
+			return Promise.reject(oError);
 		}
 
 		if (oGroupLock) {
@@ -1369,7 +1496,7 @@ sap.ui.define([
 				oRequest = {
 					method : sMethod,
 					url : sResourcePath,
-					headers : jQuery.extend({},
+					headers : Object.assign({},
 						that.mPredefinedPartHeaders,
 						that.mHeaders,
 						mHeaders,
@@ -1377,6 +1504,7 @@ sap.ui.define([
 					body : oPayload,
 					$cancel : fnCancel,
 					$metaPath : sMetaPath,
+					$queryOptions : mQueryOptions,
 					$reject : fnReject,
 					$resolve : fnResolve,
 					$resourcePath : sOriginalResourcePath,
@@ -1398,11 +1526,14 @@ sap.ui.define([
 			return oPromise;
 		}
 
+		if (mQueryOptions) {
+			sResourcePath = that.addQueryString(sResourcePath, sMetaPath, mQueryOptions);
+		}
 		if (fnSubmit) {
 			fnSubmit();
 		}
 		return this.sendRequest(sMethod, sResourcePath,
-			jQuery.extend({}, mHeaders, this.mFinalHeaders),
+			Object.assign({}, mHeaders, this.mFinalHeaders),
 			JSON.stringify(_Requestor.cleanPayload(oPayload)), sOriginalResourcePath
 		).then(function (oResponse) {
 			that.reportUnboundMessagesAsJSON(oResponse.resourcePath, oResponse.messages);
@@ -1422,7 +1553,7 @@ sap.ui.define([
 		var oBatchRequest = _Batch.serializeBatchRequest(aRequests);
 
 		return this.sendRequest("POST", "$batch" + this.sQueryParams,
-			jQuery.extend(oBatchRequest.headers, mBatchHeaders), oBatchRequest.body
+			Object.assign(oBatchRequest.headers, mBatchHeaders), oBatchRequest.body
 		).then(function (oResponse) {
 			if (oResponse.messages !== null) {
 				throw new Error("Unexpected 'sap-messages' response header for batch request");
@@ -1465,14 +1596,16 @@ sap.ui.define([
 				var sOldCsrfToken = that.mHeaders["X-CSRF-Token"];
 
 				return jQuery.ajax(sRequestUrl, {
+					contentType : mHeaders && mHeaders["Content-Type"],
 					data : sPayload,
-					headers : jQuery.extend({},
+					headers : Object.assign({},
 						that.mPredefinedRequestHeaders,
 						that.mHeaders,
 						_Helper.resolveIfMatchHeader(mHeaders)),
 					method : sMethod
 				}).then(function (/*{object|string}*/vResponse, sTextStatus, jqXHR) {
-					var sETag = jqXHR.getResponseHeader("ETag");
+					var sETag = jqXHR.getResponseHeader("ETag"),
+						sCsrfToken = jqXHR.getResponseHeader("X-CSRF-Token");
 
 					try {
 						that.doCheckVersionHeader(jqXHR.getResponseHeader, sResourcePath,
@@ -1481,14 +1614,19 @@ sap.ui.define([
 						fnReject(oError);
 						return;
 					}
-					that.mHeaders["X-CSRF-Token"]
-						= jqXHR.getResponseHeader("X-CSRF-Token") || that.mHeaders["X-CSRF-Token"];
+					if (sCsrfToken) {
+						that.mHeaders["X-CSRF-Token"] = sCsrfToken;
+					}
 					that.setSessionContext(jqXHR.getResponseHeader("SAP-ContextId"),
 						jqXHR.getResponseHeader("SAP-Http-Session-Timeout"));
 
 					// Note: string response appears only for $batch and thus cannot be empty;
 					// for 204 "No Content", vResponse === undefined
-					vResponse = vResponse || {/*null object pattern*/};
+					if (!vResponse) {
+						// With GET it must be visible that there is no content, with the other
+						// methods it must be possible to insert the ETag from the header
+						vResponse = sMethod === "GET" ? null : {};
+					}
 					if (sETag) {
 						vResponse["@odata.etag"] = sETag;
 					}
@@ -1538,7 +1676,7 @@ sap.ui.define([
 
 	/**
 	 * Sets the session context. Starts a keep-alive timer in case there is a session context and
-	 * a timeout of 60 seconds or more is indicated. This timer runs for at most 15 minutes.
+	 * a timeout of 60 seconds or more is indicated. This timer runs for at most 30 minutes.
 	 *
 	 * @param {string} [sContextId] The value of the header 'SAP-ContextId'
 	 * @param {string} [sSAPHttpSessionTimeout] The value of the header 'SAP-Http-Session-Timeout',
@@ -1550,7 +1688,7 @@ sap.ui.define([
 		var iTimeoutSeconds = rTimeout.test(sSAPHttpSessionTimeout)
 				? parseInt(sSAPHttpSessionTimeout)
 				: 0,
-			iSessionTimeout = Date.now() + 15 * 60 * 1000, // 15 min
+			iSessionTimeout = Date.now() + 30 * 60 * 1000, // 30 min
 			that = this;
 
 		this.clearSessionContext(); // stop the current session and its timer
@@ -1560,7 +1698,7 @@ sap.ui.define([
 			that.mHeaders["SAP-ContextId"] = sContextId;
 			if (iTimeoutSeconds >= 60) {
 				this.iSessionTimer = setInterval(function () {
-					if (Date.now() >= iSessionTimeout) { // 15 min have passed
+					if (Date.now() >= iSessionTimeout) { // 30 min have passed
 						that.clearSessionContext(/*bTimeout*/true); // give up
 					} else {
 						jQuery.ajax(that.sServiceUrl + that.sQueryParams, {
@@ -1681,9 +1819,9 @@ sap.ui.define([
 			var oResult = oPayload;
 			if (oResult) {
 				Object.keys(oResult).forEach(function (sKey) {
-					if (sKey.indexOf("@$ui5.") === 0) {
+					if (sKey.startsWith("@$ui5.")) {
 						if (oResult === oPayload) {
-							oResult = jQuery.extend({}, oPayload);
+							oResult = Object.assign({}, oPayload);
 						}
 						delete oResult[sKey];
 					}

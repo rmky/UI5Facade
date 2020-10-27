@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -138,7 +138,7 @@ sap.ui.define(['./library'],
 		 * @param {sap.ui.core.Control} oControl An object representation of the control that should be rendered
 		 */
 		AlignedFlowLayoutRenderer.renderSpacers = function(oRm, oControl) {
-			var iSpacers = oControl.getNumberOfSpacers(),
+			var iSpacers = oControl.computeNumberOfSpacers(),
 				sMinItemWidth = oControl.getMinItemWidth(),
 				sMaxItemWidth = oControl.getMaxItemWidth(),
 				CSS_CLASS = AlignedFlowLayoutRenderer.CSS_CLASS,

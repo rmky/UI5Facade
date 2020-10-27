@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -16,7 +16,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.rta.command.FlexCommand
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @constructor
 	 * @private
 	 * @since 1.54
@@ -29,16 +29,20 @@ sap.ui.define([
 			library : "sap.ui.rta",
 			properties : {
 				fragment : {
-					type : "string"
+					type : "string",
+					group: "content"
 				},
 				fragmentPath : {
-					type : "string"
+					type : "string",
+					group: "content"
 				},
 				targetAggregation : {
-					type : "string"
+					type : "string",
+					group: "content"
 				},
 				index: {
-					type: "int"
+					type: "int",
+					group: "content"
 				},
 				changeType : {
 					type : "string",
@@ -51,7 +55,7 @@ sap.ui.define([
 	});
 
 	/**
-	 * @override to suppress the binding strings to be used as
+	 * @override to suppress the {} being recognized as binding strings
 	 */
 	AddXML.prototype.bindProperty = function(sName, oBindingInfo) {
 		if (sName === "fragment") {
@@ -59,19 +63,6 @@ sap.ui.define([
 		}
 		return FlexCommand.prototype.bindProperty.apply(this, arguments);
 	};
-
-	AddXML.prototype._getChangeSpecificData = function() {
-		var mSpecificInfo = {
-			changeType : this.getChangeType(),
-			fragmentPath: this.getFragmentPath(),
-			targetAggregation: this.getTargetAggregation(),
-			index: this.getIndex()
-		};
-
-		return mSpecificInfo;
-	};
-
-
 
 	/**
 	 * Normally when the changes are loaded, the backend preloads the fragment as a module,

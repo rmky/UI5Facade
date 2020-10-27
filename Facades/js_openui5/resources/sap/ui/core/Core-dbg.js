@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -15,6 +15,7 @@ sap.ui.define([
 	'sap/ui/base/Interface',
 	'sap/ui/base/Object',
 	'sap/ui/base/ManagedObject',
+	'sap/ui/performance/trace/Interaction',
 	'./Component',
 	'./Configuration',
 	'./Control',
@@ -55,6 +56,7 @@ sap.ui.define([
 		Interface,
 		BaseObject,
 		ManagedObject,
+		Interaction,
 		Component,
 		Configuration,
 		Control,
@@ -88,7 +90,7 @@ sap.ui.define([
 
 	"use strict";
 
-	/*global Promise, XMLHttpRequest */
+	/*global Map, Promise */
 
 	/**
 	 * Executes an 'eval' for its arguments in the global context (without closure variables).
@@ -219,7 +221,7 @@ sap.ui.define([
 	 * @extends sap.ui.base.Object
 	 * @final
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @alias sap.ui.core.Core
 	 * @public
 	 * @hideconstructor
@@ -469,6 +471,7 @@ sap.ui.define([
 			 * @returns {sap.ui.core.Core} the API of the current SAPUI5 Core instance.
 			 * @public
 			 * @function
+			 * @ui5-global-only
 			 */
 			sap.ui.getCore = function() {
 				return that.getInterface();
@@ -604,7 +607,9 @@ sap.ui.define([
 				};
 
 				if (bAsync) {
-					sap.ui.require(["sap/ui/core/support/Support", "sap/ui/support/Bootstrap"], fnCallbackSupportBootstrapInfo);
+					sap.ui.require(["sap/ui/core/support/Support", "sap/ui/support/Bootstrap"], fnCallbackSupportBootstrapInfo, function (oError) {
+						Log.error("Could not load support mode modules:", oError);
+					});
 				} else {
 					Log.warning("Synchronous loading of Support mode. Set preload configuration to 'async' or switch to asynchronous bootstrap to prevent these synchronous request.", "SyncXHR", null, function() {
 						return {
@@ -615,6 +620,34 @@ sap.ui.define([
 					fnCallbackSupportBootstrapInfo(
 						sap.ui.requireSync("sap/ui/core/support/Support"),
 						sap.ui.requireSync("sap/ui/support/Bootstrap")
+					);
+				}
+			}
+
+			// Initialize test tools
+			if (this.oConfiguration.getTestRecorderMode() !== null) {
+				var iTestRecorderTask = oSyncPoint2.startTask("test recorder script");
+
+				var fnCallbackTestRecorder = function (Bootstrap) {
+					Bootstrap.init(that.oConfiguration.getTestRecorderMode());
+					oSyncPoint2.finishTask(iTestRecorderTask);
+				};
+
+				if (bAsync) {
+					sap.ui.require([
+						"sap/ui/testrecorder/Bootstrap"
+					], fnCallbackTestRecorder, function (oError) {
+						Log.error("Could not load test recorder:", oError);
+					});
+				} else {
+					Log.warning("Synchronous loading of Test recorder mode. Set preload configuration to 'async' or switch to asynchronous bootstrap to prevent these synchronous request.", "SyncXHR", null, function() {
+						return {
+							type: "SyncXHR",
+							name: "test-recorder-mode"
+						};
+					});
+					fnCallbackTestRecorder(
+						sap.ui.requireSync("sap/ui/testrecorder/Bootstrap")
 					);
 				}
 			}
@@ -658,6 +691,9 @@ sap.ui.define([
 
 	// Id of the static UIArea
 	var STATIC_UIAREA_ID = "sap-ui-static";
+
+	// to protect against nested rendering we use an array of Steps instead of a single one
+	Core.aFnDone = [];
 
 	/**
 	 * The core allows some friend components to register/deregister themselves
@@ -966,7 +1002,7 @@ sap.ui.define([
 
 	// this function is also used by "sap.ui.core.ThemeCheck" to load a fallback theme for a single library
 	Core.prototype._updateThemeUrl = function(oLink, sThemeName, bSuppressFOUC) {
-		var sLibName = oLink.id.slice(13), // length of "sap-ui-theme-"
+		var sLibName,
 		    iQueryIndex = oLink.href.search(/[?#]/),
 		    sLibFileName,
 		    sQuery,
@@ -974,6 +1010,15 @@ sap.ui.define([
 		    sRTL = this.oConfiguration.getRTL() ? "-RTL" : "",
 		    sHref,
 		    pos;
+
+		// derive lib name from id via regex
+		var mLinkId = /^sap-ui-theme(?:skeleton)?-(.*)$/i.exec(oLink.id);
+		if (Array.isArray(mLinkId)) {
+			sLibName = mLinkId[1];
+		} else {
+			// fallback to legacy logic
+			sLibName = oLink.id.slice(13); // length of "sap-ui-theme-"
+		}
 
 		if (iQueryIndex > -1) {
 			// Split href on query and/or fragment to check for the standard lib file prefix
@@ -1018,11 +1063,12 @@ sap.ui.define([
 	// modify style sheet URLs to point to the given theme, using the current RTL mode
 	Core.prototype._updateThemeUrls = function(sThemeName, bSuppressFOUC) {
 		// select "our" stylesheets
-		var oQueryResult = document.querySelectorAll("link[id^=sap-ui-theme-]");
+		var oQueryResult = document.querySelectorAll("link[id^=sap-ui-theme-],link[id^=sap-ui-themeskeleton-]");
 
 		Array.prototype.forEach.call(oQueryResult, function(oHTMLElement) {
 			this._updateThemeUrl(oHTMLElement, sThemeName, bSuppressFOUC);
 		}.bind(this));
+
 	};
 
 	/**
@@ -1185,18 +1231,18 @@ sap.ui.define([
 
 		var sWaitForTheme = this.oConfiguration['xx-waitForTheme'];
 		if ( this.isThemeApplied() || !sWaitForTheme ) {
-
+			Core.aFnDone.push(Interaction.notifyAsyncStep());
 			this._executeInitialization();
 			this.renderPendingUIUpdates("during Core init"); // directly render without setTimeout, so rendering is guaranteed to be finished when init() ends
 			Measurement.end("coreComplete");
 
 		} else if (sWaitForTheme === "rendering") {
-
+			Core.aFnDone.push(Interaction.notifyAsyncStep());
 			this._executeInitialization();
 
 			oRenderLog.debug("delay initial rendering until theme has been loaded");
 			_oEventProvider.attachEventOnce(Core.M_EVENTS.ThemeChanged, function() {
-				setTimeout(
+					setTimeout(
 					this.renderPendingUIUpdates.bind(this, "after theme has been loaded"),
 					Device.browser.safari ? 50 : 0
 				);
@@ -1205,12 +1251,10 @@ sap.ui.define([
 			Measurement.end("coreComplete");
 
 		} else if (sWaitForTheme === "init") {
-
 			oRenderLog.debug("delay init event and initial rendering until theme has been loaded");
+			Core.aFnDone.push(Interaction.notifyAsyncStep());
 			_oEventProvider.attachEventOnce(Core.M_EVENTS.ThemeChanged, function() {
-
 				this._executeInitialization();
-
 				setTimeout(
 					this.renderPendingUIUpdates.bind(this, "after theme has been loaded"),
 					Device.browser.safari ? 50 : 0
@@ -1246,7 +1290,7 @@ sap.ui.define([
 				vOnInit();
 			} else if (typeof vOnInit === "string") {
 				// determine onInit being a module name prefixed via module or a global name
-				var aResult = /^module\:((?:(?:[_$.\-a-zA-Z][_$.\-a-zA-Z0-9]*)\/?)*)$/.exec(vOnInit);
+				var aResult = /^module\:((?:[_$.\-a-zA-Z0-9]+\/)*[_$.\-a-zA-Z0-9]+)$/.exec(vOnInit);
 				if (aResult && aResult[1]) {
 					// ensure that the require is done async and the Core is finally booted!
 					setTimeout(sap.ui.require.bind(sap.ui, [aResult[1]]), 0);
@@ -1282,7 +1326,7 @@ sap.ui.define([
 
 			var sRootNode = oConfig["xx-rootComponentNode"];
 			if (sRootNode && oComponent.isA('sap.ui.core.UIComponent')) {
-				var oRootNode = (sRootNode ? document.getElementById(sRootNode) : null);
+				var oRootNode = document.getElementById(sRootNode);
 				if (oRootNode) {
 					Log.info("Creating ComponentContainer for Root Component: " + sRootComponent,null,METHOD);
 					var ComponentContainer = sap.ui.requireSync('sap/ui/core/ComponentContainer'),
@@ -1322,18 +1366,11 @@ sap.ui.define([
 
 	Core.prototype._setBodyAccessibilityRole = function() {
 		var oConfig = this.oConfiguration,
-			body = document.body, sBodyRole, bAvoidAriaApplicationRole;
+			body = document.body;
 
 		//Add ARIA role 'application'
-		if (oConfig.getAccessibility() && oConfig.getAutoAriaBodyRole()) {
-			sBodyRole = body.getAttribute("role");
-			bAvoidAriaApplicationRole = oConfig.getAvoidAriaApplicationRole();
-
-			if (!sBodyRole && !bAvoidAriaApplicationRole) {
-				body.setAttribute("role", "application");
-			} else if (sBodyRole === "application" && bAvoidAriaApplicationRole) {
-				body.removeAttribute("role");
-			}
+		if (oConfig.getAccessibility() && oConfig.getAutoAriaBodyRole() && !body.getAttribute("role")) {
+			body.setAttribute("role", "application");
 		}
 	};
 
@@ -1642,16 +1679,33 @@ sap.ui.define([
 
 	}
 
+	/**
+	 * Map of library manifests keyed by library names.
+	 *
+	 * If the manifest was loaded but could not be parsed, <code>null</code> will be stored.
+	 * @type {Map<string,object>}
+	 * @private
+	 */
+	var mLibraryManifests = new Map();
+
 	function getManifest(lib) {
+		if ( mLibraryManifests.has(lib) ) {
+			return mLibraryManifests.get(lib);
+		}
+
 		var manifestModule = lib.replace(/\./g, '/') + '/manifest.json';
 
-		if ( !!sap.ui.loader._.getModuleState(manifestModule) ) {
+		if ( sap.ui.loader._.getModuleState(manifestModule) ) {
 
-			return LoaderExtensions.loadResource(manifestModule, {
+			var oManifest = LoaderExtensions.loadResource(manifestModule, {
 				dataType: 'json',
 				async: false, // always sync as we are sure to load from preload cache
 				failOnError: false
 			});
+
+			mLibraryManifests.set(lib, oManifest);
+
+			return oManifest;
 		}
 	}
 
@@ -2072,7 +2126,7 @@ sap.ui.define([
 	 * @param {string} [vComponent.url] URL to load the component from
 	 * @param {string} [vComponent.id] ID for the component instance
 	 * @param {object} [vComponent.settings] settings object for the component
-	 * @param {string} [vComponent.componentData] user specific data which is available during the whole lifecycle of the component
+	 * @param {any} [vComponent.componentData] user specific data which is available during the whole lifecycle of the component
 	 * @param {string} [sUrl] the URL to load the component from
 	 * @param {string} [sId] the ID for the component instance
 	 * @param {object} [mSettings] the settings object for the component
@@ -2329,6 +2383,14 @@ sap.ui.define([
 
 	};
 
+	// helper to add the FOUC marker to the CSS for the given id
+	function fnAddFoucmarker(sLinkId) {
+		var oLink = document.getElementById(sLinkId);
+		if (oLink) {
+			oLink.dataset.sapUiFoucmarker = sLinkId;
+		}
+	}
+
 	/**
 	 * Includes a library theme into the current page (if a variant is specified it
 	 * will include the variant library theme)
@@ -2354,14 +2416,15 @@ sap.ui.define([
 				sVariant = "";
 			}
 
-			// determine RTL
+			// determine CSS Variables / RTL
+			var sCssVars = (/^(true|x)$/i.test(this.oConfiguration['xx-cssVariables']) ? "_skeleton" : "");
 			var sRtl = (this.oConfiguration.getRTL() ? "-RTL" : "");
 
 			// create the library file name
 			var sLibFileName,
 				sLibId = sLibName + (sVariant.length > 0 ? "-[" + sVariant + "]" : sVariant);
 			if (sLibName && sLibName.indexOf(":") == -1) {
-				sLibFileName = "library" + sVariant + sRtl;
+				sLibFileName = "library" + sVariant + sCssVars + sRtl;
 			} else {
 				sLibFileName = sLibName.substring(sLibName.indexOf(":") + 1) + sVariant;
 				sLibName = sLibName.substring(0, sLibName.indexOf(":"));
@@ -2370,14 +2433,22 @@ sap.ui.define([
 			// use the special FOUC handling for initially existing stylesheets
 			// to ensure that they are not just replaced when using the
 			// includeStyleSheet API and to be removed later
-			var sLinkId = "sap-ui-theme-" + sLibId,
-				oLink = document.getElementById(sLinkId);
-			if (oLink) {
-				oLink.dataset.sapUiFoucmarker = sLinkId;
+			var sLinkId = "sap-ui-theme-" + sLibId;
+			fnAddFoucmarker(sLinkId);
+
+			// include the css variables
+			var cssPathAndName;
+			if (/^(true|x|additional)$/i.test(this.oConfiguration['xx-cssVariables'])) {
+				cssPathAndName = this._getThemePath(sLibName, this.sTheme) + "css_variables.css" + (sQuery ? sQuery : "");
+				Log.info("Including " + cssPathAndName + " -  sap.ui.core.Core.includeLibraryTheme()");
+				includeStylesheet(cssPathAndName, sLinkId);
+				// include the skeleton css next to the css variables
+				sLinkId = "sap-ui-themeskeleton-" + sLibId;
+				fnAddFoucmarker(sLinkId);
 			}
 
 			// log and include
-			var cssPathAndName = this._getThemePath(sLibName, this.sTheme) + sLibFileName + ".css" + (sQuery ? sQuery : "");
+			cssPathAndName = this._getThemePath(sLibName, this.sTheme) + sLibFileName + ".css" + (sQuery ? sQuery : "");
 			Log.info("Including " + cssPathAndName + " -  sap.ui.core.Core.includeLibraryTheme()");
 			includeStylesheet(cssPathAndName, sLinkId);
 
@@ -2472,7 +2543,7 @@ sap.ui.define([
 	 * @param {string} [sLibraryName='sap.ui.core'] Name of the library to retrieve the bundle for
 	 * @param {string} [sLocale] Locale to retrieve the resource bundle for
 	 * @param {boolean} [bAsync=false] Whether the resource bundle is loaded asynchronously
-	 * @return {jQuery.sap.util.ResourceBundle|Promise} The best matching resource bundle for the given
+	 * @return {module:sap/base/i18n/ResourceBundle|Promise} The best matching resource bundle for the given
 	 *   parameters or <code>undefined</code>; in asynchronous case a Promise on that bundle is returned
 	 * @public
 	 */
@@ -2493,6 +2564,35 @@ sap.ui.define([
 			sLocale = undefined;
 		}
 
+		/**
+		 *
+		 * @param {Object} vInfo bundle information. Can be:
+		 * <ul>
+		 *     <li>false - library has no resource bundle</li>
+		 *     <li>true|null|undefined - use default settings: bundle is 'messageBundle.properties',
+		 *       fallback and supported locales are not defined (defaulted by ResourceBundle)</li>
+		 *     <li>typeof string - string is the url of the bundle,
+		 *       fallback and supported locales are not defined (defaulted by ResourceBundle)</li>
+		 *     <li>typeof object - object can contain bundleUrl, supportedLocales, fallbackLocale</li>
+		 * </ul>
+		 * @returns {Object} bundle information
+		 */
+		function normalizeBundleInfo(vInfo) {
+			if ( vInfo == null || vInfo === true ) {
+				return {
+					bundleUrl: "messagebundle.properties"
+				};
+			}
+			if ( typeof vInfo === "string" ) {
+				return {
+					bundleUrl: vInfo
+				};
+			}
+			if ( typeof vInfo === "object" ) {
+				return vInfo;
+			}
+			// return undefined
+		}
 
 		assert((sLibraryName === undefined && sLocale === undefined) || typeof sLibraryName === "string", "sLibraryName must be a string or there is no argument given at all");
 		assert(sLocale === undefined || typeof sLocale === "string", "sLocale must be a string or omitted");
@@ -2507,10 +2607,13 @@ sap.ui.define([
 			if ( oManifest && Version(oManifest._version).compareTo("1.9.0") >= 0 ) {
 				vI18n = oManifest["sap.ui5"] && oManifest["sap.ui5"].library && oManifest["sap.ui5"].library.i18n;
 			} // else vI18n = undefined
+			vI18n = normalizeBundleInfo(vI18n);
 
-			if (vI18n !== false) {
+			if (vI18n) {
 				vResult = ResourceBundle.create({
-					url : getModulePath(sLibraryName + "/", (typeof vI18n === "string" ? vI18n : 'messagebundle.properties')),
+					url : getModulePath(sLibraryName + "/", vI18n.bundleUrl),
+					supportedLocales: vI18n.supportedLocales,
+					fallbackLocale: vI18n.fallbackLocale,
 					locale : sLocale,
 					async: bAsync
 				});
@@ -2577,7 +2680,7 @@ sap.ui.define([
 			if (id == STATIC_UIAREA_ID) {
 				oDomRef = this.getStaticAreaRef();
 			} else {
-				oDomRef = (oDomRef ? document.getElementById(oDomRef) : null);
+				oDomRef = document.getElementById(oDomRef);
 				if (!oDomRef) {
 					throw new Error("DOM element with ID '" + id + "' not found in page, but application tries to insert content.");
 				}
@@ -2647,6 +2750,8 @@ sap.ui.define([
 	Core.prototype.addInvalidatedUIArea = function(oUIArea) {
 		if ( !this._sRerenderTimer ) {
 			oRenderLog.debug("Registering timer for delayed re-rendering");
+			// start async interaction step
+			Core.aFnDone.push(Interaction.notifyAsyncStep());
 			this._sRerenderTimer = setTimeout(this["renderPendingUIUpdates"].bind(this), 0); // decoupled for collecting several invalidations into one redraw
 		}
 	};
@@ -2666,7 +2771,6 @@ sap.ui.define([
 	 * @private
 	 */
 	Core.prototype.renderPendingUIUpdates = function(sCaller) {
-
 		// start performance measurement
 		oRenderLog.debug("Render pending UI updates: start (" + (sCaller || "by timer" ) + ")");
 
@@ -2700,6 +2804,9 @@ sap.ui.define([
 					clearTimeout(this._sRerenderTimer); // explicitly stop the timer, as this call might be a synchronous call (applyChanges) while still a timer is running
 				}
 				this._sRerenderTimer = undefined;
+				if (Core.aFnDone.length > 0) {
+					Core.aFnDone.pop()();
+				}
 			}
 
 			this.runPrerenderingTasks();
@@ -2757,9 +2864,15 @@ sap.ui.define([
 	};
 
 	/**
-	 * This method can be called to trigger realignment of controls after changing the cozy/compact CSS class of a DOM
-	 * element, for example, the <code>&lt;body&gt;</code> tag.
+	 * Triggers a realignment of controls
 	 *
+	 * This method should be called after changing the cozy/compact CSS class of a DOM element at runtime,
+	 *  for example at the <code>&lt;body&gt;</code> tag.
+	 *  Controls can listen to the themeChanged event to realign their appearance after changing the theme.
+	 *  Changing the cozy/compact CSS class should then also be handled as a theme change.
+	 *  In more simple scenarios where the cozy/compact CSS class is added to a DOM element which contains only a few controls
+	 *  it might not be necessary to trigger the realigment of all controls placed in the DOM,
+	 *  for example changing the cozy/compact CSS class at a single control
 	 * @public
 	 */
 	Core.prototype.notifyContentDensityChanged = function() {
@@ -3130,13 +3243,14 @@ sap.ui.define([
 	 * Returns the registered element with the given ID, if any.
 	 *
 	 * The ID must be the globally unique ID of an element, the same as returned by <code>oElement.getId()</code>.
+	 *
 	 * When the element has been created from a declarative source (e.g. XMLView), that source might have used
 	 * a shorter, non-unique local ID. A search for such a local ID cannot be executed with this method.
 	 * It can only be executed on the corresponding scope (e.g. on an XMLView instance), by using the
 	 * {@link sap.ui.core.mvc.View#byId View#byId} method of that scope.
 	 *
-	 * @param {string} sId ID of the element to search for
-	 * @return {sap.ui.core.Element} Element with the given ID or <code>undefined</code>
+	 * @param {sap.ui.core.ID|null|undefined} sId ID of the element to search for
+	 * @returns {sap.ui.core.Element|undefined} Element with the given ID or <code>undefined</code>
 	 * @public
 	 * @function
 	 */
@@ -3144,8 +3258,9 @@ sap.ui.define([
 
 	/**
 	 * Returns the registered element for the given ID, if any.
-	 * @param {string} sId
-	 * @return {sap.ui.core.Element} the element for the given id
+	 *
+	 * @param {sap.ui.core.ID|null|undefined} sId ID of the control to retrieve
+	 * @returns {sap.ui.core.Element|undefined} Element for the given ID or <code>undefined</code>
 	 * @deprecated As of version 1.1, use <code>sap.ui.core.Core.byId</code> instead!
 	 * @function
 	 * @public
@@ -3154,8 +3269,9 @@ sap.ui.define([
 
 	/**
 	 * Returns the registered element for the given ID, if any.
-	 * @param {string} sId
-	 * @return {sap.ui.core.Element} the element for the given id
+	 *
+	 * @param {sap.ui.core.ID|null|undefined} sId ID of the element to retrieve
+	 * @returns {sap.ui.core.Element|undefined} Element for the given ID or <code>undefined</code>
 	 * @deprecated As of version 1.1, use <code>sap.ui.core.Core.byId</code> instead!
 	 * @function
 	 * @public
@@ -3164,9 +3280,10 @@ sap.ui.define([
 
 	/**
 	 * Returns the registered object for the given id, if any.
-	 * @param {string} sType
-	 * @param {string} sId
-	 * @return {sap.ui.core.Component} the component for the given id
+	 *
+	 * @param {string} sType Stereotype of the object to retrieve
+	 * @param {sap.ui.core.ID|null|undefined} sId Id of the object to retrieve
+	 * @returns {sap.ui.base.ManagedObject|undefined} Object of the given type and with the given id or undefined
 	 * @private
 	 */
 	Core.prototype.getObject = function(sType, sId) {
@@ -3215,12 +3332,13 @@ sap.ui.define([
 	 * @public
 	 */
 	Core.prototype.getStaticAreaRef = function() {
-		var oStaticArea = (STATIC_UIAREA_ID ? document.getElementById(STATIC_UIAREA_ID) : null),
-			oConfig;
+		var oStaticArea = document.getElementById(STATIC_UIAREA_ID),
+			oConfig, oFirstFocusElement;
 
 		if (!oStaticArea) {
 
 			oStaticArea = document.createElement("div");
+			oFirstFocusElement = document.createElement("span");
 			oConfig = this.getConfiguration();
 
 			if (!this.bDomReady) {
@@ -3229,17 +3347,18 @@ sap.ui.define([
 
 			oStaticArea.setAttribute("id", STATIC_UIAREA_ID);
 
-			if (document.body.getAttribute("role") != "application" && !oConfig.getAvoidAriaApplicationRole()) {
-				// Only set ARIA application role if not available on html body (see configuration entry "autoAriaBodyRole")
-				oStaticArea.setAttribute("role", "application");
-			}
-
 			Object.assign(oStaticArea.style, {
 				"height": "0",
 				"width": "0",
 				"overflow": "hidden",
 				"float":  oConfig.getRTL() ? "right" : "left"
 			});
+
+			oFirstFocusElement.setAttribute("id", STATIC_UIAREA_ID + "-firstfe");
+			oFirstFocusElement.setAttribute("tabindex", -1);
+			oFirstFocusElement.style.fontSize = 0;
+
+			oStaticArea.appendChild(oFirstFocusElement);
 
 			document.body.insertBefore(oStaticArea, document.body.firstChild);
 
@@ -3383,6 +3502,12 @@ sap.ui.define([
 	 *
 	 * @param {object} oPlugin reference to a Plugin object
 	 * @public
+	 * @deprecated As of 1.73. Plugins never have been meant as a public offering, but were intended for internal
+	 *   usage only. They unfortunately allow access to all internals of the Core and therefore break encapsulation
+	 *   and hinder evolution of the Core. The most common use case of accessing the set of all controls/elements
+	 *   or all components can now be addressed by using the APIs {@link sap.ui.core.Element.registry} or
+	 *   {@link sap.ui.core.Component.registry}, respectively. Future refactorings of the Core will only take
+	 *   existing plugins in the OpenUI5 repository into account.
 	 */
 	Core.prototype.registerPlugin = function(oPlugin) {
 		assert(typeof oPlugin === "object", "oPlugin must be an object");
@@ -3415,6 +3540,12 @@ sap.ui.define([
 	 *
 	 * @param {object} oPlugin reference to a Plugin object
 	 * @public
+	 * @deprecated As of 1.73. Plugins never have been meant as a public offering, but were intended for internal
+	 *   usage only. They unfortunately allow access to all internals of the Core and therefore break encapsulation
+	 *   and hinder evolution of the Core. The most common use case of accessing the set of all controls/elements
+	 *   or all components can now be addressed by using the APIs {@link sap.ui.core.Element.registry} or
+	 *   {@link sap.ui.core.Component.registry}, respectively. Future refactorings of the Core will only take
+	 *   existing plugins in the OpenUI5 repository into account.
 	 */
 	Core.prototype.unregisterPlugin = function(oPlugin) {
 		assert(typeof oPlugin === "object", "oPlugin must be an object");
@@ -4077,6 +4208,7 @@ sap.ui.define([
 	 *            oControl the Control that should be added to the <code>UIArea</code>.
 	 * @public
 	 * @deprecated As of version 1.1, use {@link sap.ui.core.Control#placeAt Control#placeAt} instead.
+	 * @ui5-global-only
 	 */
 	sap.ui.setRoot = function(oDomRef, oControl) {
 		assert(typeof oDomRef === "string" || typeof oDomRef === "object", "oDomRef must be a string or object");

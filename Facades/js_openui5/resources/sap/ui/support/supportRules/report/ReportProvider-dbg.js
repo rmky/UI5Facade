@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -423,7 +423,7 @@ sap.ui.define(['jquery.sap.global', 'sap/ui/thirdparty/handlebars', 'sap/ui/supp
 	function openReport(oData) {
 		// Create a hidden anchor. Open window outside of the promise otherwise browsers blocks the window.open.
 		var content = '';
-		var a = jQuery('<a style="display: none;"/>');
+		var a = jQuery('<a style="display: none;"></a>');
 		a.on('click', function () {
 			var reportWindow = window.open('', '_blank');
 			jQuery(reportWindow.document).ready(function () {

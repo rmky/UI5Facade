@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -34,7 +34,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IFormContent
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -441,8 +441,8 @@ sap.ui.define([
 				};
 
 				if (!oEvent.targetTouches) {
-					jQuery(window.document).bind('mousemove', this.handleMoveCall);
-					jQuery(window.document).bind('selectstart', this.preventSelect);
+					jQuery(window.document).on('mousemove', this.handleMoveCall);
+					jQuery(window.document).on('selectstart', this.preventSelect);
 					ControlEvents.bindAnyEvent(jQuery.proxy(this.onAnyEvent, this));
 				}
 			}
@@ -484,8 +484,8 @@ sap.ui.define([
 			this.bGripMousedown = false;
 
 			if (this.handleMoveCall) {
-				jQuery(window.document).unbind('mousemove', this.handleMoveCall);
-				jQuery(window.document).unbind('selectstart', this.preventSelect);
+				jQuery(window.document).off('mousemove', this.handleMoveCall);
+				jQuery(window.document).off('selectstart', this.preventSelect);
 				ControlEvents.unbindAnyEvent(this.onAnyEvent);
 
 				if ( this.iStartLeft != ( this.getOffsetLeft(this.oMovingGrip) + this.iShiftGrip )) {

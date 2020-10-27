@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -23,7 +23,7 @@ sap.ui.define(['sap/ui/core/Control', 'sap/f/shellBar/ControlSpacerRenderer'],
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @private
@@ -39,6 +39,17 @@ sap.ui.define(['sap/ui/core/Control', 'sap/f/shellBar/ControlSpacerRenderer'],
 		},
 		renderer: ControlSpacerRenderer
 	});
+
+	ControlSpacer.prototype.setWidth = function(sWidth) {
+		// Despite using the Semantic Rendering, we need to override this setter in order to set the width immediately on the DomRef.
+		// When width of ControlSpacer is changed, sometimes there is a race condition. If OverflowToolbar's
+		// doLayout function is executed before the ControlSpacer is rerendered, a wrong width value is cached.
+		if (this.$().length) {
+			this.$().width(sWidth);
+		}
+
+		return this.setProperty("width", sWidth, true);
+	};
 
 	return ControlSpacer;
 

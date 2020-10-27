@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -973,7 +973,7 @@ sap.ui.define([
 	 * Creates key map for given data
 	 *
 	 * @param {Array} aData data which should be preprocessed
-	 * @returns {Map} map of parent and child keys
+	 * @returns {Object<string,string[]>} Map of parent and child keys
 	 *
 	 * @private
 	 */
@@ -1002,9 +1002,9 @@ sap.ui.define([
 	};
 
 	/**
-	 * Should import the complete keys hierarchy
+	 * Should import the complete keys hierarchy.
 	 *
-	 * @param {Map} mKeys Keys to add
+	 * @param {Object<string,string[]>} mKeys Keys to add
 	 *
 	 * @private
 	 */

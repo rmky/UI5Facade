@@ -1,6 +1,6 @@
 /*!
 * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
 */
 
@@ -59,12 +59,6 @@ sap.ui.define(function () {
 		return sAriaText;
 	};
 
-	MessageStripUtilities.handleMSCloseButtonInteraction = function (oEvent) {
-		if (MessageStripUtilities.isMSCloseButtonPressed(oEvent.target)) {
-			this.close();
-		}
-	};
-
 	MessageStripUtilities.isMSCloseButtonPressed = function (oTarget) {
 		return oTarget.className.indexOf(MessageStripUtilities.CLASSES.CLOSE_BUTTON) !== -1 ||
 			oTarget.parentNode.className.indexOf(MessageStripUtilities.CLASSES.CLOSE_BUTTON) !== -1;
@@ -77,7 +71,7 @@ sap.ui.define(function () {
 
 	MessageStripUtilities.getAccessibilityState = function () {
 		return {
-			role: "alert",
+			role: "note",
 			live: "assertive"
 		};
 	};

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -41,7 +41,7 @@ function(
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @private
@@ -107,8 +107,6 @@ function(
 	};
 
 	WizardProgressNavigator.TEXT = {
-		SELECTED: "WIZARD_PROG_NAV_SELECTED",
-		PROCESSED: "WIZARD_PROG_NAV_PROCESSED",
 		STEP: "WIZARD_PROG_NAV_STEP_TITLE",
 		OPTIONAL_STEP: "WIZARD_STEP_OPTIONAL_STEP_TEXT"
 	};
@@ -122,7 +120,7 @@ function(
 		this._aStepOptionalIndication = [];
 		this._oResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.m");
 		this._oActionSheet = new ActionSheet();
-		this._createAnchorNavigation();
+		this._createStepNavigation();
 	};
 
 	WizardProgressNavigator.prototype.onBeforeRendering = function () {
@@ -145,12 +143,12 @@ function(
 		this._cacheDOMElements();
 		this._updateStepZIndex();
 
-		this._updateAnchorNavigation(iZeroBasedActiveStep);
+		this._updateStepNavigation(iZeroBasedActiveStep);
 		this._updateStepActiveAttribute(iZeroBasedActiveStep);
-		this._removeAnchorAriaDisabledAttribute(iZeroBasedActiveStep);
+		this._removeStepAriaDisabledAttribute(iZeroBasedActiveStep);
 
 		this._updateStepCurrentAttribute(iZeroBasedCurrentStep);
-		this._updateAnchorAriaLabelAttribute(iZeroBasedCurrentStep);
+		this._updateStepAriaLabelAttribute(iZeroBasedCurrentStep);
 
 		this._updateOpenSteps();
 		ResizeHandler.register(this.getDomRef(), this._updateOpenSteps.bind(this));
@@ -173,9 +171,7 @@ function(
 			return this._showActionSheet(oEvent.target, false);
 		}
 
-		if (!this._isAnchor(oEvent.target) ||
-			!this._isOpenStep(oEvent.target) ||
-			!this._isActiveStep(this._getStepNumber(oEvent.target))) {
+		if (!this._isOpenStep(oEvent.target) || !this._isActiveStep(this._getStepNumber(oEvent.target))) {
 			return;
 		}
 
@@ -185,7 +181,7 @@ function(
 
 	WizardProgressNavigator.prototype.onsapspace = function (oEvent) {
 		if (this._onEnter) {
-			this._onEnter(oEvent, this._oAnchorNavigation.getFocusedIndex());
+			this._onEnter(oEvent, this._oStepNavigation.getFocusedIndex());
 		}
 		this.ontap(oEvent);
 	};
@@ -195,9 +191,9 @@ function(
 	WizardProgressNavigator.prototype.exit = function () {
 		ResizeHandler.deregisterAllForControl(this.getId());
 
-		this.removeDelegate(this._oAnchorNavigation);
-		this._oAnchorNavigation.destroy();
-		this._oAnchorNavigation = null;
+		this.removeDelegate(this._oStepNavigation);
+		this._oStepNavigation.destroy();
+		this._oStepNavigation = null;
 
 		this._oActionSheet.destroy();
 		this._oActionSheet = null;
@@ -275,8 +271,8 @@ function(
 		this._updateCurrentStep(iIndex, this._iCurrentStep);
 
 		this._updateStepActiveAttribute(iIndex - 1, this._iActiveStep - 1);
-		this._addAnchorAriaDisabledAttribute(iIndex - 1);
-		this._updateAnchorNavigation(iIndex - 1);
+		this._addStepAriaDisabledAttribute(iIndex - 1);
+		this._updateStepNavigation(iIndex - 1);
 
 		this._iCurrentStep = iIndex;
 		this._iActiveStep = iIndex;
@@ -290,26 +286,26 @@ function(
 
 
 	/**
-	 * Creates an ItemNavigation delegate for navigating between active anchors.
+	 * Creates an ItemNavigation delegate for navigating between active steps.
 	 * @private
 	 */
-	WizardProgressNavigator.prototype._createAnchorNavigation = function () {
+	WizardProgressNavigator.prototype._createStepNavigation = function () {
 		var that = this;
-		this._oAnchorNavigation = new ItemNavigation();
-		this._oAnchorNavigation.setCycling(false);
-		this._oAnchorNavigation.setDisabledModifiers({
+		this._oStepNavigation = new ItemNavigation();
+		this._oStepNavigation.setCycling(false);
+		this._oStepNavigation.setDisabledModifiers({
 			sapnext: ["alt"],
 			sapprevious: ["alt"]
 		});
-		this._oAnchorNavigation.attachEvent("AfterFocus", function (params) {
+		this._oStepNavigation.attachEvent("AfterFocus", function (params) {
 			var oEvent = params.mParameters.oEvent;
-			if (!oEvent || !oEvent.relatedTarget || jQuery(oEvent.relatedTarget).hasClass(WizardProgressNavigatorRenderer.CLASSES.ANCHOR)) {
+			if (!oEvent || !oEvent.relatedTarget || jQuery(oEvent.relatedTarget).hasClass(WizardProgressNavigatorRenderer.CLASSES.STEP)) {
 				return;
 			}
 
-			that._oAnchorNavigation.focusItem(that._iCurrentStep - 1);
+			that._oStepNavigation.focusItem(that._iCurrentStep - 1);
 		});
-		this.addDelegate(this._oAnchorNavigation);
+		this.addDelegate(this._oStepNavigation);
 	};
 
 	/**
@@ -345,24 +341,24 @@ function(
 	};
 
 	/**
-	 * Allows focus on active anchors.
-	 * @param  {number} iIndex The index of the last focusable anchor. Zero-based.
+	 * Allows focus on active steps.
+	 * @param  {number} iIndex The index of the last focusable step. Zero-based.
 	 * @private
 	 */
-	WizardProgressNavigator.prototype._updateAnchorNavigation = function (iIndex) {
+	WizardProgressNavigator.prototype._updateStepNavigation = function (iIndex) {
 		var oNavDomRef = this.getDomRef(),
-			aFocusableAnchors = [];
+			aFocusableSteps = [];
 
 		for (var i = 0; i <= iIndex; i++) {
 			if (this._aCachedSteps[i]) {
-				aFocusableAnchors.push(this._aCachedSteps[i].children[0]);
+				aFocusableSteps.push(this._aCachedSteps[i]);
 			}
 		}
 
-		this._oAnchorNavigation.setRootDomRef(oNavDomRef);
-		this._oAnchorNavigation.setItemDomRefs(aFocusableAnchors);
-		this._oAnchorNavigation.setPageSize(iIndex);
-		this._oAnchorNavigation.setFocusedIndex(iIndex);
+		this._oStepNavigation.setRootDomRef(oNavDomRef);
+		this._oStepNavigation.setItemDomRefs(aFocusableSteps);
+		this._oStepNavigation.setPageSize(iIndex);
+		this._oStepNavigation.setFocusedIndex(iIndex);
 	};
 
 	/**
@@ -403,53 +399,49 @@ function(
 	};
 
 	/**
-	 * Adds aria-disabled attribute to all anchors after the specified index.
+	 * Adds aria-disabled attribute to all steps after the specified index.
 	 * @param {number} iIndex The index from which to add aria-disabled=true. Zero-based.
 	 * @private
 	 */
-	WizardProgressNavigator.prototype._addAnchorAriaDisabledAttribute = function (iIndex) {
+	WizardProgressNavigator.prototype._addStepAriaDisabledAttribute = function (iIndex) {
 		var iStepsLength = this._aCachedSteps.length,
-			oAnchor;
+			oStep;
 
 		for (var i = iIndex + 1; i < iStepsLength; i++) {
-			oAnchor = this._aCachedSteps[i].children[0];
+			oStep = this._aCachedSteps[i];
 
-			oAnchor.setAttribute(WizardProgressNavigatorRenderer.ATTRIBUTES.ARIA_DISABLED, true);
-			oAnchor.removeAttribute(WizardProgressNavigatorRenderer.ATTRIBUTES.ARIA_LABEL);
+			oStep.setAttribute(WizardProgressNavigatorRenderer.ATTRIBUTES.ARIA_DISABLED, true);
 		}
 	};
 
 	/**
-	 * Removes the anchor aria-disabled attribute from the DOM structure of the Control.
+	 * Removes the steps aria-disabled attribute from the DOM structure of the Control.
 	 * @param {number} iIndex The index at which the attribute should be removed. Zero-based.
 	 * @private
 	 */
-	WizardProgressNavigator.prototype._removeAnchorAriaDisabledAttribute = function (iIndex) {
+	WizardProgressNavigator.prototype._removeStepAriaDisabledAttribute = function (iIndex) {
 		if (this._aCachedSteps[iIndex]) {
-			this._aCachedSteps[iIndex].children[0]
+			this._aCachedSteps[iIndex]
 				.removeAttribute(WizardProgressNavigatorRenderer.ATTRIBUTES.ARIA_DISABLED);
 		}
 	};
 
 	/**
-	 * Updates the anchor aria-label attribute in the DOM structure of the Control.
+	 * Updates the step aria-current attribute in the DOM structure of the Control.
 	 * @param {number} iNewIndex The new index at which the attribute should be set. Zero-based.
 	 * @param {number} iOldIndex The old index at which the attribute was set. Zero-based.
 	 * @private
 	 */
-	WizardProgressNavigator.prototype._updateAnchorAriaLabelAttribute = function (iNewIndex, iOldIndex) {
+	WizardProgressNavigator.prototype._updateStepAriaLabelAttribute = function (iNewIndex, iOldIndex) {
 		if (iOldIndex !== undefined && this._aCachedSteps[iOldIndex]) {
-			this._aCachedSteps[iOldIndex].children[0]
-				.setAttribute(
-					WizardProgressNavigatorRenderer.ATTRIBUTES.ARIA_LABEL,
-					this._oResourceBundle.getText(WizardProgressNavigator.TEXT.PROCESSED));
+			this._aCachedSteps[iOldIndex]
+				.removeAttribute(WizardProgressNavigatorRenderer.ATTRIBUTES.ARIA_CURRENT);
 		}
 
 		if (this._aCachedSteps[iNewIndex]) {
-			this._aCachedSteps[iNewIndex].children[0]
+			this._aCachedSteps[iNewIndex]
 				.setAttribute(
-					WizardProgressNavigatorRenderer.ATTRIBUTES.ARIA_LABEL,
-					this._oResourceBundle.getText(WizardProgressNavigator.TEXT.SELECTED));
+					WizardProgressNavigatorRenderer.ATTRIBUTES.ARIA_CURRENT, "step");
 		}
 
 	};
@@ -486,8 +478,8 @@ function(
 			iZeroBasedOldStep = (iOldStep || this._iActiveStep) - 1;
 
 		this._iActiveStep = iNewStep;
-		this._updateAnchorNavigation(iZeroBasedNewStep);
-		this._removeAnchorAriaDisabledAttribute(iZeroBasedNewStep);
+		this._updateStepNavigation(iZeroBasedNewStep);
+		this._removeStepAriaDisabledAttribute(iZeroBasedNewStep);
 		this._updateStepActiveAttribute(iZeroBasedNewStep, iZeroBasedOldStep);
 	};
 
@@ -506,7 +498,7 @@ function(
 		this._updateStepZIndex();
 		this._updateOpenSteps();
 		this._updateStepCurrentAttribute(iZeroBasedNewStep, iZeroBasedOldStep);
-		this._updateAnchorAriaLabelAttribute(iZeroBasedNewStep, iZeroBasedOldStep);
+		this._updateStepAriaLabelAttribute(iZeroBasedNewStep, iZeroBasedOldStep);
 
 		return this;
 	};
@@ -528,6 +520,10 @@ function(
 			iStepsToShow = this.getStepTitles().length ?
 				Math.floor(iWidth / WizardProgressNavigator.CONSTANTS.MIN_STEP_WIDTH_WITH_TITLE) :
 				Math.floor(iWidth / WizardProgressNavigator.CONSTANTS.MIN_STEP_WIDTH_NO_TITLE);
+
+		if (!this._aCachedSteps) {
+			return;
+		}
 
 		[].forEach.call(this._aCachedSteps, function (step) {
 			step.setAttribute(WizardProgressNavigatorRenderer.ATTRIBUTES.OPEN_STEP, false);
@@ -626,7 +622,7 @@ function(
 		this._oActionSheet.removeAllButtons();
 		for (var i = iFromStep; i < iToStep; i++) {
 			sIcon = this.getStepIcons()[i];
-			sTitle = this._aCachedSteps[i].childNodes[0].getAttribute("title");
+			sTitle = this._aCachedSteps[i].getAttribute("aria-roledescription");
 
 			this._oActionSheet.addButton(new Button({
 				width: "200px",
@@ -641,16 +637,6 @@ function(
 		}
 
 		this._oActionSheet.openBy(oDomTarget);
-	};
-
-	/**
-	 * Checks whether the argument has sapMWizardProgressNavAnchor class present.
-	 * @param {HTMLElement} oDomTarget The target of the click/tap event.
-	 * @returns {boolean} Returns true when sapMWizardProgressNavAnchor class is present, false otherwise.
-	 * @private
-	 */
-	WizardProgressNavigator.prototype._isAnchor = function (oDomTarget) {
-		return oDomTarget.className.indexOf(WizardProgressNavigatorRenderer.CLASSES.ANCHOR) !== -1;
 	};
 
 	/**
@@ -682,12 +668,12 @@ function(
 
 	/**
 	 * Extracts the step attribute from the argument.
-	 * @param {HTMLElement} oDomAnchor The DOM element which represents the anchor tag in each step.
+	 * @param {HTMLElement} oDomStep The DOM element which represents the list item tag in each step.
 	 * @returns {number} Returns parsed step number. Non-zero based.
 	 * @private
 	 */
-	WizardProgressNavigator.prototype._getStepNumber = function (oDomAnchor) {
-		var $iStepNumber = jQuery(oDomAnchor)
+	WizardProgressNavigator.prototype._getStepNumber = function (oDomStep) {
+		var $iStepNumber = jQuery(oDomStep)
 						.closest("." + WizardProgressNavigatorRenderer.CLASSES.STEP)
 						.attr(WizardProgressNavigatorRenderer.ATTRIBUTES.STEP);
 

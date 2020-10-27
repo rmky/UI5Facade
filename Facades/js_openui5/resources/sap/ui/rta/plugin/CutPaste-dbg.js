@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -31,7 +31,7 @@ function(
 	 * @extends sap.ui.dt.plugin.CutPaste
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @private
@@ -172,19 +172,7 @@ function(
 	 */
 	CutPaste.prototype.getMenuItems = function (aElementOverlays) {
 		var aMenuItems = [];
-		var oCutMenuItem = {
-			id: 'CTX_CUT',
-			text: sap.ui.getCore().getLibraryResourceBundle('sap.ui.rta').getText('CTX_CUT'),
-			handler: function (aElementOverlays) {
-				return this.cut(aElementOverlays[0]);
-			}.bind(this),
-			enabled: function (aElementOverlays) {
-				return aElementOverlays.length === 1;
-			},
-			rank: 70,
-			icon: "sap-icon://scissors"
-		};
-		var oPasteMenuItem = {
+		var oPasteMenuItem = this.enhanceItemWithResponsibleElement({
 			id: 'CTX_PASTE',
 			text: sap.ui.getCore().getLibraryResourceBundle('sap.ui.rta').getText('CTX_PASTE'),
 			handler: function (aElementOverlays) {
@@ -195,9 +183,22 @@ function(
 			}.bind(this),
 			rank: 80,
 			icon: "sap-icon://paste"
-		};
+		}, aElementOverlays, ["move"]);
+		var aResponsibleElementOverlays = oPasteMenuItem.responsible || aElementOverlays;
 
-		if (this.isAvailable(aElementOverlays)) {
+		if (this.isAvailable(aResponsibleElementOverlays)) {
+			var oCutMenuItem = this.enhanceItemWithResponsibleElement({
+				id: 'CTX_CUT',
+				text: sap.ui.getCore().getLibraryResourceBundle('sap.ui.rta').getText('CTX_CUT'),
+				handler: function (aElementOverlays) {
+					return this.cut(aElementOverlays[0]);
+				}.bind(this),
+				enabled: function (aElementOverlays) {
+					return aElementOverlays.length === 1;
+				},
+				rank: 70,
+				icon: "sap-icon://scissors"
+			}, aElementOverlays, ["move"]);
 			aMenuItems.push(oCutMenuItem, oPasteMenuItem);
 			return aMenuItems;
 		}
@@ -211,4 +212,4 @@ function(
 	};
 
 	return CutPaste;
-}, /* bExport= */ true);
+});

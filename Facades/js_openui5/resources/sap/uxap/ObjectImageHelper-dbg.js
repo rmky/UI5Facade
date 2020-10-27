@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -76,26 +76,27 @@ sap.ui.define([
 		}
 
 		if (oHeader.getObjectImageURI() || oHeader.getShowPlaceholder()) {
-			oRm.write("<span ");
-			oRm.addClass(sBaseClass);
-			oRm.addClass('sapUxAPObjectPageHeaderObjectImage-' + sObjectImageShape);
+			oRm.openStart("span")
+				.class(sBaseClass)
+				.class('sapUxAPObjectPageHeaderObjectImage-' + sObjectImageShape);
+
 			if (bIsObjectIconAlwaysVisible) {
-				oRm.addClass('sapUxAPObjectPageHeaderObjectImageForce');
+				oRm.class('sapUxAPObjectPageHeaderObjectImageForce');
 			}
-			oRm.writeClasses();
-			oRm.write(">");
+			oRm.openEnd();
 
 			if (bAddSubContainer) { // add subContainer
-				oRm.write("<span class='sapUxAPObjectPageHeaderObjectImageContainerSub'>");
+				oRm.openStart("span")
+					.class("sapUxAPObjectPageHeaderObjectImageContainerSub")
+					.openEnd();
 			}
 
 			if (bAddIconContainer) {
 				ObjectImageHelper.updateAvatarInstance(oObjectImage, sObjectImageShape, sObjectImageBackgroundColor);
-				oRm.write("<div");
-				oRm.addClass("sapUxAPObjectPageHeaderObjectImage");
-				oRm.addClass("sapUxAPObjectPageHeaderPlaceholder");
-				oRm.writeClasses();
-				oRm.write(">");
+				oRm.openStart("div")
+					.class("sapUxAPObjectPageHeaderObjectImage")
+					.class("sapUxAPObjectPageHeaderPlaceholder")
+					.openEnd();
 			}
 
 			if (oHeader.getObjectImageURI()) {
@@ -104,13 +105,13 @@ sap.ui.define([
 			ObjectImageHelper._renderPlaceholder(oRm, oPlaceholder, bShowPlaceholder);
 
 			if (bAddIconContainer) {
-				oRm.write("</div>"); // close icon container
+				oRm.close("div"); // close icon container
 			}
 
 			if (bAddSubContainer) { // close subContainer
-				oRm.write("</span>");
+				oRm.close("span");
 			}
-			oRm.write("</span>");
+			oRm.close("span");
 		}
 	};
 
@@ -125,18 +126,19 @@ sap.ui.define([
 	 * @private
 	 */
 	ObjectImageHelper._renderPlaceholder = function (oRm, oPlaceholder, bVisible) {
-		oRm.write("<div");
-		oRm.addClass('sapUxAPObjectPageHeaderPlaceholder');
-		oRm.addClass('sapUxAPObjectPageHeaderObjectImage');
+		oRm.openStart("div")
+			.class('sapUxAPObjectPageHeaderPlaceholder')
+			.class('sapUxAPObjectPageHeaderObjectImage');
+
 		if (!bVisible) {
-			oRm.addClass('sapUxAPHidePlaceholder');
+			oRm.class('sapUxAPHidePlaceholder');
 		}
-		oRm.writeClasses();
-		oRm.write(">");
+
+		oRm.openEnd();
 		oRm.renderControl(oPlaceholder);
-		oRm.write("</div>");
+		oRm.close("div");
 	};
 
 	return ObjectImageHelper;
 
-}, /* bExport= */ false);
+});

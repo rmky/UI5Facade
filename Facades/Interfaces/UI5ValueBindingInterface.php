@@ -68,7 +68,7 @@ interface UI5ValueBindingInterface {
      *
      * @return bool
      */
-    public function getValueBindingDisabled() : bool;
+    public function isValueBindingDisabled() : bool;
     
     /**
      *

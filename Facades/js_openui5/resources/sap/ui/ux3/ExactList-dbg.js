@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -62,7 +62,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -131,26 +131,6 @@ sap.ui.define([
 			}
 		}
 	}});
-
-
-	/**
-	 * Constructor for a new ExactList.
-	 *
-	 * @param {string} [sId] id for the new control, generated automatically if no id is given
-	 * @param {object} [mSettings] initial settings for the new control
-	 *
-	 * @class
-	 * Internal sub-control of the ExactBrowser. The control is not intended to be used stand alone. For this purpose, the ExactBrowser control can be used.
-	 * @extends sap.ui.core.Control
-	 *
-	 * @author SAP SE
-	 * @version 1.15.1-SNAPSHOT
-	 *
-	 * @constructor
-	 * @private
-	 * @name sap.ui.ux3.ExactList
-	 */
-
 
 
 	//Private extension of the ListBox control
@@ -372,7 +352,7 @@ sap.ui.define([
 			this.onCheckScrollbar();
 			this.$("lst").css("bottom", getScrollbarSize().height + "px");
 
-			this.$("cntnt").bind("scroll", function(oEvent){
+			this.$("cntnt").on("scroll", function(oEvent){
 				if (oEvent.target.id === that.getId() + "-cntnt" && oEvent.target.scrollTop != 0) {
 					oEvent.target.scrollTop = 0;
 				}
@@ -624,10 +604,10 @@ sap.ui.define([
 					"<div id=\"" + this.getId() + "-ghost\" class=\"sapUiUx3ExactLstRSzGhost\" style =\" z-index:" + Popup.getNextZIndex() + "\" ></div>");
 
 			// Fix for IE text selection while dragging
-			jQuery(document.body).bind("selectstart." + this.getId(), onStartSelect);
+			jQuery(document.body).on("selectstart." + this.getId(), onStartSelect);
 
 			var jHandle = Device.browser.msie ? jQuery(document.body) : this.$("ghost");
-			jHandle.bind("mouseup." + this.getId(), jQuery.proxy(onRelease, this)).bind("mousemove." + this.getId(), jQuery.proxy(onMove, this));
+			jHandle.on("mouseup." + this.getId(), jQuery.proxy(onRelease, this)).on("mousemove." + this.getId(), jQuery.proxy(onMove, this));
 
 			this._iStartDragX = oEvent.pageX;
 			this._iStartWidth  = this.$("lst").width();
@@ -1097,7 +1077,7 @@ sap.ui.define([
 						oList.getFocusDomRef().focus();
 						//Bind the event handlers for closing and control events
 						ControlEvents.bindAnyEvent(oList._closeHandle);
-						jRef.bind(ControlEvents.events.join(" "), fPopupEventHandle);
+						jRef.on(ControlEvents.events.join(" "), fPopupEventHandle);
 					});
 				};
 				oList._oPopup.close = function(bSkipFocus){
@@ -1106,7 +1086,7 @@ sap.ui.define([
 					animate(jListContRef, false, oList.__sOldHeight, function(jRef){
 						//Unbind the event handlers for closing and control events
 						ControlEvents.unbindAnyEvent(oList._closeHandle);
-						jRef.unbind(ControlEvents.events.join(" "), fPopupEventHandle);
+						jRef.off(ControlEvents.events.join(" "), fPopupEventHandle);
 						//Switch the expand icon
 						jListContRef.removeClass("sapUiUx3ExactLstExpanded");
 						oList.$("exp").html(ExactListRenderer.getExpanderSymbol(false, false));
@@ -1180,7 +1160,7 @@ sap.ui.define([
 	//Handles the MouseUp event during resizing
 	//@see sap.ui.ux3.ExactList.prototype.onmousedown
 	var onRelease = function(oEvent){
-		jQuery(document.body).unbind("selectstart." + this.getId()).unbind("mouseup." + this.getId()).unbind("mousemove." + this.getId());
+		jQuery(document.body).off("selectstart." + this.getId()).off("mouseup." + this.getId()).off("mousemove." + this.getId());
 		this.$("ghost").remove();
 		this.$("rsz").removeClass("sapUiUx3ExactLstRSzDrag");
 		this._iStartWidth = undefined;

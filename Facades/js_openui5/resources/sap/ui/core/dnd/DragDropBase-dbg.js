@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -37,7 +37,7 @@ sap.ui.define(['../Element', '../library', 'sap/base/Log', './DragAndDrop'],
 	 *
 	 * @extends sap.ui.core.Element
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @public
 	 * @since 1.52
@@ -101,15 +101,15 @@ sap.ui.define(['../Element', '../library', 'sap/base/Log', './DragAndDrop'],
 		return true;
 	};
 
-	/**
-	 * Enabled property should only invalidate for DragInfos
+	/*
+	 * Enabled property should only invalidate for DragInfos.
 	 */
 	DragDropBase.prototype.setEnabled = function(bEnabled) {
 		return this.setProperty("enabled", bEnabled, !this.isA("sap.ui.core.dnd.IDragInfo"));
 	};
 
-	/**
-	 * Suppress invalidation when the invalidate attribute of the property metadata is "false"
+	/*
+	 * Suppress invalidation when the invalidate attribute of the property metadata is "false".
 	 */
 	DragDropBase.prototype.setProperty = function(sProperty, vValue, bSuppressInvalidate) {
 		bSuppressInvalidate = bSuppressInvalidate || (this.getMetadata().getProperty(sProperty).appData || {}).invalidate === false;

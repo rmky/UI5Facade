@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -43,7 +43,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -92,7 +92,7 @@ sap.ui.define([
 				visible: {type: "boolean", group: "Appearance", defaultValue: true},
 
 				/**
-				 * The type of the transition/animation to apply when "to()" is called without defining a transition type to use. The default is "slide". Other options are: "fade", "flip" and "show" - and the names of any registered custom transitions.
+				 * The type of the transition/animation to apply when "to()" is called without defining a transition type to use. The default is "slide". Other options are: "baseSlide", "fade", "flip" and "show" - and the names of any registered custom transitions.
 				 * @since 1.7.1
 				 */
 				defaultTransitionName: {type: "string", group: "Appearance", defaultValue: "slide"}
@@ -252,6 +252,14 @@ sap.ui.define([
 		},
 		fnHasParent = function(oControl) {
 			return !!(oControl && oControl.getParent());
+		},
+		fnSetAnimationDirection = function (oPage, sDirection) {
+			if (fnHasParent(oPage)) {
+				oPage.$().css({
+					'-webkit-animation-direction': sDirection,
+					'animation-direction':  sDirection
+				});
+			}
 		};
 
 	NavContainer.TransitionDirection = {
@@ -482,9 +490,9 @@ sap.ui.define([
 	 *
 	 * @param {string} pageId
 	 *         The ID of the control/page/screen which is inserted into the history stack. The respective control must be aggregated by the NavContainer, otherwise this will cause an error.
-	 * @param {string} transitionName
+	 * @param {string} [transitionName=slide]
 	 *         The type of the transition/animation which would have been used to navigate from the (inserted) previous page to the current page. When navigating back, the inverse animation will be applied.
-	 *         This parameter can be omitted; then the default is "slide" (horizontal movement from the right).
+	 *         Options are "slide" (horizontal movement from the right), "baseSlide", "fade", "flip", and "show" and the names of any registered custom transitions.
 	 * @param {object} data This optional object can carry any payload data which would have been given to the inserted previous page if the user would have done a normal forward navigation to it.
 	 * @public
 	 * @since 1.16.1
@@ -643,15 +651,15 @@ sap.ui.define([
 	 *
 	 * Note that any modifications to the target page (like setting its title, or anything else that could cause a re-rendering) should be done BEFORE calling to(), in order to avoid unwanted side effects, e.g. related to the page animation.
 	 *
-	 * Available transitions currently include "slide" (default), "fade", "flip", and "show". None of these is currently making use of any given transitionParameters.
+	 * Available transitions currently include "slide" (default), "baseSlide",  "fade", "flip", and "show". None of these is currently making use of any given transitionParameters.
 	 *
 	 * Calling this navigation method triggers first the (cancelable) "navigate" event on the NavContainer, then the "beforeHide" pseudo event on the source page and "beforeFirstShow" (if applicable) and"beforeShow" on the target page. Later - after the transition has completed - the "afterShow" pseudo event is triggered on the target page and "afterHide" on the page which has been left. The given data object is available in the "beforeFirstShow", "beforeShow" and "afterShow" event object as "data" property.
 	 *
 	 * @param {string} pageId
 	 *         The screen to which drilldown should happen. The ID or the control itself can be given.
-	 * @param {string} transitionName
-	 *         The type of the transition/animation to apply. This parameter can be omitted; then the default is "slide" (horizontal movement from the right).
-	 *         Other options are: "fade", "flip", and "show" and the names of any registered custom transitions.
+	 * @param {string} [transitionName=slide]
+	 *         The type of the transition/animation to apply. Options are "slide" (horizontal movement from the right), "baseSlide", "fade", "flip", and "show"
+	 *         and the names of any registered custom transitions.
 	 *
 	 *         None of the standard transitions is currently making use of any given transition parameters.
 	 * @param {object} data
@@ -667,7 +675,7 @@ sap.ui.define([
 	 *         For a proper parameter order, the "data" parameter must be given when the "transitionParameters" parameter is used. (it can be given as "null")
 	 *
 	 *         NOTE: it depends on the transition function how the object should be structured and which parameters are actually used to influence the transition.
-	 *         The "show", "slide" and "fade" transitions do not use any parameter.
+	 *         The "show", "slide", "baseSlide" and "fade" transitions do not use any parameter.
 	 * @public
 	 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 	 * @returns {sap.m.NavContainer} The <code>sap.m.NavContainer</code> instance
@@ -1141,7 +1149,7 @@ sap.ui.define([
 
 
 		window.setTimeout(function () {
-			oFromPage.$().bind("webkitTransitionEnd transitionend", that._fadeOutAnimationEnd.bind(that));
+			oFromPage.$().on("webkitTransitionEnd transitionend", that._fadeOutAnimationEnd.bind(that));
 
 			that.bTransition1EndPending = true;
 
@@ -1166,7 +1174,7 @@ sap.ui.define([
 			return; //since we have more than one transition property, we should not execute the animation end more than once.
 		}
 
-		jQuery(oFromPage.$()).unbind("webkitTransitionEnd transitionend");
+		jQuery(oFromPage.$()).off("webkitTransitionEnd transitionend");
 
 		oFromPage
 			.removeStyleClass("sapMNavItemSlideLeft")
@@ -1181,7 +1189,7 @@ sap.ui.define([
 
 
 		window.setTimeout(function () {
-			oToPage.$().bind("webkitTransitionEnd transitionend", that._fadeInAnimationEnd.bind(that));
+			oToPage.$().on("webkitTransitionEnd transitionend", that._fadeInAnimationEnd.bind(that));
 
 			that.bTransition2EndPending = true;
 
@@ -1212,7 +1220,7 @@ sap.ui.define([
 			oFromPage.removeStyleClass("sapMNavItemFading").removeStyleClass("sapMNavItemTransparent");
 		}
 
-		jQuery(oToPage.$()).unbind("webkitTransitionEnd transitionend");
+		jQuery(oToPage.$()).off("webkitTransitionEnd transitionend");
 
 		if (fnHasParent(oToPage)) {
 			oToPage
@@ -1224,6 +1232,63 @@ sap.ui.define([
 
 		// notify the NavContainer that the animation is complete
 		this.fCallback();
+	};
+
+	/**
+	 * Applying slide animation considering direction
+	 * @param {object} oFromPage The container navigating from
+	 * @param {object} oToPage The container navigating to
+	 * @param {function} fCallback The callback function called at the end of the animations
+	 * @private
+	 */
+	NavContainer.prototype._baseSlideAnimation = function(oFromPage, oToPage, fCallback /*, oTransitionParameters is unused */) {
+		var bFirstSlideDone = false,
+			bTransitionEndPending = true,
+			bIsReverse = this._sTransitionDirection === NavContainer.TransitionDirection.BACK,
+			sAnimationDirection = bIsReverse ? "reverse" : "normal",
+			sToPageClass = bIsReverse ? "sapMNavItemSlideCenterToLeft" : "sapMNavItemSlideRightToCenter",
+			sFromPageClass = !bIsReverse ? "sapMNavItemSlideCenterToLeft" : "sapMNavItemSlideRightToCenter",
+			fAfterAnimation = function () {
+				jQuery(this).off("webkitAnimationEnd animationend");
+
+				if (!bFirstSlideDone) {
+					return (bFirstSlideDone = true);
+				}
+
+				bTransitionEndPending = false;
+
+				// remove direction to avoid collision with other animations
+				fnSetAnimationDirection(oToPage, "");
+				fnSetAnimationDirection(oFromPage, "");
+
+				// remove animation classes, so they could be trigger again later
+				if (fnHasParent(oToPage)) {
+					oToPage.removeStyleClass(sToPageClass);
+				}
+
+				if (fnHasParent(oFromPage)) {
+					oFromPage.removeStyleClass(sFromPageClass).addStyleClass("sapMNavItemHidden");
+				}
+
+				fCallback();
+			};
+
+		oFromPage.$().on("webkitAnimationEnd animationend", fAfterAnimation);
+		oToPage.$().on("webkitAnimationEnd animationend", fAfterAnimation);
+
+		fnSetAnimationDirection(oToPage, sAnimationDirection);
+		fnSetAnimationDirection(oFromPage, sAnimationDirection);
+
+		// trigger animation
+		oFromPage.addStyleClass(sFromPageClass);
+		oToPage.addStyleClass(sToPageClass).removeStyleClass("sapMNavItemHidden");
+
+		window.setTimeout(function () { // in case rerendering prevented the fAfterAnimation call
+			if (bTransitionEndPending) {
+				bFirstSlideDone = true;
+				fAfterAnimation.apply(oFromPage.$().add(oToPage.$()));
+			}
+		}, fnGetDelay(400));
 	};
 
 	NavContainer.transitions = NavContainer.transitions || {}; // make sure the object exists
@@ -1245,6 +1310,14 @@ sap.ui.define([
 		}
 	};
 
+
+	//*** BASE SLIDE Transition ***
+
+	NavContainer.transitions["baseSlide"] = {
+		to: NavContainer.prototype._baseSlideAnimation,
+
+		back: NavContainer.prototype._baseSlideAnimation
+	};
 
 	//*** SLIDE Transition ***
 
@@ -1285,7 +1358,7 @@ sap.ui.define([
 					var bTransitionEndPending = true;
 					var fAfterTransition = null; // make Eclipse aware that this variable is defined
 					fAfterTransition = function () {
-						jQuery(this).unbind("webkitTransitionEnd transitionend");
+						jQuery(this).off("webkitTransitionEnd transitionend");
 						if (!bOneTransitionFinished) {
 							// the first one of both transitions finished
 							bOneTransitionFinished = true;
@@ -1309,8 +1382,8 @@ sap.ui.define([
 						}
 					};
 
-					oFromPage.$().bind("webkitTransitionEnd transitionend", fAfterTransition);
-					oToPage.$().bind("webkitTransitionEnd transitionend", fAfterTransition);
+					oFromPage.$().on("webkitTransitionEnd transitionend", fAfterTransition);
+					oToPage.$().on("webkitTransitionEnd transitionend", fAfterTransition);
 
 					// set the new style classes that represent the end state (and thus start the transition)
 					oToPage.addStyleClass("sapMNavItemFlipping").removeStyleClass("sapMNavItemFlipNext");
@@ -1343,7 +1416,7 @@ sap.ui.define([
 				var bTransitionEndPending = true;
 				var fAfterTransition = null; // make Eclipse aware that this variable is defined
 				fAfterTransition = function () {
-					jQuery(this).unbind("webkitTransitionEnd transitionend");
+					jQuery(this).off("webkitTransitionEnd transitionend");
 					if (!bOneTransitionFinished) {
 						// the first one of both transitions finished
 						bOneTransitionFinished = true;
@@ -1367,8 +1440,8 @@ sap.ui.define([
 					}
 				};
 
-				oFromPage.$().bind("webkitTransitionEnd transitionend", fAfterTransition);
-				oToPage.$().bind("webkitTransitionEnd transitionend", fAfterTransition);
+				oFromPage.$().on("webkitTransitionEnd transitionend", fAfterTransition);
+				oToPage.$().on("webkitTransitionEnd transitionend", fAfterTransition);
 
 				// set the new style classes that represent the end state (and thus start the transition)
 				oToPage.addStyleClass("sapMNavItemFlipping").removeStyleClass("sapMNavItemFlipPrevious"); // transition from left position to normal/center position starts now
@@ -1407,7 +1480,7 @@ sap.ui.define([
 					var bTransitionEndPending = true;
 					var fAfterTransition = null; // make Eclipse aware that this variable is defined
 					fAfterTransition = function () {
-						jQuery(this).unbind("webkitAnimationEnd animationend");
+						jQuery(this).off("webkitAnimationEnd animationend");
 						if (!bOneTransitionFinished) {
 							// the first one of both transitions finished
 							bOneTransitionFinished = true;
@@ -1431,8 +1504,8 @@ sap.ui.define([
 						}
 					};
 
-					oFromPage.$().bind("webkitAnimationEnd animationend", fAfterTransition);
-					oToPage.$().bind("webkitAnimationEnd animationend", fAfterTransition);
+					oFromPage.$().on("webkitAnimationEnd animationend", fAfterTransition);
+					oToPage.$().on("webkitAnimationEnd animationend", fAfterTransition);
 
 					// set the new style classes that represent the end state (and thus start the transition)
 					oToPage.addStyleClass("sapMNavItemDooring");
@@ -1465,7 +1538,7 @@ sap.ui.define([
 				var bTransitionEndPending = true;
 				var fAfterTransition = null; // make Eclipse aware that this variable is defined
 				fAfterTransition = function () {
-					jQuery(this).unbind("webkitAnimationEnd animationend");
+					jQuery(this).off("webkitAnimationEnd animationend");
 					if (!bOneTransitionFinished) {
 						// the first one of both transitions finished
 						bOneTransitionFinished = true;
@@ -1489,8 +1562,8 @@ sap.ui.define([
 					}
 				};
 
-				oFromPage.$().bind("webkitAnimationEnd animationend", fAfterTransition);
-				oToPage.$().bind("webkitAnimationEnd animationend", fAfterTransition);
+				oFromPage.$().on("webkitAnimationEnd animationend", fAfterTransition);
+				oToPage.$().on("webkitAnimationEnd animationend", fAfterTransition);
 
 				// set the new style classes that represent the end state (and thus start the transition)
 				oToPage.addStyleClass("sapMNavItemDooring"); // transition from left position to normal/center position starts now
@@ -1671,16 +1744,13 @@ sap.ui.define([
 	};
 
 	NavContainer.prototype.removeAllPages = function () {
-		var aPages = this.getPages();
-		if (!aPages) {
-			return [];
-		}
+		var aPages = this.removeAllAggregation("pages");
 
 		for (var i = 0; i < aPages.length; i++) {
 			this._onPageRemoved(aPages[i]);
 		}
 
-		return this.removeAllAggregation("pages");
+		return aPages;
 	};
 
 	NavContainer.prototype.addPage = function (oPage) {

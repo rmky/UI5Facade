@@ -1,8 +1,13 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
+
+// Ensure that sap.ui.unified is loaded before the module dependencies will be required.
+// Loading it synchronously is the only compatible option and doesn't harm when sap.ui.unified
+// already has been loaded asynchronously (e.g. via a dependency declared in the manifest)
+sap.ui.getCore().loadLibrary("sap.ui.unified");
 
 // Provides control sap.ui.unified.ColorPalettePopover
 sap.ui.define([
@@ -38,7 +43,7 @@ sap.ui.define([
 		 * A thin wrapper over {@link sap.m.ColorPalette} allowing the latter to be used in a popover.
 		 *
 		 * @extends sap.ui.core.Control
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 *
 		 * @constructor
 		 * @public
@@ -93,6 +98,12 @@ sap.ui.define([
 					showMoreColorsButton: {type: "boolean", group: "Appearance", defaultValue: true},
 
 					/**
+					 * Indicates if the Recent Colors section is available
+					 * @since 1.74
+					 */
+					showRecentColorsSection: {type: "boolean", group: "Appearance", defaultValue: true},
+
+					/**
 					 * Determines the <code>displayMode</code> of the <code>ColorPicker</code> among three types - Default, Large and Simplified
 					 * @since 1.70
 					 */
@@ -106,7 +117,7 @@ sap.ui.define([
 					colorSelect: {
 						parameters: {
 							/**
-							 * The color that is returned when user chooses the "Default color" button.
+							 * The color that is returned when user chooses the "Default Color" button.
 							 */
 							"value": {type: "sap.ui.core.CSSColor"},
 							/**
@@ -117,7 +128,9 @@ sap.ui.define([
 					}
 				}
 			},
-			renderer: {}
+			renderer: {
+				apiVersion: 2
+			}
 		});
 
 		// get resource translation bundle;
@@ -134,6 +147,7 @@ sap.ui.define([
 				defaultColor: "_setDefaultColor",
 				showDefaultColorButton: "_setShowDefaultColorButton",
 				showMoreColorsButton: "_setShowMoreColorsButton",
+				showRecentColorsSection: "_setShowRecentColorsSection",
 				displayMode: "_setDisplayMode"
 			},
 			POPOVER_METHODS: {
@@ -184,6 +198,17 @@ sap.ui.define([
 		 * @ui5-metamodel This method also will be described in the UI5 (legacy) designtime metamodel
 		 */
 
+		/**
+		 * Sets a selected color for the ColorPicker control.
+		 * @param {sap.ui.core.CSSColor} color the selected color
+		 * @public
+		 * @return {sap.m.ColorPalettePopover} <code>this</code> for method chaining
+		 */
+		ColorPalettePopover.prototype.setColorPickerSelectedColor = function (color) {
+			this._getPalette().setColorPickerSelectedColor(color);
+
+			return this;
+		};
 
 		// Private methods -------------------------------------------------------------------------------------------
 		ColorPalettePopover.prototype._getPalette = function () {
@@ -283,6 +308,7 @@ sap.ui.define([
 
 			oColorPalette._setShowDefaultColorButton(this.getShowDefaultColorButton());
 			oColorPalette._setShowMoreColorsButton(this.getShowMoreColorsButton());
+			oColorPalette._setShowRecentColorsSection(this.getShowRecentColorsSection());
 
 			return oColorPalette;
 		};

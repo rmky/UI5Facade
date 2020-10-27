@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -29,7 +29,7 @@ sap.ui.define([
 	 * @class The Remove allows trigger remove operations on the overlay
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @constructor
 	 * @private
 	 * @since 1.34
@@ -88,7 +88,10 @@ sap.ui.define([
 	 * @public
 	 */
 	Remove.prototype.isEnabled = function (aElementOverlays) {
-		var oElementOverlay = aElementOverlays[0];
+		var aResponsibleElementOverlays = aElementOverlays.map(function(oElementOverlay) {
+			return this.getResponsibleElementOverlay(oElementOverlay);
+		}.bind(this));
+		var oElementOverlay = aResponsibleElementOverlays[0];
 		var oAction = this.getAction(oElementOverlay);
 		var bIsEnabled = false;
 
@@ -105,7 +108,7 @@ sap.ui.define([
 		} else {
 			bIsEnabled = true;
 		}
-		return bIsEnabled && this._canBeRemovedFromAggregation(aElementOverlays);
+		return bIsEnabled && this._canBeRemovedFromAggregation(aResponsibleElementOverlays);
 	};
 
 	/**
@@ -222,10 +225,11 @@ sap.ui.define([
 		var oNextOverlaySelection = Remove._getElementToFocus(aElementOverlays);
 
 		aElementOverlays.forEach(function(oOverlay) {
-			var oRemovedElement = oOverlay.getElement();
-			var oDesignTimeMetadata = oOverlay.getDesignTimeMetadata();
-			var sVariantManagementReference = this.getVariantManagementReference(oOverlay);
-			var sConfirmationText = this._getConfirmationText(oOverlay);
+			var oResponsibleElementOverlay = this.getResponsibleElementOverlay(oOverlay);
+			var oRemovedElement = oResponsibleElementOverlay.getElement();
+			var oDesignTimeMetadata = oResponsibleElementOverlay.getDesignTimeMetadata();
+			var sVariantManagementReference = this.getVariantManagementReference(oResponsibleElementOverlay);
+			var sConfirmationText = this._getConfirmationText(oResponsibleElementOverlay);
 
 			aPromises.push(
 				Promise.resolve()
@@ -319,4 +323,4 @@ sap.ui.define([
 	};
 
 	return Remove;
-}, /* bExport= */true);
+});

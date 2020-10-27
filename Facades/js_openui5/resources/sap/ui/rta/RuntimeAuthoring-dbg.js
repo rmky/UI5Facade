@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -31,6 +31,7 @@ sap.ui.define([
 	"sap/ui/rta/plugin/Settings",
 	"sap/ui/rta/plugin/Stretch",
 	"sap/ui/rta/plugin/ControlVariant",
+	"sap/ui/rta/plugin/iframe/AddIFrame",
 	"sap/ui/dt/plugin/ToolHooks",
 	"sap/ui/dt/plugin/ContextMenu",
 	"sap/ui/dt/plugin/TabHandling",
@@ -39,7 +40,10 @@ sap.ui.define([
 	"sap/ui/dt/ElementUtil",
 	"sap/ui/fl/Utils",
 	"sap/ui/fl/LayerUtils",
+	"sap/ui/fl/Layer",
+	"sap/ui/fl/write/api/ReloadInfoAPI",
 	"sap/ui/fl/write/api/FeaturesAPI",
+	"sap/ui/fl/write/api/VersionsAPI",
 	"sap/ui/fl/write/api/PersistenceWriteAPI",
 	"sap/m/MessageBox",
 	"sap/m/MessageToast",
@@ -57,6 +61,7 @@ sap.ui.define([
 	"sap/ui/performance/Measurement",
 	"sap/base/Log",
 	"sap/ui/events/KeyCodes",
+	"sap/ui/model/json/JSONModel",
 	"sap/ui/rta/util/validateFlexEnabled"
 ],
 function(
@@ -85,6 +90,7 @@ function(
 	SettingsPlugin,
 	StretchPlugin,
 	ControlVariantPlugin,
+	AddIFramePlugin,
 	ToolHooksPlugin,
 	ContextMenuPlugin,
 	TabHandlingPlugin,
@@ -93,7 +99,10 @@ function(
 	ElementUtil,
 	FlexUtils,
 	LayerUtils,
+	Layer,
+	ReloadInfoAPI,
 	FeaturesAPI,
+	VersionsAPI,
 	PersistenceWriteAPI,
 	MessageBox,
 	MessageToast,
@@ -111,6 +120,7 @@ function(
 	Measurement,
 	Log,
 	KeyCodes,
+	JSONModel,
 	validateFlexEnabled
 ) {
 	"use strict";
@@ -129,7 +139,7 @@ function(
 	 * @class The runtime authoring allows to adapt the fields of a running application.
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @constructor
 	 * @private
 	 * @since 1.30
@@ -137,49 +147,49 @@ function(
 	 * @experimental This class is experimental and provides only limited functionality. Also the API might be changed in future.
 	 */
 	var RuntimeAuthoring = ManagedObject.extend("sap.ui.rta.RuntimeAuthoring", {
-		metadata : {
+		metadata:{
 			// ---- control specific ----
-			library : "sap.ui.rta",
-			associations : {
+			library:"sap.ui.rta",
+			associations:{
 				/** The root control which the runtime authoring should handle. Can only be sap.ui.core.Element or sap.ui.core.UIComponent */
-				rootControl : {
-					type : "sap.ui.base.ManagedObject"
+				rootControl:{
+					type:"sap.ui.base.ManagedObject"
 				}
 			},
-			properties : {
+			properties: {
 				/** The URL which is called when the custom field dialog is opened */
-				customFieldUrl : "string",
+				customFieldUrl: "string",
 
 				/** Whether the create custom field button should be shown */
-				showCreateCustomField : "boolean",
+				showCreateCustomField: "boolean",
 
 				/** Whether the create custom field button should be shown */
-				showToolbars : {
-					type : "boolean",
-					defaultValue : true
+				showToolbars: {
+					type: "boolean",
+					defaultValue: true
 				},
 
 				/** Whether rta is triggered from a dialog button */
-				triggeredFromDialog : {
-					type : "boolean",
-					defaultValue : false
+				triggeredFromDialog: {
+					type: "boolean",
+					defaultValue: false
 				},
 
 				/** Whether the window unload dialog should be shown */
-				showWindowUnloadDialog : {
-					type : "boolean",
-					defaultValue : true
+				showWindowUnloadDialog: {
+					type: "boolean",
+					defaultValue: true
 				},
 
 				/** sap.ui.rta.command.Stack */
-				commandStack : {
-					type : "any"
+				commandStack: {
+					type: "any"
 				},
 
 				/** Map indicating plugins in to be loaded or in use by RuntimeAuthoring and DesignTime */
-				plugins : {
-					type : "any",
-					defaultValue : {}
+				plugins: {
+					type: "any",
+					defaultValue: {}
 				},
 
 				/**
@@ -189,13 +199,13 @@ function(
 				flexSettings: {
 					type: "object",
 					defaultValue: {
-						layer: "CUSTOMER",
+						layer: Layer.CUSTOMER,
 						developerMode: true
 					}
 				},
 
 				/** Defines view state of the RTA. Possible values: adaptation, navigation */
-				mode : {
+				mode: {
 					type: "string",
 					defaultValue: "adaptation"
 				},
@@ -216,9 +226,9 @@ function(
 					defaultValue: false
 				}
 			},
-			events : {
+			events: {
 				/** Fired when the runtime authoring is started */
-				start : {
+				start: {
 					parameters: {
 						editablePluginsCount: {
 							type: "int"
@@ -227,28 +237,28 @@ function(
 				},
 
 				/** Fired when the runtime authoring is stopped */
-				stop : {},
+				stop: {},
 
 				/** Fired when the runtime authoring failed to start */
-				failed : {},
+				failed: {},
 
 				/**
 				 * Event fired when a DesignTime selection is changed
 				 */
-				selectionChange : {
-					parameters : {
-						selection : {
-							type : "sap.ui.dt.Overlay[]"
+				selectionChange: {
+					parameters: {
+						selection: {
+							type: "sap.ui.dt.Overlay[]"
 						}
 					}
 				},
 				/**Event fired when the runtime authoring mode is changed */
-				modeChanged : {},
+				modeChanged: {},
 
 				/**
 				 * Fired when the undo/redo stack has changed, undo/redo buttons can be updated
 				 */
-				undoRedoStackModified : {}
+				undoRedoStackModified: {}
 			}
 		},
 		_sAppTitle: null,
@@ -278,15 +288,16 @@ function(
 				this.attachEvent("start", validateFlexEnabled.bind(null, this));
 			}
 		},
-		_RESTART : {
-			NOT_NEEDED : "no restart",
-			VIA_HASH : "without max layer",
-			RELOAD_PAGE : "reload"
+		_RELOAD: {
+			NOT_NEEDED: "NO_RELOAD",
+			VIA_HASH: "CROSS_APP_NAVIGATION",
+			RELOAD_PAGE: "HARD_RELOAD"
 		}
 	});
 
 	RuntimeAuthoring.prototype._shouldValidateFlexEnabled = function () {
-		return document.location.hostname.endsWith(".sap" + ".corp");
+		var sHostname = document.location.hostname;
+		return sHostname.endsWith(".sap" + ".corp") || sHostname === "localhost";
 	};
 
 	/**
@@ -299,7 +310,7 @@ function(
 	 * always the same instances get returned.
 	 *
 	 * @public
-	 * @return {map} Map with plugins
+	 * @return {Object<string,sap.ui.rta.plugin.Plugin>} Map with plugins
 	 */
 	RuntimeAuthoring.prototype.getDefaultPlugins = function() {
 		if (!this._mDefaultPlugins) {
@@ -386,7 +397,12 @@ function(
 
 			//Control Variant
 			this._mDefaultPlugins["controlVariant"] = new ControlVariantPlugin({
-				commandFactory : oCommandFactory
+				commandFactory: oCommandFactory
+			});
+
+			// Add IFrame
+			this._mDefaultPlugins["addIFrame"] = new AddIFramePlugin({
+				commandFactory: oCommandFactory
 			});
 
 			//ToolHooks
@@ -528,6 +544,15 @@ function(
 		return sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta");
 	};
 
+	RuntimeAuthoring.prototype._initVersioning = function() {
+		return VersionsAPI.initialize({
+			selector: this.getRootControlInstance(),
+			layer: this.getLayer()
+		}).then(function (oVersionsModel) {
+			this._oVersionsModel = oVersionsModel;
+		}.bind(this));
+	};
+
 	/**
 	 * Start UI adaptation at runtime (RTA).
 	 * @return {Promise} Returns a Promise with the initialization of RTA
@@ -556,11 +581,15 @@ function(
 				return Promise.reject(vError);
 			}
 
-			//Check if the application has personalized changes and reload without them
-			return this._handleHigherLayerChangesOnStart()
+			return this._initVersioning()
+			/*
+			Check if the application has personalized changes and reload without them;
+			Also Check if the application has an available draft and if yes, reload with those changes.
+			 */
+			.then(this._determineReload.bind(this))
 			.then(function(bReloadTriggered) {
 				if (bReloadTriggered) {
-					// FLP Plugin reacts on this error string and doesn't the error on the UI
+					// FLP Plugin reacts on this error string and doesn't pass the error on the UI
 					return Promise.reject("Reload triggered");
 				}
 
@@ -583,7 +612,7 @@ function(
 					this.getPlugins()["settings"].setCommandStack(this.getCommandStack());
 				}
 
-				this._oSerializer = new LREPSerializer({commandStack : this.getCommandStack(), rootControl : this.getRootControl()});
+				this._oSerializer = new LREPSerializer({commandStack: this.getCommandStack(), rootControl: this.getRootControl()});
 
 				// Create design time
 				var aKeys = Object.keys(this.getPlugins());
@@ -601,7 +630,7 @@ function(
 					this._oDesignTime.addRootElement(this._oRootControl);
 
 					jQuery(Overlay.getOverlayContainer()).addClass("sapUiRta");
-					if (this.getLayer() === "USER") {
+					if (this.getLayer() === Layer.USER) {
 						jQuery(Overlay.getOverlayContainer()).addClass("sapUiRtaPersonalize");
 					} else {
 						// RTA Visual Improvements
@@ -639,18 +668,12 @@ function(
 			.then(function () {
 				if (this.getShowToolbars()) {
 					// Create ToolsMenu
-					return this._getPublishAndAppVariantSupportVisibility()
-					.then(function (aButtonsSupport) {
-						var bShowPublish = aButtonsSupport[0];
-						var bIsAppVariantSupported = aButtonsSupport[1];
-						this._createToolsMenu(bShowPublish, bIsAppVariantSupported);
-					}.bind(this));
+					return this._getToolbarButtonsVisibility()
+					.then(this._createToolsMenu.bind(this));
 				}
 			}.bind(this))
-			.then(function () {
-				// this is needed to initially check if undo is available, e.g. when the stack gets initialized with changes
-				this._onStackModified();
-			}.bind(this))
+			// this is needed to initially check if undo is available, e.g. when the stack gets initialized with changes
+			.then(this._onStackModified.bind(this))
 			.then(function () {
 				// non-blocking style loading
 				StylesLoader
@@ -715,39 +738,36 @@ function(
 	}
 
 	/**
-	 * Checks the Publish button and app variant support (i.e. Save As and Overview of App Variants) availability
+	 * Checks the publish button, draft buttons(activate and delete) and app variant support (i.e. Save As and Overview of App Variants) availability
 	 * @private
-	 * @returns {Promise<boolean[]>} Returns a Promise with an array of boolean values [bPublishAvailable, bAppVariantSupportAvailable]
+	 * @returns {Promise<map>} with publishAvailable, publishAppVariantSupported and draftAvailable values
 	 * @description The publish button shall not be available if the system is productive and if a merge error occurred during merging changes into the view on startup
 	 * The app variant support shall not be available if the system is productive and if the platform is not enabled (See Feature.js) to show the app variant tooling
 	 * isProductiveSystem should only return true if it is a test or development system with the provision of custom catalog extensions
 	 */
-	RuntimeAuthoring.prototype._getPublishAndAppVariantSupportVisibility = function() {
-		return FeaturesAPI.isPublishAvailable().then(function(bIsPublishAvailabe) {
-			var bIsAppVariantSupported = RtaAppVariantFeature.isPlatFormEnabled(this.getRootControlInstance(), this.getLayer(), this._oSerializer);
-			return [bIsPublishAvailabe, bIsPublishAvailabe && bIsAppVariantSupported];
+	RuntimeAuthoring.prototype._getToolbarButtonsVisibility = function() {
+		return FeaturesAPI.isPublishAvailable().then(function(bIsPublishAvailable) {
+			return RtaAppVariantFeature.isSaveAsAvailable(this.getRootControlInstance(), this.getLayer(), this._oSerializer).then(function(bIsSaveAsAvailable) {
+				return {
+					publishAvailable: bIsPublishAvailable,
+					saveAsAvailable: bIsPublishAvailable && bIsSaveAsAvailable
+				};
+			});
 		}.bind(this));
+	};
+
+	RuntimeAuthoring.prototype._isDraftAvailable = function() {
+		return VersionsAPI.isDraftAvailable({
+			selector: this.getRootControlInstance(),
+			layer: this.getLayer()
+		});
 	};
 
 	var fnShowTechnicalError = function(vError) {
 		BusyIndicator.hide();
-		var sErrorMessage = "";
-		if (vError.messages && Array.isArray(vError.messages) && vError.messages.length > 0) {
-			sErrorMessage = vError.messages.reduce(function(sConcatenatedMessage, oErrorResponse) {
-				return sConcatenatedMessage.concat(
-					oErrorResponse.severity === "Error"
-						? oErrorResponse.text + "\n"
-						: ""
-				);
-			}, sErrorMessage);
-		}
-		// when vError.messages doesn't contain valid error messages
-		// or messages are not set with correct severity
-		if (!sErrorMessage) {
-			sErrorMessage = vError.stack || vError.message || vError.status || vError;
-		}
+		var sErrorMessage = vError.userMessage || vError.stack || vError.message || vError.status || vError;
 		var oTextResources = sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta");
-		Log.error("Failed to transfer runtime adaptation changes to layered repository", sErrorMessage);
+		Log.error("Failed to transfer changes", sErrorMessage);
 		var sMsg = oTextResources.getText("MSG_LREP_TRANSFER_ERROR") + "\n"
 				+ oTextResources.getText("MSG_ERROR_REASON", sErrorMessage);
 		MessageBox.error(sMsg, {
@@ -807,16 +827,20 @@ function(
 		var bCanRedo = oCommandStack.canRedo();
 
 		if (this.getShowToolbars()) {
-			this.getToolbar().setUndoRedoEnabled(bCanUndo, bCanRedo);
-			this.getToolbar().setPublishEnabled(this.bInitialPublishEnabled || bCanUndo);
-			this.getToolbar().setRestoreEnabled(this.bInitialResetEnabled || bCanUndo);
+			// TODO: move to the setter to the ChangesState
+			var oVersionsModel = this.getToolbar().getModel("versions");
+			oVersionsModel.setDirtyChanges(bCanUndo);
+			this._oToolbarControlsModel.setProperty("/undoEnabled", bCanUndo);
+			this._oToolbarControlsModel.setProperty("/redoEnabled", bCanRedo);
+			this._oToolbarControlsModel.setProperty("/publishEnabled", this.bInitialPublishEnabled || bCanUndo);
+			this._oToolbarControlsModel.setProperty("/restoreEnabled", this.bInitialResetEnabled || bCanUndo);
 		}
 		this.fireUndoRedoStackModified();
 	};
 
-	RuntimeAuthoring.prototype._closeToolbar = function() {
-		if (this.getShowToolbars() && this.getToolbar) {
-			return this.getToolbar().hide();
+	RuntimeAuthoring.prototype._checkToolbarAndExecuteFunction = function (sName, vValue) {
+		if (this.getShowToolbars() && this.getToolbar && this.getToolbar()) {
+			return this.getToolbar()[sName](vValue);
 		}
 	};
 
@@ -841,29 +865,30 @@ function(
 	 * @returns {Promise} promise with no parameters
 	 */
 	RuntimeAuthoring.prototype.stop = function(bDontSaveChanges, bSkipRestart) {
-		return ((bSkipRestart) ? Promise.resolve(this._RESTART.NOT_NEEDED) : this._handleReloadOnExit())
-			.then(function(sReload) {
+		this._checkToolbarAndExecuteFunction("setBusy", true);
+		return this._handleReloadOnExit(bSkipRestart)
+			.then(function(oReloadInfo) {
 				return ((bDontSaveChanges) ? Promise.resolve() : this._serializeToLrep(this))
-				.then(this._closeToolbar.bind(this))
+				.then(this._checkToolbarAndExecuteFunction.bind(this, "hide"))
 				.then(function() {
 					this.fireStop();
-					if (sReload !== this._RESTART.NOT_NEEDED) {
-						this._removeMaxLayerParameter();
-						if (sReload === this._RESTART.RELOAD_PAGE) {
-							this._reloadPage();
-						}
+					if (oReloadInfo.reloadMethod && (oReloadInfo.reloadMethod !== this._RELOAD.NOT_NEEDED)) {
+						oReloadInfo.deleteMaxLayer = true; // true for normal exit, false for reset
+						oReloadInfo.triggerHardReload = (oReloadInfo.reloadMethod === this._RELOAD.RELOAD_PAGE); // StandAlone or AppDescriptorChanges case
+						return this._handleUrlParameterOnExit(oReloadInfo);
 					}
 				}.bind(this));
 			}.bind(this))
 			.catch(fnShowTechnicalError)
 			.then(function () {
+				this._checkToolbarAndExecuteFunction("setBusy", false);
 				this._sStatus = STOPPED;
 				jQuery("body").removeClass("sapUiRtaMode");
 			}.bind(this));
 	};
 
 	RuntimeAuthoring.prototype.restore = function() {
-		this._onRestore();
+		return this._onRestore();
 	};
 
 	RuntimeAuthoring.prototype.transport = function() {
@@ -947,14 +972,18 @@ function(
 		window.onbeforeunload = this._oldUnloadHandler;
 	};
 
+	RuntimeAuthoring.prototype._serializeAndSave = function() {
+		return this._oSerializer.saveCommands(this._oVersionsModel.getProperty("/versioningEnabled"));
+	};
+
 	RuntimeAuthoring.prototype._serializeToLrep = function() {
 		if (!this._bReloadNeeded) {
 			return this._oSerializer.needsReload().then(function(bReloadNeeded) {
 				this._bReloadNeeded = bReloadNeeded;
-				return this._oSerializer.saveCommands();
+				return this._serializeAndSave();
 			}.bind(this));
 		}
-		return this._oSerializer.saveCommands();
+		return this._serializeAndSave();
 	};
 
 	RuntimeAuthoring.prototype._onUndo = function() {
@@ -967,11 +996,65 @@ function(
 		return this.getCommandStack().redo();
 	};
 
-	RuntimeAuthoring.prototype._createToolsMenu = function(bPublishAvailable, bIsAppVariantSupported) {
+	RuntimeAuthoring.prototype._onActivateDraft = function(oEvent) {
+		var sLayer = this.getLayer();
+		var oSelector = this.getRootControlInstance();
+		return VersionsAPI.activateDraft({
+			layer: sLayer,
+			selector: oSelector,
+			title: oEvent.getParameter("versionTitle")
+		}).then(function () {
+			this._showMessageToast("MSG_DRAFT_ACTIVATION_SUCCESS");
+			this.bInitialResetEnabled = true;
+			this._oToolbarControlsModel.setProperty("/restoreEnabled", true);
+			this.getCommandStack().removeAllCommands();
+		}.bind(this))
+		.catch(function (oError) {
+			Utils.showMessageBox("error", "MSG_DRAFT_ACTIVATION_FAILED", {error: oError});
+		});
+	};
+
+	RuntimeAuthoring.prototype._handleDiscard = function() {
+		var sLayer = this.getLayer();
+		RuntimeAuthoring.enableRestart(sLayer, this.getRootControlInstance());
+
+		if (!FlexUtils.getUshellContainer()) {
+			var oReloadInfo = {
+				hasDraftChanges: false, // draft was just discarded
+				layer: sLayer
+			};
+			this.getCommandStack().removeAllCommands();
+			return this._triggerHardReload(oReloadInfo);
+		}
+		var bTriggerReload = true;
+		var mParsedHash = this._removeVersionParameterForFLP(FlexUtils.getParsedURLHash(), bTriggerReload);
+		this.getCommandStack().removeAllCommands();
+		this._triggerCrossAppNavigation(mParsedHash);
+		return this.stop(true, true);
+	};
+
+	RuntimeAuthoring.prototype._onDiscardDraft = function() {
+		return Utils.showMessageBox("warning", "MSG_DRAFT_DISCARD_DIALOG", {
+			actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
+			emphasizedAction: MessageBox.Action.OK
+		})
+		.then(function(sAction) {
+			if (sAction === MessageBox.Action.OK) {
+				return VersionsAPI.discardDraft({
+					layer: this.getLayer(),
+					selector: this.getRootControlInstance(),
+					updateState: true
+				})
+				.then(this._handleDiscard.bind(this));
+			}
+		}.bind(this));
+	};
+
+	RuntimeAuthoring.prototype._createToolsMenu = function(aButtonsVisibility) {
 		if (!this.getDependent('toolbar')) {
 			var fnConstructor;
 
-			if (this.getLayer() === "USER") {
+			if (this.getLayer() === Layer.USER) {
 				fnConstructor = PersonalizationToolbar;
 			} else if (Utils.getFiori2Renderer()) {
 				fnConstructor = FioriToolbar;
@@ -979,7 +1062,7 @@ function(
 				fnConstructor = StandaloneToolbar;
 			}
 
-			if (this.getLayer() === "USER") {
+			if (this.getLayer() === Layer.USER) {
 				this.addDependent(new fnConstructor({
 					textResources: this._getTextResources(),
 					//events
@@ -989,7 +1072,6 @@ function(
 			} else {
 				this.addDependent(new fnConstructor({
 					modeSwitcher: this.getMode(),
-					publishVisible: bPublishAvailable,
 					textResources: this._getTextResources(),
 					//events
 					exit: this.stop.bind(this, false, false),
@@ -1000,39 +1082,40 @@ function(
 					modeChange: this._onModeChange.bind(this),
 					manageApps: RtaAppVariantFeature.onGetOverview.bind(null, true, this.getLayer()),
 					appVariantOverview: this._onGetAppVariantOverview.bind(this),
-					saveAs: RtaAppVariantFeature.onSaveAs.bind(null, true, true, this.getLayer(), null)
+					saveAs: RtaAppVariantFeature.onSaveAs.bind(RtaAppVariantFeature, true, true, this.getLayer(), null),
+					activateDraft: this._onActivateDraft.bind(this),
+					discardDraft: this._onDiscardDraft.bind(this)
 				}), 'toolbar');
 			}
 
-			this.getToolbar().setPublishEnabled(this.bInitialPublishEnabled);
-			this.getToolbar().setRestoreEnabled(this.bInitialResetEnabled);
+			var bSaveAsAvailable = aButtonsVisibility.saveAsAvailable;
+			var bExtendedOverview = bSaveAsAvailable && RtaAppVariantFeature.isOverviewExtended();
 
-			var bExtendedOverview;
+			this._oToolbarControlsModel = new JSONModel({
+				undoEnabled: false,
+				redoEnabled: false,
+				publishVisible: aButtonsVisibility.publishAvailable,
+				publishEnabled: this.bInitialPublishEnabled,
+				restoreEnabled: this.bInitialResetEnabled,
+				appVariantsOverviewVisible: bSaveAsAvailable && bExtendedOverview,
+				appVariantsOverviewEnabled: bSaveAsAvailable && bExtendedOverview,
+				saveAsVisible: bSaveAsAvailable,
+				saveAsEnabled: false,
+				manageAppsVisible: bSaveAsAvailable && !bExtendedOverview,
+				manageAppsEnabled: bSaveAsAvailable && !bExtendedOverview
+			});
 
-			if (bIsAppVariantSupported) {
-				// Sets the visibility of 'Save As' button in RTA toolbar
-				this.getToolbar().getControl('saveAs').setVisible(bIsAppVariantSupported);
-				// Flag which represents either the key user view or SAP developer view
-				bExtendedOverview = RtaAppVariantFeature.isOverviewExtended();
-
-				if (bExtendedOverview) {
-					// Sets the visibility of 'i' menu button (App Variant Overview: SAP developer view) in RTA toolbar
-					this.getToolbar().getControl('appVariantOverview').setVisible(bIsAppVariantSupported);
-				} else {
-					// Sets the visibility of 'i' button (App Variant Overview: Key user view) in RTA toolbar
-					this.getToolbar().getControl('manageApps').setVisible(bIsAppVariantSupported);
-				}
-
-				RtaAppVariantFeature.isManifestSupported().then(function(bResult) {
-					if (bExtendedOverview) {
-						this.getToolbar().getControl('appVariantOverview').setEnabled(bResult);
-					} else {
-						this.getToolbar().getControl('manageApps').setEnabled(bResult);
-					}
-					this.getToolbar().getControl('saveAs').setEnabled(bResult);
+			if (bSaveAsAvailable) {
+				RtaAppVariantFeature.isManifestSupported().then(function (bResult) {
+					this._oToolbarControlsModel.setProperty("/saveAsEnabled", bResult);
+					this._oToolbarControlsModel.setProperty("/appVariantsOverviewEnabled", bResult);
+					this._oToolbarControlsModel.setProperty("/manageAppsEnabled", bResult);
 				}.bind(this));
 			}
 		}
+
+		this.getToolbar().setModel(this._oVersionsModel, "versions");
+		this.getToolbar().setModel(this._oToolbarControlsModel, "controls");
 	};
 
 	RuntimeAuthoring.prototype._onGetAppVariantOverview = function(oEvent) {
@@ -1103,7 +1186,7 @@ function(
 		return this._serializeToLrep().then(function () {
 			BusyIndicator.hide();
 			var bAppVariantRunning = FlexUtils.isApplicationVariant(this._oRootControl) && !FlexUtils.isVariantByStartupParameter(this._oRootControl);
-			return ((bAppVariantRunning) ? RtaAppVariantFeature.getAppVariantDescriptor(this._oRootControl, this.getLayer()) : Promise.resolve())
+			return ((bAppVariantRunning) ? RtaAppVariantFeature.getAppVariantDescriptor(this._oRootControl) : Promise.resolve())
 				.then(function(oAppVariantDescriptor) {
 					var aAppVariantDescriptor = [];
 					if (oAppVariantDescriptor) {
@@ -1115,19 +1198,17 @@ function(
 						layer: this.getLayer(),
 						appVariantDescriptors: aAppVariantDescriptor
 					})
-						.then(function(sResponse) {
-							if (sResponse !== "Error" && sResponse !== "Cancel") {
-								this._showMessageToast("MSG_TRANSPORT_SUCCESS");
-
+						.then(function(sMessage) {
+							if (sMessage !== "Error" && sMessage !== "Cancel") {
+								MessageToast.show(sMessage);
 								if (this.getShowToolbars()) {
-									var mPropertyBag = {
+									PersistenceWriteAPI.getResetAndPublishInfo({
 										selector: this.getRootControlInstance(),
 										layer: this.getLayer()
-									};
-									PersistenceWriteAPI.getResetAndPublishInfo(mPropertyBag)
+									})
 									.then(function(oPublishAndResetInfo) {
-										this.getToolbar().setPublishEnabled(oPublishAndResetInfo.isPublishEnabled);
-										this.getToolbar().setRestoreEnabled(oPublishAndResetInfo.isResetEnabled);
+										this._oToolbarControlsModel.setProperty("/publishEnabled", oPublishAndResetInfo.isPublishEnabled);
+										this._oToolbarControlsModel.setProperty("/restoreEnabled", oPublishAndResetInfo.isResetEnabled);
 									}.bind(this));
 								}
 							}
@@ -1144,22 +1225,25 @@ function(
 	 * @private
 	 */
 	RuntimeAuthoring.prototype._deleteChanges = function() {
-		var oRootControl = this.getRootControlInstance();
-		var oAppComponent = FlexUtils.getAppComponentForControl(oRootControl);
-
+		var sLayer = this.getLayer();
 		return PersistenceWriteAPI.reset({
-			selector: oAppComponent,
-			layer: this.getLayer(),
+			selector: FlexUtils.getAppComponentForControl(this.getRootControlInstance()),
+			layer: sLayer,
 			generator: "Change.createInitialFileContent"
-		})
-			.then(function () {
-				this._reloadPage();
-			}.bind(this))
-			.catch(function (oError) {
-				if (oError !== "cancel") {
-					Utils._showMessageBox(MessageBox.Icon.ERROR, "HEADER_RESTORE_FAILED", "MSG_RESTORE_FAILED", oError);
-				}
-			});
+		}).then(function () {
+			var oReloadInfo = {
+				hasDraftChanges: ReloadInfoAPI.hasVersionParameterWithValue({value: sLayer}),
+				layer: sLayer,
+				deleteMaxLayer: false,
+				triggerHardReload: true
+			};
+			return this._handleUrlParameterOnExit(oReloadInfo);
+		}.bind(this))
+		.catch(function (oError) {
+			if (oError !== "cancel") {
+				Utils.showMessageBox("error", "MSG_RESTORE_FAILED", {error: oError});
+			}
+		});
 	};
 
 	/**
@@ -1200,10 +1284,13 @@ function(
 	 *
 	 * @public
 	 * @static
-	 * @param {string} sLayer The active layer
+	 * @param {string} sLayer - The active layer
+	 * @param {sap.ui.core.Control} oRootControl - root control for which RTA was started
 	 */
-	RuntimeAuthoring.enableRestart = function(sLayer) {
-		window.sessionStorage.setItem("sap.ui.rta.restart." + sLayer, true);
+	RuntimeAuthoring.enableRestart = function(sLayer, oRootControl) {
+		var sFlexReference = FlexUtils.getComponentClassName(oRootControl);
+		var vParameter = sFlexReference || true;
+		window.sessionStorage.setItem("sap.ui.rta.restart." + sLayer, vParameter);
 	};
 
 	/**
@@ -1225,79 +1312,104 @@ function(
 	 * @private
 	 */
 	RuntimeAuthoring.prototype._onRestore = function() {
-		var sMessage = this.getLayer() === "USER"
+		var sLayer = this.getLayer();
+		var sMessage = sLayer === Layer.USER
 			? this._getTextResources().getText("FORM_PERS_RESET_MESSAGE_PERSONALIZATION")
 			: this._getTextResources().getText("FORM_PERS_RESET_MESSAGE");
-		var sTitle = this.getLayer() === "USER"
+		var sTitle = sLayer === Layer.USER
 			? this._getTextResources().getText("BTN_RESTORE")
 			: this._getTextResources().getText("FORM_PERS_RESET_TITLE");
 
-		var fnConfirmDiscardAllChanges = function (sAction) {
-			if (sAction === "OK") {
-				RuntimeAuthoring.enableRestart(this.getLayer());
+		this._handleStopCutPaste();
+
+		return Utils.showMessageBox("warning", sMessage, {
+			titleKey: sTitle,
+			actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
+			emphasizedAction: MessageBox.Action.OK
+		}).then(function(sAction) {
+			if (sAction === MessageBox.Action.OK) {
+				RuntimeAuthoring.enableRestart(sLayer, this.getRootControlInstance());
 				this._deleteChanges();
 				this.getCommandStack().removeAllCommands();
 			}
-		}.bind(this);
+		}.bind(this));
+	};
 
-		this._handleStopCutPaste();
+	/**
+	 * Triggers a callback when a control gets created with its associated overlay.
+	 * @param {string} sNewControlID - ID of the newly created control
+	 * @param {Function} fnCallback - Callback to execute when the conditions are met, the overlay is the only parameter
+	 */
+	RuntimeAuthoring.prototype._scheduleOnCreated = function (sNewControlID, fnCallback) {
+		function onElementOverlayCreated (oEvent) {
+			var oNewOverlay = oEvent.getParameter("elementOverlay");
+			if (oNewOverlay.getElement().getId() === sNewControlID) {
+				this._oDesignTime.detachEvent("elementOverlayCreated", onElementOverlayCreated, this);
+				fnCallback(oNewOverlay);
+			}
+		}
 
-		MessageBox.confirm(sMessage, {
-			icon: MessageBox.Icon.WARNING,
-			title : sTitle,
-			onClose : fnConfirmDiscardAllChanges,
-			styleClass: Utils.getRtaStyleClassName()
+		this._oDesignTime.attachEvent("elementOverlayCreated", onElementOverlayCreated, this);
+	};
+
+	/**
+	 * Triggers a callback when a control gets created and its associated overlay is visible.
+	 * @param {string} sNewControlID - ID of the newly created control
+	 * @param {Function} fnCallback - Callback to execute when the conditions are met, the overlay is the only parameter
+	 */
+	RuntimeAuthoring.prototype._scheduleOnCreatedAndVisible = function (sNewControlID, fnCallback) {
+		function onGeometryChanged (oEvent) {
+			var oElementOverlay = oEvent.getSource();
+			if (oElementOverlay.getGeometry() && oElementOverlay.getGeometry().visible) {
+				oElementOverlay.detachEvent("geometryChanged", onGeometryChanged);
+				fnCallback(oElementOverlay);
+			}
+		}
+
+		function onGeometryCheck (oElementOverlay) {
+			// the control can be set to visible, but still have no size when we do the check
+			// that's why we also attach to 'geometryChanged' and check if the overlay has a size
+			if (!oElementOverlay.getGeometry() || !oElementOverlay.getGeometry().visible) {
+				oElementOverlay.attachEvent('geometryChanged', onGeometryChanged);
+			} else {
+				fnCallback(oElementOverlay);
+			}
+		}
+
+		this._scheduleOnCreated(sNewControlID, function (oNewOverlay) {
+			// the overlay needs to be rendered
+			if (oNewOverlay.isRendered()) {
+				onGeometryCheck(oNewOverlay);
+			} else {
+				oNewOverlay.attachEventOnce('afterRendering', function (oEvent) {
+					onGeometryCheck(oEvent.getSource());
+				});
+			}
 		});
 	};
 
 	/**
 	 * Function to automatically start the rename plugin on a container when it gets created
-	 * @param {object} vAction       The create action from designtime metadata
+	 *
+	 * @param {object} vAction The create action from designtime metadata
 	 * @param {string} sNewControlID The id of the newly created container
 	 */
 	RuntimeAuthoring.prototype._scheduleRenameOnCreatedContainer = function(vAction, sNewControlID) {
 		var fnStartEdit = function (oElementOverlay) {
+			oElementOverlay.setSelected(true);
+			this.getPlugins()["rename"].startEdit(oElementOverlay);
+		}.bind(this);
+
+		this._scheduleOnCreatedAndVisible(sNewControlID, function (oElementOverlay) {
 			// get container of the new control for rename
 			var sNewContainerID = this.getPlugins()["createContainer"].getCreatedContainerId(vAction, oElementOverlay.getElement().getId());
 			var oContainerElementOverlay = OverlayRegistry.getOverlay(sNewContainerID);
-			oContainerElementOverlay.setSelected(true);
-			this.getPlugins()["rename"].startEdit(oContainerElementOverlay);
-		};
-
-		var fnGeometryChangedCallback = function (oEvent) {
-			var oElementOverlay = oEvent.getSource();
-			if (oElementOverlay.getGeometry() && oElementOverlay.getGeometry().visible) {
-				fnStartEdit.call(this, oElementOverlay);
-				oElementOverlay.detachEvent('geometryChanged', fnGeometryChangedCallback, this);
-			}
-		};
-
-		var fnGeometryCheck = function (oElementOverlay) {
-			// the control can be set to visible, but still have no size when we do the check
-			// that's why we also attach to 'geometryChanged' and check if the overlay has a size
-			if (!oElementOverlay.getGeometry() || !oElementOverlay.getGeometry().visible) {
-				oElementOverlay.attachEvent('geometryChanged', fnGeometryChangedCallback, this);
+			if (oContainerElementOverlay) {
+				fnStartEdit(oContainerElementOverlay);
 			} else {
-				fnStartEdit.call(this, oElementOverlay);
+				this._scheduleOnCreatedAndVisible(sNewContainerID, fnStartEdit);
 			}
-		};
-
-		var fnElementOverlayCreatedCallback = function(oEvent) {
-			var oNewOverlay = oEvent.getParameter("elementOverlay");
-			if (oNewOverlay.getElement().getId() === sNewControlID) {
-				this._oDesignTime.detachEvent("elementOverlayCreated", fnElementOverlayCreatedCallback, this);
-				// the overlay needs to be rendered before we can trigger the rename on it
-				if (oNewOverlay.isRendered()) {
-					fnGeometryCheck.call(this, oNewOverlay);
-				} else {
-					oNewOverlay.attachEventOnce('afterRendering', function (oEvent) {
-						fnGeometryCheck.call(this, oEvent.getSource());
-					}, this);
-				}
-			}
-		};
-
-		this._oDesignTime.attachEvent("elementOverlayCreated", fnElementOverlayCreatedCallback, this);
+		}.bind(this));
 	};
 
 	/**
@@ -1315,14 +1427,23 @@ function(
 
 		var oCommand = oEvent.getParameter("command");
 		if (oCommand instanceof sap.ui.rta.command.BaseCommand) {
-			if (vAction && sNewControlID) {
-				this._scheduleRenameOnCreatedContainer(vAction, sNewControlID);
+			if (sNewControlID) {
+				this._scheduleOnCreated(sNewControlID, function (oElementOverlay) {
+					var oDesignTimeMetadata = oElementOverlay.getDesignTimeMetadata();
+					var fnSelect = oDesignTimeMetadata.getData().select;
+					if (typeof fnSelect === "function") {
+						fnSelect(oElementOverlay.getElement());
+					}
+				});
+				if (vAction) {
+					this._scheduleRenameOnCreatedContainer(vAction, sNewControlID);
+				}
 			}
 			return this.getCommandStack().pushAndExecute(oCommand)
 			// Error handling when a command fails is done in the Stack
 			.catch(function(oError) {
 				if (oError && oError.message && oError.message.indexOf("The following Change cannot be applied because of a dependency") > -1) {
-					Utils._showMessageBox(MessageBox.Icon.ERROR, "HEADER_DEPENDENCY_ERROR", "MSG_DEPENDENCY_ERROR", oError);
+					Utils.showMessageBox("error", "MSG_DEPENDENCY_ERROR", {error: oError});
 				}
 				Log.error("sap.ui.rta: " + oError.message);
 			});
@@ -1358,171 +1479,262 @@ function(
 	/**
 	 * Build the navigation arguments object required to trigger the navigation
 	 * using the CrossApplicationNavigation ushell service.
+	 *
 	 * @param  {Object} mParsedHash Parsed URL hash
 	 * @return {Object} Returns argument map ("oArg" parameter of the "toExternal" function)
 	 */
 	RuntimeAuthoring.prototype._buildNavigationArguments = function(mParsedHash) {
 		return {
 			target: {
-				semanticObject : mParsedHash.semanticObject,
-				action : mParsedHash.action,
-				context : mParsedHash.contextRaw
+				semanticObject: mParsedHash.semanticObject,
+				action: mParsedHash.action,
+				context: mParsedHash.contextRaw
 			},
 			params: mParsedHash.params,
-			appSpecificRoute : mParsedHash.appSpecificRoute,
-			writeHistory : false
+			appSpecificRoute: mParsedHash.appSpecificRoute,
+			writeHistory: false
 		};
 	};
 
-	/**
-	 * Returns true if the max layer parameter is set to current layer
-	 * (skips personalization and other higher level changes)
-	 *
-	 * @param  {map} mParsedHash The parsed URL hash
-	 * @return {boolean} True if the parameter is in the hash
-	 */
-	RuntimeAuthoring.prototype._hasMaxLayerParameter = function(mParsedHash) {
-		var sCurrentLayer = this.getLayer();
-		return mParsedHash.params &&
-			mParsedHash.params[LayerUtils.FL_MAX_LAYER_PARAM] &&
-			mParsedHash.params[LayerUtils.FL_MAX_LAYER_PARAM][0] === sCurrentLayer;
-	};
-
-	/**
-	 * Reload the app inside FLP adding the parameter to skip personalization changes
-	 * @param  {map} mParsedHash URL parsed hash
-	 * @param  {sap.ushell.services.CrossApplicationNavigation} oCrossAppNav ushell service
-	 * @return {Promise} resolving to true if reload was triggered
-	 */
-	RuntimeAuthoring.prototype._reloadWithoutHigherLayerChangesOnStart = function(mParsedHash, oCrossAppNav) {
-		var sCurrentLayer = this.getLayer();
-		if (!this._hasMaxLayerParameter(mParsedHash)) {
-			if (!mParsedHash.params) {
-				mParsedHash.params = {};
-			}
-			mParsedHash.params[LayerUtils.FL_MAX_LAYER_PARAM] = [sCurrentLayer];
-			RuntimeAuthoring.enableRestart(sCurrentLayer);
-			// triggers the navigation without leaving FLP
-			oCrossAppNav.toExternal(this._buildNavigationArguments(mParsedHash));
-			return Promise.resolve(true);
+	RuntimeAuthoring.prototype._triggerCrossAppNavigation = function(mParsedHash) {
+		if (this.getLayer() !== Layer.USER) {
+			return FlexUtils.ifUShellContainerThen(function(aServices) {
+				aServices[0].toExternal(this._buildNavigationArguments(mParsedHash));
+				return Promise.resolve(true);
+			}.bind(this), ["CrossApplicationNavigation"]);
 		}
 	};
 
-	/**
-	 * Reload the app inside FLP removing the parameter to skip personalization changes
-	 * @return {boolean} resolving to true if reload was triggered
-	 */
-	RuntimeAuthoring.prototype._removeMaxLayerParameter = function() {
-		if (FlexUtils.getUshellContainer() && this.getLayer() !== "USER") {
-			var oCrossAppNav = FlexUtils.getUshellContainer().getService("CrossApplicationNavigation");
-			var mParsedHash = FlexUtils.getParsedURLHash();
-			if (oCrossAppNav.toExternal && mParsedHash) {
-				if (this._hasMaxLayerParameter(mParsedHash)) {
-					delete mParsedHash.params[LayerUtils.FL_MAX_LAYER_PARAM];
-					// triggers the navigation without leaving FLP
-					oCrossAppNav.toExternal(this._buildNavigationArguments(mParsedHash));
-				}
-			}
-		}
-	};
-
-	/**
-	 * Handler for the message box warning the user that personalization changes exist
-	 * and the app will be reloaded
-	 * @return {Promise} Resolving when the user clicks on OK
-	 */
-	RuntimeAuthoring.prototype._handleReloadWithoutHigherLayerChangesMessageBoxOnStart = function() {
+	RuntimeAuthoring.prototype._removeVersionParameterForFLP = function(mParsedHash, bTriggerReload) {
 		var sLayer = this.getLayer();
-		//Non key user get more technical message
-		var sReason = sLayer === "CUSTOMER" ? "MSG_PERSONALIZATION_EXISTS" : "MSG_HIGHER_LAYER_CHANGES_EXIST";
-		return Utils._showMessageBox(
-			MessageBox.Icon.INFORMATION,
-			"HEADER_PERSONALIZATION_EXISTS",
-			sReason);
+		if (sLayer === Layer.USER) {
+			return mParsedHash;
+		}
+
+		var sVersionParameter = FlexUtils.getParameter(sap.ui.fl.Versions.UrlParameter);
+		if (sVersionParameter) {
+			delete mParsedHash.params[sap.ui.fl.Versions.UrlParameter];
+		} else if (this._isDraftAvailable() || bTriggerReload /* for discard of dirty changes */) {
+			/*
+			In case we entered RTA without a draft and created dirty changes,
+			we need to add a parameter to trigger the CrossAppNavigation on
+			Reason 1: Exit
+			Reason 2: Discard
+			*/
+			var sActiveVersionString = this._oVersionsModel.getProperty("/activeVersion").toString();
+			mParsedHash.params[sap.ui.fl.Versions.UrlParameter] = [sActiveVersionString];
+		}
+		return mParsedHash;
+	};
+
+	RuntimeAuthoring.prototype._removeMaxLayerParameterForFLP = function(oReloadInfo, mParsedHash) {
+		// keep max layer parameter when reset was called, remove it on save & exit
+		if (oReloadInfo.deleteMaxLayer && oReloadInfo.hasHigherLayerChanges) {
+			delete mParsedHash.params[LayerUtils.FL_MAX_LAYER_PARAM];
+		}
+		return mParsedHash;
+	};
+
+	/**
+	 * Reload the app inside FLP or Standalone by removing max layer / draft parameter;
+	 *
+	 * @param {boolean} oReloadInfo - Information needed to
+	 * @param {boolean} oReloadInfo.deleteMaxLayer - Indicates if the <code>sap-ui-fl-max-layer</code> parameter should be removed or not (reset / exit)
+	 * @param  {sap.ui.fl.Layer} oReloadInfo.layer - Current layer
+	 * @param  {boolean} oReloadInfo.hasHigherLayerChanges - Indicates if higher layer changes exist
+	 *
+	 * @return {map} parsedHash
+	 */
+	RuntimeAuthoring.prototype._handleUrlParameterOnExit = function(oReloadInfo) {
+		if (!FlexUtils.getUshellContainer()) {
+			return this._triggerHardReload(oReloadInfo);
+		}
+
+		var mParsedHash = FlexUtils.getParsedURLHash();
+		if (!mParsedHash) {
+			return;
+		}
+
+		mParsedHash = this._removeMaxLayerParameterForFLP(oReloadInfo, mParsedHash);
+		mParsedHash = this._removeVersionParameterForFLP(mParsedHash);
+		this._triggerCrossAppNavigation(mParsedHash);
+
+		// In FLP scenario we need to remove all parameters and also trigger an hard reload on reset
+		if (oReloadInfo.triggerHardReload) {
+			this._reloadPage();
+		}
+	};
+
+	/**
+	 * Returns the correct message - why a reload is needed.
+	 *
+	 * @param  {object}  oReloadInfo - Contains the information needed to return the correct reload message
+	 * @param  {boolean} oReloadInfo.hasHigherLayerChanges - Indicates if higher layer changes exist
+	 * @param  {boolean} oReloadInfo.hasDraftChanges - Indicates if a draft is available
+	 * @param  {sap.ui.fl.Layer} oReloadInfo.layer - Current layer
+	 *
+	 * @return {string} sReason Reload message
+	 */
+	RuntimeAuthoring.prototype._getReloadMessageOnStart = function(oReloadInfo) {
+		var sReason;
+		var bIsCustomerLayer = oReloadInfo.layer === Layer.CUSTOMER;
+
+		if (oReloadInfo.hasHigherLayerChanges && oReloadInfo.hasDraftChanges) {
+			sReason = bIsCustomerLayer ? "MSG_PERSONALIZATION_AND_DRAFT_EXISTS" : "MSG_HIGHER_LAYER_CHANGES_AND_DRAFT_EXISTS";
+		} else if (oReloadInfo.hasHigherLayerChanges) {
+			sReason = bIsCustomerLayer ? "MSG_PERSONALIZATION_EXISTS" : "MSG_HIGHER_LAYER_CHANGES_EXIST";
+		} else if (oReloadInfo.hasDraftChanges) {
+			sReason = "MSG_DRAFT_EXISTS";
+		} // TODO add app descr changes case for start?
+		return sReason;
+	};
+
+	/**
+	 * Returns the correct message - why a reload is needed.
+	 *
+	 * @param  {object}  oReloadInfo - Contains the information needed to return the correct reload message
+	 * @param  {boolean} oReloadInfo.hasHigherLayerChanges - Indicates if sap-ui-fl-max-layer parameter is present in the url
+	 * @param  {boolean} oReloadInfo.hasDraft - Indicates if a draft is available
+	 * @param  {boolean} oReloadInfo.changesNeedReload - Indicates if app descriptor changes need hard reload
+	 * @param  {boolean} oReloadInfo.initialDraftGotActivated - Indicates if a draft got activated and had a draft initially when entering UI adaptation
+
+	 * @param  {sap.ui.fl.Layer} oReloadInfo.layer - Current layer
+	 *
+	 * @returns {string} sReason Reload message
+	 */
+	RuntimeAuthoring.prototype._getReloadMessageOnExit = function(oReloadInfo) {
+		var bIsCustomerLayer = oReloadInfo.layer === Layer.CUSTOMER;
+
+		if (oReloadInfo.hasHigherLayerChanges) {
+			if (!bIsCustomerLayer) {
+				return "MSG_RELOAD_WITH_ALL_CHANGES";
+			}
+			if (oReloadInfo.hasDraft) {
+				return "MSG_RELOAD_WITH_PERSONALIZATION_AND_WITHOUT_DRAFT";
+			}
+			return "MSG_RELOAD_WITH_PERSONALIZATION";
+		}
+
+		if (oReloadInfo.initialDraftGotActivated) {
+			return "MSG_RELOAD_ACTIVATED_DRAFT";
+		}
+
+		if (oReloadInfo.hasDraft) {
+			return "MSG_RELOAD_WITHOUT_DRAFT";
+		}
+
+		if (oReloadInfo.changesNeedReload) {
+			return "MSG_RELOAD_NEEDED";
+		}
 	};
 
 	/**
 	 * Handler for the message box warning the user that personalization changes exist
 	 * and the app will be reloaded
-	 * @return {Promise} Resolving when the user clicks on OK
+	 *
+	 * @param  {Object} oReloadReasons Information to determine which message to show
+	 * @returns {Promise} Resolving when the user clicks on OK
 	 */
-	RuntimeAuthoring.prototype._handleReloadMessageBox = function(sReason) {
-		return Utils._showMessageBox(
-			MessageBox.Icon.INFORMATION,
-			"HEADER_RELOAD_NEEDED",
-			sReason,
-			undefined,
-			"BUTTON_RELOAD_NEEDED"
-		);
+	RuntimeAuthoring.prototype._handleReloadMessageBoxOnExit = function(oReloadReasons) {
+		var sReason = this._getReloadMessageOnExit(oReloadReasons);
+
+		if (sReason) {
+			return Utils.showMessageBox("information", sReason, {
+				titleKey: "HEADER_RELOAD_NEEDED"
+			});
+		}
+		return Promise.resolve();
+	};
+
+	RuntimeAuthoring.prototype._triggerReloadOnStart = function(oReloadInfo) {
+		FlexUtils.ifUShellContainerThen(function() {
+			// clears FlexState and triggers reloading of the flex data without blocking
+			VersionsAPI.loadDraftForApplication({
+				selector: oReloadInfo.selector,
+				layer: oReloadInfo.layer
+			});
+		}, ["CrossApplicationNavigation"]);
+		var sReason = this._getReloadMessageOnStart(oReloadInfo);
+		if (!sReason) {
+			return Promise.resolve();
+		}
+		return Utils.showMessageBox("information", sReason)
+		.then(function() {
+			RuntimeAuthoring.enableRestart(oReloadInfo.layer);
+			if (FlexUtils.getUshellContainer()) {
+				// clears FlexState and triggers reloading of the flex data without blocking
+				var oParsedHash = ReloadInfoAPI.handleParametersOnStart(oReloadInfo);
+				return this._triggerCrossAppNavigation(oParsedHash);
+			}
+			return this._triggerHardReload(oReloadInfo);
+		}.bind(this));
 	};
 
 	/**
-	 * Check if there are e.g. personalization changes and restart the application without them
-	 * Warn the user that the application will be restarted without personalization
-	 * This is only valid when a UShell is present
-	 * @return {Promise} Resolving to false means that reload is not necessary
+	 * Check if there are personalization changes/draft changes and restart the application without/with them;
+	 * Warn the user that the application will be restarted without personalization / with draft changes;
+	 * This is only valid when a UShell is present;
+	 *
+	 * @return {Promise<boolean>} Resolving to false means that reload is not necessary
 	 */
-	RuntimeAuthoring.prototype._handleHigherLayerChangesOnStart = function() {
-		var oUshellContainer = FlexUtils.getUshellContainer();
-		if (oUshellContainer && this.getLayer() !== "USER") {
-			var mParsedHash = FlexUtils.getParsedURLHash();
-			return PersistenceWriteAPI.hasHigherLayerChanges({
-				selector: this.getRootControlInstance(),
-				ignoreMaxLayerParameter: false})
-				.then(function (bHasHigherLayerChanges) {
-					if (bHasHigherLayerChanges) {
-						return this._handleReloadWithoutHigherLayerChangesMessageBoxOnStart().then(function () {
-							var oCrossAppNav = oUshellContainer.getService("CrossApplicationNavigation");
-							if (oCrossAppNav.toExternal && mParsedHash) {
-								return this._reloadWithoutHigherLayerChangesOnStart(mParsedHash, oCrossAppNav);
-							}
-						}.bind(this));
-					}
-				}.bind(this));
+	RuntimeAuthoring.prototype._determineReload = function() {
+		var oReloadInfo = {
+			hasHigherLayerChanges: false,
+			hasDraftChanges: false,
+			layer: this.getLayer(),
+			selector: this.getRootControlInstance(),
+			ignoreMaxLayerParameter: false
+		};
+		return ReloadInfoAPI.getReloadReasonsForStart(oReloadInfo)
+		.then(function (oReloadInfo) {
+			if (oReloadInfo.hasHigherLayerChanges || oReloadInfo.hasDraftChanges) {
+				return this._triggerReloadOnStart(oReloadInfo);
+			}
+		}.bind(this));
+	};
+
+	/**
+	 * Change URL parameters if necessary, which will trigger an reload;
+	 * This function must only be called outside of the ushell.
+	 *
+	 * @param  {Object} oReloadInfo - Information to determine reload is needed
+	 */
+	RuntimeAuthoring.prototype._triggerHardReload = function(oReloadInfo) {
+		oReloadInfo.parameters = document.location.search;
+		var sParameters = ReloadInfoAPI.handleUrlParametersForStandalone(oReloadInfo);
+		if (document.location.search !== sParameters) {
+			document.location.search = sParameters;
+			return Promise.resolve();
 		}
-		return Promise.resolve(false);
+		return this._reloadPage();
 	};
 
 	/**
 	 * When exiting RTA and personalization changes exist, the user can choose to
 	 * reload the app with personalization or stay in the app without the personalization
-	 * @return {Promise} Resolving to RESTART enum indicating if reload is necessary
+	 * @param {boolean} bSkipRestart - Stop RTA without reloading the app in any way
+	 *
+	 * @return {Promise<object>} Resolving to an object containing information about if an reload is needed and how to handle it
 	 */
-	RuntimeAuthoring.prototype._handleReloadOnExit = function() {
-		return Promise.all([
-			(!this._bReloadNeeded) ?
-				this._oSerializer.needsReload() :
-				Promise.resolve(this._bReloadNeeded),
-			// When working with RTA, the MaxLayer parameter will be present in the URL and must
-			// be ignored in the decision to bring up the pop-up (ignoreMaxLayerParameter = true)
-			PersistenceWriteAPI.hasHigherLayerChanges({selector: this.getRootControlInstance(), ignoreMaxLayerParameter: true})
-		]).then(function (aArgs) {
-			var bChangesNeedRestart = aArgs[0];
-			var bHasHigherLayerChanges = aArgs[1];
-			if (bChangesNeedRestart || bHasHigherLayerChanges) {
-				var sRestart = this._RESTART.RELOAD_PAGE;
-				var sRestartReason;
-				var oUshellContainer;
-				if (bHasHigherLayerChanges) {
-					//Loading the app with personalization means the visualization might change,
-					//therefore this message takes precedence
-					var sLayer = this.getLayer();
-					sRestartReason = sLayer === "CUSTOMER" ? "MSG_RELOAD_WITH_PERSONALIZATION" : "MSG_RELOAD_WITH_ALL_CHANGES";
-					oUshellContainer = FlexUtils.getUshellContainer();
-					if (!bChangesNeedRestart && oUshellContainer) {
-						//if changes need restart this method has precedence, but in this case
-						//the faster cross app navigation to the same app (restart via hash) is possible
-						sRestart = this._RESTART.VIA_HASH;
-					}
-				} else if (bChangesNeedRestart) {
-					sRestartReason = "MSG_RELOAD_NEEDED";
-				}
-				return this._handleReloadMessageBox(sRestartReason).then(function() {
-					return sRestart;
-				});
-			}
-			//no reload needed
-			return this._RESTART.NOT_NEEDED;
+	RuntimeAuthoring.prototype._handleReloadOnExit = function(bSkipRestart) {
+		if (bSkipRestart) {
+			return Promise.resolve({reloadMethod: this._RELOAD.NOT_NEEDED});
+		}
+
+		var oReloadPromise = this._bReloadNeeded ? Promise.resolve(this._bReloadNeeded) : this._oSerializer.needsReload();
+		return oReloadPromise.then(function (bChangesNeedReload) {
+			var oReloadInfo = {
+				layer: this.getLayer(),
+				selector: this.getRootControlInstance(),
+				changesNeedReload: bChangesNeedReload,
+				hasDirtyDraftChanges: this._oVersionsModel.getProperty("/draftAvailable") && this._oVersionsModel.getProperty("/dirtyChanges"),
+				versioningEnabled: this._oVersionsModel.getProperty("/versioningEnabled"),
+				activeVersion: this._oVersionsModel.getProperty("/activeVersion")
+			};
+			oReloadInfo = ReloadInfoAPI.getReloadMethod(oReloadInfo);
+			return this._handleReloadMessageBoxOnExit(oReloadInfo).then(function () {
+				return oReloadInfo;
+			});
 		}.bind(this));
 	};
 
@@ -1768,4 +1980,4 @@ function(
 	};
 
 	return RuntimeAuthoring;
-}, /* bExport= */true);
+});

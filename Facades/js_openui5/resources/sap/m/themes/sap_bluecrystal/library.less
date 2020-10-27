@@ -2,7 +2,7 @@
 
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -76,7 +76,7 @@
 	text-shadow: none;
 }
 
-html.sap-desktop .sapMActionSelectPicker .sapMBtnDefault:not(.sapMBtnActive):hover {
+html.sap-desktop .sapMActionSelectPicker .sapMBtn:not(.sapMBtnDisabled) .sapMBtnDefault:not(.sapMBtnActive):hover {
 	background: @sapUiButtonLiteActionSelectHoverBackground;
 }
 
@@ -540,10 +540,10 @@ html.sap-desktop .sapMCrslHud .sapMCrslNext:focus {
 	}
 }
 
-html[data-sap-ui-browser^='ie'].sap-desktop .sapMCrslPrev:focus .sapUiIcon,// TODO remove after 1.62 version
-html[data-sap-ui-browser^='ie'].sap-desktop .sapMCrslNext:focus .sapUiIcon,// TODO remove after 1.62 version
-html[data-sap-ui-browser^='ie'].sap-desktop .sapMCrslPrev .sapUiIcon:focus,// TODO remove after 1.62 version
-html[data-sap-ui-browser^='ie'].sap-desktop .sapMCrslNext .sapUiIcon:focus {// TODO remove after 1.62 version
+html[data-sap-ui-browser^='ie'].sap-desktop .sapMCrslPrev:focus .sapUiIcon,// TODO remove after the end of support for Internet Explorer
+html[data-sap-ui-browser^='ie'].sap-desktop .sapMCrslNext:focus .sapUiIcon,// TODO remove after the end of support for Internet Explorer
+html[data-sap-ui-browser^='ie'].sap-desktop .sapMCrslPrev .sapUiIcon:focus,// TODO remove after the end of support for Internet Explorer
+html[data-sap-ui-browser^='ie'].sap-desktop .sapMCrslNext .sapUiIcon:focus {// TODO remove after the end of support for Internet Explorer
   	&::before {
 		position: absolute;
 		padding-top: 0.425rem;
@@ -813,9 +813,6 @@ html.sap-desktop .sapMDialog > footer.sapMDialogActions {
 /* CSS for control sap.m/FlexBox  */
 /* BlueCrystal theme              */
 /* ============================== */
-
-/* mixin call for creating container content padding classes (arguments: rootContainer, contentSelector) */
-.sapUiContainerContentPadding(~".sapMFlexItem", ~"");
 
 .sapMFlexBoxBGTranslucent {
 	background-color: fade(@sapUiGroupContentBackground, 80);
@@ -1248,7 +1245,7 @@ div.sapMComboBoxBasePicker {
 /* =================================== */
 
 .sapMMsgStripCloseButton {
-	/* TODO remove after 1.62 version */
+	/* TODO remove after the end of support for Internet Explorer */
 	// centering the content of the ::after element
 	// does not work in IE if directly set on ::after
 	// 1.5rem - 4px (1px border and 1px offset per side)
@@ -2312,7 +2309,7 @@ html.sap-desktop .sapMRI:focus:not(.sapMRIDisabled) {
 	outline-offset: -1px;
 }
 
-/* TODO remove after 1.62 version */
+/* TODO remove after the end of support for Internet Explorer */
 /* IE ignores outline-offset. Use an overlay: */
 html[data-sap-ui-browser^="ie"].sap-desktop {
 	.sapMRI:focus {
@@ -3215,7 +3212,7 @@ html.sap-desktop .sapMToken.sapMTokenSelected:focus {
 	outline: 1px dotted @sapUiContentContrastFocusColor;
 }
 
-html[data-sap-ui-browser^="ie"].sap-desktop, /* TODO remove after 1.62 version */
+html[data-sap-ui-browser^="ie"].sap-desktop, /* TODO remove after the end of support for Internet Explorer */
 html[data-sap-ui-browser^="ed"].sap-desktop {
 	.sapMToken:focus {
 		.sapMTokenText:before {
@@ -3237,7 +3234,7 @@ html[data-sap-ui-browser^="ed"].sap-desktop {
 /* BlueCrystal theme                */
 /* ================================ */
 
-html[data-sap-ui-browser^="ie"].sap-desktop, /* TODO remove after 1.62 version */
+html[data-sap-ui-browser^="ie"].sap-desktop, /* TODO remove after the end of support for Internet Explorer */
 html[data-sap-ui-browser^="ed"].sap-desktop {
 	.sapMTokenizer:focus {
 		&:before {
@@ -3427,30 +3424,25 @@ html.sap-desktop .sapUiSizeCompact .sapMTB.sapMListHdrTBar.sapMVSDFilterHeaderTo
 	border-color: @sapUiGroupContentBorderColor;
 }
 
-.sapMWizardProgressNavStep:hover .sapMWizardProgressNavAnchorCircle {
+.sapMWizardProgressNavStep:hover .sapMWizardProgressNavStepCircle {
 	background: @sapUiButtonHoverBackground;
 }
 
-.sapMWizardProgressNavStep[data-sap-ui-wpn-step-active="true"]:hover .sapMWizardProgressNavAnchorCircle {
+.sapMWizardProgressNavStep[data-sap-ui-wpn-step-active="true"]:hover .sapMWizardProgressNavStepCircle {
 	background: @sapUiHighlight;
 }
 
-.sapMWizardProgressNavAnchor:focus {
-	outline: 1px dotted @sapUiContentFocusColor;
-	outline-offset: 1px;
-}
-
-.sapMWizardProgressNavAnchorCircle {
+.sapMWizardProgressNavStepCircle {
 	color: @sapUiButtonTextColor;
 	background: @sapUiSegmentedButtonBackground;
 	border-color: @sapUiSegmentedButtonSelectedBackground;
 }
 
-.sapMWizardProgressNavAnchorTitle {
+.sapMWizardProgressNavStepTitle {
 	background: @sapUiGroupContentBackground;
 }
 
-.sapMWizardProgressNavAnchorTitle:hover {
+.sapMWizardProgressNavStepTitle:hover {
 	color: darken(@sapUiGroupTitleTextColor, 10);
 }
 
@@ -3460,8 +3452,8 @@ html.sap-desktop .sapUiSizeCompact .sapMTB.sapMListHdrTBar.sapMVSDFilterHeaderTo
 
 .sapMWizardProgressNavStep[data-sap-ui-wpn-step-active="true"] {
 
-	/* anchors in all steps after the active one have inactive style */
-	& ~ .sapMWizardProgressNavStep .sapMWizardProgressNavAnchorCircle {
+	/* all steps after the active one have inactive style */
+	& ~ .sapMWizardProgressNavStep .sapMWizardProgressNavStepCircle {
 		color: @sapUiSegmentedButtonIconColor;
 		background: @sapUiButtonBackground;
 		border-color: @sapUiSegmentedButtonBorderColor;

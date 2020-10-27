@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -199,7 +199,8 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/Core", "sap/ui/core/Renderer"
 	 * @protected
 	 */
 	StandardListItemRenderer.renderInfo = function (rm, oLI) {
-		var sInfoDir = oLI.getInfoTextDirection();
+		var sInfoDir = oLI.getInfoTextDirection(),
+			bInfoStateInverted = oLI.getInfoStateInverted();
 
 		rm.openStart("div", oLI.getId() + "-info");
 		if (sInfoDir !== TextDirection.Inherit) {
@@ -208,7 +209,13 @@ sap.ui.define(["sap/ui/core/library", "sap/ui/core/Core", "sap/ui/core/Renderer"
 		rm.class("sapMSLIInfo");
 		rm.class("sapMSLIInfo" + oLI.getInfoState());
 
-		rm.class(oLI.showCompleteInfoText() ? "sapMSLIInfoTextFull" : "sapMSLIInfoTextMinWidth");
+		if (bInfoStateInverted) {
+			rm.class("sapMSLIInfoStateInverted");
+		}
+
+		var fWidth = oLI._measureInfoTextWidth();
+
+		rm.style("min-width", oLI._getInfoTextMinWidth(fWidth));
 
 		rm.openEnd();
 		rm.text(oLI.getInfo());

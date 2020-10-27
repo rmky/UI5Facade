@@ -1,17 +1,17 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
 	"sap/ui/integration/designtime/baseEditor/propertyEditor/BasePropertyEditor",
-	"sap/m/Input",
-	"sap/ui/base/BindingParser",
+	"sap/ui/integration/designtime/baseEditor/util/isValidBindingString",
+	"sap/base/util/restricted/_isNil",
 	"sap/ui/core/format/NumberFormat"
 ], function (
 	BasePropertyEditor,
-	Input,
-	BindingParser,
+	isValidBindingString,
+	_isNil,
 	NumberFormat
 ) {
 	"use strict";
@@ -21,48 +21,77 @@ sap.ui.define([
 	 * Constructor for a new <code>NumberEditor</code>.
 	 * This allows you to set numeric values or binding paths for a specified property of a JSON object.
 	 * The editor is rendered as a {@link sap.m.Input}, which prevents non-numeric user input unless it is a valid binding path.
-	 * To get notified about changes made with the editor, you can use the <code>attachPropertyChange</code> method,
+	 * To get notified about changes made with the editor, you can use the <code>attachValueChange</code> method,
 	 * which passes the current property value as a number or binding string to the provided callback function when the state changes.
 	 *
 	 * @extends sap.ui.integration.designtime.baseEditor.propertyEditor.BasePropertyEditor
 	 * @alias sap.ui.integration.designtime.baseEditor.propertyEditor.numberEditor.NumberEditor
 	 * @author SAP SE
 	 * @since 1.72
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @private
 	 * @experimental 1.72
 	 * @ui5-restricted
 	 */
 	var NumberEditor = BasePropertyEditor.extend("sap.ui.integration.designtime.baseEditor.propertyEditor.numberEditor.NumberEditor", {
-		constructor: function() {
-			BasePropertyEditor.prototype.constructor.apply(this, arguments);
-			this._oInput = new Input({value: "{value}"});
-			this._oInput.attachLiveChange(function(oEvent) {
-				var sInput = this._validate(this._oInput.getValue());
-				if (sInput !== null) {
-					this.firePropertyChange(sInput);
-				}
-			}, this);
-			this.addContent(this._oInput);
-		},
-		_validate: function(sValue) {
-			try {
-				var oParsed = BindingParser.complexParser(sValue);
-				var nValue = NumberFormat.getFloatInstance().parse(sValue);
-				if (!oParsed && sValue && isNaN(nValue)) {
-					throw "NaN";
-				}
-				this._oInput.setValueState("None");
-				return oParsed || !sValue ? sValue : nValue;
-			} catch (vError) {
-				this._oInput.setValueState("Error");
-				this._oInput.setValueStateText(this.getI18nProperty("BASE_EDITOR.NUMBER.INVALID_BINDING_OR_NUMBER"));
-				return null;
-			}
-		},
+		xmlFragment: "sap.ui.integration.designtime.baseEditor.propertyEditor.numberEditor.NumberEditor",
+		invalidInputError: "BASE_EDITOR.NUMBER.INVALID_BINDING_OR_NUMBER",
 		renderer: BasePropertyEditor.getMetadata().getRenderer().render
 	});
+
+	NumberEditor.prototype.getDefaultValidators = function () {
+		return Object.assign(
+			{},
+			BasePropertyEditor.prototype.getDefaultValidators.call(this),
+			{
+				isNumber: {
+					type: "isNumber"
+				}
+			}
+		);
+	};
+
+	NumberEditor.configMetadata = Object.assign({}, BasePropertyEditor.configMetadata);
+
+	NumberEditor.prototype.formatValue = function (sValue) {
+		if (_isNil(sValue) || isValidBindingString(sValue, false)) {
+			return sValue;
+		}
+
+		var nValue = parseFloat(sValue);
+		if (!this.validateNumber(nValue)) {
+			return sValue;
+		}
+
+		return this.getFormatterInstance().format(nValue);
+	};
+
+	NumberEditor.prototype._onLiveChange = function (oEvent) {
+		// When a string arrives through editor, we assume the users locale was used
+		var nValue = this._parseLocalized(oEvent.getParameter("newValue"));
+		BasePropertyEditor.prototype.setValue.call(this, nValue);
+	};
+
+	/**
+	 * Override to customize input validation
+	 */
+	NumberEditor.prototype.validateNumber = function (vValue) {
+		return !isNaN(vValue);
+	};
+
+	NumberEditor.prototype.getFormatterInstance = function () {
+		return NumberFormat.getFloatInstance();
+	};
+
+	NumberEditor.prototype._parseLocalized = function (vValue) {
+		if (!vValue || isValidBindingString(vValue, false)) {
+			return vValue;
+		}
+
+		var nValue = this.getFormatterInstance().parse(vValue);
+		return nValue;
+	};
 
 	return NumberEditor;
 });

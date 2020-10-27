@@ -1,26 +1,16 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	"sap/ui/fl/LrepConnector"
 ], function(
-	LrepConnector
 ) {
 	"use strict";
 
 	//Descriptor Variant
 	var Utils = function() {};
-
-	Utils.prototype.sendRequest = function(sRoute, sMethod, mMap) {
-		if (!this._oLREPConnector) {
-			this._oLREPConnector = LrepConnector.createConnector();
-		}
-
-		return this._oLREPConnector.send(sRoute, sMethod, mMap);
-	};
 
 	Utils.prototype.getNameAndNameSpace = function(sId, sReference) {
 		//namespace and file name according to namespace concept: apps/<Descriptor ID>/appVariants/<Descriptor Variant ID>/manifest.appdescr_variant
@@ -80,7 +70,7 @@ sap.ui.define([
 	Utils.prototype.checkPackage = function(sPackage) {
 		//corresponding data element in ABAP: DEVCLASS, CHAR30
 		//partial check: length le 30, alphanumeric, upper case, / for namespace, underscore, no space
-		if (!/^[A-Z0-9/_]{1,30}$/.test(sPackage)) {
+		if (!/^[A-Z0-9/_]{1,30}$/.test(sPackage) && sPackage !== "$TMP") {
 			throw new Error("Wrong format for provided \"sPackage\" parameter");
 		}
 	};

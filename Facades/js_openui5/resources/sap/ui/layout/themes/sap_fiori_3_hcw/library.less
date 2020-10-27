@@ -2,7 +2,7 @@
 
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -64,7 +64,30 @@
 	line-height: 2.75rem;
 	padding: 0 1rem;
 }
+
+/* edit mode */
+/* labels next to field */
+.sapUiFormEdit > .sapUiFormCLSmallColumns .sapUiFormElementLbl:not(.sapUiFormCLCellsS12),
+.sapUiFormEdit > .sapUiFormCLWideColumns .sapUiFormElementLbl:not(.sapUiFormCLCellsL12){
+	padding-top: 0.875rem;
+}
 /* END "ColumnLayout.less" */
+
+/* START "BlockLayout.less" */
+/* ============================================== */
+/* CSS for control sap.ui.layout/BlockLayout      */
+/* Quartz High Contrast White theme               */
+/* ============================================== */
+
+@_sap_ui_layout_BlockLayout_BackgroundDashboardMargin: 0.5rem;
+@_sap_ui_layout_BlockLayout_BackgroundDashboardEdgeChildMargin: 1rem;
+@_sap_ui_layout_BlockLayout_BackgroundDashboardAfterScrollbarMargin: 0.75rem;
+
+@_sap_ui_layout_BlockLayout_LinkTextShadow: none;
+
+@_sap_ui_layout_BlockLayout_BackgroundDashboardColor: @sapUiTileBackground;
+@_sap_ui_layout_BlockLayout_BackgroundDashboardBorderRadius: 0.25rem;
+/* END "BlockLayout.less" */
 
 /* START "BlockLayoutCell.less" */
 /* ============================================== */
@@ -96,6 +119,21 @@
 .sapUiGridHeader.sapUiFormContainerToolbar > .sapMTB {
 	padding: 0;
 }
+
+/* alignment of Labels */
+.sapUiFormEdit.sapUiFormM > .sapUiGrid > tbody > tr > td.sapUiFormElementLbl {
+	padding-top: 0.875rem;
+}
+
+.sapUiFormEdit.sapUiFormM > .sapUiGrid > tbody > tr.sapUiGridConteinerFirstRow > td.sapUiFormElementLbl {
+	padding-top: 2.875rem;
+}
+
+.sapUiFormEdit.sapUiFormM >.sapUiGrid > tbody > tr:first-child > td.sapUiFormElementLbl, /* if no Form title */
+.sapUiFormEdit[aria-labelledby].sapUiFormM > .sapUiGrid > tbody > tr:nth-child(2) > td.sapUiFormElementLbl {
+	padding-top: 1.875rem;
+}
+
 /* END "GridLayout.less" */
 
 /* START "ResponsiveGridLayout.less" */
@@ -111,6 +149,20 @@
 	line-height: 2.75rem;
 	padding: 0 1rem;
 }
+
+/* Toolbar */
+.sapUiFormResGrid.sapUiFormToolbar > div:first-child {
+	padding-right: 1rem;
+}
+
+/* alignment of Labels */
+.sapUiFormEdit.sapUiFormM .sapUiRespGridMedia-Std-Phone.sapUiFormResGridCont > .sapUiFormElementLbl:not(.sapUiRespGridSpanS12),
+.sapUiFormEdit.sapUiFormM .sapUiRespGridMedia-Std-Tablet.sapUiFormResGridCont > .sapUiFormElementLbl:not(.sapUiRespGridSpanM12),
+.sapUiFormEdit.sapUiFormM .sapUiRespGridMedia-Std-Desktop.sapUiFormResGridCont > .sapUiFormElementLbl:not(.sapUiRespGridSpanL12),
+.sapUiFormEdit.sapUiFormM .sapUiRespGridMedia-Std-LargeDesktop.sapUiFormResGridCont > .sapUiFormElementLbl:not(.sapUiRespGridSpanXL12){
+	padding-top: 0.875rem;
+}
+
 /* END "ResponsiveGridLayout.less" */
 
 /* START "ResponsiveLayout.less" */
@@ -133,6 +185,16 @@
 .sapUiRLContainer.sapUiFormContainerToolbar > .sapMTB {
 	padding: 0;
 }
+
+/* alignment of Label */
+.sapUiFormEdit.sapUiFormM .sapUiRLElementWithLabel > .sapUiRFLRow:not(.sapUiRFLCompleteRow) > .sapUiRFLContainer:first-child > .sapUiRFLContainerContent{
+	padding-top: 0.875rem;
+}
+
+html[data-sap-ui-browser^="ff"] .sapUiFormEdit.sapUiFormM .sapUiRLElementWithLabel > .sapUiRFLRow:not(.sapUiRFLCompleteRow) > .sapUiRFLContainer:first-child > .sapUiRFLContainerContent{
+	padding-top: 0.8125rem;
+}
+
 /* END "ResponsiveLayout.less" */
 
 /* START "SimpleForm.less" */
@@ -153,47 +215,29 @@
 /* Quartz High Contrast White theme        */
 /* ======================================= */
 
+@_sap_ui_layout_Splitter_BarActiveDecorationColors: @sapUiObjectHeaderBorderColor, @sapUiObjectHeaderBorderColor;
+@_sap_ui_layout_Splitter_BarDecorationColors: @sapUiObjectHeaderBorderColor, fade(@sapUiObjectHeaderBorderColor, 0);
+@_sap_ui_layout_Splitter_BarBorder: 0.0625rem solid @sapUiGroupContentBorderColor;
+@_sap_ui_layout_Splitter_BarHoverIconBorderColor: @sapUiButtonLiteHoverBorderColor;
+@_sap_ui_layout_Splitter_BarHoverIconBackground: @sapUiButtonLiteHoverBackground;
+
 .sapUiLoSplitter {
 	background-color: @sapUiHcStandardBackground;
 }
 
-.sapUiLoSplitterOverlay > .sapUiLoSplitterOverlayBar {
-	background-color: @sapUiGlobalBackgroundColor;
-}
-
-
-.sapUiLoSplitterH > .sapUiLoSplitterBar > .sapUiIcon.sapUiLoSplitterBarIcon::before,
-.sapUiLoSplitterH > .sapUiLoSplitterOverlay > .sapUiLoSplitterOverlayBar > .sapUiIcon.sapUiLoSplitterBarIcon::before,
-.sapUiLoSplitterV > .sapUiLoSplitterBar > .sapUiIcon.sapUiLoSplitterBarIcon::before,
-.sapUiLoSplitterV > .sapUiLoSplitterOverlay > .sapUiLoSplitterOverlayBar > .sapUiIcon.sapUiLoSplitterBarIcon::before,
-.sapUiLoSplitterV > .sapUiLoSplitterBar > .sapUiIcon.sapUiLoSplitterBarIcon::after,
-.sapUiLoSplitterV > .sapUiLoSplitterOverlay > .sapUiLoSplitterOverlayBar > .sapUiIcon.sapUiLoSplitterBarIcon::after {
-	content: "";
-}
-
-.sapUiLoSplitter > .sapUiLoSplitterBar,
-.sapUiLoSplitterOverlay > .sapUiLoSplitterOverlayBar {
-  background-color: @sapUiHcReducedAltForeground;
-}
-
-.sapUiLoSplitter > .sapUiLoSplitterBar:hover,
-.sapUiLoSplitter > .sapUiLoSplitterOverlay > .sapUiLoSplitterOverlayBar {
-	background-color: @sapUiHcStandardForeground;
-}
-
 /*********************************** Focus outline**********************************/
 
-.sapUiLoSplitter > .sapUiLoSplitterBar:focus {
-	background-color:  @sapUiHcStandardBackground;
+.sapUiLoSplitter > .sapUiLoSplitterBar,
+.sapUiLoSplitter > .sapUiLoSplitterOverlay .sapUiLoSplitterOverlayBar {
+	&:focus::after {
+		border-width: 2px;
+		top: -1px;
+		bottom: -1px;
+		left: -1px;
+		right: -1px;
+	}
 }
 
-.sapUiLoSplitter > .sapUiLoSplitterBar:focus::before {
-	border-width: 2px;
-	top: -1px;
-	bottom: -1px;
-	left: -1px;
-	right: -1px;
-}
 /* END "Splitter.less" */
 
 /* START "ResponsiveSplitter.less" */
@@ -202,49 +246,8 @@
 /* Quartz High Contrast White theme                  */
 /* ================================================= */
 
-.sapUiResponsiveSplitterPaginatorButton {
-	background-color: transparent;
+@_sap_ui_layout_ResponsiveSplitter_PaginatorHeight: 2.75rem;
+@_sap_ui_layout_ResponsiveSplitter_PaginatorButtonWidth: 2.25rem;
+@_sap_ui_layout_ResponsiveSplitter_PaginatorButtonHeight: 2.25rem;
 
-	&:after {
-		background-color: @sapUiHcReducedAltForeground;
-	}
-
-	&:hover {
-		background-color: @sapUiHcHighlightBackground;
-
-		&:after {
-			background-color: @sapUiHcStandardForeground;
-		}
-	}
-
-	&:focus {
-
-		&:before {
-			border: 1px dotted @sapUiContentFocusColor;
-		}
-	}
-}
-
-.sapUiResponsiveSplitterPaginatorSelectedButton {
-	&:after {
-		background-color: @sapUiHcStandardForeground;
-	}
-}
-
-html.sap-phone .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage > .sapUiLoSplitter .sapUiLoSplitterBar,
-html.sap-tablet .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage > .sapUiLoSplitter .sapUiLoSplitterBar,
-html.sap-phone .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage > .sapUiLoSplitter .sapUiLoSplitterOverlayBar,
-html.sap-tablet .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage > .sapUiLoSplitter .sapUiLoSplitterOverlayBar {
-	& .sapUiLoSplitterBarIcon:after {
-		background-color: @sapUiHcStandardBackground;
-		border-color: @sapUiHcStandardForeground;
-	}
-}
-
-html.sap-phone .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage > .sapUiLoSplitter .sapUiLoSplitterOverlayBar,
-html.sap-tablet .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage > .sapUiLoSplitter .sapUiLoSplitterOverlayBar {
-	& .sapUiLoSplitterBarIcon:after {
-		background-color: @sapUiHcHighlightBackground;
-	}
-}
 /* END "ResponsiveSplitter.less" */

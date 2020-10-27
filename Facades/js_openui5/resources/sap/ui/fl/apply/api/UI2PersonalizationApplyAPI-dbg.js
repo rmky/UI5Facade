@@ -1,15 +1,17 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
-	"sap/ui/fl/apply/_internal/ChangesController",
-	"sap/ui/fl/Cache"
+	"sap/ui/fl/apply/_internal/flexState/UI2Personalization/UI2PersonalizationState",
+	"sap/ui/fl/apply/_internal/flexState/FlexState",
+	"sap/ui/fl/apply/_internal/ChangesController"
 ], function(
-	ChangesController,
-	Cache
+	UI2PersonalizationState,
+	FlexState,
+	ChangesController
 ) {
 	"use strict";
 
@@ -39,10 +41,9 @@ sap.ui.define([
 	 	 * @ui5-restricted
 		 */
 		load: function(mPropertyBag) {
-			var oFlexController = ChangesController.getDescriptorFlexControllerInstance(mPropertyBag.selector);
+			var oFlexController = ChangesController.getFlexControllerInstance(mPropertyBag.selector);
 
 			mPropertyBag.reference = oFlexController.getComponentName();
-			mPropertyBag.appVersion = oFlexController.getAppVersion();
 
 			if (
 				!mPropertyBag.reference
@@ -51,7 +52,11 @@ sap.ui.define([
 				return Promise.reject(new Error("not all mandatory properties were provided for the loading of the personalization"));
 			}
 
-			return Cache.getPersonalization(mPropertyBag.reference, mPropertyBag.appVersion, mPropertyBag.containerKey, mPropertyBag.itemName);
+			return FlexState.initialize({
+				componentId: mPropertyBag.selector.getId()
+			}).then(function() {
+				return UI2PersonalizationState.getPersonalization(mPropertyBag.reference, mPropertyBag.containerKey, mPropertyBag.itemName);
+			});
 		}
 	};
 

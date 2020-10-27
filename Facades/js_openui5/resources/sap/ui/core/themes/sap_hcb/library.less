@@ -2,7 +2,7 @@
 
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -82,88 +82,16 @@
 /* High Contrast Black theme                     */
 /* ============================================= */
 
-.sapUiBody {
-	scrollbar-base-color: @sapHCStandardBG;
-	scrollbar-face-color: @sapHCStandardFG;
-	scrollbar-3dlight-color: @sapHCStandardFG;
-	scrollbar-arrow-color: @sapHCStandardFG;
-	scrollbar-darkshadow-color:@sapHCStandardBG;
-	scrollbar-shadow-color: @sapHCStandardFG;
-	scrollbar-track-color: @sapHCReducedBG;
-	scrollbar-highlight-color: @sapHCStandardBG;
-}
+/****** Safari + Chrome on Desktop ******/
 
 html.sap-desktop ::-webkit-scrollbar {
-	background-color: @sapHCStandardBG;
-	border-left: 1px solid @sapHCReducedAltFG;
-}
-
-html.sap-desktop ::-webkit-scrollbar:horizontal {
-	height: 0.75rem;
-}
-
-html.sap-desktop ::-webkit-scrollbar:vertical {
-	width: 0.75rem;
+	border: 1px solid @sapUiScrollBarFaceColor;
 }
 
 html.sap-desktop ::-webkit-scrollbar-thumb {
-	background-color: @sapHCReducedAltFG;
-	box-shadow: inset @sapHCStandardBG 0 0 0 0.125rem;
-	border-left: 1px solid @sapHCReducedAltFG;
-}
-
-html.sap-desktop ::-webkit-scrollbar-thumb:hover {
-	background-color: @sapHCStandardFG;
+	border: 1px solid @sapUiScrollBarFaceColor;
 }
 /* END "BrowserScrollbar.less" */
-
-/* START "Icon.less" */
-/* ================================= */
-/* CSS for control sap.ui.core/Icon  */
-/* High Contrast Black theme         */
-/* ================================= */
-
-.sapUiIcon:focus {
-	outline-color: @sapHCStandardFG;
-}
-
-.sapUiIconColorNeutral {
-	color: @sapHCNeutral;
-}
-
-.sapUiIconColorCritical {
-	color: @sapHCCritical;
-}
-
-.sapUiIconColorPositive {
-	color: @sapHCPositive;
-}
-
-.sapUiIconColorNegative {
-	color: @sapHCNegative;
-}
-
-.sapUiIconBGColorNeutral {
-	background-color: @sapHCNeutral;
-}
-
-.sapUiIconBGColorCritical {
-	background-color: @sapHCCritical;
-}
-
-.sapUiIconBGColorPositive {
-	background-color: @sapHCPositive;
-}
-
-.sapUiIconBGColorNegative {
-	background-color: @sapHCNegative;
-}
-
-.sapUiIconBGColorContrast {
-	background-color: @sapUiHighlight;
-}
-
-/* END "Icon.less" */
 
 /* START "LocalBusyIndicator.less" */
 /* =============================================== */

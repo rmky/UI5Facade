@@ -144,17 +144,20 @@ sap.ui.define([
 			
 			sBody = sBody ? sBody.trim() : '';
 			if (! sContentType) {
-				if (sBody.startsWith('{') && sBody.endsWith('}')) {
-					try {
-						oBody = JSON.parse(sBody);
-						sContentType = 'json';
-					} catch (e) {
+				switch (true) {
+					case sBody.startsWith('{') && sBody.endsWith('}'):
+						try {
+							oBody = JSON.parse(sBody);
+							sContentType = 'json';
+						} catch (e) {
+							sContentType = 'string';
+						}
+						break;
+					case sBody.startsWith('<') && sBody.endsWith('>'):
+						sContentType = 'html';
+						break;
+					default:
 						sContentType = 'string';
-					}
-				} else if (sBody.startsWith('<') && sBody.endsWith('>')) {
-					sContentType = 'html';
-				} else {
-					sContentType = 'string';
 				}
 			}
 			
@@ -263,6 +266,9 @@ sap.ui.define([
 					
 				default:
 					if (sContentType === 'string') {
+						if (sBody.includes('{i18n>')) {
+							return this.showDialog(sTitle, new sap.m.Text({text: sBody}).addStyleClass('sapUiSmallMargin'), 'Error');
+						}
 						sBody = '<p class="sapUiSmallMargin">' + sBody + '</p>';
 					}
 					return this.showHtmlInDialog(sTitle, sBody, 'Error');
@@ -295,6 +301,7 @@ sap.ui.define([
 		showAjaxErrorDialog : function (jqXHR, sMessage) {console.log('ajax error dialog');
 			var sContentType = jqXHR.getResponseHeader('Content-Type');
 			var sBodyType;
+			var sBody;
 			
 			if (sContentType) {
 				if (sContentType.match(/json/i)) {
@@ -303,7 +310,20 @@ sap.ui.define([
 					sBodyType = 'html';
 				}
 			}
-			return this.showErrorDialog(jqXHR.responseText, (sMessage ? sMessage : jqXHR.status + " " + jqXHR.statusText), sBodyType);
+			
+			if (! sMessage) {
+				switch (jqXHR.status) {
+					case 0: 
+						sMessage = '{i18n>ERROR.NO_CONNECTION}';
+						sBody = '{i18n>ERROR.NO_CONNECTION_HINT}';
+						break;
+					default:
+						sMessage = jqXHR.status + " " + jqXHR.statusText;
+						sBody = jqXHR.responseText;
+				}
+			}
+			
+			return this.showErrorDialog(sBody, sMessage, sBodyType);
 		},
 		
 		/**

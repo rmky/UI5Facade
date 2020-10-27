@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -22,7 +22,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', './library', 'sap/ui/core/Element', '
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -56,13 +56,6 @@ sap.ui.define(['sap/ui/thirdparty/jquery', './library', 'sap/ui/core/Element', '
 			alt : {type : "string", group : "Misc", defaultValue : null}
 		}
 	}});
-
-	///**
-	// * This file defines behavior for the control,
-	// */
-	//sap.ui.dev.Area.prototype.init = function(){
-	//   // do something for initialization...
-	//};
 
 	/**
 	 * Function is called when Link is clicked.

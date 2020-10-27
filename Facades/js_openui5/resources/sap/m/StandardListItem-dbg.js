@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -8,13 +8,14 @@
 sap.ui.define([
 	"sap/ui/core/library",
 	"sap/ui/core/IconPool",
+	"sap/ui/core/theming/Parameters",
 	"sap/ui/Device",
 	"./library",
 	"./ListItemBase",
 	"./Image",
 	"./StandardListItemRenderer"
 ],
-	function(coreLibrary, IconPool, Device, library, ListItemBase, Image, StandardListItemRenderer) {
+	function(coreLibrary, IconPool, ThemeParameters, Device, library, ListItemBase, Image, StandardListItemRenderer) {
 	"use strict";
 
 
@@ -36,7 +37,7 @@ sap.ui.define([
 	 * @extends sap.m.ListItemBase
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -117,7 +118,15 @@ sap.ui.define([
 			 * In the desktop mode, initial rendering of the control contains 300 characters along with a button to expand and collapse the text whereas in the phone mode, the character limit is set to 100 characters.
 			 * @since 1.67
 			 */
-			wrapping : {type : "boolean", group : "Behavior", defaultValue : false}
+			wrapping : {type : "boolean", group : "Behavior", defaultValue : false},
+
+			/**
+			 * Determines the inverted rendering behavior of the info text and the info state.
+			 * The color defined by the <code>infoState</code> property is rendered as the background color for the info text, if this property is set to <code>true</code>.
+			 *
+			 * @since 1.74
+			 */
+			infoStateInverted : {type : "boolean", group : "Appearance", defaultValue : false}
 		},
 		designtime: "sap/m/designtime/StandardListItem.designtime"
 	}});
@@ -224,13 +233,65 @@ sap.ui.define([
 	};
 
 	/**
-	 * Returns <code>true</code>, if the info text is less than or equal to maximum limit of characters.
-	 * @returns {boolean} show the complete info text.
+	 * Measures the info text width.
+	 * @param {boolean} bThemeChanged Indicated whether font style should be reinitialized if theme is changed
 	 *
+	 * @returns {integer} Info text width
 	 * @private
 	 */
-	StandardListItem.prototype.showCompleteInfoText = function() {
-		return this.getInfo().length <= 15;
+	StandardListItem.prototype._measureInfoTextWidth = function(bThemeChanged) {
+		if (!StandardListItem._themeInfo) {
+			StandardListItem._themeInfo = {};
+		}
+
+		if (!StandardListItem._themeInfo.sFontFamily || bThemeChanged) {
+			StandardListItem._themeInfo.sFontFamily = ThemeParameters.get("sapUiFontFamily");
+		}
+
+		if (!StandardListItem._themeInfo.sFontStyleInfoStateInverted || bThemeChanged) {
+			StandardListItem._themeInfo.sFontStyleInfoStateInverted = "bold " + parseFloat(ThemeParameters.get("sapMFontSmallSize")) * 16 + "px" + " " + StandardListItem._themeInfo.sFontFamily;
+		}
+
+		if (!StandardListItem._themeInfo.sFontStyle || bThemeChanged) {
+			StandardListItem._themeInfo.sFontStyle = parseFloat(ThemeParameters.get("sapMFontMediumSize")) * 16 + "px" + " " + StandardListItem._themeInfo.sFontFamily;
+		}
+
+		if (!StandardListItem._themeInfo.iBaseFontSize || bThemeChanged) {
+			StandardListItem._themeInfo.iBaseFontSize = parseInt(library.BaseFontSize) || 16;
+		}
+
+		if (!StandardListItem._oCanvas) {
+			StandardListItem._oCanvas = document.createElement("canvas");
+			StandardListItem._oCtx = StandardListItem._oCanvas.getContext("2d");
+		}
+
+		if (this.getInfoStateInverted()) {
+			StandardListItem._oCtx.font = StandardListItem._themeInfo.sFontStyleInfoStateInverted || "";
+		} else {
+			StandardListItem._oCtx.font = StandardListItem._themeInfo.sFontStyle || "";
+		}
+
+		return Math.ceil(StandardListItem._oCtx.measureText(this.getInfo()).width) / StandardListItem._themeInfo.iBaseFontSize;
+	};
+
+	/**
+	 * Returns the measured info text width in rem value.
+	 * @param {float} fWidth Measured info text width
+	 * @returns {string} rem value for info text min-width
+	 * @private
+	 */
+	StandardListItem.prototype._getInfoTextMinWidth = function(fWidth) {
+		if (this.getInfoStateInverted() && fWidth <= 7.5) {
+			// 0.625rem padding for the infoText if infoStateInverted=true
+			return fWidth + 0.625 + "rem";
+		}
+
+		if (fWidth <= 7.5) {
+			// no padding if infoStateInverted=false
+			return fWidth + "rem";
+		}
+
+		return "7.5rem";
 	};
 
 	StandardListItem.prototype.ontap = function(oEvent) {
@@ -315,6 +376,37 @@ sap.ui.define([
 	StandardListItem.prototype._getCollapsedText = function(sText) {
 		var iMaxCharacters = Device.system.phone ? 100 : 300;
 		return sText.substr(0, iMaxCharacters);
+	};
+
+	StandardListItem.prototype.onThemeChanged = function(oEvent) {
+		ListItemBase.prototype.onThemeChanged.apply(this, arguments);
+
+		var sTheme = oEvent.theme;
+		if (!this._initialRender) {
+			this._initialRender = true;
+			if (!StandardListItem._themeInfo) {
+				StandardListItem._themeInfo = {};
+			}
+			if (!StandardListItem._themeInfo.sCurrentTheme) {
+				StandardListItem._themeInfo.sCurrentTheme = sTheme;
+			}
+			return;
+		}
+
+		var oInfoDomRef = this.getDomRef("info");
+
+		if (oInfoDomRef) {
+			var fWidth;
+
+			if (StandardListItem._themeInfo.sCurrentTheme !== sTheme) {
+				StandardListItem._themeInfo.sCurrentTheme = sTheme;
+				fWidth = this._measureInfoTextWidth(true);
+			} else {
+				fWidth = this._measureInfoTextWidth();
+			}
+
+			oInfoDomRef.style.minWidth = this._getInfoTextMinWidth(fWidth);
+		}
 	};
 
 	return StandardListItem;

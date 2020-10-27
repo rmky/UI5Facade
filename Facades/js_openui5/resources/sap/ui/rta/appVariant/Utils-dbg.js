@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -60,8 +60,8 @@ function(
 
 		if (oPreparedObject.isKeyUser) {
 			if (oPreparedObject.isOriginal) {
-				oAppVarObject.delAppVarButtonEnabled = false;
 				oAppVarObject.delAppVarButtonVisibility = false;
+				oAppVarObject.adaptUIButtonVisibility = false;
 				return oAppVarObject;
 			}
 			// If the catalogs bound to the app variants are hanging in one of the following states, then the Save As button is disabled => Should be applicable only for S4/Cloud
@@ -71,6 +71,7 @@ function(
 			if (oPreparedObject.appVarStatus === 'U' || oPreparedObject.appVarStatus === 'E' || oPreparedObject.appVarStatus === 'R') {
 				oAppVarObject.saveAsButtonEnabled = false;
 			}
+			oAppVarObject.adaptUIButtonVisibility = true;
 
 			if (bAdaptUIButtonEnabled) {
 				if (oPreparedObject.isS4HanaCloud) {
@@ -94,8 +95,8 @@ function(
 			}
 		} else {
 			// Not a key user => not deleteable
-			oAppVarObject.delAppVarButtonEnabled = false;
 			oAppVarObject.delAppVarButtonVisibility = false;
+			oAppVarObject.adaptUIButtonVisibility = false;
 		}
 
 		return oAppVarObject;
@@ -122,6 +123,7 @@ function(
 
 				if (oPreparedObject.appVarStatus === 'R' || oPreparedObject.appVarStatus === 'U' || oPreparedObject.appVarStatus === 'E') {
 					oNavigationObject.adaptUIButtonEnabled = false;
+					oNavigationObject.appVarStatus = oPreparedObject.appVarStatus;
 				}
 			} else {
 				oNavigationObject.adaptUIButtonEnabled = false;

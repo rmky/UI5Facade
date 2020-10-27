@@ -1,23 +1,29 @@
+// valid-jsdoc disabled because this check is validating just the params and return statement and those are all inherited from BaseTreeModifier.
+/* eslint-disable valid-jsdoc */
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
 	"./BaseTreeModifier",
+	"./XmlTreeModifier", // needed to get extension point info from oView._xContent
 	"sap/base/util/ObjectPath",
 	"sap/ui/util/XMLHelper",
 	"sap/ui/core/Component",
 	"sap/base/util/merge",
-	"sap/ui/core/Fragment" // needed to have sap.ui.xmlfragment
+	"sap/ui/core/Fragment" // also needed to have sap.ui.xmlfragment
 ], function (
 	BaseTreeModifier,
+	XmlTreeModifier,
 	ObjectPath,
 	XMLHelper,
 	Component,
-	merge
+	merge,
+	Fragment
 ) {
+
 
 	"use strict";
 	/**
@@ -123,17 +129,19 @@ sap.ui.define([
 		/**
 		 * @inheritDoc
 		 */
-		setProperty: function (oControl, sPropertyName, oPropertyValue) {
+		setProperty: function (oControl, sPropertyName, vPropertyValue) {
 			var oMetadata = oControl.getMetadata().getPropertyLikeSetting(sPropertyName);
 			this.unbindProperty(oControl, sPropertyName);
 
+			//For compatibility with XMLTreeModifier the value should be serializable
 			if (oMetadata) {
-				if (oMetadata.type === "object"){
-					//For compatibility with XMLTreeModifier only pass serializable data to properties of type object
-					JSON.stringify(oPropertyValue);
+				if (this._isSerializable(vPropertyValue)) {
+					vPropertyValue = this._escapeCurlyBracketsInString(vPropertyValue);
+					var sPropertySetter = oMetadata._sMutator;
+					oControl[sPropertySetter](vPropertyValue);
+				} else {
+					throw new TypeError("Value cannot be stringified", "sap.ui.core.util.reflection.JsControlTreeModifier");
 				}
-				var sPropertySetter = oMetadata._sMutator;
-				oControl[sPropertySetter](oPropertyValue);
 			}
 		},
 
@@ -178,7 +186,7 @@ sap.ui.define([
 		createControl: function (sClassName, oAppComponent, oView, oSelector, mSettings, bAsync) {
 			var sErrorMessage;
 			if (this.bySelector(oSelector, oAppComponent)) {
-				sErrorMessage = "Can't create a control with duplicated ID " + oSelector;
+				sErrorMessage = "Can't create a control with duplicated ID " + (oSelector.id || oSelector);
 				if (bAsync) {
 					return Promise.reject(sErrorMessage);
 				}
@@ -440,20 +448,31 @@ sap.ui.define([
 		/**
 		 * @inheritDoc
 		 */
-		destroy: function(oControl) {
-			oControl.destroy();
+		templateControlFragment: function(sFragmentName, mPreprocessorSettings, oView) {
+			return BaseTreeModifier._templateFragment(
+				sFragmentName,
+				mPreprocessorSettings
+			).then(function(oFragment) {
+				var oController = (oView && oView.getController()) || undefined;
+				return Fragment.load({
+					definition: oFragment,
+					controller: oController
+				});
+			});
 		},
 
 		/**
 		 * @inheritDoc
 		 */
-		getChangeHandlerModulePath: function(oControl) {
-			if (typeof oControl === "object" && typeof oControl.data === "function"
-					&& oControl.data("sap-ui-custom-settings") && oControl.data("sap-ui-custom-settings")["sap.ui.fl"]){
-				return oControl.data("sap-ui-custom-settings")["sap.ui.fl"].flexibility;
-			} else {
-				return undefined;
-			}
+		destroy: function(oControl, bSuppressInvalidate) {
+			oControl.destroy(bSuppressInvalidate);
+		},
+
+		_getFlexCustomData: function(oControl, sType) {
+			var oCustomData = typeof oControl === "object"
+				&& typeof oControl.data === "function"
+				&& oControl.data("sap-ui-custom-settings");
+			return ObjectPath.get(["sap.ui.fl", sType], oCustomData);
 		},
 
 		/**
@@ -497,6 +516,28 @@ sap.ui.define([
 		unbindAggregation: function (oControl, sAggregationName) {
 			// bSuppressReset is not supported
 			oControl.unbindAggregation(sAggregationName);
+		},
+
+		/**
+		 * @inheritDoc
+		 */
+		getExtensionPointInfo: function(sExtensionPointName, oView) {
+			var oViewNode = (oView._xContent) ? oView._xContent : oView;
+			var oExtensionPointInfo = XmlTreeModifier.getExtensionPointInfo(sExtensionPointName, oViewNode);
+			if (oExtensionPointInfo) {
+				// decrease the index by 1 to get the index of the extension point itself for js-case
+				oExtensionPointInfo.index--;
+				oExtensionPointInfo.parent = oExtensionPointInfo.parent && this._byId(oView.createId(oExtensionPointInfo.parent.getAttribute("id")));
+				oExtensionPointInfo.defaultContent = oExtensionPointInfo.defaultContent
+					.map(function (oNode) {
+						var sId = oView.createId(oNode.getAttribute("id"));
+						return this._byId(sId);
+					}.bind(this))
+					.filter(function (oControl) {
+						return !!oControl;
+					});
+			}
+			return oExtensionPointInfo;
 		}
 	};
 

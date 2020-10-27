@@ -38,7 +38,7 @@ class UI5DataCarousel extends UI5Split
             }
             $childElement = $this->getFacade()->getElement($child);
             if ($childElement instanceof UI5ValueBindingInterface) {
-                $childElement->setValueBindingDisabled(false);
+                $childElement->setValueBoundToModel(true);
             }
             if ($childElement instanceof UI5ValueBindingInterface) {
                 $bindings .= <<<JS

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -62,13 +62,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library'],
 			oRm.style("text-align", sTextAlign);
 		}
 
-		// ARIA
-		// when the status is "None" there is nothing for reading
-		if (oON.getState() !== ValueState.None) {
-			oRm.accessibilityState({
-			describedby: oON.getId() + "-state"
-			});
-		}
+		oRm.accessibilityState(oON);
 
 		oRm.openEnd();
 
@@ -107,8 +101,7 @@ sap.ui.define(['sap/ui/core/Renderer', 'sap/ui/core/library'],
 		}
 
 		oRm.openStart("span", oON.getId() + "-state");
-		oRm.class("sapUiInvisibleText");
-		oRm.attr("aria-hidden", false);
+		oRm.class("sapUiPseudoInvisibleText");
 		oRm.openEnd();
 		oRm.text(oON._getStateText());
 		oRm.close("span");

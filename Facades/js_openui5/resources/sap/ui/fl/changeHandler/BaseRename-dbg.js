@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -19,7 +19,7 @@ sap.ui.define([
 	 * @constructor
 	 * @alias sap.ui.fl.changeHandler.BaseRename
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @experimental Since 1.46
 	 */
 	var BaseRename = {
@@ -106,6 +106,21 @@ sap.ui.define([
 					} else {
 						throw new Error("oSpecificChangeInfo.value attribute required");
 					}
+				},
+
+				/**
+				 * Retrieves the condenser-specific information.
+				 *
+				 * @param {sap.ui.fl.Change} oChange - Change object with instructions to be applied on the control map
+				 * @returns {object} - Condenser-specific information
+				 * @public
+				 */
+				getCondenserInfo: function(oChange) {
+					return {
+						affectedControl: oChange.getSelector(),
+						classification: sap.ui.fl.condenser.Classification.LastOneWins,
+						uniqueKey: mRenameSettings.propertyName || mRenameSettings.changePropertyName
+					};
 				}
 			};
 		}

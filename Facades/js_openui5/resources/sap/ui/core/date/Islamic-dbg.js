@@ -1,12 +1,12 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides class sap.ui.core.date.Islamic
-sap.ui.define(['./UniversalDate', '../CalendarType', 'sap/base/Log'],
-	function(UniversalDate, CalendarType, Log) {
+sap.ui.define(['./UniversalDate', '../CalendarType', 'sap/base/Log', './_Calendars'],
+	function(UniversalDate, CalendarType, Log, _Calendars) {
 	"use strict";
 
 
@@ -397,6 +397,8 @@ sap.ui.define(['./UniversalDate', '../CalendarType', 'sap/base/Log'],
 		}
 		return this._setUTCIslamic(oIslamic);
 	};
+
+	_Calendars.set(CalendarType.Islamic, Islamic);
 
 	return Islamic;
 

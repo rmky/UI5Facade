@@ -10,6 +10,8 @@ use exface\Core\Widgets\DataColumn;
 use exface\Core\DataTypes\BinaryDataType;
 use exface\Core\DataTypes\WidgetVisibilityDataType;
 use exface\Core\Actions\DeleteObject;
+use exface\Core\Interfaces\Actions\ActionInterface;
+use exface\Core\Interfaces\Actions\iReadData;
 
 /**
  * Generates sap.m.upload.UploadSet for a FileList widget.
@@ -98,7 +100,8 @@ class UI5FileList extends UI5AbstractElement
                         $attributesConstructors
 					]
                 })
-    		}
+    		},
+            toolbar: {$this->buildJsToolbar($oControllerJs)}
         })
 
 JS;
@@ -217,6 +220,9 @@ JS;
     protected function buildJsEventHandlerDelete(string $oEventJs) : string
     {
         $widget = $this->getWidget();
+        
+        $this->getController()->addOnInitScript("sap.ui.getCore().byId('{$this->getId()}').getList().setMode(sap.m.ListMode.SingleSelectMaster);");
+        
         $deleteAction = ActionFactory::createFromString($this->getWorkbench(), DeleteObject::class, $widget);
         
         return <<<JS
@@ -330,5 +336,36 @@ JS;
         
         return $this->buildJsDataLoaderOnLoadedViaTrait($oModelJs)
                 . $checkMaxFilesJs;
+    }
+    
+    public function buildJsDataGetter(ActionInterface $action = null)
+    {
+        if ($action === null) {
+            $rows = "sap.ui.getCore().byId('{$this->getId()}').getModel().getData().rows";
+        } elseif ($action instanceof iReadData) {
+            // If we are reading, than we need the special data from the configurator
+            // widget: filters, sorters, etc.
+            return $this->getConfiguratorElement()->buildJsDataGetter($action);
+        } else {
+            $rows = '[];' . <<<JS
+                
+        var aSelectedItems = oTable.getSelectedItems();
+        var oModelData = oTable.getModel().getData();
+        aSelectedItems.forEach(function(oItem){
+            rows.push(oModelData.rows[oTable.indexOfItem(oItem)]);
+        });
+        
+JS;
+        }
+        return <<<JS
+    function() {
+        var oTable = sap.ui.getCore().byId('{$this->getId()}').getList();
+        var rows = {$rows};
+        return {
+            oId: '{$this->getWidget()->getMetaObject()->getId()}',
+            rows: (rows === undefined ? [] : rows)
+        };
+    }()
+JS;
     }
 }

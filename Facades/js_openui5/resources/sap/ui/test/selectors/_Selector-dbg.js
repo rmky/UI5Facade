@@ -1,14 +1,15 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
     "sap/ui/thirdparty/jquery",
     "sap/ui/base/ManagedObject",
-    "sap/ui/test/_OpaLogger"
-], function ($, ManagedObject, _OpaLogger) {
+    "sap/ui/test/_OpaLogger",
+    'sap/ui/test/_ControlFinder'
+], function ($, ManagedObject, _OpaLogger, _ControlFinder) {
 	"use strict";
 
     /**
@@ -62,40 +63,55 @@ sap.ui.define([
             }
         },
 
-        // override for inheriting selectors that need an ancestor control selector
-        _getAncestors: function () {
+        // override for selectors that need an ancestor control selector
+        _isAncestorRequired: function () {
+            return false;
+        },
+        _getAncestor: function () {
+            return null;
+        },
+
+        // override for selectors that need to be unique only within a certain sub-tree (starting with the validation root)
+        _isValidationRootRequired: function () {
+            return false;
+        },
+        _getValidationRoot: function () {
             return null;
         },
 
         _createSelectorBase: function (oControl, mSelector) {
+            if (_ControlFinder._isControlInStaticArea(oControl)) {
+                mSelector.searchOpenDialogs = true;
+            }
             if (mSelector.skipBasic) {
                 delete mSelector.skipBasic;
                 return mSelector;
             } else {
-                return {
-                    controlType: oControl.getMetadata()._sClassName,
-                    viewName: this._getControlViewName(oControl)
+                var mBasic = {
+                    controlType: oControl.getMetadata()._sClassName
                 };
+                var oView = this._getControlView(oControl);
+                if (oView) {
+                    mBasic.viewName = oView.getViewName();
+                }
+                return mBasic;
             }
         },
 
         /**
-         * Get the viewName of the view to which a control belongs or undefined, if such a view does not exist
+         * Get the view to which a control belongs or undefined, if such a view does not exist
          * @param {object} oControl the control to examine
-         * @returns {string} viewName of the control's view
+         * @returns {object} the control's view
          * @private
          */
-        _getControlViewName: function (oControl) {
-            // TODO: handle controls in static area?
+        _getControlView: function (oControl) {
             if (!oControl) {
                 return undefined;
             }
             if (oControl.getViewName) {
-                var sViewName = oControl.getViewName();
-                this._oLogger.debug("Control " + oControl + " has viewName " + sViewName);
-                return sViewName;
+                return oControl;
             } else {
-                return this._getControlViewName(oControl.getParent());
+                return this._getControlView(oControl.getParent());
             }
         },
 

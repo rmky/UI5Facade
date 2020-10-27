@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
-sap.ui.define([],function(){"use strict";var B={};B.render=function(r,b){this.startBusyIndicator(r,b);this.renderBusyIndication(r,b);this.renderLabel(r,b);this.endBusyIndicator(r);};B.startBusyIndicator=function(r,b){r.write("<div ");r.writeControlData(b);r.addClass("sapMBusyIndicator");r.writeClasses();r.addStyle("font-size",b.getSize());r.writeStyles();r.writeAccessibilityState(b);this.renderTooltip(r,b.getTooltip_AsString());r.write(">");};B.renderTooltip=function(r,t){if(t){r.writeAttributeEscaped("title",t);}};B.renderBusyIndication=function(r,b){if(b.getCustomIcon()){r.renderControl(b._iconImage);}else{r.write("<div class='sapMBusyIndicatorBusyArea'");r.writeAttribute("id",b.getId()+"-busy-area");r.write("></div>");}};B.renderLabel=function(r,b){if(b.getText()){r.renderControl(b._busyLabel);}};B.endBusyIndicator=function(r){r.write("</div>");};return B;},true);
+sap.ui.define([],function(){"use strict";var B={apiVersion:2};B.render=function(r,b){var t=b.getTooltip_AsString();r.openStart("div",b).class("sapMBusyIndicator");r.style("font-size",b.getSize());r.accessibilityState(b);if(t){r.attr("title",t);}r.openEnd();if(b.getCustomIcon()){r.renderControl(b._iconImage);}else{r.openStart("div",b.getId()+"-busy-area");r.class("sapMBusyIndicatorBusyArea").openEnd().close("div");}if(b._busyLabel){r.renderControl(b._busyLabel);}r.close("div");};return B;},true);

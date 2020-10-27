@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -21,7 +21,7 @@ sap.ui.define(['sap/ui/base/DataType', 'sap/base/util/ObjectPath',
 	 * @namespace
 	 * @name sap.ui.commons
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @public
 	 * @deprecated as of version 1.38
 	 */
@@ -29,7 +29,7 @@ sap.ui.define(['sap/ui/base/DataType', 'sap/base/util/ObjectPath',
 	// delegate further initialization of this library to the Core
 	sap.ui.getCore().initLibrary({
 		name : "sap.ui.commons",
-		version: "1.73.1",
+		version: "1.82.0",
 		dependencies : ["sap.ui.core","sap.ui.layout","sap.ui.unified"],
 		types: [
 			"sap.ui.commons.ButtonStyle",
@@ -1294,6 +1294,10 @@ sap.ui.define(['sap/ui/base/DataType', 'sap/base/util/ObjectPath',
 			},
 			addFormClass: function(){ return null; },
 			setToolbar: function(oToolbar){ return oToolbar; },
+			getToolbarTitle: function(oToolbar) {
+				// as no Title control as ToolbarItem exust just use Toolbar ID. (Let application point to the wanted control.)
+				return oToolbar && oToolbar.getId();
+			},
 			bArrowKeySupport: true, /* enables the keyboard support for arrow keys */
 			bFinal: false /* to allow mobile to overwrite  */
 		};

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -9,19 +9,24 @@ sap.ui.define([
     "./library",
     "sap/ui/Device",
     "sap/ui/core/Control",
+	"sap/ui/core/library",
     "sap/m/ToggleButton",
     "sap/m/Button",
-    "./DynamicPageHeaderRenderer"
+    "./DynamicPageHeaderRenderer",
+	"sap/ui/core/InvisibleMessage"
 ], function(
     library,
 	Device,
 	Control,
+	CoreLibrary,
 	ToggleButton,
 	Button,
-	DynamicPageHeaderRenderer
+	DynamicPageHeaderRenderer,
+	InvisibleMessage
 ) {
 		"use strict";
 
+		var InvisibleMessageMode = CoreLibrary.InvisibleMessageMode;
 		/**
 		 * Constructor for a new <code>DynamicPageHeader</code>.
 		 *
@@ -53,7 +58,7 @@ sap.ui.define([
 		 * @extends sap.ui.core.Control
 		 *
 		 * @author SAP SE
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 *
 		 * @constructor
 		 * @public
@@ -128,11 +133,16 @@ sap.ui.define([
 		/*************************************** Lifecycle members ******************************************/
 		DynamicPageHeader.prototype.init = function() {
 			this._bShowCollapseButton = true;
+			this._oInvisibleMessage = null;
 		};
 
 		DynamicPageHeader.prototype.onAfterRendering = function () {
 			this._initARIAState();
 			this._initPinButtonARIAState();
+
+			if (!this._oInvisibleMessage) {
+				this._oInvisibleMessage = InvisibleMessage.getInstance();
+			}
 		};
 
 		/*************************************** Private members ******************************************/
@@ -318,7 +328,8 @@ sap.ui.define([
 		 * @private
 		 */
 		DynamicPageHeader.prototype._focusCollapseButton = function () {
-			this._getCollapseButton().$().focus();
+			this._getCollapseButton().$().trigger("focus");
+			this._oInvisibleMessage.announce(this._getCollapseButton().getTooltip(), InvisibleMessageMode.Polite);
 		};
 
 		/**
@@ -326,7 +337,7 @@ sap.ui.define([
 		 * @private
 		 */
 		DynamicPageHeader.prototype._focusPinButton = function () {
-			this._getPinButtonJQueryRef().focus();
+			this._getPinButtonJQueryRef().trigger("focus");
 		};
 
 		/**

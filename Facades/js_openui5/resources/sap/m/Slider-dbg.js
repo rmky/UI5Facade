@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -17,7 +17,8 @@ sap.ui.define([
 	'./SliderUtilities',
 	'./SliderRenderer',
 	'./ResponsiveScale',
-	"sap/ui/thirdparty/jquery"
+	"sap/ui/thirdparty/jquery",
+	"sap/ui/events/KeyCodes"
 ],
 function(
 	Control,
@@ -32,7 +33,8 @@ function(
 	SliderUtilities,
 	SliderRenderer,
 	ResponsiveScale,
-	jQuery
+	jQuery,
+	KeyCodes
 ) {
 		"use strict";
 
@@ -93,7 +95,7 @@ function(
 		 * @implements sap.ui.core.IFormContent
 		 *
 		 * @author SAP SE
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 *
 		 * @constructor
 		 * @public
@@ -765,9 +767,7 @@ function(
 		 */
 		Slider.prototype._registerResizeHandler = function () {
 			if (!this._parentResizeHandler) {
-				setTimeout(function () {
-					this._parentResizeHandler = ResizeHandler.register(this, this._handleSliderResize.bind(this));
-				}.bind(this), 0);
+				this._parentResizeHandler = ResizeHandler.register(this, this._handleSliderResize.bind(this));
 			}
 		};
 
@@ -815,6 +815,10 @@ function(
 		Slider.prototype.exit = function () {
 			if (this._oResourceBundle) {
 				this._oResourceBundle = null;
+			}
+
+			if (this.getAggregation("_defaultTooltips")) {
+				this.destroyAggregation("_defaultTooltips");
 			}
 
 			this._deregisterResizeHandler();
@@ -1266,6 +1270,10 @@ function(
 
 			if (oEvent.keyCode === SliderUtilities.CONSTANTS.F2_KEYCODE && aTooltips[0] && this.getInputsAsTooltips()) {
 				aTooltips[0].focus();
+			}
+
+			if (oEvent.keyCode === KeyCodes.SPACE) {
+				oEvent.preventDefault();
 			}
 		};
 

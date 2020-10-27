@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,7 +14,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/base/security/encodeXML', 'sap/u
 	 * ListBox Renderer
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @namespace
 	 */
 	var ListBoxRenderer = {
@@ -161,14 +161,14 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/base/security/encodeXML', 'sap/u
 
 			if (item instanceof sap.ui.core.SeparatorItem) {
 				// draw a separator
-				rm.write("<div id='", item.getId(), "' class='sapUiLbxSep' role='separator'><hr/>");
+				rm.write("<div id='", item.getId(), "' class='sapUiLbxSep' role='separator'><hr>");
 
 				// colspan is not available, so add more separator cells
 				if (oListBox.getDisplayIcons()) {
-					rm.write("<hr/>");
+					rm.write("<hr>");
 				}
 				if (bDisplaySecondaryValues) {
-					rm.write("<hr/>");
+					rm.write("<hr>");
 				}
 				rm.write("</div>");
 
@@ -237,7 +237,7 @@ sap.ui.define(['sap/ui/thirdparty/jquery', 'sap/base/security/encodeXML', 'sap/u
 						} else {
 							rm.write(sap.ui.resource('sap.ui.commons', 'img/1x1.gif'));
 						}
-						rm.write("'/>");
+						rm.write("'>");
 					}
 					rm.write("</span>");
 				}

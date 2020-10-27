@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -241,26 +241,26 @@ sap.ui.define([
 		if (window.FileReader) {
 			var sId = this.shell.getId() + "-p13n_";
 			jQuery(document.getElementById(sId + sPrefix + "ImageImg"))
-				.bind('dragover', jQuery.proxy(this._handleDragover, this))
-				.bind('dragend',jQuery.proxy(this._handleDragend, this))
-				.bind('drop', jQuery.proxy(this._handleDrop, this));
+				.on('dragover', jQuery.proxy(this._handleDragover, this))
+				.on('dragend',jQuery.proxy(this._handleDragend, this))
+				.on('drop', jQuery.proxy(this._handleDrop, this));
 			jQuery(document.getElementById(sId + sPrefix + "ImageHolder"))
-				.bind('dragover', jQuery.proxy(this._handleDragover, this))
-				.bind('dragend',jQuery.proxy(this._handleDragend, this))
-				.bind('drop', jQuery.proxy(this._handleDrop, this));
+				.on('dragover', jQuery.proxy(this._handleDragover, this))
+				.on('dragend',jQuery.proxy(this._handleDragend, this))
+				.on('drop', jQuery.proxy(this._handleDrop, this));
 		}
 	};
 	ShellPersonalization.prototype._unbindDragAndDrop = function(sPrefix) {
 		if (window.FileReader) {
 			var sId = this.shell.getId() + "-p13n_";
 			jQuery(document.getElementById(sId + "hdrImageImg"))
-				.unbind('dragover', this._handleDragover)
-				.unbind('dragend', this._handleDragend)
-				.unbind('drop', this._handleDrop);
+				.off('dragover', this._handleDragover)
+				.off('dragend', this._handleDragend)
+				.off('drop', this._handleDrop);
 			jQuery(document.getElementById(sId + "hdrImageHolder"))
-				.unbind('dragover', this._handleDragover)
-				.unbind('dragend', this._handleDragend)
-				.unbind('drop', this._handleDrop);
+				.off('dragover', this._handleDragover)
+				.off('dragend', this._handleDragend)
+				.off('drop', this._handleDrop);
 		}
 	};
 
@@ -332,7 +332,7 @@ sap.ui.define([
 				content:"<div id='" + sId + "bgImageHolder' class='sapUiUx3ShellP13nImgHolder'><img id='" + sId + "bgImageImg' src='"
 				+ (this.oTransientSettings.sBackgroundImageSrc ?
 						encodeXML(this.oTransientSettings.sBackgroundImageSrc)
-						: sap.ui.resource('sap.ui.core', 'themes/base/img/1x1.gif')) + "'/></div>"}
+						: sap.ui.resource('sap.ui.core', 'themes/base/img/1x1.gif')) + "'></div>"}
 			);
 
 			this.oBgImgOpacitySlider = new c.Slider({
@@ -387,7 +387,7 @@ sap.ui.define([
 				+ (this.oTransientSettings.sHeaderImageSrc ?
 						encodeXML(this.oTransientSettings.sHeaderImageSrc)
 						: sap.ui.resource('sap.ui.core', 'themes/base/img/1x1.gif'))
-				+ "'/></div>"}
+				+ "'></div>"}
 			);
 
 			this.oLineColorPicker = new ShellColorPicker(sId + "lineColorPicker");
@@ -423,7 +423,7 @@ sap.ui.define([
 				+ (this.oTransientSettings.sLogoImageSrc ?
 						encodeXML(this.oTransientSettings.sLogoImageSrc)
 						: sap.ui.resource('sap.ui.core', 'themes/base/img/1x1.gif'))
-				+ "'/></div>"}
+				+ "'></div>"}
 			);
 			this.oLogoRbg = new c.RadioButtonGroup()
 				.addItem(new Item({text:"Left",key:"left"}))
@@ -479,7 +479,7 @@ sap.ui.define([
 				+ (oActualSettings.sBackgroundImageSrc ?
 						encodeXML(oActualSettings.sBackgroundImageSrc)
 						: sap.ui.resource('sap.ui.core', 'themes/base/img/1x1.gif'))
-				+ "'/></div>");
+				+ "'></div>");
 		this.oBgImgOpacitySlider.setValue(100 - oActualSettings.fBgImgOpacity * 100);
 		this.oSidebarOpacitySlider.setValue(100 - oActualSettings.fSidebarOpacity * 100);
 
@@ -488,7 +488,7 @@ sap.ui.define([
 				+ (oActualSettings.sHeaderImageSrc ?
 						encodeXML(oActualSettings.sHeaderImageSrc)
 						: sap.ui.resource('sap.ui.core', 'themes/base/img/1x1.gif'))
-				+ "'/></div>");
+				+ "'></div>");
 
 		this.oLogoRbg.setSelectedIndex((oActualSettings.sLogoAlign == "center") ? 1 : 0);
 		this.oUseLogoSizeCb.setChecked(oActualSettings.bUseLogoSize);
@@ -496,7 +496,7 @@ sap.ui.define([
 				+ (oActualSettings.sLogoImageSrc ?
 						encodeXML(oActualSettings.sLogoImageSrc)
 						: sap.ui.resource('sap.ui.core', 'themes/base/img/1x1.gif'))
-				+ "'/></div>");
+				+ "'></div>");
 	};
 
 

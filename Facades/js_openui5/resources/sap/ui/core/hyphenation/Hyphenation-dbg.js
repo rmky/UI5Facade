@@ -1,51 +1,29 @@
 /*!
 * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
 */
 
-sap.ui.define(["sap/ui/base/ManagedObject", "sap/base/Log", "sap/base/util/deepEqual", "sap/ui/core/Locale", "sap/ui/core/LocaleData"],
-function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
+sap.ui.define([
+	"./HyphenationTestingWords",
+	"sap/ui/base/ManagedObject",
+	"sap/base/Log",
+	"sap/base/util/deepEqual",
+	"sap/ui/core/Locale",
+	"sap/ui/Device"
+], function (
+	HyphenationTestingWords,
+	ManagedObject,
+	Log,
+	deepEqual,
+	Locale,
+	Device
+) {
 	"use strict";
 
 	/**
-	 * Words which are suitable for testing of browser-native hyphenation.
-	 * @type {map}
-	 * @private
-	 */
-	var oTestingWords = {
-		"bg": "непротивоконституционствувателствувайте",
-		"ca": "Psiconeuroimmunoendocrinologia",
-		"hr": "prijestolonasljednikovičičinima",
-		"cs": "nejnezdevětadevadesáteronásobitelnějšími",
-		"da": "Gedebukkebensoverogundergeneralkrigskommandersergenten",
-		"nl": "meervoudigepersoonlijkheidsstoornissen",
-		"en-us": "pneumonoultramicroscopicsilicovolcanoconiosis",
-		"et": "Sünnipäevanädalalõpupeopärastlõunaväsimus",
-		"fi": "kolmivaihekilowattituntimittari",
-		"fr": "hippopotomonstrosesquippedaliophobie",
-		"de": "Kindercarnavalsoptochtvoorbereidingswerkzaamhedenplan",
-		"el-monoton": "ηλεκτροεγκεφαλογράφημα", // no native css hyphenation by documentation, but will be tested
-		"hi": "किंकर्तव्यविमूढ़", // no native css hyphenation by documentation, but will be tested
-		"hu": "Megszentségteleníthetetlenségeskedéseitekért",
-		"it": "hippopotomonstrosesquippedaliofobia",
-		"lt": "nebeprisikiškiakopūstlapiaujančiuosiuose",
-		"nb-no": "supercalifragilisticexpialidocious",
-		"pl": "dziewięćdziesięciokilkuletniemu",
-		"pt": "pneumoultramicroscopicossilicovulcanoconiose",
-		"ru": "превысокомногорассмотрительствующий",
-		"sr": "Семпаравиливичинаверсаламилитипиковски",
-		"sl": "Dialektičnomaterialističen",
-		"es": "Electroencefalografistas",
-		"sv": "Realisationsvinstbeskattning",
-		"th": "ตัวอย่างข้อความที่จะใช้ในการยืนยันการถ่ายโอน", // no native css hyphenation by documentation, but will be tested
-		"tr": "Muvaffakiyetsizleştiricileştiriveremeyebileceklerimizdenmişsinizcesine",
-		"uk": "Нікотинамідаденіндинуклеотидфосфат"
-	};
-
-	/**
 	 * Flat list of languages that are supported by Hyphenopoly.
-	 * @type {map}
+	 * @type {Object<string,boolean>}
 	 * @private
 	 */
 	var oThirdPartySupportedLanguages = {
@@ -80,7 +58,7 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 
 	/**
 	 * Holds a map of names of languages in english. Like <code>{"de" => "German"}</code>
-	 * @type {map}
+	 * @type {Object<string,string>}
 	 * @private
 	 */
 	var mLanguageNamesInEnglish = {
@@ -129,7 +107,7 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 	 * Loads language-specific resources.
 	 *
 	 * @param {string} sLanguage What language to initialize
-	 * @param {map} oConfig What config to sent to Hyphenopoly
+	 * @param {object} oConfig What config to sent to Hyphenopoly
 	 * @param {function} resolve Callback to resolve the promise created on initialize
 	 * @private
 	 */
@@ -147,7 +125,7 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 	 * Applies new config to a language.
 	 *
 	 * @param {string} sLanguage What language to re-initialize
-	 * @param {map} oConfig What is the new config
+	 * @param {object} oConfig What is the new config
 	 * @param {function} resolve Callback to resolve the promise created on initialize
 	 * @private
 	 */
@@ -188,7 +166,7 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 	 * Transforms the given config so it can be sent to Hyphenopoly.
 	 *
 	 * @param {string} sLanguage The language for which a config is prepared.
-	 * @param {map} oConfig Object map with configuration
+	 * @param {object} oConfig Object map with configuration
 	 * @returns {Object} {{require: [*], hyphen: string, path: (string|*)}}
 	 * @private
 	 */
@@ -295,7 +273,7 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 		testDiv.lang = sLang;
 		testDiv.id = sLang;
 		testDiv.style.cssText = css;
-		testDiv.appendChild(document.createTextNode(oTestingWords[sLang]));
+		testDiv.appendChild(document.createTextNode(HyphenationTestingWords[sLang.toLowerCase()]));
 		fakeBody.appendChild(testDiv);
 	}
 
@@ -378,6 +356,21 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 	}
 
 	/**
+	 * The "lang" attribute of the "html" tag determines the behavior of the native hyphenation.
+	 *
+	 * @param {string} [sLang=sap.ui.getCore().getConfiguration().getLocale().toString()] The language to get. If left empty - the global application language will be returned
+	 * @returns {string} The language code
+	 * @private
+	 */
+	function getLanguageAsSetOnThePage(sLang) {
+		if (sLang) {
+			return new Locale(sLang).toString();
+		}
+
+		return sap.ui.getCore().getConfiguration().getLocale().toString();
+	}
+
+	/**
 	 * Gets language code from pattern name (hbp file name).
 	 *
 	 * @param {string} sPatternName The hpb file name
@@ -417,6 +410,16 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 	function fireError(sErrorMessage) {
 		oHyphenationInstance.fireError(sErrorMessage);
 		Log.error("[UI5 Hyphenation] " + sErrorMessage, "sap.ui.core.hyphenation.Hyphenation");
+	}
+
+	/**
+	 * Checks OS and browser as native hyphenation support on Google Chrome on macOS is not working as expected
+	 *
+	 * @private
+	 * @return {boolean} Returns whether the device is on macOS and the browser is Google Chrome
+	 */
+	function nativeHyphenationWorksProperly () {
+		return !(Device.os.macintosh && Device.browser.chrome);
 	}
 
 	/**
@@ -466,7 +469,7 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 	 * @see {@link topic:6322164936f047de941ec522b95d7b70 Hyphenation for Text Controls}
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @hideconstructor
 	 * @public
 	 * @since 1.60
@@ -495,46 +498,47 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 
 	/**
 	 * Checks if native hyphenation works in the current browser for the given language.
+	 * This check is performed against the value of the "lang" HTML attribute of the page.
 	 *
-	 * @param {string} [sLang] For what language to check. The global application language is the default one
+	 * @param {string} [sLang=sap.ui.getCore().getConfiguration().getLocale().toString()] For what language to check. The global application language is the default one
 	 * @returns {(boolean|null)} True if native hyphenation works for the given language. False if native hyphenation will not work. Null if the language is not known to the Hyphenation API
 	 * @public
 	 */
 	Hyphenation.prototype.canUseNativeHyphenation = function (sLang) {
-		var sLanguage = getLanguage(sLang);
+		var sLanguageOnThePage = getLanguageAsSetOnThePage(sLang);
 		var bCanUseNativeHyphenation;
 
 		if (!this.isLanguageSupported(sLang)) {
 			return null;
 		}
 
-		if (!oBrowserSupportCSS.hasOwnProperty(sLanguage)) {
-			createTest(sLanguage);
+		if (!oBrowserSupportCSS.hasOwnProperty(sLanguageOnThePage)) {
+			createTest(sLanguageOnThePage);
 			var testContainer = appendTests(document.documentElement);
 			if (testContainer !== null) {
-				var el = document.getElementById(sLanguage);
-				if (checkCSSHyphensSupport(el) && el.offsetHeight > 12) {
+				var el = document.getElementById(sLanguageOnThePage);
+				if (nativeHyphenationWorksProperly() && checkCSSHyphensSupport(el) && el.offsetHeight > 12) {
 					bCanUseNativeHyphenation = true;
 				} else {
 					bCanUseNativeHyphenation = false;
 				}
 				clearTests();
 			}
-			oBrowserSupportCSS[sLanguage] = bCanUseNativeHyphenation;
+			oBrowserSupportCSS[sLanguageOnThePage] = bCanUseNativeHyphenation;
 
 			if (bCanUseNativeHyphenation) {
 				Log.info(
-					"[UI5 Hyphenation] Browser-native hyphenation can be used for language " + getLanguageDisplayName(sLanguage),
+					"[UI5 Hyphenation] Browser-native hyphenation can be used for language " + getLanguageDisplayName(sLanguageOnThePage),
 					"sap.ui.core.hyphenation.Hyphenation.canUseNativeHyphenation()"
 				);
 			} else {
 				Log.info(
-					"[UI5 Hyphenation] Browser-native hyphenation is not supported by current platform for language " + getLanguageDisplayName(sLanguage),
+					"[UI5 Hyphenation] Browser-native hyphenation is not supported by current platform for language " + getLanguageDisplayName(sLanguageOnThePage),
 					"sap.ui.core.hyphenation.Hyphenation.canUseNativeHyphenation()"
 				);
 			}
 		} else {
-			bCanUseNativeHyphenation = oBrowserSupportCSS[sLanguage];
+			bCanUseNativeHyphenation = oBrowserSupportCSS[sLanguageOnThePage];
 		}
 
 		return bCanUseNativeHyphenation;
@@ -543,7 +547,7 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 	/**
 	 * Checks if third-party hyphenation works for the given language.
 	 *
-	 * @param {string} [sLang] For what language to check. The global application language is the default one.
+	 * @param {string} [sLang=sap.ui.getCore().getConfiguration().getLocale().toString()] For what language to check. The global application language is the default one.
 	 * @returns {boolean|null} True if third-party hyphenation works for the given language. False if third-party hyphenation doesn't work. Null if the language is not known to the <code>Hyphenation</code> API.
 	 * @public
 	 */
@@ -583,7 +587,7 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 	 *
 	 * If it is a known language, the API can be used to check browser-native and third-party support.
 	 *
-	 * @param {string} [sLang] For what language to check. The global application language is the default one.
+	 * @param {string} [sLang=sap.ui.getCore().getConfiguration().getLocale().toString()] For what language to check. The global application language is the default one.
 	 * @returns {boolean} True if the language is known to the <code>Hyphenation</code> API
 	 * @public
 	 */
@@ -592,7 +596,7 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 			bIsSupported;
 
 		if (!oSupportCheck.hasOwnProperty(sLanguage)) {
-			bIsSupported = oTestingWords.hasOwnProperty(sLanguage);
+			bIsSupported = HyphenationTestingWords.hasOwnProperty(sLanguage);
 
 			if (!bIsSupported) {
 				Log.info(
@@ -615,7 +619,7 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 	 * Adds the soft hyphen symbol at the places where words can break.
 	 *
 	 * @param {string} sText The text to hyphenate
-	 * @param {string} [sLang] The language of the text. The global application language is the default one
+	 * @param {string} [sLang=sap.ui.getCore().getConfiguration().getLocale().toString()] The language of the text. The global application language is the default one
 	 * @returns {string} The text with the hyphens symbol added
 	 * @public
 	 */
@@ -643,7 +647,7 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 	/**
 	 * Checks if the given language was initialized with {@link sap.ui.core.hyphenation.Hyphenation#initialize Hyphenation#initialize}
 	 *
-	 * @param {string} sLang The language to check for
+	 * @param {string} [sLang=sap.ui.getCore().getConfiguration().getLocale().toString()] The language to check for
 	 * @returns {boolean} True if the language was initialized
 	 * @public
 	 */
@@ -659,7 +663,7 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 	 *
 	 * @see sap.ui.core.hyphenation.Hyphenation#addExceptions
 	 * @param {string} sLang The language for which to see the exceptions
-	 * @returns {map} An object map with all exceptions for the given language
+	 * @returns {Object<string,string>} An object map with all exceptions for the given language
 	 * @private
 	 */
 	Hyphenation.prototype.getExceptions = function (sLang) {
@@ -682,7 +686,7 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 	 *   addExceptions("en", {"academy": "a-c-a-d-e-m-y"})
 	 *
 	 * @param {string} sLang The language for which an exception is added
-	 * @param {map} oExceptions An object map of word exceptions. Example <code>{"academy": "a-c-a-d-e-m-y", "word": "w-o-r-d"}</code>
+	 * @param {Object<string,string>} oExceptions An object map of word exceptions. Example <code>{"academy": "a-c-a-d-e-m-y", "word": "w-o-r-d"}</code>
 	 * @throws {Error} Logs an error if the language is not initialized
 	 * @private
 	 */
@@ -713,7 +717,7 @@ function (ManagedObject, Log, deepEqual, Locale, LocaleData) {
 	 * 	console.log(Hyphenation.getInstance().hyphenate("An example text to hyphenate.", "en"));
 	 * });
 	 *
-	 * @param {string} [sLang] The language for which the third-party library should be initialized. The global application language is the default one
+	 * @param {string} [sLang=sap.ui.getCore().getConfiguration().getLocale().toString()] The language for which the third-party library should be initialized. The global application language is the default one
 	 * @returns {Promise} A promise which resolves when all language resources are loaded. Rejects if the language is not supported
 	 * @public
 	 */

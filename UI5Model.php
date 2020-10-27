@@ -17,6 +17,12 @@ class UI5Model implements UI5ModelInterface
     
     private $bindings = [];
     
+    /**
+     * 
+     * @param Webapp $webapp
+     * @param string $viewName
+     * @param string $modelName
+     */
     public function __construct(Webapp $webapp, string $viewName, string $modelName = '')
     {
         $this->webapp = $webapp;
@@ -24,23 +30,42 @@ class UI5Model implements UI5ModelInterface
         $this->name = $modelName;
     }  
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5ModelInterface::getName()
+     */
     public function getName() : string
     {
         return $this->name;
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5ModelInterface::getViewName()
+     */
     public function getViewName() : string
     {
         return $this->viewName;
     }
     
-    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5ModelInterface::setBindingPointer()
+     */
     public function setBindingPointer(WidgetInterface $widget, string $bindingName, DataPointerInterface $pointer) : UI5ModelInterface
     {
         $this->bindings[$widget->getId()][$bindingName] = $pointer;
         return $this;
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5ModelInterface::getBindingPath()
+     */
     public function getBindingPath(WidgetInterface $widget, string $bindingName) : string
     {
         $binding = $this->bindings[$widget->getId()][$bindingName];
@@ -56,8 +81,30 @@ class UI5Model implements UI5ModelInterface
         return '';
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5ModelInterface::hasBinding()
+     */
     public function hasBinding(WidgetInterface $widget, string $bindingName) : bool
     {
         return $this->bindings[$widget->getId()][$bindingName] !== null;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5ModelInterface::hasBindingConflict()
+     */
+    public function hasBindingConflict(WidgetInterface $widget, string $bindingName) : bool
+    {
+        if (! $this->hasBinding($widget, $bindingName)) {
+            foreach ($this->bindings as $widgetId => $bindings) {
+                if ($bindings[$bindingName] !== null && $widgetId !== $widget->getId()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

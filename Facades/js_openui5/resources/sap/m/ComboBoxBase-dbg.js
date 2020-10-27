@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -62,7 +62,7 @@ sap.ui.define([
 		 * @abstract
 		 *
 		 * @author SAP SE
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 *
 		 * @constructor
 		 * @public
@@ -85,6 +85,28 @@ sap.ui.define([
 						type: "boolean",
 						group: "Misc",
 						defaultValue: false
+					},
+
+					/**
+					 * Indicates whether the formatted text is focused.
+					 *
+					 * @private
+					 */
+					formattedTextFocused: {
+						type: "boolean",
+						defaultValue: false,
+						hidden: true
+					},
+
+					/**
+					 * Indicates whether the picker is opened.
+					 *
+					 * @private
+					 */
+					open: {
+						type: "boolean",
+						defaultValue: false,
+						hidden: true
 					}
 				},
 				aggregations: {
@@ -258,7 +280,7 @@ sap.ui.define([
 			if (fnBold && typeof fnBold === "function") {
 				fnBold(aItemsDomRefs, sValue);
 			} else {
-				this._oSuggestionPopover.highlightSuggestionItems(aItemsDomRefs, sValue, true);
+				this._getSuggestionsPopover().highlightSuggestionItems(aItemsDomRefs, sValue, true);
 			}
 		};
 
@@ -587,6 +609,23 @@ sap.ui.define([
 			this.fnFilter = null;
 		};
 
+		ComboBoxBase.prototype.onBeforeRendering = function () {
+			var bSuggestionsPopoverIsOpen =  this.getOpen(),
+			sValueStateHeaderText = bSuggestionsPopoverIsOpen ?  this._getSuggestionsPopover()._getValueStateHeader().getText() : null,
+			sValueStateHeaderValueState = bSuggestionsPopoverIsOpen ?  this._getSuggestionsPopover()._getValueStateHeader().getValueState() : null;
+
+			ComboBoxTextField.prototype.onBeforeRendering.apply(this, arguments);
+
+			if (bSuggestionsPopoverIsOpen && ((this.getValueStateText() && sValueStateHeaderText !== this.getValueStateText()) ||
+				(this.getValueState() !== sValueStateHeaderValueState) || this.getFormattedValueStateText())) {
+				/* If new value state, value state plain text or FormattedText is set
+				while the suggestions popover is open update the value state header.
+				If the input has FormattedText aggregation while the suggestions popover is open then
+				it's new, because the old is already switched to have the value state header as parent */
+				this._updateSuggestionsPopoverValueState();
+			}
+		};
+
 		ComboBoxBase.prototype._handlePopupOpenAndItemsLoad = function (bOpenOnInteraction) {
 			var oPicker;
 
@@ -784,7 +823,7 @@ sap.ui.define([
 		 *
 		 * @returns {sap.m.List} The list instance object or <code>null</code>.
 		 * @protected
-		 * @deprecated Deprecated as of version 1.62. The list structure should not be used as per SAP note: 2746748.
+		 * @deprecated As of version 1.62. The list structure should not be used as per SAP note: 2746748.
 		 */
 		ComboBoxBase.prototype.getList = function() {
 			Log.warning(
@@ -837,53 +876,23 @@ sap.ui.define([
 		 */
 		ComboBoxBase.prototype._updateSuggestionsPopoverValueState = function() {
 			var oSuggestionsPopover = this._getSuggestionsPopover();
-			if (oSuggestionsPopover) {
-				oSuggestionsPopover.updateValueState(this.getValueState(), this.getValueStateText(), this.getShowValueStateMessage());
+			if (!oSuggestionsPopover) {
+				return;
 			}
-		};
 
-		/**
-		 * Sets the visualization of the validation state of the control,
-		 * e.g. <code>Error</code>, <code>Warning</code>, <code>Success</code>.
-		 *
-		 * @param {sap.ui.core.ValueState} [sValueState] The new value state
-		 * @returns {sap.m.InputBase} this for chaining
-		 *
-		 * @public
-		 */
-		ComboBoxBase.prototype.setValueState = function(sValueState) {
-			ComboBoxTextField.prototype.setValueState.apply(this, arguments);
-			this._updateSuggestionsPopoverValueState();
+			var	sValueState = this.getValueState(),
+				bNewValueState = this.getValueState() !== oSuggestionsPopover._getValueStateHeader().getValueState(),
+				oNewFormattedValueStateText = this.getFormattedValueStateText(),
+				sValueStateText = this.getValueStateText(),
+				bShouldPopoverBeUpdated = oNewFormattedValueStateText || bNewValueState;
 
-			return this;
-		};
-
-		/**
-		 * Sets the value state text
-		 *
-		 * @param {string} [sValueStateText] The new value state text
-		 * @returns {sap.m.InputBase} this for chaining
-		 *
-		 * @public
-		 */
-		ComboBoxBase.prototype.setValueStateText = function(sValueStateText) {
-			ComboBoxTextField.prototype.setValueStateText.apply(this, arguments);
-			this._updateSuggestionsPopoverValueState();
-			return this;
-		};
-
-		/**
-		 * Sets whether the value state message should be shown or not
-		 *
-		 * @param {boolean} [bShow] The new value state text
-		 * @returns {sap.m.InputBase} this for chaining
-		 *
-		 * @public
-		 */
-		ComboBoxBase.prototype.setShowValueStateMessage = function(bShow) {
-			ComboBoxTextField.prototype.setShowValueStateMessage.apply(this, arguments);
-			this._updateSuggestionsPopoverValueState();
-			return this;
+			/* If open and no new FormattedText or value state is set to the Input then this is called
+			onBeforeClose of the SuggestionsPopover. Switch the value state aggregation's
+			parent from the ValueStateHeader to the ComboBox */
+			if (oSuggestionsPopover.isOpen() && !bShouldPopoverBeUpdated) {
+				this.setFormattedValueStateText(oSuggestionsPopover._getValueStateHeader().getFormattedText());
+			}
+			oSuggestionsPopover.updateValueState(sValueState, (oNewFormattedValueStateText || sValueStateText), this.getShowValueStateMessage());
 		};
 
 		ComboBoxBase.prototype.shouldValueStateMessageBeOpened = function() {
@@ -1036,9 +1045,7 @@ sap.ui.define([
 			// Creates the internal controls of the <code>SuggestionsPopover</code>
 			oSuggPopover._createSuggestionPopup({showSelectedButton: this._hasShowSelectedButton()});
 			oSuggPopover._createSuggestionPopupContent(false);
-
 			this.forwardEventHandlersToSuggPopover(oSuggPopover);
-			this._updateSuggestionsPopoverValueState();
 
 			// Amends the suggestions popovers list
 			// this._oList is used by the ComboBoxBase
@@ -1094,6 +1101,7 @@ sap.ui.define([
 		 *
 		 */
 		ComboBoxBase.prototype.onBeforeOpen = function () {
+			this._updateSuggestionsPopoverValueState();
 			if (!this._getItemsShownWithFilter()) {
 				this.toggleIconPressedStyle(true);
 			}
@@ -1107,6 +1115,7 @@ sap.ui.define([
 			// reset opener
 			this.bOpenedByKeyboardOrButton = false;
 			this._setItemsShownWithFilter(false);
+			this._updateSuggestionsPopoverValueState();
 		};
 
 		/**
@@ -1129,12 +1138,24 @@ sap.ui.define([
 		/**
 		 * Gets the control's suggestions popover.
 		 *
-		 * @returns {sap.m.SuggestionsPopover} The SuggestionsPopover instance, creating it if necessary by calling
-		 * the <code>createPicker()</code> method.
+		 * @returns {sap.m.SuggestionsPopover} The SuggestionsPopover instance.
 		 * @private
 		 */
 		ComboBoxBase.prototype._getSuggestionsPopover = function() {
 			return this._oSuggestionPopover;
+		};
+
+		/**
+		 *
+		 * @return {array} <code>sap.m.FormattedText</code> links in the value state message
+		 * @private
+		 */
+		ComboBoxBase.prototype.getValueStateLinks = function() {
+			var bHasFormattedTextValueState = this.getPicker() && this.getPicker().getCustomHeader() && typeof this.getPicker().getCustomHeader().getFormattedText === "function",
+				oFormattedTextValueState = bHasFormattedTextValueState && this.getPicker().getCustomHeader().getFormattedText(),
+				aValueStateLinks = oFormattedTextValueState && oFormattedTextValueState.getControls();
+
+			return aValueStateLinks || [];
 		};
 
 		/**
@@ -1166,22 +1187,6 @@ sap.ui.define([
 			}
 
 			return null;
-		};
-
-		/**
-		 * Gets the dom reference of the html node,
-		 * needed for attaching aria attributes
-		 *
-		 * @protected
-		 */
-		ComboBoxBase.prototype.getRoleComboNodeDomRef = function() {
-			var oFocusDomRef = this.getFocusDomRef();
-
-			if (!oFocusDomRef) {
-				return null;
-			}
-
-			return oFocusDomRef.parentNode;
 		};
 
 		/*
@@ -1249,7 +1254,6 @@ sap.ui.define([
 			var oPicker = this.getPicker();
 
 			if (oPicker) {
-				this._updateSuggestionsPopoverValueState();
 				oPicker.open();
 			}
 

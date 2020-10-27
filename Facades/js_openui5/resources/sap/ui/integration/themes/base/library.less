@@ -2,7 +2,7 @@
 
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -16,8 +16,7 @@
 /* Base theme                               */
 /* ======================================== */
 
-ui-integration-card,
-ui-integration-widget {
+ui-integration-card {
 	display: inline-block;
 	width: 100%;
 
@@ -40,3 +39,185 @@ ui-integration-card {
 	}
 }
 /* END "CustomElementCard.less" */
+
+/* START "ListContent.less" */
+
+/* ======================================================= */
+/* CSS for control sap.ui.integration.controls/ListContent */
+/* Base theme                                              */
+/* ======================================================= */
+
+.sapFCard .sapFCardContent .sapFCardContentHidden.sapUiIntegrationMicrochartLegend {
+	// use display none until loading animation for the legend is provided
+	display: none;
+}
+/* END "ListContent.less" */
+
+/* START "ListContentItem.less" */
+/* =========================================================== */
+/* CSS for control sap.ui.integration.controls/ListContentItem */
+/* Base theme                                                  */
+/* =========================================================== */
+
+@_sap_ui_integration_controls_ListContentItem_ChartHeight: 1rem;
+
+.sapUiIntegrationListContentItem {
+	&.sapUiIntegrationListContentItemWithChart .sapMLIBContent > .sapMSLIDiv {
+		flex-direction: column;
+	}
+
+	&.sapUiIntegrationListContentItemWithChart {
+		height: 5rem;
+	}
+
+	&.sapUiIntegrationListContentItemWithChart.sapMSLIWithDescription {
+		height: 5rem + @_sap_ui_integration_controls_ListContentItem_ChartHeight;
+	}
+
+	.sapFCardIcon {
+		flex-shrink: 0;
+	}
+}
+
+/* END "ListContentItem.less" */
+
+/* START "Microchart.less" */
+/* ====================================================== */
+/* CSS for control sap.ui.integration.controls/Microchart */
+/* Base theme                                             */
+/* ====================================================== */
+
+
+.sapUiIntegrationMicrochartValue {
+	&Neutral {
+		color: @sapUiNeutralText;
+	}
+
+	&Good {
+		color: @sapUiPositiveText;
+	}
+
+	&Error {
+		color: @sapUiNegativeText;
+	}
+
+	&Critical {
+		color: @sapUiCriticalText;
+	}
+}
+
+.sapUiIntegrationMicrochartChartWrapper {
+	height: 1rem;
+	display: flex;
+	align-items: center;
+	margin-top: 0.5rem;
+
+	.sapUiIntegrationMicrochartChart {
+		flex-grow: 1;
+		height: 0.675rem;
+	}
+}
+/* END "Microchart.less" */
+
+/* START "MicrochartLegend.less" */
+/* ============================================================ */
+/* CSS for control sap.ui.integration.controls/MicrochartLegend */
+/* Base theme                                                   */
+/* ============================================================ */
+
+.sapUiIntegrationMicrochartLegend {
+	padding-top: 0.5rem;
+	padding-left: 1rem;
+
+	.sapUiIntegrationMicrochartLegendItem {
+		display: inline-flex;
+		margin-right: 3rem;
+		margin-bottom: 0.5rem;
+		max-width: 100%;
+
+		// color segment
+		:first-child {
+			flex-shrink: 0;
+			width: 0.75rem;
+			height: 0.75rem;
+			margin-right: 0.5rem;
+		}
+
+		// title
+		:nth-child(2) {
+			height: 0.75rem;
+			font-size: 0.75rem;
+			overflow: hidden;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+		}
+
+	}
+}
+
+.sapUiIntegrationMicrochartLegendItem {
+	&Neutral {
+		background: @sapUiChartPaletteSemanticNeutral;
+	}
+
+	&Good {
+		background: @sapUiChartPaletteSemanticGood;
+	}
+
+	&Error {
+		background: @sapUiChartPaletteSemanticBad;
+	}
+
+	&Critical {
+		background: @sapUiChartPaletteSemanticCritical;
+	}
+}
+
+/* END "MicrochartLegend.less" */
+
+/* START "ObjectContent.less" */
+/* ====================================================== */
+/* CSS for control sap.ui.integration.cards/ObjectContent */
+/* Base theme                                             */
+/* ====================================================== */
+
+.sapFCardObjectContent {
+	padding: 1rem 1rem 0 1rem;
+}
+
+.sapFCardObjectGroup {
+	padding-bottom: 1.75rem;
+
+	& .sapFCardObjectItemTitle {
+		margin-bottom: 0.5rem;
+	}
+
+	& .sapFCardObjectItemLabel {
+		margin-top: 1rem;
+	}
+
+	& .sapFCardObjectItemText {
+		margin-top: 0.25rem;
+	}
+
+	& .sapFCardObjectItemAvatar {
+		margin-right: 0.5rem;
+	}
+}
+
+.sapFCardObjectGroup.sapFCardObjectGroupLastInColumn {
+	padding-bottom: 1rem;
+}
+
+.sapFCardObjectSpaceBetweenGroup {
+	margin-right: 2rem;
+}
+
+.sapFCard .sapFCardContent {
+	.sapFCardObjectContent .sapUiAFLayout .sapUiAFLayoutItem.sapFCardInvisibleContent {
+		display: none;
+	}
+}
+
+/* END "ObjectContent.less" */
+

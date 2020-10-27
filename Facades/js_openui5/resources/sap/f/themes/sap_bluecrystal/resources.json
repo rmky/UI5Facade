@@ -3,58 +3,85 @@
 	"resources": [
 		{
 			"name": ".theming",
+			"size": 137,
 			"theme": "sap_bluecrystal"
 		},
 		{
 			"name": "DynamicPage.less",
+			"size": 427,
 			"designtime": true,
 			"theme": "sap_bluecrystal"
 		},
 		{
 			"name": "DynamicPageHeader.less",
+			"size": 264,
 			"designtime": true,
 			"theme": "sap_bluecrystal"
 		},
 		{
 			"name": "DynamicPageTitle.less",
+			"size": 259,
 			"designtime": true,
 			"theme": "sap_bluecrystal"
 		},
 		{
 			"name": "FlexibleColumnLayout.less",
+			"size": 992,
 			"designtime": true,
 			"theme": "sap_bluecrystal"
 		},
 		{
-			"name": "library-RTL-dbg.css",
-			"isDebug": true,
+			"name": "css_variables.css",
+			"size": 3145,
+			"theme": "sap_bluecrystal"
+		},
+		{
+			"name": "css_variables.less",
+			"size": 101650,
+			"designtime": true,
+			"theme": "sap_bluecrystal"
+		},
+		{
+			"name": "css_variables.source.less",
+			"size": 101280,
+			"designtime": true,
 			"theme": "sap_bluecrystal"
 		},
 		{
 			"name": "library-RTL.css",
-			"theme": "sap_bluecrystal"
-		},
-		{
-			"name": "library-dbg.css",
-			"isDebug": true,
+			"size": 64897,
 			"theme": "sap_bluecrystal"
 		},
 		{
 			"name": "library-parameters.json",
+			"size": 1224,
 			"theme": "sap_bluecrystal"
 		},
 		{
 			"name": "library.css",
+			"size": 64897,
 			"theme": "sap_bluecrystal"
 		},
 		{
 			"name": "library.less",
+			"size": 2747,
 			"designtime": true,
 			"theme": "sap_bluecrystal"
 		},
 		{
 			"name": "library.source.less",
+			"size": 461,
 			"designtime": true,
+			"theme": "sap_bluecrystal"
+		},
+		{
+			"name": "library_skeleton-RTL.css",
+			"size": 66684,
+			"theme": "sap_bluecrystal"
+		},
+		{
+			"name": "library_skeleton.css",
+			"size": 66682,
 			"theme": "sap_bluecrystal"
 		}
 	]

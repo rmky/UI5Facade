@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -38,6 +38,7 @@ sap.ui.define([
 
 	// shortcut for sap.ui.core.ValueState
 	var ValueState = coreLibrary.ValueState;
+	var HttpRequestMethod = library.FileUploaderHttpRequestMethod;
 
 
 
@@ -59,7 +60,7 @@ sap.ui.define([
 	 * @implements sap.ui.core.IFormContent, sap.ui.unified.IProcessableBlobs
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -130,6 +131,7 @@ sap.ui.define([
 			 * The chosen files will be checked against an array of file types.
 			 *
 			 * If at least one file does not fit the file type restriction, the upload is prevented.
+			 * <b>Note:</b> This property is not supported by Microsoft Edge.
 			 *
 			 * Example: <code>["jpg", "png", "bmp"]</code>.
 			 */
@@ -157,7 +159,7 @@ sap.ui.define([
 			 * The chosen files will be checked against an array of mime types.
 			 *
 			 * If at least one file does not fit the mime type restriction, the upload is prevented.
-			 * <b>Note:</b> This property is not supported by Internet Explorer & Edge.
+			 * <b>Note:</b> This property is not supported by Internet Explorer & Microsoft Edge.
 			 *
 			 * Example: <code>["image/png", "image/jpeg"]</code>.
 			 */
@@ -169,6 +171,12 @@ sap.ui.define([
 			 * This property is not supported by Internet Explorer 9.
 			 */
 			sendXHR : {type : "boolean", group : "Behavior", defaultValue : false},
+
+			/**
+			 * Chosen HTTP request method for file upload.
+			 *
+			 */
+			httpRequestMethod : {type: "sap.ui.unified.FileUploaderHttpRequestMethod", group : "Behavior", defaultValue : HttpRequestMethod.Post},
 
 			/**
 			 * Placeholder for the text field.
@@ -594,6 +602,7 @@ sap.ui.define([
 				this.oBrowse.addAriaDescribedBy(this.getId() + "-AccDescr");
 			}
 		}
+		this._submitAfterRendering = false;
 
 	};
 
@@ -680,6 +689,10 @@ sap.ui.define([
 		// Compatibility issue: converting the given types to an array in case it is a string
 		var aTypes = this._convertTypesToArray(vTypes);
 		this.setProperty("fileType", aTypes, false);
+		if (this.oFileUpload) {
+			this.oFileUpload = undefined;
+			this._prepareFileUpload();
+		}
 		return this;
 	};
 
@@ -687,6 +700,10 @@ sap.ui.define([
 		// Compatibility issue: converting the given types to an array in case it is a string
 		var aTypes = this._convertTypesToArray(vTypes);
 		this.setProperty("mimeType", aTypes, false);
+		if (this.oFileUpload) {
+			this.oFileUpload = undefined;
+			this._prepareFileUpload();
+		}
 		return this;
 	};
 
@@ -711,6 +728,62 @@ sap.ui.define([
 			}
 		}
 		return this;
+	};
+
+	FileUploader.prototype.addAriaLabelledBy = function(sID) {
+		this.addAssociation("ariaLabelledBy", sID);
+		this.oBrowse.addAriaLabelledBy(sID);
+
+		return this;
+	};
+
+	FileUploader.prototype.removeAriaLabelledBy = function(sID) {
+		var sLabelId = this.removeAssociation("ariaLabelledBy", sID);
+		this.oBrowse.removeAriaLabelledBy(sLabelId);
+
+		return sLabelId;
+	};
+
+	FileUploader.prototype.removeAllAriaLabelledBy = function() {
+		var aLabelIds = this.removeAllAssociation("ariaLabelledBy"),
+			aButtonLabels = this.oBrowse.getAriaLabelledBy();
+
+		// We make sure to leave any sap.m.Label in the button's ariaLabelledBy
+		aLabelIds.forEach(function(sLabelId) {
+			if (aButtonLabels.indexOf(sLabelId) >= 0) {
+				this.oBrowse.removeAriaLabelledBy(sLabelId);
+			}
+		}.bind(this));
+
+		return aLabelIds;
+	};
+
+	FileUploader.prototype.addAriaDescribedBy = function(sID) {
+		this.addAssociation("ariaDescribedBy", sID);
+		this.oBrowse.addAriaDescribedBy(sID);
+
+		return this;
+	};
+
+	FileUploader.prototype.removeAriaDescribedBy = function(sID) {
+		var sDescriptionId = this.removeAssociation("ariaDescribedBy", sID);
+		this.oBrowse.removeAriaDescribedBy(sDescriptionId);
+
+		return sDescriptionId;
+	};
+
+	FileUploader.prototype.removeAllAriaDescribedBy = function() {
+		var aDescriptionIds = this.removeAllAssociation("ariaDescribedBy"),
+			aButtonDescriptionIds = this.oBrowse.getAriaDescribedBy();
+
+		// Keep the default accessibility description in the -AccDescr element
+		aDescriptionIds.forEach(function(sLabelId) {
+			if (aButtonDescriptionIds.indexOf(sLabelId) >= 0) {
+				this.oBrowse.removeAriaDescribedBy(sLabelId);
+			}
+		}.bind(this));
+
+		return aDescriptionIds;
 	};
 
 	/*
@@ -753,12 +826,6 @@ sap.ui.define([
 		}
 	};
 
-	FileUploader.prototype.setXhrSettings = function (oXhrSettings) {
-		this.setAggregation("xhrSettings", oXhrSettings, true);
-
-		return this;
-	};
-
 	/**
 	 * Helper to ensure, that the types (file or mime) are inside an array.
 	 * The FUP also accepts comma-separated strings for its fileType and mimeType property.
@@ -789,9 +856,15 @@ sap.ui.define([
 
 		// remove the IFRAME
 		if (this.oIFrameRef) {
-			jQuery(this.oIFrameRef).unbind();
+			jQuery(this.oIFrameRef).off();
 			sap.ui.getCore().getStaticAreaRef().removeChild(this.oIFrameRef);
 			this.oIFrameRef = null;
+		}
+
+		if (this.oFileUpload) {
+			jQuery(this.oFileUpload).off();
+			this.oFileUpload.parentElement.removeChild(this.oFileUpload);
+			this.oFileUpload = null;
 		}
 
 	};
@@ -807,7 +880,7 @@ sap.ui.define([
 		jQuery(this.oFileUpload).appendTo(oStaticArea);
 
 		// unbind the custom event handlers
-		jQuery(this.oFileUpload).unbind();
+		jQuery(this.oFileUpload).off();
 
 	};
 
@@ -817,6 +890,7 @@ sap.ui.define([
 	 * @private
 	 */
 	FileUploader.prototype.onAfterRendering = function() {
+
 		// prepare the file upload control and the upload iframe
 		this.prepareFileUploadAndIFrame();
 
@@ -824,7 +898,7 @@ sap.ui.define([
 		this._addLabelFeaturesToBrowse();
 
 		// event listener registration for change event
-		jQuery(this.oFileUpload).change(jQuery.proxy(this.handlechange, this));
+		jQuery(this.oFileUpload).on("change", this.handlechange.bind(this));
 
 		if (!this.bMobileLib) {
 			this.oFilePath.$().attr("tabindex", "-1");
@@ -847,6 +921,11 @@ sap.ui.define([
 
 		if (this.getValueState() == ValueState.Error) {
 			this.oBrowse.$().attr("aria-invalid", "true");
+		}
+
+		if (this._submitAfterRendering) {
+			this._submitAndResetValue();
+			this._submitAfterRendering = false;
 		}
 
 	};
@@ -943,11 +1022,10 @@ sap.ui.define([
 	FileUploader.prototype.setEnabled = function(bEnabled){
 		var $oFileUpload = jQuery(this.oFileUpload);
 
-		this.setProperty("enabled", bEnabled, true);
+		this.setProperty("enabled", bEnabled);
 		this.oFilePath.setEnabled(bEnabled);
 		this.oBrowse.setEnabled(bEnabled);
 		bEnabled ? $oFileUpload.removeAttr('disabled') : $oFileUpload.attr('disabled', 'disabled');
-		this.$().toggleClass("sapUiFupDisabled", !bEnabled);
 
 		return this;
 	};
@@ -994,13 +1072,6 @@ sap.ui.define([
 		}
 
 		return this.setProperty("valueStateText", sValueStateText, true);
-	};
-
-	FileUploader.prototype.setUploadUrl = function(sValue, bFireEvent) {
-		this.setProperty("uploadUrl", sValue, true);
-		var $uploadForm = this.$("fu_form");
-		$uploadForm.attr("action", this.getUploadUrl());
-		return this;
 	};
 
 	FileUploader.prototype.setPlaceholder = function(sPlaceholder) {
@@ -1161,10 +1232,13 @@ sap.ui.define([
 		var oXhr = aXhr[iIndex];
 		var sFilename = oXhr.file.name ? oXhr.file.name : "MultipartFile";
 
-		if ((Device.browser.edge || Device.browser.internet_explorer) && oXhr.file.type && oXhr.xhr.readyState == 1) {
+		if ((Device.browser.edge || Device.browser.internet_explorer) && oXhr.file.type && oXhr.xhr.readyState == 1
+			&& !oXhr.requestHeaders.filter(function(oHeader) {
+				return oHeader.name.toLowerCase() == "content-type";
+			}).length) {
 			var sContentType = oXhr.file.type;
 			oXhr.xhr.setRequestHeader("Content-Type", sContentType);
-			oXhr.requestHeaders.push({name: "Content-Type", value: sContentType});
+			oXhr.requestHeaders.push({ name: "Content-Type", value: sContentType });
 		}
 
 		var oRequestHeaders = oXhr.requestHeaders;
@@ -1257,7 +1331,9 @@ sap.ui.define([
 		if (!this.getEnabled()) {
 			return;
 		}
-		var uploadForm = this.getDomRef("fu_form");
+		var uploadForm = this.getDomRef("fu_form"),
+			sActionAttr;
+
 		try {
 			this._bUploading = true;
 			if (this.getSendXHR() && window.File) {
@@ -1268,12 +1344,26 @@ sap.ui.define([
 					this._sendFilesWithXHR(aFiles);
 				}
 			} else if (uploadForm) {
-				uploadForm.submit();
-				this._resetValueAfterUploadStart();
+				// In order to do the submit, the action DOM attribute of the inner form should be accurate.
+				// If there is a change in the passed to the uploadUrl property string, we must ensure that it is
+				// applied in the DOM and the submit is performed after there is new rendering.
+				sActionAttr = uploadForm.getAttribute("action");
+				if (sActionAttr !== this.getUploadUrl()) {
+					this._submitAfterRendering = true;
+				} else {
+					this._submitAndResetValue();
+				}
 			}
 		} catch (oException) {
 			Log.error("File upload failed:\n" + oException.message);
 		}
+	};
+
+	FileUploader.prototype._submitAndResetValue = function() {
+		var uploadForm = this.getDomRef("fu_form");
+
+		uploadForm.submit();
+		this._resetValueAfterUploadStart();
 	};
 
 	/**
@@ -1345,7 +1435,7 @@ sap.ui.define([
 			this.setValue("", true);
 		}
 		//refocus the Button, except bSupressFocus is set
-		if (this.oBrowse.getDomRef() && containsOrEquals(this.getDomRef(), document.activeElement)) {
+		if (this.oBrowse.getDomRef() && (Device.browser.safari || containsOrEquals(this.getDomRef(), document.activeElement))) {
 			this.oBrowse.focus();
 		}
 	};
@@ -1522,7 +1612,7 @@ sap.ui.define([
 					requestHeaders: []
 				};
 				this._aXhr.push(oXhrEntry);
-				oXhrEntry.xhr.open("POST", this.getUploadUrl(), true);
+				oXhrEntry.xhr.open(this.getHttpRequestMethod(), this.getUploadUrl(), true);
 				if (oXHRSettings) {
 					oXhrEntry.xhr.withCredentials = oXHRSettings.getWithCredentials();
 				}
@@ -1769,6 +1859,43 @@ sap.ui.define([
 	 */
 	FileUploader.prototype.prepareFileUploadAndIFrame = function() {
 
+		this._prepareFileUpload();
+
+		if (!this.oIFrameRef) {
+
+			// create the upload iframe
+			var oIFrameRef = document.createElement("iframe");
+			oIFrameRef.style.display = "none";
+			/*eslint-enable no-script-url */
+			oIFrameRef.id = this.sId + "-frame";
+			sap.ui.getCore().getStaticAreaRef().appendChild(oIFrameRef);
+			oIFrameRef.contentWindow.name = this.sId + "-frame";
+
+			// sink the load event of the upload iframe
+			var that = this;
+			this._bUploading = false; // flag for uploading
+			jQuery(oIFrameRef).on( "load", function(oEvent) {
+				if (that._bUploading) {
+					Log.info("File uploaded to " + that.getUploadUrl());
+					var sResponse;
+					try {
+						sResponse = that.oIFrameRef.contentWindow.document.body.innerHTML;
+					} catch (ex) {
+						// in case of cross-domain submit we get a permission denied exception
+						// when we try to access the body of the IFrame document
+					}
+					that.fireUploadComplete({"response": sResponse});
+					that._bUploading = false;
+				}
+			});
+
+			// keep the reference
+			this.oIFrameRef = oIFrameRef;
+
+		}
+	};
+
+	FileUploader.prototype._prepareFileUpload = function() {
 		if (!this.oFileUpload) {
 
 			// create the file uploader markup
@@ -1821,56 +1948,17 @@ sap.ui.define([
 				}
 			}
 			if ((this.getMimeType() || this.getFileType()) && window.File) {
-				var aMimeTypes = this.getMimeType() || [];
-				var aFileTypes = this.getFileType() || [];
-				aFileTypes = aFileTypes.map(function(item) {
-					return item.indexOf(".") === 0 ? item : "." + item;
-				});
-				var sAcceptedTypes = aFileTypes.concat(aMimeTypes).join(",");
+				var sAcceptedTypes = this._getAcceptedTypes();
 				aFileUpload.push('accept="' + encodeXML(sAcceptedTypes) + '" ');
 			}
 			aFileUpload.push('>');
 
 			// add it into the control markup
 			this.oFileUpload = jQuery(aFileUpload.join("")).prependTo(this.$().find(".sapUiFupInputMask")).get(0);
-
 		} else {
 
 			// move the file uploader from the static area to the control markup
 			jQuery(this.oFileUpload).prependTo(this.$().find(".sapUiFupInputMask"));
-
-		}
-
-		if (!this.oIFrameRef) {
-
-			// create the upload iframe
-			var oIFrameRef = document.createElement("iframe");
-			oIFrameRef.style.display = "none";
-			/*eslint-enable no-script-url */
-			oIFrameRef.id = this.sId + "-frame";
-			sap.ui.getCore().getStaticAreaRef().appendChild(oIFrameRef);
-			oIFrameRef.contentWindow.name = this.sId + "-frame";
-
-			// sink the load event of the upload iframe
-			var that = this;
-			this._bUploading = false; // flag for uploading
-			jQuery(oIFrameRef).on( "load", function(oEvent) {
-				if (that._bUploading) {
-					Log.info("File uploaded to " + that.getUploadUrl());
-					var sResponse;
-					try {
-						sResponse = that.oIFrameRef.contentWindow.document.body.innerHTML;
-					} catch (ex) {
-						// in case of cross-domain submit we get a permission denied exception
-						// when we try to access the body of the IFrame document
-					}
-					that.fireUploadComplete({"response": sResponse});
-					that._bUploading = false;
-				}
-			});
-
-			// keep the reference
-			this.oIFrameRef = oIFrameRef;
 
 		}
 	};
@@ -1893,6 +1981,15 @@ sap.ui.define([
 
 	};
 
+	FileUploader.prototype._getAcceptedTypes = function() {
+		var aMimeTypes = this.getMimeType() || [],
+			aFileTypes = this.getFileType() || [];
+		aFileTypes = aFileTypes.map(function(item) {
+			return item.indexOf(".") === 0 ? item : "." + item;
+		});
+		return aFileTypes.concat(aMimeTypes).join(",");
+	};
+
 	FileUploader.prototype._resetValueAfterUploadStart = function () {
 		Log.info("File uploading to " + this.getUploadUrl());
 		if (this.getSameFilenameAllowed() && this.getUploadOnChange() && this.getUseMultipart()) {
@@ -1908,7 +2005,7 @@ sap.ui.define([
 		if (this.oBrowse &&  this.oBrowse.$().length) {
 			$browse = this.oBrowse.$();
 			$browse.attr("type', 'button"); // The default type of button is submit that's why on click of label there are submit of the form. This way we are avoiding the submit of form.
-			$browse.click(function(e) {
+			$browse.on("click", function(e) {
 				e.preventDefault();
 				this.FUEl.click(); // The default behaviour on click on label is to open "open file" dialog. The only way to attach click event that is transferred from the label to the button is this way. AttachPress and attachTap don't work in this case.
 			}.bind(this));

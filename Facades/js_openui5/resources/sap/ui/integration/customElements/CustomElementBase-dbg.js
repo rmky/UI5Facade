@@ -1,6 +1,6 @@
 /*!
 * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
 */
 
@@ -88,8 +88,12 @@ sap.ui.define([
 		if (this._mAllProperties[sCamelizedAttributeName]) {
 			this._mAllProperties[sCamelizedAttributeName].set(this._oControlInstance, vNewValue);
 		} else if (this._mAllAssociations[sCamelizedAttributeName]) {
-			var vValue = document.getElementById(vNewValue)._getControl();
-			this._mAllAssociations[sCamelizedAttributeName].set(this._oControlInstance, vValue);
+			var element = document.getElementById(vNewValue);
+			if (element instanceof CustomElementBase) {
+				vNewValue =  document.getElementById(vNewValue)._getControl();
+			}
+
+			this._mAllAssociations[sCamelizedAttributeName].set(this._oControlInstance, vNewValue);
 		}
 	};
 
@@ -243,11 +247,16 @@ sap.ui.define([
 		oPrototype._mAllProperties = oPrototype._oMetadata.getAllProperties();
 		oPrototype._aAllProperties = []; // holds all properties and associations in "camelCase"
 
+		if (mSettings && mSettings.customProperties) {
+			oPrototype._mAllProperties = Object.assign(oPrototype._mAllProperties, mSettings.customProperties);
+		}
+
 		for (sKey in oPrototype._mAllProperties) {
 			if (mSettings && mSettings.privateProperties && mSettings.privateProperties.indexOf(sKey) !== -1) {
 				// do not expose property if it's passed as a private when defined
 				continue;
 			}
+
 			oPrototype._aAllProperties.push(sKey);
 		}
 

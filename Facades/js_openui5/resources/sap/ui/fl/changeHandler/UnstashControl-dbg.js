@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -15,7 +15,7 @@ sap.ui.define([
 	 * Change handler for unstashing of a control.
 	 * @alias sap.ui.fl.changeHandler.UnstashControl
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @experimental Since 1.27.0
 	 */
 	var UnstashControl = { };
@@ -89,6 +89,21 @@ sap.ui.define([
 			//old way including move, new way will have seperate move change
 			oChangeJson.content = oSpecificChangeInfo.content;
 		}
+	};
+
+	/**
+	 * Retrieves the condenser-specific information.
+	 *
+	 * @param {sap.ui.fl.Change} oChange - Change object with instructions to be applied on the control map
+	 * @returns {object} - Condenser-specific information
+	 * @public
+	 */
+	UnstashControl.getCondenserInfo = function(oChange) {
+		return {
+			affectedControl: oChange.getSelector(),
+			classification: sap.ui.fl.condenser.Classification.Reverse,
+			uniqueKey: "stashed"
+		};
 	};
 
 	return UnstashControl;

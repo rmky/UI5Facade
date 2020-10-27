@@ -2,7 +2,7 @@
 
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -24,23 +24,23 @@
 
 	// DynamicPageTitle and Toggle Header Visual Indicator hover state
 	&.sapFDynamicPageTitleClickEnabled {
-
-		.sapFDynamicPageTitle:hover,
 		&.sapFDynamicPageTitleForceHovered .sapFDynamicPageTitle {
 			.title-hover(@sapUiObjectHeaderBackground);
 		}
 
-		.sapFDynamicPageTitleTranslucent:hover,
 		&.sapFDynamicPageTitleForceHovered .sapFDynamicPageTitleTranslucent {
 			.title-hover(@sapUiObjectHeaderBackground);
 		}
 
-		.sapFDynamicPageTitleTransparent:hover,
 		&.sapFDynamicPageTitleForceHovered .sapFDynamicPageTitleTransparent {
 			.title-hover(transparent);
 		}
 
 	}
+}
+
+.sapFDynamicPageTitleMainNavigationAreaInner .sapMIBar.sapMTB .sapMBarChild:first-child {
+	margin-left: 0;
 }
 
 .sapFDynamicPageToggleHeaderIndicator,
@@ -132,6 +132,10 @@ To be used in Comparison pattern scenario. */
 .sapUiComparisonContainer .sapFDynamicPageTitleSnapped + .sapFDynamicPageContentWrapper .sapUiComparisonContent  {
 	margin-right: 0;
 }
+
+.title-hover(@backgroundColor) {
+	background-color: darken(@backgroundColor, 4);
+}
 /* END "DynamicPage.less" */
 
 /* START "DynamicPageHeader.less" */
@@ -167,6 +171,7 @@ To be used in Comparison pattern scenario. */
 
 .sapFDynamicPageTitle {
 	padding: 0.5rem 3rem;
+	word-wrap: break-word;
 }
 
 .sapFDynamicPage-Std-Tablet {
@@ -229,6 +234,7 @@ To be used in Comparison pattern scenario. */
 .sapUiSizeCompact .sapFDynamicPageTitleMain > .sapFDynamicPageTitleMainInner .sapFDynamicPageTitleMainHeading .sapFDynamicPageTitleMainHeadingInner {
 	margin-top: 0.3125rem;
 }
+
 /* END "DynamicPageTitle.less" */
 
 /* START "FlexibleColumnLayout.less" */
@@ -261,6 +267,7 @@ To be used in Comparison pattern scenario. */
 
 @_sap_f_GridListItem_Header_BoxShadow: 0 0 0.25rem 0 fade(@sapUiContentShadowColor, 15), inset 0 -0.0625rem 0 0 @sapUiPageHeaderBorderColor;
 @_sap_f_GridListItem_HeaderHeight: 2.75rem;
+@_sap_f_GridListItem_BorderSelected: 0 0 0 0.125rem @sapUiListSelectionBorderColor;
 /* END "GridListItem.less" */
 
 /* START "ShellBar.less" */
@@ -276,6 +283,7 @@ To be used in Comparison pattern scenario. */
 .sapFShellBar {
 	background: @sapUiShellColor;
 	height: 2.75rem;
+	box-shadow: inset 0 -0.0625rem 0 0 @sapUiShellBorderColor;
 	.sapFShellBarOTB {
 		height: 2.75rem;
 	}
@@ -287,14 +295,14 @@ To be used in Comparison pattern scenario. */
 			stop-color: #FFFFFF;
 		}
 		&:focus {
-			outline-color: @sapUiContentContrastFocusColor;
+			outline-color: @sapUiContentFocusColor;
 		}
 		html[data-sap-ui-browser^="ie"] &:focus:before {
 			border-color: @sapUiContentContrastFocusColor;
 		}
 	}
 	.sapFShellBarHomeIcon:focus {
-		outline-color: @sapUiContentContrastFocusColor;
+		outline-color: @sapUiContentFocusColor;
 	}
 
 	.sapFShellBarSearch {
@@ -303,6 +311,14 @@ To be used in Comparison pattern scenario. */
 	&.sapMPageHeader .sapMIBar,
 	.sapMIBar {
 		height: 2.75rem;
+	}
+	.sapMBtn:hover > .sapMBtnHoverable.sapMToggleBtnPressed:not(.sapMBtnActive) {
+		border-color: @sapUiShellHoverBackground;
+	}
+	.sapMToggleBtnPressed:not(.sapMBtnDisabled),
+	.sapMTB-Transparent-CTX .sapMBtnInner.sapMToggleBtnPressed:not(.sapMBtnDisabled) {
+		background-color: @sapUiShellActiveBackground;
+		border-color: @sapUiShellActiveBackground;
 	}
 }
 
@@ -322,9 +338,7 @@ To be used in Comparison pattern scenario. */
 				height: 2.75rem;
 				padding: 0.250rem 0;
 			}
-
-			.sapMBtnInner,
-			.sapFShellBarProfile .sapMBtnInner {
+			.sapMBtnInner {
 				height: 2.25rem;
 				min-width: 2.25rem;
 			}
@@ -332,16 +346,6 @@ To be used in Comparison pattern scenario. */
 			.sapMBtnInner.sapMBtnText {
 				padding-left: 0.5625rem;
 				padding-right: 0.5625rem;
-			}
-			.sapMBtnInner.sapMBtnText.sapMBtnIconFirst,
-			.sapMBtnInner.sapMBtnText.sapMBtnBack {
-				padding-left: 2.375rem;
-			}
-			.sapMBtnInner.sapMBtnText.sapMBtnBack.sapMBtnIconFirst {
-				padding-left: 4.750rem;
-			}
-			.sapMBtnInner.sapMBtnText.sapMBtnIconLast {
-				padding-right: 2.375rem;
 			}
 
 			.sapMBtnContent {
@@ -368,6 +372,18 @@ To be used in Comparison pattern scenario. */
 				width: 2.500rem;
 				margin-top: 0.2rem;
 				margin-left: 0.2rem;
+			}
+
+			.sapMBtn:not(.sapMBtnDisabled):hover > .sapMBtnInner:not(.sapMToggleBtnPressed):not(.sapMBtnEmphasized):not(.sapMBtnAccept):not(.sapMBtnReject):not(.sapMBtnActive):not(.sapMBtnGhost):not(.sapMBtnCritical):not(.sapMBtnNegative):not(.sapMBtnNeutral):not(.sapMBtnSuccess) {
+				border-color: transparent;
+		 	 }
+
+		    .sapMTB-Transparent-CTX :not(.sapMBtnDisabled) > span.sapMBtnInner.sapMBtnActive > .sapMBtnIcon {
+				color: @sapUiShellActiveTextColor;
+			}
+
+			html.sap-desktop & .sapMTB-Transparent-CTX .sapMBtnInner.sapMToggleBtnPressed:not(.sapMBtnDisabled) {
+				background-color: @sapUiShellActiveBackground;
 			}
 
 			// sap.m.MenuButton
@@ -443,41 +459,75 @@ To be used in Comparison pattern scenario. */
 	.@{controlClass} {
 
 		// sap.m.Button
-		.sapMTB-Transparent-CTX .sapMBtn {
+		.sapMTB-Transparent-CTX .sapFShellBarItem.sapMBtn,
+		.sapMTB-Transparent-CTX .sapFShellBarItem>.sapMBtn {
 			&:focus .sapMBtnInner {
 				outline-color: contrast(@sapShellColor, @sapUiContentFocusColor, @sapUiContentContrastFocusColor, @sapContent_ContrastTextThreshold);
 			}
 			&:focus .sapMBtnFocusDiv {
 				border-color: contrast(@sapShellColor, @sapUiContentFocusColor, @sapUiContentContrastFocusColor, @sapContent_ContrastTextThreshold);
 			}
-			.sapMBtnContent,
 			.sapMBtnInner::after,
 			.sapMBtnIcon {
 				background: transparent;
+				color: @sapUiShellInteractiveTextColor;
+			}
+			.sapMBtnContent
+			{
+				background: transparent;
 				color: @sapUiShellTextColor;
 			}
-			&:hover {
-				.sapMBtnInner {
-					background: @sapUiShellHoverBackground !important;
-					border-color: transparent;
-				}
+			&:not(.sapMBtnDisabled) > span.sapMBtnInner.sapMBtnActive {
+				background: @sapUiShellActiveBackground;
+				border-color: @sapUiShellActiveBackground;
+				>.sapMBtnContent,
+				&::after{
+						color: @sapUiShellTextColor;
+					}
 			}
-			.sapMToggleBtnPressed {
-				background: @sapUiShellActiveBackground !important;
-				border-color: transparent !important;
-			}
-			&:active {
-				.sapMBtnContent,
-				.sapMBtnInner,
-				.sapMBtnIcon {
-					color: @sapUiShellActiveTextColor;
+
+			&:hover:not(.sapMBtnDisabled) {
+				>span.sapMBtnInner.sapMBtnHoverable:not(.sapMToggleBtnPressed) {
+					&:not(.sapMBtnActive) {
+						background: @sapUiShellHoverBackground;
+						border-color: @sapUiShellHoverBackground;
+					}
+					&.sapMBtnActive {
+						background: @sapUiShellActiveBackground;
+						border-color: @sapUiShellActiveBackground;
+						color: @sapUiShellTextColor;
+					}
+					&:after,
+					>.sapMBtnIcon {
+						color: @sapUiShellInteractiveTextColor;
+					}
+					>.sapMBtnContent,
+					>.sapMBtnContent bdi
+					{
+						color: @sapUiShellTextColor;
+					}
+
 				}
-				.sapMBtnInner {
-					background: @sapUiShellActiveBackground !important;
+				&.sapMToggleBtnPressed {
+					background: @sapUiShellActiveBackground;
+					border-color: @sapUiShellActiveBackground;
+				}
+				&:active {
+					>.sapMBtnContent,
+					>.sapMBtnInner,
+					>.sapMBtnIcon {
+						color: @sapUiShellTextColor;
+					}
 				}
 			}
 			&:disabled {
 				opacity: 0.4;
+			}
+		}
+
+		.sapMBtnBase.sapMBtn.sapFShellBarItem.sapMBarChild:hover {
+			.sapMBtnInner.sapMBtnHoverable.sapMFocusable.sapMBtnIconFirst{
+				background: @sapUiShellHoverBackground;
 			}
 		}
 
@@ -490,7 +540,7 @@ To be used in Comparison pattern scenario. */
 		.sapMSF {
 			.sapMSFF {
 				background: transparent;
-				border-color: darken(@sapUiShellBorderColor, 30);
+				border-color: lighten(@sapUiShellBorderColor, 30);
 
 				&:hover {
 					background: @sapUiShellHoverBackground;
@@ -516,16 +566,20 @@ To be used in Comparison pattern scenario. */
 			&.sapMSFDisabled {
 				opacity: 0.4;
 			}
+			&.sapMFocus > .sapMSFF::before ,
+			html[data-sap-ui-browser^="ie"] &.sapMFocus .sapMSFF::before{
+				border-color: @sapUiContentFocusColor;
+			}
 		}
 
 		// sap.m.Select
 		.sapMSlt {
 			background-color: transparent;
-			border-color: darken(@sapUiShellBorderColor,  30);
+			border-color: lighten(@sapUiShellBorderColor,  30);
 			color: @sapUiShellTextColor;
 			&.sapMSltHoverable:not(.sapMSltState):not(.sapMSltIconOnly):hover {
 				background-color: transparent;
-				border-color: darken(@sapUiShellBorderColor,  30);
+				border-color: lighten(@sapUiShellBorderColor,  30);
 				color: @sapUiShellTextColor;
 				.sapMSltArrow {
 					background-color: transparent;
@@ -535,7 +589,7 @@ To be used in Comparison pattern scenario. */
 				}
 			}
 			&.sapMSltPressed:not(.sapMSltDisabled):not(.sapMSltState) {
-				border-color: darken(@sapUiShellBorderColor,  30);
+				border-color:lighten(@sapUiShellBorderColor,  30);
 			}
 			.sapMSltLabel {
 				color: @sapUiShellTextColor;
@@ -563,4 +617,27 @@ To be used in Comparison pattern scenario. */
 		}
 	}
 }
+
 /* END "ShellBar.less" */
+
+/* START "Card.less" */
+/* =========================== */
+/* CSS for control sap.f/Card  */
+/* Quartz Dark theme           */
+/* =========================== */
+
+@_sap_f_Card_HeaderIconColor: @sapUiContentIconColor;
+@_sap_f_Card_HeaderFocusBorderBottomOffset: 2px;
+/* END "Card.less" */
+
+/* START "CardLoading.less" */
+/* ================================== */
+/* CSS for control sap.f/CardLoading  */
+/* FIORI 3 Dark theme          */
+/* ================================== */
+
+@sap_f_Card_Background_Placeholder_Color: @sapContent_Placeholderloading_Background;
+@sap_f_Card_Placeholder_Gradient: linear-gradient(to right, @sapContent_Placeholderloading_Background 0%, @sapContent_Placeholderloading_Background 35%, lighten(@sapContent_Placeholderloading_Background, 5) 50%, @sapContent_Placeholderloading_Background 65%, @sapContent_Placeholderloading_Background 100%);
+
+/* END "CardLoading.less" */
+

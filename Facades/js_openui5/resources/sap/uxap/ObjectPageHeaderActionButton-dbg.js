@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -64,6 +64,8 @@ sap.ui.define(["sap/m/Button", "./library", "./ObjectPageHeaderActionButtonRende
 	});
 
 	ObjectPageHeaderActionButton.prototype.init = function () {
+		Button.prototype.init.call(this);
+
 		this._bInternalVisible = this.getVisible();
 	};
 
@@ -110,9 +112,8 @@ sap.ui.define(["sap/m/Button", "./library", "./ObjectPageHeaderActionButtonRende
 
 	ObjectPageHeaderActionButton.prototype.setVisible = function (bVisible) {
 		var vResult = Button.prototype.setVisible.apply(this, arguments);
-		if (this.getParent() && typeof this.getParent()._adaptLayoutDelayed === "function") {
-			this.getParent()._adaptLayoutDelayed();
-		}
+		this.getParent() && this.getParent().invalidate();
+
 		return vResult;
 	};
 

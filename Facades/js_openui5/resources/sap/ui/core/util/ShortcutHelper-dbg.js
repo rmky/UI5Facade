@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -15,8 +15,8 @@ sap.ui.define([
 
 	// translates from shortcut specification term in the API to the string given in the event.key property
 	var mKeyDefinitionFix = {
-		Plus: "+",
-		Space: " "
+		plus: "+",
+		space: " "
 	};
 
 	// for NumPad Decimal key, find out whether the user has a comma or dot there
@@ -59,7 +59,7 @@ sap.ui.define([
 
 		// .,-*/=+
 		"ctrl+-": "zoom out",
-		"ctrl+plus": "zoom in",
+		"ctrl++": "zoom in",
 		"ctrl+shift+=": "cannot be handled",
 
 		// Tab|Space|Enter
@@ -141,9 +141,9 @@ sap.ui.define([
 
 			} else { // spec object
 				var key = vShortcut.key;
-				var bValidShortcut = /^([a-z0-9\.,\-\*\/=]|Plus|Tab|Space|Enter|Backspace|Home|Delete|End|Pageup|Pagedown|ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Escape|F[1-9]|F1[0-2])$/i.test(key);
+				var bValidShortcut = /^([a-z0-9\.,\-\*\/= +]|Tab|Enter|Backspace|Home|Delete|End|Pageup|Pagedown|ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Escape|F[1-9]|F1[0-2])$/i.test(key);
 				if (!bValidShortcut) {
-					throw new Error("Shortcut key '" + key + "' is not a valid shortcut key. It must match /^([a-z0-9\.,\-\*\/=]|Plus|Tab|Space|Enter|Backspace|Home|Delete|End|Pageup|Pagedown|ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Escape|F[1-9]|F1[0-2])$/i");
+					throw new Error("Shortcut key '" + key + "' is not a valid shortcut key. It must match /^([a-z0-9\.,\-\*\/= +]|Tab|Enter|Backspace|Home|Delete|End|Pageup|Pagedown|ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Escape|F[1-9]|F1[0-2])$/i");
 				}
 				oNormalizedShortcutSpec = {
 					key: oShortcutHelper.translateRegisteredKeyToStandard(key).toLowerCase(),
@@ -184,7 +184,7 @@ sap.ui.define([
 		 *
 		 * e.g.: 'Ctrl + Plus' --> 'Ctrl + +' - the same applies for 'Space'
 		 *
-		 * @param {string} sKeySpec The shortcut key
+		 * @param {string} sKeySpec The shortcut key in lower-case, e.g. "space" or "plus"
 		 *
 		 * @returns {string} Converted key character
 		 * @private
@@ -225,7 +225,7 @@ sap.ui.define([
 			}
 
 			// disallow all combinations of "Shift" with those keys which are turened into something different when Shift is pressed (or where Shift is required)
-			if ([".", ",", "-", "plus", "=", "*", "/"].indexOf(oNormalizedShortcutSpec.key) > -1 && sNormalizedShortcut.indexOf("shift") > -1) {
+			if ([".", ",", "-", "+", "=", "*", "/"].indexOf(oNormalizedShortcutSpec.key) > -1 && sNormalizedShortcut.indexOf("shift") > -1) {
 				throw new Error("Registering the shortcut '" + sNormalizedShortcut + "' is not allowed because the 'Shift' modifier changes the meaning of the " + oNormalizedShortcutSpec.key + " key on many keyboards.");
 			}
 		},

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -47,7 +47,7 @@ sap.ui.define([
 		 *
 		 * @namespace
 		 * @author SAP SE
-		 * @version 1.73.1
+		 * @version 1.82.0
 		 *
 		 * @constructor
 		 * @public
@@ -387,7 +387,7 @@ sap.ui.define([
 			var sCloseBtnId = this.getId() + "-close";
 			if (oEvent.target.id === sCloseBtnId) {
 				this.close();
-				oEvent.preventDefault(); // avoid onbeforeunload event which happens at least in IE9 because of the "#" link target// TODO remove after 1.62 version
+				oEvent.preventDefault(); // avoid onbeforeunload event which happens at least in IE9 because of the "#" link target// TODO remove after the end of support for Internet Explorer
 			}
 			return false;
 		};
@@ -638,7 +638,7 @@ sap.ui.define([
 			this.sLastRelevantNavigation = null;
 
 			if (!this._bInitialFocusSet) {
-				// since IE9 calls first "onfocusin" it has to be checked if the initial focus was set already// TODO remove after 1.62 version
+				// since IE9 calls first "onfocusin" it has to be checked if the initial focus was set already// TODO remove after the end of support for Internet Explorer
 				return;
 			}
 

@@ -530,7 +530,36 @@ JS;
                 return $js;
     }
     
-    
+    /**
+     *
+     * @return string
+     */
+    protected function buildJsDataLoaderFromLocal($oControlEventJsVar = 'oControlEvent', $keepPagePosJsVar = 'bKeepPagingPos')
+    {
+        $widget = $this->getWidget();
+        $data = $widget->prepareDataSheetToRead($widget->getValuesDataSheet());
+        if (! $data->isFresh()) {
+            $data->dataRead();
+        }
+        
+        // Since non-lazy loading means all the data is embedded in the view, we need to make
+        // sure the the view is not cached: so we destroy the view after it was hidden!
+        $this->getController()->addOnHideViewScript($this->getController()->getView()->buildJsViewGetter($this). '.destroy();', false);
+        
+        // FIXME make filtering, sorting, pagination, etc. work in non-lazy mode too!
+        
+        return <<<JS
+        
+                try {
+        			var data = {$this->getFacade()->encodeData($this->getFacade()->buildResponseData($data, $widget))};
+        		} catch (err){
+                    console.error('Cannot load data into widget {$this->getId()}!');
+                    return;
+        		}
+                sap.ui.getCore().byId("{$this->getId()}").getModel().setData(data);
+                
+JS;
+    }
     
     /**
      *
@@ -828,10 +857,15 @@ JS;
             $top_buttons .= $this->getFacade()->getElement($btn)->buildJsConstructor() . ',';
         }
         
+        // Add a title. If the dynamic page is actually the view, the title should be the name
+        // of the page, the view represents - otherwise it's the caption of the table widget.
+        // Since the back-button is also only shown when the dynamic page is the view itself,
+        // we can use the corresponding getter here.
+        $caption = $this->getDynamicPageShowBackButton() ? $this->getWidget()->getPage()->getName() : $this->getCaption();
         $title = <<<JS
         
                             new sap.m.Title({
-                                text: "{$this->escapeJsTextValue($this->getCaption())}"
+                                text: "{$this->escapeJsTextValue($caption)}"
                             })
                             
 JS;
@@ -1004,7 +1038,8 @@ JS;
         $filter_checks = '';
         foreach ($this->getDataWidget()->getFilters() as $fltr) {
             $elem = $this->getFacade()->getElement($fltr);
-            $filter_checks .= 'if(' . $elem->buildJsValueGetter() . ") {filtersCount++; filtersList += (filtersList == '' ? '' : ', ') + '{$elem->getCaption()}';} \n";
+            $filterName = $this->escapeJsTextValue($elem->getCaption());
+            $filter_checks .= "if({$elem->buildJsValueGetter()}) {filtersCount++; filtersList += (filtersList == '' ? '' : ', ') + \"{$filterName}\";} \n";
         }
         return <<<JS
                 var filtersCount = 0;
@@ -1328,7 +1363,7 @@ JS;
      */
     protected function hasPaginator() : bool
     {
-        return ($this->getDataWidget() instanceof Data) && $this->getDataWidget()->isPaged();
+        return ($this->getDataWidget() instanceof Data);
     }
     
     /**

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -11,11 +11,13 @@ sap.ui.define([
 ) {
 	"use strict";
 
+	var PROPERTY_NAME = "visible";
+
 	/**
 	 * Change handler for unhiding of a control.
 	 * @alias sap.ui.fl.changeHandler.UnhideControl
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @experimental Since 1.27.0
 	 */
 	var UnhideControl = {};
@@ -32,7 +34,7 @@ sap.ui.define([
 	 */
 	UnhideControl.applyChange = function(oChange, oControl, mPropertyBag) {
 		oChange.setRevertData({
-			originalValue: mPropertyBag.modifier.getProperty(oControl, 'visible')
+			originalValue: mPropertyBag.modifier.getProperty(oControl, PROPERTY_NAME)
 		});
 
 		mPropertyBag.modifier.setVisible(oControl, true);
@@ -71,6 +73,21 @@ sap.ui.define([
 	 * @public
 	 */
 	UnhideControl.completeChangeContent = function() {
+	};
+
+	/**
+	 * Retrieves the condenser specific information
+	 *
+	 * @param {sap.ui.fl.Change} oChange - Change object with instructions to be applied on the control map
+	 * @returns {object} - Condenser specific information
+	 * @public
+	 */
+	UnhideControl.getCondenserInfo = function(oChange) {
+		return {
+			affectedControl: oChange.getSelector(),
+			classification: sap.ui.fl.condenser.Classification.Reverse,
+			uniqueKey: PROPERTY_NAME
+		};
 	};
 
 	return UnhideControl;

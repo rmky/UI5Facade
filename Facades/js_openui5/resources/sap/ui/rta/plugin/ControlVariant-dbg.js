@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -13,9 +13,9 @@ sap.ui.define([
 	"sap/ui/dt/OverlayUtil",
 	"sap/ui/dt/Util",
 	"sap/ui/fl/Utils",
+	"sap/ui/fl/Layer",
 	"sap/ui/fl/variants/VariantManagement",
 	"sap/ui/base/ManagedObject",
-	"sap/m/delegate/ValueStateMessage",
 	"sap/ui/rta/command/CompositeCommand",
 	"sap/base/Log"
 ], function(
@@ -27,9 +27,9 @@ sap.ui.define([
 	OverlayUtil,
 	DtUtil,
 	flUtils,
+	Layer,
 	VariantManagement,
 	ManagedObject,
-	ValueStateMessage,
 	CompositeCommand,
 	Log
 ) {
@@ -43,7 +43,7 @@ sap.ui.define([
 	 * @class The ControlVariant allows propagation of variantManagement key
 	 * @extends sap.ui.rta.plugin.Plugin
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @constructor
 	 * @private
 	 * @since 1.50
@@ -56,6 +56,13 @@ sap.ui.define([
 	ElementOverlay.prototype.getVariantManagement = function() { return this._variantManagement;};
 	ElementOverlay.prototype.setVariantManagement = function(sKey) { this._variantManagement = sKey; };
 	ElementOverlay.prototype.hasVariantManagement = function() { return !!this._variantManagement; };
+
+	function destroyManageDialog(oOverlay) {
+		var oManageDialog = oOverlay.getElement().getManageDialog();
+		if (oManageDialog && !oManageDialog.bIsDestroyed) {
+			oManageDialog.destroy();
+		}
+	}
 
 	var ControlVariant = Plugin.extend("sap.ui.rta.plugin.ControlVariant", /** @lends sap.ui.rta.plugin.ControlVariant.prototype */ {
 		metadata: {
@@ -89,13 +96,13 @@ sap.ui.define([
 			var oAppComponent = flUtils.getAppComponentForControl(oControl);
 			var sControlId = oControl.getId();
 			sVariantManagementReference = oAppComponent.getLocalId(sControlId) || sControlId;
+			oOverlay.setVariantManagement(sVariantManagementReference);
 
 			// If "for" association is not valid
 			if (
 				!vAssociationElement
 				|| (Array.isArray(vAssociationElement) && vAssociationElement.length === 0)
 			) {
-				oOverlay.setVariantManagement(sVariantManagementReference);
 				return;
 			}
 
@@ -108,6 +115,7 @@ sap.ui.define([
 				this._propagateVariantManagement(oVariantManagementTargetOverlay, sVariantManagementReference);
 			}.bind(this));
 			oOverlay.attachEvent("editableChange", RenameHandler._manageClickEvent, this);
+			destroyManageDialog(oOverlay);
 		} else if (!oOverlay.getVariantManagement()) {
 			// Case where overlay is dynamically created - variant management reference should be identified from parent
 			sVariantManagementReference = this._getVariantManagementFromParent(oOverlay);
@@ -119,7 +127,7 @@ sap.ui.define([
 	};
 
 	ControlVariant.prototype._isPersonalizationMode = function () {
-		return this.getCommandFactory().getFlexSettings().layer === "USER";
+		return this.getCommandFactory().getFlexSettings().layer === Layer.USER;
 	};
 
 	/**
@@ -164,6 +172,9 @@ sap.ui.define([
 	 * @override
 	 */
 	ControlVariant.prototype.deregisterElementOverlay = function(oOverlay) {
+		if (this._isVariantManagementControl(oOverlay)) {
+			destroyManageDialog(oOverlay);
+		}
 		oOverlay.detachEvent("editableChange", RenameHandler._manageClickEvent, this);
 		oOverlay.detachBrowserEvent("click", RenameHandler._onClick, this);
 		this.removeFromPluginsList(oOverlay);
@@ -365,9 +376,13 @@ sap.ui.define([
 
 			oVariantManagementControl.getTitle().setText(sCustomTextForDuplicate);
 
-			oVariantManagementOverlay.attachEventOnce("geometryChanged", function() {
+			if (oVariantManagementOverlay.hasStyleClass(RenameHandler.errorStyleClass)) {
 				fnHandleStartEdit();
-			}, this);
+			} else {
+				oVariantManagementOverlay.attachEventOnce("geometryChanged", function() {
+					fnHandleStartEdit();
+				}, this);
+			}
 		} else {
 			fnHandleStartEdit();
 		}
@@ -375,7 +390,7 @@ sap.ui.define([
 
 	ControlVariant.prototype.stopEdit = function (bRestoreFocus) {
 		if (this._oEditedOverlay._triggerDuplicate) {
-			if (!this._oEditedOverlay.hasStyleClass("sapUiRtaErrorBg")) {
+			if (!this._oEditedOverlay.hasStyleClass(RenameHandler.errorStyleClass)) {
 				delete this._oEditedOverlay._triggerDuplicate;
 			}
 		}
@@ -408,18 +423,7 @@ sap.ui.define([
 		var oResourceBundle = sap.ui.getCore().getLibraryResourceBundle("sap.ui.rta");
 		var sCurrentVariantReference = oModel.getCurrentVariantReference(sVariantManagementReference);
 
-		//Remove border
-		oOverlay.removeStyleClass("sapUiRtaErrorBg");
-
-		//Close valueStateMessage
-		if (this._oValueStateMessage) {
-			this._oValueStateMessage.getPopup().attachEventOnce("closed", function() {
-				oRenamedElement.$().css("z-index", 1);
-				this._oValueStateMessage.destroy();
-				delete this._oValueStateMessage;
-			}, this);
-			this._oValueStateMessage.close();
-		}
+		oOverlay.removeStyleClass(RenameHandler.errorStyleClass);
 
 		//Check for real change before creating a command and pass if warning text already set
 		if (sText === '\xa0') { //Empty string
@@ -470,34 +474,26 @@ sap.ui.define([
 			return Promise.resolve();
 		}
 
-
 		if (sErrorText) {
 			// Order of calling:
 			// -> Open message box
 			// 		-> Close message box
 			// 			-> Stop edit on overlay
-			// 				-> Show value state message
-			// 					-> Start edit on overlay
+			// 				-> Start edit on overlay
 			var sValueStateText = oResourceBundle.getText(sErrorText);
 			this._prepareOverlayForValueState(oOverlay, sValueStateText);
 
 			//Border
-			oOverlay.addStyleClass("sapUiRtaErrorBg");
+			oOverlay.addStyleClass(RenameHandler.errorStyleClass);
 
-			return Promise.resolve(Utils._showMessageBox("ERROR", "BLANK_DUPLICATE_TITLE_TEXT", sErrorText)
-				.then(function () {
-					var fnErrorHandler = function() {
-						//valueStateMessage
-						this._oValueStateMessage = new ValueStateMessage(oOverlay);
-						this._oValueStateMessage.getPopup().attachEventOnce("opened", function (oEvent) {
-							oEvent.getSource()._deactivateFocusHandle();
-						});
-						this._oValueStateMessage.open();
-						this.startEdit(oOverlay);
-					}.bind(this);
-					return fnErrorHandler;
-				}.bind(this))
-			);
+			return Utils.showMessageBox("error", sErrorText, {
+				titleKey: "BLANK_DUPLICATE_TITLE_TEXT"
+			})
+			.then(function () {
+				return function() {
+					this.startEdit(oOverlay);
+				}.bind(this);
+			}.bind(this));
 		}
 	};
 
@@ -636,7 +632,6 @@ sap.ui.define([
 			sVariantManagementReference,
 			this.getCommandFactory().getFlexSettings().layer,
 			Utils.getRtaStyleClassName())
-
 		.then(function(aConfiguredChanges) {
 			return this.getCommandFactory().getCommandFor(
 				oVariantManagementControl,
@@ -746,4 +741,4 @@ sap.ui.define([
 	};
 
 	return ControlVariant;
-}, /* bExport= */true);
+});

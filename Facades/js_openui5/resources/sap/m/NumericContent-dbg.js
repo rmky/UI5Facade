@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -103,7 +103,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @since 1.34
 	 *
 	 * @public
@@ -232,8 +232,8 @@ sap.ui.define([
 
 	NumericContent.prototype._getMaxDigitsData = function () {
 		var sFontClass = null,
-			sLang = sap.ui.getCore().getConfiguration().getLanguage().toLowerCase(),
-			iMaxLength = LANG_MAP[sLang] || 4;
+		  sLang = sap.ui.getCore().getConfiguration().getLanguage().toLowerCase(),
+		  iMaxLength = LANG_MAP[sLang] || 4;
 
 		if (this.getAdaptiveFontSize()) {
 			switch (iMaxLength) {
@@ -267,15 +267,15 @@ sap.ui.define([
 	};
 
 	NumericContent.prototype.onBeforeRendering = function () {
-		this.$().unbind("mouseenter");
-		this.$().unbind("mouseleave");
+		this.$().off("mouseenter");
+		this.$().off("mouseleave");
 
 		this._iMaxLength = null;
 	};
 
 	NumericContent.prototype.onAfterRendering = function () {
-		this.$().bind("mouseenter", this._addTooltip.bind(this));
-		this.$().bind("mouseleave", this._removeTooltip.bind(this));
+		this.$().on("mouseenter", this._addTooltip.bind(this));
+		this.$().on("mouseleave", this._removeTooltip.bind(this));
 
 		if (!sap.ui.getCore().isThemeApplied()) {
 			sap.ui.getCore().attachThemeChanged(this._checkIfIconFits, this);
@@ -303,14 +303,19 @@ sap.ui.define([
 			oParentTile._setupResizeClassHandler();
 		}
 
-		var $icon = this.$("icon-image"),
-			$value = this.$("value-inner"),
-			$wrapper = this.$("value-scr");
+		var oIcon = this.getDomRef("icon-image");
+		if (oIcon) {
+			var oValue = this.getDomRef("value-inner"),
+				oIndScale = this.getDomRef("indicator"),
+				oWrapper = this.getDomRef("value");
 
-		var iSize = $icon.outerWidth() + $value.width(),
-			iWrapperSize = $wrapper.width();
+			var fIconWidth = oIcon ? oIcon.getBoundingClientRect().width : 0,
+				fValueWidth = oValue ? oValue.getBoundingClientRect().width : 0,
+				fIndScaleWidth = oIndScale ? oIndScale.getBoundingClientRect().width : 0,
+				fWrapperWidth = oWrapper.getBoundingClientRect().width;
 
-		iSize > iWrapperSize ? $icon.hide() : $icon.show();
+			oIcon.style.display = (fIconWidth + fValueWidth + fIndScaleWidth) > fWrapperWidth ? "none" : "";
+		}
 	};
 
 	/**
@@ -324,6 +329,9 @@ sap.ui.define([
 	NumericContent.prototype.exit = function () {
 		if (this._oIcon) {
 			this._oIcon.destroy();
+		}
+		if (this._oIndicatorIcon) {
+			this._oIndicatorIcon.destroy();
 		}
 	};
 
@@ -396,6 +404,21 @@ sap.ui.define([
 		return this.setProperty("icon", uri);
 	};
 
+	NumericContent.prototype.setIndicator = function (sDeviationIndicator) {
+		var sSrc = "sap-icon://" + (sDeviationIndicator ? sDeviationIndicator.toLowerCase() : "none");
+		if (this._oIndicatorIcon) {
+			this._oIndicatorIcon.setSrc(sSrc);
+		} else {
+			this._oIndicatorIcon = IconPool.createControlByURI({
+				id: this.getId() + "-icon-indicator",
+				size: "0.875rem",
+				src: sSrc
+			}, Image);
+			this._oIndicatorIcon.addStyleClass("sapMNCIndIcon");
+		}
+		return this.setProperty("indicator", sDeviationIndicator);
+	};
+
 	/**
 	 * Sets CSS class 'sapMPointer' for the internal Icon if needed.
 	 * @private
@@ -416,7 +439,7 @@ sap.ui.define([
 	 * @param {sap.ui.base.Event} oEvent which was fired
 	 */
 	NumericContent.prototype.ontap = function (oEvent) {
-		this.$().focus();
+		this.$().trigger("focus");
 		this.firePress();
 		oEvent.preventDefault();
 	};

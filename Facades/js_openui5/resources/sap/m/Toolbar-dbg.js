@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -60,7 +60,9 @@ function(
 	 * You can define the width of the horizontal space or make it flexible to cover the remaining space
 	 * between the <code>Toolbar</code> items (for example, to to push an item to the edge of the <code>Toolbar</code>.
 	 *
-	 * <b>Note:</b> {@link sap.m.ToolbarLayoutData} should not be used together with {@link sap.m.ToolbarSpacer}.
+	 * <b>Note:</b> The {@link sap.m.ToolbarSpacer} is a flex control that is intended to
+	 * control its own behavior, thus {@link sap.m.ToolbarLayoutData} is not supported as value for the
+	 * <code>layoutData</code> aggregation of {@link sap.m.ToolbarSpacer} and if set it's ignored.
 	 *
 	 * @see {@link fiori:https://experience.sap.com/fiori-design-web/toolbar-overview/ Toolbar}
 	 *
@@ -68,7 +70,7 @@ function(
 	 * @implements sap.ui.core.Toolbar,sap.m.IBar
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -126,7 +128,13 @@ function(
 			 * <b>Note:</b> The visual styles are theme-dependent.
 			 * @since 1.54
 			 */
-			style : {type : "sap.m.ToolbarStyle", group : "Appearance", defaultValue : ToolbarStyle.Standard}
+			style : {type : "sap.m.ToolbarStyle", group : "Appearance", defaultValue : ToolbarStyle.Standard},
+
+			/**
+			 * Defines the aria-haspopup attribute of the <code>Toolbar</code>. if the active <code>design</code> is true.
+			 * @since 1.79.0
+			 */
+			ariaHasPopup: {type : "string", group : "Accessibility", defaultValue : null}
 		},
 		defaultAggregation : "content",
 		aggregations : {
@@ -245,6 +253,22 @@ function(
 		if (oDomRef && (oDomRef.firstChild || {}).nodeType == 3) {
 			return oControl.addStyleClass(sShrinkClass);
 		}
+	};
+
+	 /**
+	 * Sets the accessibility enablement
+	 * @param {string} bEnabled
+	 * @returns {sap.m.IBar} this for chaining
+	 * @private
+	 */
+	Toolbar.prototype._setEnableAccessibilty = function (bEnabled) {
+		var bFastGroupValue = bEnabled ? "true" : "false",
+			sRoleValue = bEnabled ? "toolbar" : "none";
+
+		this.data("sap-ui-fastnavgroup", bFastGroupValue, bEnabled);
+		this._setRootAccessibilityRole(sRoleValue);
+
+		return this;
 	};
 
 	Toolbar.prototype.init = function() {

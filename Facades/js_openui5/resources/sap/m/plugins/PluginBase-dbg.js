@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,7 +20,7 @@ sap.ui.define(["sap/ui/core/Element"], function(Element) {
 	 * @extends sap.ui.core.Element
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @private
 	 * @experimental Since 1.73. This class is experimental and provides only limited functionality. Also the API might be changed in future.
@@ -41,7 +41,6 @@ sap.ui.define(["sap/ui/core/Element"], function(Element) {
 		}
 	});
 
-
 	/**
 	 * Internal data store for plugin configurations
 	 */
@@ -58,6 +57,20 @@ sap.ui.define(["sap/ui/core/Element"], function(Element) {
 	PluginBase.setConfig = function(mControlConfig, vPlugin) {
 		var sPluginName = (typeof vPlugin == "function") ? vPlugin.getMetadata().getName() : PluginBase.getMetadata().getName();
 		Object.assign(mPluginControlConfigs[sPluginName] = mPluginControlConfigs[sPluginName] || {}, mControlConfig);
+	};
+
+	PluginBase.prototype.init = function() {
+		this._bIsActive = false;
+	};
+
+	/**
+	 * Indicates whether the plugin is active.
+	 *
+	 * @returns {boolean} <code>true</code> if the plugin is active; otherwise, <code>false</code>
+	 * @public
+	 */
+	PluginBase.prototype.isActive = function() {
+		return this._bIsActive;
 	};
 
 	/**
@@ -151,15 +164,17 @@ sap.ui.define(["sap/ui/core/Element"], function(Element) {
 	 * @override
 	 */
 	PluginBase.prototype.setParent = function(oParent) {
-		if (this.getEnabled() && this.getControl()) {
+		var bEnabled = this.getEnabled();
+
+		if (bEnabled && this.getControl()) {
 			this._deactivate();
 		}
 
 		Element.prototype.setParent.apply(this, arguments);
 
-		if (oParent && this.getEnabled()) {
+		if (oParent && bEnabled) {
 			if (!this.isApplicable(oParent)) {
-				throw new Error(this + " is not an applicable plug-in for " + oParent);
+				throw new Error(this + " is not applicable to " + oParent);
 			} else {
 				this._activate();
 			}
@@ -204,14 +219,20 @@ sap.ui.define(["sap/ui/core/Element"], function(Element) {
 	 * Internal plugin activation handler
 	 */
 	PluginBase.prototype._activate = function() {
-		this.onActivate(this.getControl());
+		if (!this.isActive()) {
+			this.onActivate(this.getControl());
+			this._bIsActive = true;
+		}
 	};
 
 	/**
 	 * Internal plugin deactivation handler
 	 */
 	PluginBase.prototype._deactivate = function() {
-		this.onDeactivate(this.getControl());
+		if (this.isActive()) {
+			this.onDeactivate(this.getControl());
+			this._bIsActive = false;
+		}
 	};
 
 	return PluginBase;

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -17,6 +17,7 @@ sap.ui.define([
 	"sap/base/assert",
 	"sap/ui/performance/Measurement",
 	"sap/base/Log",
+	"sap/base/util/extend",
 	"./InvisibleRenderer",
 	"./Patcher"
 ], function(
@@ -31,6 +32,7 @@ sap.ui.define([
 	assert,
 	Measurement,
 	Log,
+	extend,
 	InvisibleRenderer,
 	Patcher
 ) {
@@ -95,13 +97,23 @@ sap.ui.define([
 	 *
 	 * </pre>
 	 *
-	 * By default, when the control is invalidated (e.g. a property is changed, an aggregation is removed, or an association is added), it will be registered for re-rendering.
-	 * During the (re)rendering, the <code>render</code> method of the control renderer is executed via a specified <code>RenderManager</code> interface and the control instance.
-	 * Traditional string-based rendering creates a new HTML structure of the control in every rendering cycle and removes the existing control DOM structure from the DOM tree.
-	 * The set of new semantic <code>RenderManager</code> APIs lets us understand the structure of the DOM, walk along the live DOM tree, and figure out changes as new APIs are called.
-	 * If there is a change, then <code>RenderManager</code> patches only the required parts of the live DOM tree. This allows control developers to remove their DOM-related custom setters.
+	 * By default, when the control is invalidated (e.g. a property is changed, an aggregation is removed, or an
+	 * association is added), it will be registered for re-rendering. During the (re)rendering, the <code>render</code>
+	 * method of the control renderer is executed via a specified <code>RenderManager</code> interface and the control
+	 * instance.
 	 *
-	 * <b>Note:</b> To enable the new in-place rendering technology, the <code>apiVersion</code> property of the control renderer must be set to <code>2</code>.
+	 * Traditional string-based rendering creates a new HTML structure of the control in every rendering cycle and removes
+	 * the existing control DOM structure from the DOM tree.
+	 *
+	 * The set of new semantic <code>RenderManager</code> APIs lets us understand the structure of the DOM, walk along the
+	 * live DOM tree, and figure out changes as new APIs are called. If there is a change, then <code>RenderManager</code>
+	 * patches only the required parts of the live DOM tree. This allows control developers to remove their DOM-related
+	 * custom setters.
+	 *
+	 * <b>Note:</b> To enable the new in-place rendering technology, the <code>apiVersion</code> property of the control
+	 * renderer must be set to <code>2</code>. This property is not inherited by subclass renderers. It has to be set
+	 * anew by each subclass to assure that the extended contract between framework and renderer is fulfilled (see next
+	 * paragraph).
 	 *
 	 * <pre>
 	 *
@@ -120,8 +132,9 @@ sap.ui.define([
 	 *
 	 * </pre>
 	 *
-	 * <h3>Renderer.apiVersion contract</h3>
-	 * To allow a more efficient in-place DOM patching and to ensure the compatibility of the control, the following prerequisites must be fulfilled for the controls using the new rendering technology:
+	 * <h3>Contract for Renderer.apiVersion 2</h3>
+	 * To allow a more efficient in-place DOM patching and to ensure the compatibility of the control, the following
+	 * prerequisites must be fulfilled for the controls using the new rendering technology:
 	 *
 	 * <ul>
 	 * <li>Legacy control renderers must be migrated to the new semantic renderer API:
@@ -139,12 +152,23 @@ sap.ui.define([
 	 *     {@link sap.ui.core.RenderManager#renderControl renderControl},
 	 *     {@link sap.ui.core.RenderManager#cleanupControlWithoutRendering cleanupControlWithoutRendering}
 	 * </li>
-	 * <li>During the migration, restrictions that are defined in the API documentation must be taken into account, e.g. tag and attribute names must be set in their canonical form.</li>
-	 * <li>Fault tolerance of HTML5 markups is not applicable for the new semantic rendering API, e.g. except void tags, all tags must be closed; duplicate attributes within one HTML element must not exist.</li>
-	 * <li>Existing control DOM structure will not be removed from the DOM tree; therefore all custom events, including the ones that are registered with jQuery, must be deregistered correctly at the <code>onBeforeRendering</code> and <code>exit</code> hooks.</li>
-	 * <li>Classes and attribute names must not be escaped. Styles should be validated via types but this might not be sufficient in all cases, e.g. validated URL values can contain harmful content; in this case {@link module:sap/base/security/encodeCSS encodeCSS} can be used.</li>
-	 * <li>To allow a more efficient DOM update, second parameter of the {@link sap.ui.core.RenderManager#openStart openStart} or {@link sap.ui.core.RenderManager#voidStart voidStart} methods must be used to identify elements, e.g. use <code>rm.openStart("div", oControl.getId() + "-suffix");</code> instead of <code>rm.openStart("div").attr("id", oControl.getId() + "-suffix");</code></li>
-	 * <li>Controls that listen to the <code>focusin</code> event must double check their focus handling. Since DOM nodes are not removed and only reused, the <code>focusin</code> event might not be fired because of re-rendering.</li>
+	 * <li>During the migration, restrictions that are defined in the API documentation of those methods must be taken
+	 *     into account, e.g. tag and attribute names must be set in their canonical form.</li>
+	 * <li>Fault tolerance of HTML5 markup is not applicable for the new semantic rendering API, e.g. except void tags,
+	 *     all tags must be closed; duplicate attributes within one HTML element must not exist.</li>
+	 * <li>Existing control DOM structure will not be removed from the DOM tree; therefore all custom events, including
+	 *     the ones that are registered with jQuery, must be de-registered correctly at the <code>onBeforeRendering</code>
+	 *     and <code>exit</code> hooks.</li>
+	 * <li>Classes and attribute names must not be escaped.</li>
+	 * <li>Styles should be validated via types (e.g. <code>sap.ui.core.CSSSize</code>). But this might not be sufficient
+	 *     in all cases, e.g. validated URL values can contain harmful content; in this case
+	 *     {@link module:sap/base/security/encodeCSS encodeCSS} can be used.</li>
+	 * <li>To allow a more efficient DOM update, second parameter of the {@link sap.ui.core.RenderManager#openStart openStart}
+	 *     or {@link sap.ui.core.RenderManager#voidStart voidStart} methods must be used to identify elements, e.g. use
+	 *     <code>rm.openStart("div", oControl.getId() + "-suffix");</code> instead of
+	 *     <code>rm.openStart("div").attr("id", oControl.getId() + "-suffix");</code></li>
+	 * <li>Controls that listen to the <code>focusin</code> event must double check their focus handling. Since DOM nodes
+	 *     are not removed and only reused, the <code>focusin</code> event might not be fired during re-rendering.</li>
 	 * </ul>
 	 *
 	 *
@@ -156,7 +180,7 @@ sap.ui.define([
 	 *
 	 * @extends Object
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @alias sap.ui.core.RenderManager
 	 * @public
 	 */
@@ -449,9 +473,10 @@ sap.ui.define([
 		this.openEnd = function(bExludeStyleClasses /* private */) {
 			assertOpenTagHasStarted("openEnd");
 			assertOpenTagHasEnded(!bVoidOpen);
+			assert(bExludeStyleClasses === undefined || bExludeStyleClasses === true, "The private parameter bExludeStyleClasses must be true or omitted!");
 			sOpenTag = "";
 
-			this.writeClasses(bExludeStyleClasses ? false : undefined);
+			this.writeClasses(bExludeStyleClasses === true ? false : undefined);
 			this.writeStyles();
 			this.write(">");
 			return this;
@@ -681,7 +706,7 @@ sap.ui.define([
 
 		// @see sap.ui.core.RenderManager#openEnd
 		oDomInterface.openEnd = function(bExludeStyleClasses /* private */) {
-			if (!bExludeStyleClasses) {
+			if (bExludeStyleClasses !== true) {
 				var oStyle = aStyleStack[aStyleStack.length - 1];
 				var aStyleClasses = oStyle.aCustomStyleClasses;
 				if (aStyleClasses) {
@@ -692,6 +717,7 @@ sap.ui.define([
 
 			assertOpenTagHasStarted("openEnd");
 			assertOpenTagHasEnded(!bVoidOpen);
+			assert(bExludeStyleClasses === undefined || bExludeStyleClasses === true, "The private parameter bExludeStyleClasses must be true or omitted!");
 			sOpenTag = "";
 
 			Patcher.openEnd();
@@ -751,7 +777,7 @@ sap.ui.define([
 		function triggerBeforeRendering(oControl){
 			bLocked = true;
 			try {
-				var oEvent = jQuery.Event("BeforeRendering");
+				var oEvent = new jQuery.Event("BeforeRendering");
 				// store the element on the event (aligned with jQuery syntax)
 				oEvent.srcControl = oControl;
 				oControl._handleEvent(oEvent);
@@ -773,7 +799,7 @@ sap.ui.define([
 		 * must be cleaned up correctly, e.g. by de-registering resize handlers or native event handlers.
 		 * <code>cleanupControlWithoutRendering</code> helps with that task by triggering the same
 		 * activities that the normal rendering triggers before the rendering of a control
-		 * (e.g. it fire the <code>BeforeRendering</code> event). It just doesn't call the renderer
+		 * (e.g. it fires the <code>BeforeRendering</code> event). It just doesn't call the renderer
 		 * and the control will not receive an <code>AfterRendering</code> event.
 		 *
 		 * The following example shows how <code>renderControl</code> and <code>cleanupControlWithoutRendering</code>
@@ -784,13 +810,13 @@ sap.ui.define([
 		 *
 		 *     ...
 		 *
-		 *     oCarousel.getPages().forEach( oPage ) {
+		 *     oCarousel.getPages().forEach( function( oPage ) {
 		 *        if ( oCarousel.isPageToBeRendered( oPage ) ) {
 		 *           rm.renderControl( oPage ); // onBeforeRendering, render, later onAfterRendering
 		 *        } else {
 		 *           rm.cleanupControlWithoutRendering( oPage ); // onBeforeRendering
 		 *        }
-		 *     }
+		 *     });
 		 *
 		 *     ...
 		 *
@@ -822,14 +848,24 @@ sap.ui.define([
 		 */
 		this.cleanupControlWithoutRendering = function(oControl) {
 			assert(!oControl || BaseObject.isA(oControl, 'sap.ui.core.Control'), "oControl must be an sap.ui.core.Control or empty");
-			if (!oControl || !oControl.getDomRef()) {
+			if (!oControl) {
 				return;
 			}
 
-			//Call beforeRendering to allow cleanup
-			triggerBeforeRendering(oControl);
+			var oDomRef = oControl.getDomRef();
+			if (oDomRef) {
 
-			oControl.bOutput = false;
+				// Call beforeRendering to allow cleanup
+				triggerBeforeRendering(oControl);
+
+				// as children are not visited during rendering, their DOM has to be preserved here
+				RenderManager.preserveContent(oDomRef, /* bPreserveRoot */ false, /* bPreserveNodesWithId */ false);
+
+				// Preserved controls still need to be alive
+				if (!oDomRef.hasAttribute(ATTR_PRESERVE_MARKER)) {
+					oControl.bOutput = false;
+				}
+			}
 		};
 
 		/**
@@ -900,14 +936,14 @@ sap.ui.define([
 			Measurement.resume(oControl.getId() + "---renderControl");
 
 			// unbind any generically bound browser event handlers
-			var aBindings = oControl.aBindParameters;
-			if (aBindings && aBindings.length > 0) { // if we have stored bind calls...
-				var jDomRef = jQuery(oControl.getDomRef());
-				if (jDomRef && jDomRef[0]) { // ...and we have a DomRef
-					for (var i = 0; i < aBindings.length; i++) {
-						var oParams = aBindings[i];
-						jDomRef.unbind(oParams.sEventType, oParams.fnProxy);
-					}
+			var aBindings = oControl.aBindParameters,
+				oDomRef;
+			// if we have stored bind calls and we have a DomRef
+			if (aBindings && aBindings.length > 0 && (oDomRef = oControl.getDomRef())) {
+				var $DomRef = jQuery(oDomRef);
+				for (var i = 0; i < aBindings.length; i++) {
+					var oParams = aBindings[i];
+					$DomRef.off(oParams.sEventType, oParams.fnProxy);
 				}
 			}
 
@@ -924,7 +960,7 @@ sap.ui.define([
 
 					// rendering interface must be determined for the root control once per rendering
 					// depending on the DOM reference of the control within the DOM tree
-					var oDomRef = oControl.getDomRef();
+					oDomRef = oControl.getDomRef();
 					if (!oDomRef && !bVisible) {
 						oDomRef = document.getElementById(InvisibleRenderer.createInvisiblePlaceholderId(oControl));
 					}
@@ -1079,7 +1115,7 @@ sap.ui.define([
 				for (i = 0; i < size; i++) {
 					var oControl = aRenderedControls[i];
 					if (oControl.bOutput && oControl.bOutput !== "invisible") {
-						var oEvent = jQuery.Event("AfterRendering");
+						var oEvent = new jQuery.Event("AfterRendering");
 						// store the element on the event (aligned with jQuery syntax)
 						oEvent.srcControl = oControl;
 						// start performance measurement
@@ -1107,21 +1143,21 @@ sap.ui.define([
 			// Re-bind any generically bound browser event handlers (must happen after restoring focus to avoid focus event)
 			for (i = 0; i < size; i++) {
 				var oControl = aRenderedControls[i],
-					aBindings = oControl.aBindParameters;
+					aBindings = oControl.aBindParameters,
+					oDomRef;
 
-				if (aBindings && aBindings.length > 0) { // if we have stored bind calls...
-					var jDomRef = jQuery(oControl.getDomRef());
-					if (jDomRef && jDomRef[0]) { // ...and we have a DomRef - TODO: this check should not be required right after rendering...
-						for (var j = 0; j < aBindings.length; j++) {
-							var oParams = aBindings[j];
-							jDomRef.bind(oParams.sEventType, oParams.fnProxy);
-						}
+				// if we have stored bind calls and we have a DomRef
+				if (aBindings && aBindings.length > 0 && (oDomRef = oControl.getDomRef())) {
+					var $DomRef = jQuery(oDomRef);
+					for (var j = 0; j < aBindings.length; j++) {
+						var oParams = aBindings[j];
+						$DomRef.on(oParams.sEventType, oParams.fnProxy);
 					}
 				}
 			}
 		}
 
-		function flushInternal(fnPutIntoDom) {
+		function flushInternal(fnPutIntoDom, fnDone) {
 
 			var oStoredFocusInfo;
 			if (!bDomInterface) {
@@ -1138,7 +1174,9 @@ sap.ui.define([
 
 			ActivityDetection.refresh();
 
-			Interaction.notifyStepEnd();
+			if (fnDone) {
+				fnDone();
+			}
 		}
 
 		/**
@@ -1175,6 +1213,8 @@ sap.ui.define([
 		 */
 		this.flush = function(oTargetDomNode, bDoNotPreserve, vInsert) {
 			assert((typeof oTargetDomNode === "object") && (oTargetDomNode.ownerDocument == document), "oTargetDomNode must be a DOM element");
+
+			var fnDone = Interaction.notifyAsyncStep();
 
 			// preserve HTML content before flushing HTML into target DOM node
 			if (!bDoNotPreserve && (typeof vInsert !== "number") && !vInsert) { // expression mimics the conditions used below
@@ -1214,7 +1254,7 @@ sap.ui.define([
 					jQuery(oTargetDomNode).append(sHTML); // Append the HTML into the given DOM Node
 				}
 
-			});
+			}, fnDone);
 
 		};
 
@@ -1238,6 +1278,8 @@ sap.ui.define([
 				Log.error("Render must not be called within Before or After Rendering Phase. Call ignored.", null, this);
 				return;
 			}
+
+			var fnDone = Interaction.notifyAsyncStep();
 
 			// Reset internal state before rendering
 			reset();
@@ -1312,8 +1354,7 @@ sap.ui.define([
 					}
 
 				}
-
-			});
+			}, fnDone);
 		};
 
 		/**
@@ -1429,12 +1470,25 @@ sap.ui.define([
 	};
 
 	/**
-	 * Writes the accessibility state (see WAI-ARIA specification) of the provided element into the HTML
-	 * based on the element's properties and associations.
+	 * Collects accessibility related attributes for an <code>Element</code> and renders them as part of
+	 * the currently rendered DOM element.
 	 *
-	 * The ARIA properties are only written when the accessibility feature is activated in the UI5 configuration.
+	 * See the WAI-ARIA specification for a general description of the accessibility related attributes.
+	 * Attributes are only rendered when the accessibility feature is activated in the UI5 runtime configuration.
 	 *
-	 * The following properties/values to ARIA attribute mappings are done (if the element does have such properties):
+	 * The values for the attributes are collected from the following sources (last one wins):
+	 * <ol>
+	 * <li>from the properties and associations of the given <code>oElement</code>, using a heuristic mapping
+	 *     (described below)</li>
+	 * <li>from the <code>mProps</code> parameter, as provided by the caller</li>
+	 * <li>from the parent of the given <code>oElement</code>, if it has a parent and if the parent implements
+	 *     the method {@link sap.ui.core.Element#enhanceAccessibilityState enhanceAccessibilityState}</li>
+	 * </ol>
+	 * If no <code>oElement</code> is given, only <code>mProps</code> will be taken into account.
+	 *
+	 *
+	 * <h3>Heuristic Mapping</h3>
+	 * The following mapping from properties/values to ARIA attributes is used (if the element does have such properties):
 	 * <ul>
 	 * <li><code>editable===false</code> => <code>aria-readonly="true"</code></li>
 	 * <li><code>enabled===false</code> => <code>aria-disabled="true"</code></li>
@@ -1444,39 +1498,45 @@ sap.ui.define([
 	 * <li><code>checked===true</code> => <code>aria-checked="true"</code></li>
 	 * </ul>
 	 *
-	 * In case of the required attribute also the Label controls which referencing the given element in their 'for' relation
-	 * are taken into account to compute the <code>aria-required</code> attribute.
+	 * In case of the <code>required</code> property, all label controls which reference the given element
+	 * in their <code>labelFor</code> relation are additionally taken into account when determining the
+	 * value for the <code>aria-required</code> attribute.
 	 *
-	 * Additionally, the association <code>ariaDescribedBy</code> and <code>ariaLabelledBy</code> are used to write
-	 * the ID lists of the ARIA attributes <code>aria-describedby</code> and <code>aria-labelledby</code>.
+	 * Additionally, the associations <code>ariaDescribedBy</code> and <code>ariaLabelledBy</code> are used to
+	 * determine the lists of IDS for the ARIA attributes <code>aria-describedby</code> and
+	 * <code>aria-labelledby</code>.
 	 *
-	 * Label controls that reference the given element in their 'for' relation are automatically added to the
-	 * <code>aria-labelledby</code> attributes.
+	 * Label controls that reference the given element in their <code>labelFor</code> relation are automatically
+	 * added to the <code>aria-labelledby</code> attributes.
 	 *
 	 * Note: This function is only a heuristic of a control property to ARIA attribute mapping. Control developers
 	 * have to check whether it fulfills their requirements. In case of problems (for example the RadioButton has a
 	 * <code>selected</code> property but must provide an <code>aria-checked</code> attribute) the auto-generated
 	 * result of this function can be influenced via the parameter <code>mProps</code> as described below.
 	 *
-	 * The parameter <code>mProps</code> can be used to either provide additional attributes which should be added and/or
-	 * to avoid the automatic generation of single ARIA attributes. The 'aria-' prefix will be prepended automatically to the keys
-	 * (Exception: Attribute 'role' does not get the prefix 'aria-').
+	 * The parameter <code>mProps</code> can be used to either provide additional attributes which should be rendered
+	 * and/or to avoid the automatic generation of single ARIA attributes. The 'aria-' prefix will be prepended
+	 * automatically to the keys (Exception: Attribute <code>role</code> does not get the prefix 'aria-').
 	 *
-	 * Examples:
-	 * <code>{hidden : true}</code> results in <code>aria-hidden="true"</code> independent of the presence or absence of
-	 * the visibility property.
-	 * <code>{hidden : null}</code> ensures that no <code>aria-hidden</code> attribute is written independent of the presence
-	 * or absence of the visibility property.
+	 *
+	 * Examples:<br>
+	 * <code>{hidden : true}</code> results in <code>aria-hidden="true"</code> independent of the presence or
+	 * absence of the visibility property.<br>
+	 * <code>{hidden : null}</code> ensures that no <code>aria-hidden</code> attribute is written independent
+	 * of the presence or absence of the visibility property.<br>
+	 *
 	 * The function behaves in the same way for the associations <code>ariaDescribedBy</code> and <code>ariaLabelledBy</code>.
-	 * To append additional values to the auto-generated <code>aria-describedby</code> and <code>aria-labelledby</code> attributes
-	 * the following format can be used:
-	 * <code>{describedby : {value: "id1 id2", append: true}}</code> => <code>aria-describedby="ida idb id1 id2"</code> (assuming that "ida idb"
-	 * is the auto-generated part based on the association <code>ariaDescribedBy</code>).
+	 * To append additional values to the auto-generated <code>aria-describedby</code> and <code>aria-labelledby</code>
+	 * attributes, the following format can be used:
+	 * <pre>
+	 *   {describedby : {value: "id1 id2", append: true}} =>  aria-describedby = "ida idb id1 id2"
+	 * </pre>
+	 * (assuming that "ida idb" is the auto-generated part based on the association <code>ariaDescribedBy</code>).
 	 *
 	 * @param {sap.ui.core.Element}
-	 *            [oElement] the element whose accessibility state should be rendered
-	 * @param {Object}
-	 *            [mProps] a map of properties that should be added additionally or changed.
+	 *            [oElement] The <code>Element</code> whose accessibility state should be rendered
+	 * @param {object}
+	 *            [mProps] A map of additional properties that should be added or changed.
 	 * @return {sap.ui.core.RenderManager} Reference to <code>this</code> in order to allow method chaining
 	 * @public
 	 */
@@ -1541,7 +1601,7 @@ sap.ui.define([
 		if (mProps) {
 			var checkValue = function(v){
 				var type = typeof (v);
-				return v === null || v === "" || type === "number" || type === "string" || type === "boolean";
+				return v === null || type === "number" || type === "string" || type === "boolean";
 			};
 
 			var prop = {};
@@ -1561,7 +1621,7 @@ sap.ui.define([
 			}
 
 			//The auto-generated values above can be overridden or reset (via null)
-			jQuery.extend(mAriaProps, prop);
+			Object.assign(mAriaProps, prop);
 		}
 
 		// allow parent (e.g. FormElement) to overwrite or enhance aria attributes
@@ -1653,7 +1713,7 @@ sap.ui.define([
 			};
 		}
 
-		mAttributes = jQuery.extend(mDefaultAttributes, mAttributes);
+		mAttributes = extend(mDefaultAttributes, mAttributes);
 
 		if (!mAttributes.id) {
 			mAttributes.id = uid();
@@ -1690,7 +1750,7 @@ sap.ui.define([
 				this.openStart("span");
 				this.style("display", "none");
 				this.attr("id", sInvTextId);
-				this.openEnd("span");
+				this.openEnd();
 				this.text(sLabel);
 				this.close("span");
 			}
@@ -1789,7 +1849,7 @@ sap.ui.define([
 			var sOriginalDisplay = oDomNode.style.display;
 			var oActiveElement = document.activeElement;
 			oDomNode.style.display = "none";
-			oDomNode.offsetHeight;
+			oDomNode.offsetHeight; // force repaint
 			oDomNode.style.display = sOriginalDisplay;
 			if (document.activeElement !== oActiveElement && oActiveElement) {
 				oActiveElement.focus();
@@ -1824,7 +1884,7 @@ sap.ui.define([
 	function getPreserveArea() {
 		var $preserve = jQuery(document.getElementById(ID_PRESERVE_AREA));
 		if ($preserve.length === 0) {
-			$preserve = jQuery("<DIV/>",{"aria-hidden":"true",id:ID_PRESERVE_AREA}).
+			$preserve = jQuery("<div></div>",{"aria-hidden":"true",id:ID_PRESERVE_AREA}).
 				addClass("sapUiHidden").addClass("sapUiForcedHidden").css("width", "0").css("height", "0").css("overflow", "hidden").
 				appendTo(document.body);
 		}
@@ -1836,7 +1896,7 @@ sap.ui.define([
 	 * Create a placeholder node for the given node (which must have an ID) and insert it before the node
 	 */
 	function makePlaceholder(node) {
-		jQuery("<DIV/>", { id: RenderPrefixes.Dummy + node.id}).addClass("sapUiHidden").insertBefore(node);
+		jQuery("<div></div>", { id: RenderPrefixes.Dummy + node.id}).addClass("sapUiHidden").insertBefore(node);
 	}
 
 	// Stores {@link sap.ui.core.RenderManager.preserveContent} listener as objects with following structure:
@@ -1892,7 +1952,7 @@ sap.ui.define([
 	 * @public
 	 * @static
 	 */
-	RenderManager.preserveContent = function(oRootNode, bPreserveRoot, bPreserveNodesWithId) {
+	RenderManager.preserveContent = function(oRootNode, bPreserveRoot, bPreserveNodesWithId, oControlBeforeRerender /* private */) {
 		assert(typeof oRootNode === "object" && oRootNode.ownerDocument == document, "oRootNode must be a DOM element");
 
 		aPreserveContentListeners.forEach(function(oListener) {
@@ -1914,6 +1974,30 @@ sap.ui.define([
 			// return false;
 		}
 
+		// determines whether given parameters are within the same visible control tree as well as DOM tree
+		function isAncestor(oAncestor, oDescendant, oDescendantDom) {
+			if (oAncestor === oDescendant) {
+				return true;
+			}
+
+			for (var oParent = oDescendant.getParent(); oParent; oParent = oParent.isA("sap.ui.core.UIComponent") ? oParent.oContainer : oParent.getParent()) {
+				if (oParent.isA("sap.ui.core.Control")) {
+					if (!oParent.getVisible()) {
+						return false;
+					}
+
+					var oParentDom = oParent.getDomRef();
+					if (oParentDom && !oParentDom.contains(oDescendantDom)) {
+						return false;
+					}
+				}
+
+				if (oParent === oAncestor) {
+					return true;
+				}
+			}
+		}
+
 		function check(candidate) {
 
 			// don't process the preserve area or the static area
@@ -1921,7 +2005,21 @@ sap.ui.define([
 				return;
 			}
 
-			if ( candidate.hasAttribute(ATTR_PRESERVE_MARKER) )  { // node is marked with the preserve marker
+			var sPreserveMarker = candidate.getAttribute(ATTR_PRESERVE_MARKER);
+			if ( sPreserveMarker )  { // node is marked with the preserve marker
+
+				// before the re-rendering, UIArea moves all "to-be-preserved" nodes to the preserved area
+				// except the control dom nodes which must be moved to preserved area via control rendering cycle
+				if ( oControlBeforeRerender ) {
+					var oCandidateControl = sap.ui.getCore().byId(sPreserveMarker);
+
+					// let the rendering cycle of the control handles the preserving
+					// but only when the control stack and the dom stack are in sync
+					if ( oCandidateControl && isAncestor(oControlBeforeRerender, oCandidateControl, candidate) ) {
+						return;
+					}
+				}
+
 				// always create a placeholder
 				// - when the current node is the root node then we're doing a single control rerendering and need to know where to rerender
 				// - when the parent DOM belongs to the preserved DOM of another control, that control needs a placeholder as well

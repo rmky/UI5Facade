@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -9,7 +9,6 @@ sap.ui.define([
 	"sap/ui/rta/command/AppDescriptorCommand",
 	"sap/ui/fl/Utils",
 	"sap/ui/fl/Change",
-	"sap/ui/fl/registry/Settings",
 	"sap/ui/dt/ElementUtil",
 	"sap/base/Log",
 	"sap/ui/fl/write/api/PersistenceWriteAPI"
@@ -19,7 +18,6 @@ sap.ui.define([
 	AppDescriptorCommand,
 	FlUtils,
 	Change,
-	Settings,
 	ElementUtil,
 	Log,
 	PersistenceWriteAPI
@@ -31,7 +29,7 @@ sap.ui.define([
 	 * @class
 	 * @extends sap.ui.base.ManagedObject
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @constructor
 	 * @private
 	 * @since 1.42
@@ -154,11 +152,11 @@ sap.ui.define([
 	 * Serializes and saves all changes to LREP
 	 * In case of Base Applications (no App Variants) the App Descriptor Changes and UI Changes are saved in different Flex Persistence instances,
 	 * so we have to call save twice. For App Variants all the changes are saved in one place.
-	 *
+	 * @param {boolean} bSaveAsDraft - save the changes as a draft
 	 * @returns {Promise} return empty promise
 	 * @public
 	 */
-	LREPSerializer.prototype.saveCommands = function() {
+	LREPSerializer.prototype.saveCommands = function(bSaveAsDraft) {
 		this._lastPromise = this._lastPromise.catch(function() {
 			// _lastPromise chain must not be interrupted
 		}).then(function() {
@@ -166,7 +164,7 @@ sap.ui.define([
 			if (!oRootControl) {
 				throw new Error("Can't save commands without root control instance!");
 			}
-			return PersistenceWriteAPI.save({selector: oRootControl, skipUpdateCache: false});
+			return PersistenceWriteAPI.save({selector: oRootControl, skipUpdateCache: false, draft: !!bSaveAsDraft});
 		}.bind(this))
 
 		.then(function() {
@@ -214,4 +212,4 @@ sap.ui.define([
 	};
 
 	return LREPSerializer;
-}, /* bExport= */true);
+});

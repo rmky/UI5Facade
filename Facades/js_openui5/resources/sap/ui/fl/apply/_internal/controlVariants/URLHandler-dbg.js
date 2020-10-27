@@ -1,6 +1,6 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -9,53 +9,83 @@ sap.ui.define([
 	"sap/ui/fl/Utils",
 	"sap/base/Log",
 	"sap/base/util/merge",
+	"sap/base/util/ObjectPath",
 	"sap/base/util/isEmptyObject",
 	"sap/ui/base/ManagedObjectObserver",
-	"sap/ui/thirdparty/hasher"
+	"sap/ui/thirdparty/hasher",
+	"sap/base/util/includes",
+	"sap/ui/fl/apply/_internal/controlVariants/Utils",
+	"sap/ui/fl/apply/_internal/flexState/controlVariants/VariantManagementState"
 ], function(
 	Component,
 	Utils,
 	Log,
 	merge,
+	ObjectPath,
 	isEmptyObject,
 	ManagedObjectObserver,
-	hasher
+	hasher,
+	includes,
+	VariantUtil,
+	VariantManagementState
 ) {
 	"use strict";
+
+	var _mVariantIdChangeHandlers = {};
 
 	/**
 	 * Checks if the parsed shell hash contains outdated variant parameters.
 	 *
 	 * @param {sap.ui.fl.Model} oModel - Variant model
-	 * @param {object} oNewParsedHash - Parsed shell hash that is being set
+	 * @param {array} aNewHashParameters - Variant URL Parameters
 	 *
 	 * @returns {object} oIfUpdateIsRequiredWithCurrentVariants
 	 * @returns {boolean} oIfUpdateIsRequiredWithCurrentVariants.updateRequired - If update is required
 	 * @returns {object} oIfUpdateIsRequiredWithCurrentVariants.currentVariantReferences - Current variant references
 	 */
-	function getCurrentVariantsAndCheckIfHashUpdateIsRequired(oModel, oNewParsedHash) {
-		var aNewHashParameters = oNewParsedHash.params[URLHandler.variantTechnicalParameterName];
-
-		return aNewHashParameters.reduce(function (mResult, sVariantReference) {
+	function _getUpdatedURLParameters(aNewHashParameters, oModel) {
+		var aAddedVMReferences = [];
+		return aNewHashParameters.reduce(function(oResultantParameters, sVariantReference) {
 			var sVariantManagementReference = oModel.getVariantManagementReference(sVariantReference).variantManagementReference;
-			if (
-				// there exists a variant management reference AND current variant has changed
-				sVariantManagementReference
-				&& oModel.oData[sVariantManagementReference].currentVariant !== sVariantReference
-			) {
-				mResult.updateRequired = true;
+
+			if (sVariantManagementReference) {
+				// check if a URL parameter for this variant management reference was already added
+				if (includes(aAddedVMReferences, sVariantManagementReference)) {
+					oResultantParameters.updateRequired = true;
+					return oResultantParameters;
+				}
+				aAddedVMReferences.push(sVariantManagementReference);
+			}
+			// if there exists a variant management reference AND current variant has changed
+			if (sVariantManagementReference && oModel.oData[sVariantManagementReference].currentVariant !== sVariantReference) {
+				oResultantParameters.updateRequired = true;
 				if (oModel.oData[sVariantManagementReference].currentVariant !== oModel.oData[sVariantManagementReference].defaultVariant) {
 					// the current variant is not equal to default variant
 					// add the updated variant
-					mResult.currentVariantReferences.push(oModel.oData[sVariantManagementReference].currentVariant);
+					oResultantParameters.parameters.push(oModel.oData[sVariantManagementReference].currentVariant);
 				}
 			} else {
 				// when the variant management reference is unknown OR the current variant hasn't changed
-				mResult.currentVariantReferences.push(sVariantReference);
+				oResultantParameters.parameters.push(sVariantReference);
 			}
 
-			return mResult;
-		}, {updateRequired: false, currentVariantReferences: []});
+			return oResultantParameters;
+		}, {updateRequired: false, parameters: []});
+	}
+
+	function _checkAndUpdateURLParameters(oParsedHash, oModel) {
+		var vRelevantParameters = ObjectPath.get(["params", VariantUtil.VARIANT_TECHNICAL_PARAMETER], oParsedHash);
+		if (vRelevantParameters) {
+			var oUpdatedParameters = _getUpdatedURLParameters(vRelevantParameters, oModel);
+			if (oUpdatedParameters.updateRequired) {
+				URLHandler.update({
+					updateURL: !oModel._bDesignTimeMode, // not required in UI Adaptation mode
+					parameters: oUpdatedParameters.parameters,
+					updateHashEntry: true,
+					model: oModel
+				});
+			}
+		}
 	}
 
 	/**
@@ -70,50 +100,46 @@ sap.ui.define([
 	 *
 	 * @private
 	 */
-	function navigationFilter(oModel, sNewHash) {
-		var oUshellContainer = Utils.getUshellContainer();
-		var oShellNavigation = oUshellContainer.getService("ShellNavigation");
+	function _handleVariantIdChangeInURL(oModel, aServices, sNewHash) {
 		try {
-			var oURLParsing = oUshellContainer.getService("URLParsing");
-			var oNewParsedHash = oURLParsing.parseShellHash(sNewHash);
-
-			var bRelevantParameters = oNewParsedHash && oNewParsedHash.params.hasOwnProperty(URLHandler.variantTechnicalParameterName);
-
-			if (bRelevantParameters) {
-				var mUpdatedReferences = getCurrentVariantsAndCheckIfHashUpdateIsRequired(oModel, oNewParsedHash);
-				if (mUpdatedReferences.updateRequired) {
-					URLHandler.update({
-						updateURL: !oModel._bDesignTimeMode, // not required in UI Adaptation mode
-						parameters: mUpdatedReferences.currentVariantReferences,
-						updateHashEntry: true,
-						model: oModel
-					});
-				}
-
-				if (oModel._bDesignTimeMode) {
-					URLHandler.clearAllVariantURLParameters({model: oModel});
-				}
-			}
+			var oNewParsedHash = aServices[1].parseShellHash(sNewHash);
+			_checkAndUpdateURLParameters(oNewParsedHash, oModel);
 		} catch (oError) {
 			Log.error(oError.message);
 		}
-		return oShellNavigation.NavigationFilterStatus.Continue;
+		return aServices[0].NavigationFilterStatus.Continue;
 	}
 
 	/**
-	 * Sets or un-sets the navigation filter function for the ushell ShellNavigation service.
+	 * Registers navigation filter function for the ushell ShellNavigation service.
 	 *
 	 * @param {sap.ui.fl.variants.VariantModel} oModel - Variant Model
-	 * @param {boolean} bSet - Indicates if the filter function needs to be set
 	 *
 	 * @private
 	 */
-	function setOrUnsetCustomNavigationForParameter(oModel, bSet) {
-		var sMethodName = bSet ? "registerNavigationFilter" : "unregisterNavigationFilter";
-		var oUshellContainer = Utils.getUshellContainer();
-		if (oUshellContainer) {
-			oUshellContainer.getService("ShellNavigation")[sMethodName](navigationFilter.bind(null, oModel));
-		}
+	function _registerNavigationFilter(oModel) {
+		Utils.ifUShellContainerThen(function(aServices) {
+			if (!_mVariantIdChangeHandlers[oModel.sFlexReference]) {
+				_mVariantIdChangeHandlers[oModel.sFlexReference] = _handleVariantIdChangeInURL.bind(null, oModel, aServices);
+				aServices[0].registerNavigationFilter(_mVariantIdChangeHandlers[oModel.sFlexReference]);
+			}
+		}, ["ShellNavigation", "URLParsing"]);
+	}
+
+	/**
+	 * De-registers navigation filter function for the ushell ShellNavigation service.
+	 *
+	 * @param {sap.ui.fl.variants.VariantModel} oModel - Variant Model
+	 *
+	 * @private
+	 */
+	function _deRegisterNavigationFilter(oModel) {
+		Utils.ifUShellContainerThen(function(aServices) {
+			if (_mVariantIdChangeHandlers[oModel.sFlexReference]) {
+				aServices[0].unregisterNavigationFilter(_mVariantIdChangeHandlers[oModel.sFlexReference]);
+				delete _mVariantIdChangeHandlers[oModel.sFlexReference];
+			}
+		}, ["ShellNavigation"]);
 	}
 
 	/**
@@ -129,7 +155,7 @@ sap.ui.define([
 	 * @private
 	 */
 	function setTechnicalURLParameterValues(mPropertyBag) {
-		var oParsedHash = Utils.getParsedURLHash(URLHandler.variantTechnicalParameterName);
+		var oParsedHash = Utils.getParsedURLHash(VariantUtil.VARIANT_TECHNICAL_PARAMETER);
 
 		if (oParsedHash.params) {
 			var mTechnicalParameters = Utils.getTechnicalParametersForComponent(mPropertyBag.model.oAppComponent);
@@ -138,19 +164,20 @@ sap.ui.define([
 				Log.warning("Component instance not provided, so technical parameters in component data and browser history remain unchanged");
 			}
 			if (mPropertyBag.parameters.length === 0) {
-				delete oParsedHash.params[URLHandler.variantTechnicalParameterName];
-				mTechnicalParameters && delete mTechnicalParameters[URLHandler.variantTechnicalParameterName]; // Case when ControlVariantsAPI.clearVariantParameterInURL is called with a parameter
+				delete oParsedHash.params[VariantUtil.VARIANT_TECHNICAL_PARAMETER];
+				mTechnicalParameters && delete mTechnicalParameters[VariantUtil.VARIANT_TECHNICAL_PARAMETER]; // Case when ControlVariantsAPI.clearVariantParameterInURL is called with a parameter
 			} else {
-				oParsedHash.params[URLHandler.variantTechnicalParameterName] = mPropertyBag.parameters;
-				mTechnicalParameters && (mTechnicalParameters[URLHandler.variantTechnicalParameterName] = mPropertyBag.parameters); // Technical parameters need to be in sync with the URL hash
+				oParsedHash.params[VariantUtil.VARIANT_TECHNICAL_PARAMETER] = mPropertyBag.parameters;
+				mTechnicalParameters && (mTechnicalParameters[VariantUtil.VARIANT_TECHNICAL_PARAMETER] = mPropertyBag.parameters); // Technical parameters need to be in sync with the URL hash
 			}
 
+			var oUShellContainer = Utils.getUshellContainer();
 			if (mPropertyBag.silent) {
 				hasher.changed.active = false; // disable changed signal
-				hasher.replaceHash(Utils.getUshellContainer().getService("URLParsing").constructShellHash(oParsedHash));
+				hasher.replaceHash(oUShellContainer.getService("URLParsing").constructShellHash(oParsedHash));
 				hasher.changed.active = true;  // re-enable changed signal
 			} else {
-				var oCrossAppNav = Utils.getUshellContainer().getService("CrossApplicationNavigation");
+				var oCrossAppNav = oUShellContainer.getService("CrossApplicationNavigation");
 				oCrossAppNav.toExternal({
 					target: {
 						semanticObject: oParsedHash.semanticObject,
@@ -189,14 +216,18 @@ sap.ui.define([
 			// in UI Adaptation the URL parameters are empty
 			// the current URL parameters are retrieved from the stored hash data
 			if (mPropertyBag.model._bDesignTimeMode) {
-				mURLParameters[URLHandler.variantTechnicalParameterName] = URLHandler.getStoredHashParams(mPropertyBag);
+				mURLParameters[VariantUtil.VARIANT_TECHNICAL_PARAMETER] = URLHandler.getStoredHashParams(mPropertyBag);
 			}
 
-			if (Array.isArray(mURLParameters[URLHandler.variantTechnicalParameterName])) {
-				mURLParameters[URLHandler.variantTechnicalParameterName] = mURLParameters[URLHandler.variantTechnicalParameterName].map(decodeURIComponent);
-				mURLParameters[URLHandler.variantTechnicalParameterName].some(function (sParamDecoded, iIndex) {
-					// if parameter index has not been found and a variant exists for the combination of variant reference and variant parameter
-					if (mPropertyBag.model.oVariantController.getVariant(mPropertyBag.vmReference, sParamDecoded)) {
+			if (Array.isArray(mURLParameters[VariantUtil.VARIANT_TECHNICAL_PARAMETER])) {
+				mURLParameters[VariantUtil.VARIANT_TECHNICAL_PARAMETER] = mURLParameters[VariantUtil.VARIANT_TECHNICAL_PARAMETER].map(decodeURIComponent);
+				mURLParameters[VariantUtil.VARIANT_TECHNICAL_PARAMETER].some(function(sParamDecoded, iIndex) {
+					var bVariantExistsForParameter = VariantManagementState.getVariant({
+						vmReference: mPropertyBag.vmReference,
+						vReference: sParamDecoded,
+						reference: mPropertyBag.model.oChangePersistence.getComponentName()
+					});
+					if (bVariantExistsForParameter) {
 						mReturnObject.index = iIndex;
 						return true;
 					}
@@ -205,8 +236,8 @@ sap.ui.define([
 		}
 		return merge(
 			mReturnObject,
-			mURLParameters && mURLParameters[URLHandler.variantTechnicalParameterName] && {parameters: mURLParameters[URLHandler.variantTechnicalParameterName]}
-			);
+			mURLParameters && mURLParameters[VariantUtil.VARIANT_TECHNICAL_PARAMETER] && {parameters: mURLParameters[VariantUtil.VARIANT_TECHNICAL_PARAMETER]}
+		);
 	}
 
 	/**
@@ -230,15 +261,22 @@ sap.ui.define([
 		 * @private
 		 * @ui5-restricted sap.ui.fl.variants.VariantModel
 		 */
-		initialize: function (mPropertyBag) {
-			var mURLParameters = Utils.getParsedURLHash().params;
-			mPropertyBag.model._oHashData = {
-				hashParams: (mURLParameters && mURLParameters[URLHandler.variantTechnicalParameterName]) || [],
-				controlPropertyObservers: [],
-				variantControlIds: []
-			};
+		initialize: function(mPropertyBag) {
+			var oParsedHash = Utils.getParsedURLHash();
+			var aParams = oParsedHash.params && oParsedHash.params[VariantUtil.VARIANT_TECHNICAL_PARAMETER];
 
+			// register navigation filters and component creation / destroy observers
 			URLHandler.attachHandlers(mPropertyBag);
+
+			// trigger update to initialize
+			URLHandler.update({
+				model: mPropertyBag.model,
+				parameters: aParams,
+				updateHashEntry: Array.isArray(aParams) && aParams.length > 0
+			});
+
+			// to trigger checks on parameters
+			_checkAndUpdateURLParameters(oParsedHash, mPropertyBag.model);
 		},
 
 		/**
@@ -252,7 +290,7 @@ sap.ui.define([
 		 * @private
 		 * @ui5-restricted sap.ui.fl.variants.VariantModel
 		 */
-		updateVariantInURL: function (mPropertyBag) {
+		updateVariantInURL: function(mPropertyBag) {
 			// remove parameter for variant management if available
 			var mUpdatedParameters = URLHandler.removeURLParameterForVariantManagement(mPropertyBag);
 
@@ -300,7 +338,7 @@ sap.ui.define([
 		 * @private
 		 * @ui5-restricted sap.ui.fl.variants.VariantModel, sap.ui.fl.ControlPersonalizationAPI
 		 */
-		removeURLParameterForVariantManagement: function (mPropertyBag) {
+		removeURLParameterForVariantManagement: function(mPropertyBag) {
 			var mVariantParametersInURL = getVariantIndexInURL(mPropertyBag);
 			if (mVariantParametersInURL.index > -1) {
 				mVariantParametersInURL.parameters.splice(mVariantParametersInURL.index, 1);
@@ -319,31 +357,48 @@ sap.ui.define([
 		 * @private
 		 * @ui5-restricted sap.ui.fl.variants.VariantModel
 		 */
-		attachHandlers: function (mPropertyBag) {
+		attachHandlers: function(mPropertyBag) {
 			function observerHandler() {
 				// variant switch promise needs to be checked, since there might be a pending on-going variants switch
 				// which might result in unnecessary data being stored
-				return mPropertyBag.model._oVariantSwitchPromise.then(function () {
-					mPropertyBag.model._oHashData.controlPropertyObservers.forEach(function (oObserver) {
+				return mPropertyBag.model._oVariantSwitchPromise.then(function() {
+					mPropertyBag.model._oHashData.controlPropertyObservers.forEach(function(oObserver) {
 						oObserver.destroy();
 					});
 					// deregister navigation filter if ushell is available
-					setOrUnsetCustomNavigationForParameter(mPropertyBag.model, false);
-					mPropertyBag.model.oChangePersistence.resetVariantMap();
-					mPropertyBag.model.destroy();
+					_deRegisterNavigationFilter(mPropertyBag.model);
+
+					// this promise is not returned since the component is getting destroyed,
+					// which will also destroy the variant model anyway,
+					// but this is just to ensure the model is in sync with the variants state (which is persisted)
+					mPropertyBag.model.resetMap()
+						.then(mPropertyBag.model.destroy.bind(mPropertyBag.model));
 					mPropertyBag.model.oComponentDestroyObserver.unobserve(mPropertyBag.model.oAppComponent, {destroy: true});
 					mPropertyBag.model.oComponentDestroyObserver.destroy();
 				});
 			}
 
 			// register navigation filter for custom navigation
-			setOrUnsetCustomNavigationForParameter(mPropertyBag.model, /*bSet*/true);
+			_registerNavigationFilter(mPropertyBag.model);
 
 			if (!mPropertyBag.model.oComponentDestroyObserver && mPropertyBag.model.oAppComponent instanceof Component) {
 				mPropertyBag.model.oComponentDestroyObserver = new ManagedObjectObserver(observerHandler.bind(null));
 				mPropertyBag.model.oComponentDestroyObserver.observe(mPropertyBag.model.oAppComponent, {destroy: true});
 			}
+		},
 
+		/**
+		 * Registers a variant management control for URL Handling
+		 *
+		 * @param {object} mPropertyBag - Property bag
+		 * @param {string} mPropertyBag.vmReference - Variant Management reference
+		 * @param {sap.ui.fl.variants.VariantModel} mPropertyBag.model - Variant model
+		 * @param {boolean} mPropertyBag.updateURL - Indicating if 'updateVariantInURL' property is enabled for the passed variant management reference
+		 *
+		 * @private
+		 * @ui5-restricted sap.ui.fl.variants.VariantModel
+		 */
+		registerControl: function(mPropertyBag) {
 			if (mPropertyBag.updateURL) {
 				mPropertyBag.model._oHashData.variantControlIds.push(mPropertyBag.vmReference);
 			}
@@ -363,6 +418,13 @@ sap.ui.define([
 		 * @ui5-restricted sap.ui.fl.variants.VariantModel
 		 */
 		update: function(mPropertyBag) {
+			if (!mPropertyBag.model._oHashData) {
+				mPropertyBag.model._oHashData = {
+					hashParams: [],
+					controlPropertyObservers: [],
+					variantControlIds: []
+				};
+			}
 			if (!mPropertyBag || !Array.isArray(mPropertyBag.parameters)) {
 				Log.info("Variant URL parameters could not be updated since invalid parameters were received");
 				return;
@@ -387,7 +449,7 @@ sap.ui.define([
 		 * @private
 		 * @ui5-restricted sap.ui.fl.variants.VariantModel
 		 */
-		getStoredHashParams: function (mPropertyBag) {
+		getStoredHashParams: function(mPropertyBag) {
 			return Array.prototype.slice.call(mPropertyBag.model._oHashData.hashParams);
 		},
 
@@ -413,8 +475,11 @@ sap.ui.define([
 				if (iIndex > -1) {
 					// all controls which were later initialized need to be reset to default variant
 					aVariantManagements.slice(iIndex).forEach(
-						function (sVariantManagementToBeReset) {
-							if (getVariantIndexInURL({vmReference: sVariantManagementToBeReset, model: mPropertyBag.model}).index === -1) {
+						function(sVariantManagementToBeReset) {
+							if (getVariantIndexInURL({
+								vmReference: sVariantManagementToBeReset,
+								model: mPropertyBag.model
+							}).index === -1) {
 								oParams.model.switchToDefaultForVariantManagement(sVariantManagementToBeReset);
 							}
 						}
@@ -422,7 +487,7 @@ sap.ui.define([
 				}
 			}
 
-			var oControlPropertyObserver = new ManagedObjectObserver(function (oEvent) {
+			var oControlPropertyObserver = new ManagedObjectObserver(function(oEvent) {
 				if (oEvent.current === true && oEvent.old === false) {
 					oEvent.object.attachEvent(sContextChangeEvent, {model: mPropertyBag.model}, handleContextChange);
 				} else if (oEvent.current === false && oEvent.old === true) {

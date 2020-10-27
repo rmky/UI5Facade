@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -55,7 +55,7 @@ sap.ui.define([
 	 * @implements sap.m.IBar
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -216,7 +216,6 @@ sap.ui.define([
 		this._updatePosition(bContentLeft, bContentMiddle, bContentRight);
 
 		this._sResizeListenerId = ResizeHandler.register(this.getDomRef(), jQuery.proxy(this._handleResize, this));
-
 		if (this.getEnableFlexBox()) {
 			return;
 		}
@@ -228,7 +227,6 @@ sap.ui.define([
 		if (bContentMiddle) {
 			this._sResizeListenerIdMid = ResizeHandler.register(this._$MidBarPlaceHolder[0], jQuery.proxy(this._handleResize, this));
 		}
-
 		if (bContentRight) {
 			this._sResizeListenerIdRight = ResizeHandler.register(this._$RightBar[0], jQuery.proxy(this._handleResize, this));
 		}
@@ -255,14 +253,15 @@ sap.ui.define([
 		}
 
 		var iBarWidth = this.$().outerWidth(true);
-
 		// reset to default
 		this._$RightBar.css({ width : "" });
 		this._$LeftBar.css({ width : "" });
-		this._$MidBarPlaceHolder.css({ position : "", width : "", visibility : 'hidden' });
-
+		if (Device.browser.msie) {
+			this._$MidBarPlaceHolder.css({ position : "", width : ""});
+		} else {
+			this._$MidBarPlaceHolder.css({ position : "", width : "", visibility: "hidden"});
+		}
 		var iRightBarWidth = this._$RightBar.outerWidth(true);
-
 		//right bar is bigger than the bar - only show the right bar
 		if (iRightBarWidth > iBarWidth) {
 
@@ -278,7 +277,6 @@ sap.ui.define([
 			return;
 
 		}
-
 		var iLeftBarWidth = this._getBarContainerWidth(this._$LeftBar);
 
 		// handle the case when left and right content are wider than the bar itself
@@ -297,10 +295,8 @@ sap.ui.define([
 			return;
 
 		}
-
 		//middle bar will be shown
 		this._$MidBarPlaceHolder.css(this._getMidBarCss(iRightBarWidth, iBarWidth, iLeftBarWidth));
-
 	};
 
 	/**
@@ -318,7 +314,6 @@ sap.ui.define([
 			bRtl = sap.ui.getCore().getConfiguration().getRTL(),
 			sLeftOrRight = bRtl ? "right" : "left",
 			oMidBarCss = { visibility : "" };
-
 		if (this.getEnableFlexBox()) {
 
 			iMidBarPlaceholderWidth = iBarWidth - iLeftBarWidth - iRightBarWidth - parseInt(this._$MidBarPlaceHolder.css('margin-left')) - parseInt(this._$MidBarPlaceHolder.css('margin-right'));

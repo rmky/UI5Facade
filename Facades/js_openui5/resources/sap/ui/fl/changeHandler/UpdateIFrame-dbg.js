@@ -1,11 +1,13 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define([
+	"sap/base/util/extend"
 ], function(
+	extend
 ) {
 	"use strict";
 
@@ -14,7 +16,7 @@ sap.ui.define([
 	 *
 	 * @alias sap.ui.fl.changeHandler.UpdateIFrame
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @since 1.72
 	 * @private
 	 */
@@ -42,6 +44,19 @@ sap.ui.define([
 	}
 
 	/**
+	 * Apply settings to the IFrame control.
+	 *
+	 * @param {object} oModifier Modifier for the controls
+	 * @param {sap.ui.fl.util.IFrame} oIFrame IFrame to set settings to
+	 * @param {object} mSettings Settings
+	 * @ui5-restricted sap.ui.fl
+	 */
+	function applySettings (oModifier, oIFrame, mSettings) {
+		var mFullSettings = extend({ _settings: mSettings }, mSettings);
+		oModifier.applySettings(oIFrame, mFullSettings);
+	}
+
+	/**
 	 * Update the IFrame control settings.
 	 *
 	 * @param {sap.ui.fl.Change} oChange Change object with instructions to be applied on the control map
@@ -60,7 +75,7 @@ sap.ui.define([
 		oChange.setRevertData({
 			originalSettings: getIFrameSettings(oModifier, oControl)
 		});
-		oModifier.applySettings(oControl, oChangeDefinition.settings);
+		applySettings(oModifier, oControl, oChangeDefinition.settings);
 	};
 
 	/**
@@ -75,7 +90,7 @@ sap.ui.define([
 	UpdateIFrame.revertChange = function(oChange, oControl, mPropertyBag) {
 		var mRevertData = oChange.getRevertData();
 		if (mRevertData) {
-			mPropertyBag.modifier.applySettings(oControl, mRevertData.originalSettings);
+			applySettings(mPropertyBag.modifier, oControl, mRevertData.originalSettings);
 			oChange.resetRevertData();
 		} else {
 			throw new Error("Attempt to revert an unapplied change.");
@@ -87,20 +102,20 @@ sap.ui.define([
 	 *
 	 * @param {sap.ui.fl.Change} oChange Change object to be completed
 	 * @param {object} oSpecificChangeInfo Must contain settings with IFrame properties to update
-	 * @param {object} oSpecificChangeInfo.settings IFrame settings
-	 * @param {string} oSpecificChangeInfo.settings.width Width
-	 * @param {string} oSpecificChangeInfo.settings.height Height
-	 * @param {string} oSpecificChangeInfo.settings.url Url
+	 * @param {object} oSpecificChangeInfo.content IFrame settings
+	 * @param {string} oSpecificChangeInfo.content.width Width
+	 * @param {string} oSpecificChangeInfo.content.height Height
+	 * @param {string} oSpecificChangeInfo.content.url Url
 	 * @ui5-restricted sap.ui.fl
 	 */
 	UpdateIFrame.completeChangeContent = function (oChange, oSpecificChangeInfo) {
 		var oChangeJson = oChange.getDefinition();
-		if (!oSpecificChangeInfo.settings || !Object.keys(oSpecificChangeInfo.settings).some(function (sProperty) {
+		if (!oSpecificChangeInfo.content || !Object.keys(oSpecificChangeInfo.content).some(function (sProperty) {
 			return aUpdatableProperties.indexOf(sProperty) !== -1;
 		})) {
 			throw new Error("oSpecificChangeInfo attribute required");
 		}
-		oChangeJson.settings = oSpecificChangeInfo.settings;
+		oChangeJson.settings = oSpecificChangeInfo.content;
 	};
 
 	return UpdateIFrame;

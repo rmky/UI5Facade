@@ -2,7 +2,7 @@
 
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -23,7 +23,7 @@
 
 .sapUiBLy {
 	background-color: @sapUiHcStandardBackground;
-	opacity: 0.3;
+	opacity: 0.8;
 }
 
 /**
@@ -114,6 +114,23 @@
 		 url('fonts/72-Bold-full.woff') format('woff');
 }
 
+@font-face {
+	font-family: '72';
+	font-style: normal;
+	font-weight: 300;
+	src: url('fonts/72-Light.woff2') format('woff2'),
+		 url('fonts/72-Light.woff') format('woff'),
+		 local('72-Light');
+}
+
+@font-face {
+	font-family: '72full';
+	font-style: normal;
+	font-weight: 300;
+	src: url('fonts/72-Light-full.woff2') format('woff2'),
+		 url('fonts/72-Light-full.woff') format('woff');
+}
+
 // Responsive paddings
 .sapUi-Std-PaddingS {
 	padding-left: 1rem !important;
@@ -143,87 +160,17 @@
 /* Quartz High Contrast Black theme              */
 /* ============================================= */
 
-.sapUiBody {
-	scrollbar-base-color: @sapUiHcStandardBackground;
-	scrollbar-face-color: @sapUiHcStandardForeground;
-	scrollbar-3dlight-color: @sapUiHcStandardForeground;
-	scrollbar-arrow-color: @sapUiHcStandardForeground;
-	scrollbar-darkshadow-color:@sapUiHcStandardBackground;
-	scrollbar-shadow-color: @sapUiHcStandardForeground;
-	scrollbar-track-color: @sapUiHcReducedBackground;
-	scrollbar-highlight-color: @sapUiHcStandardBackground;
-}
+/****** Safari + Chrome on Desktop ******/
 
 html.sap-desktop ::-webkit-scrollbar {
-	background-color: @sapUiHcStandardBackground;
-	border: 1px solid @sapUiHcReducedAltForeground;
-}
-
-html.sap-desktop ::-webkit-scrollbar:horizontal {
-	height: 0.75rem;
-}
-
-html.sap-desktop ::-webkit-scrollbar:vertical {
-	width: 0.75rem;
+	border: 1px solid @sapUiScrollBarFaceColor;
 }
 
 html.sap-desktop ::-webkit-scrollbar-thumb {
-	background-color: @sapUiHcReducedAltForeground;
-	border: 1px solid @sapUiHcReducedAltForeground;
-}
-
-html.sap-desktop ::-webkit-scrollbar-thumb:hover {
-	background-color: @sapUiHcStandardForeground;
+	border-radius: @sapUiElementBorderCornerRadius;
+	border: 1px solid @sapUiScrollBarFaceColor;
 }
 /* END "BrowserScrollbar.less" */
-
-/* START "Icon.less" */
-/* ================================= */
-/* CSS for control sap.ui/core/Icon  */
-/* Quartz High Contrast Black theme  */
-/* ================================= */
-
-.sapUiIcon:focus {
-	outline-color: @sapUiHcStandardForeground;
-}
-
-.sapUiIconColorNeutral {
-	color: @sapUiHcNeutralColor;
-}
-
-.sapUiIconColorCritical {
-	color: @sapUiHcCriticalColor;
-}
-
-.sapUiIconColorPositive {
-	color: @sapUiHcPositiveColor;
-}
-
-.sapUiIconColorNegative {
-	color: @sapUiHcNegativeColor;
-}
-
-.sapUiIconBGColorNeutral {
-	background-color: @sapUiHcNeutralColor;
-}
-
-.sapUiIconBGColorCritical {
-	background-color: @sapUiHcCriticalColor;
-}
-
-.sapUiIconBGColorPositive {
-	background-color: @sapUiHcPositiveColor;
-}
-
-.sapUiIconBGColorNegative {
-	background-color: @sapUiHcNegativeColor;
-}
-
-.sapUiIconBGColorContrast {
-	background-color: @sapUiHighlight;
-}
-
-/* END "Icon.less" */
 
 /* START "LocalBusyIndicator.less" */
 /* =============================================== */
@@ -249,3 +196,4 @@ html.sap-desktop ::-webkit-scrollbar-thumb:hover {
 	box-shadow: none;
 }
 /* END "Shadow.less" */
+

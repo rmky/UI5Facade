@@ -105,6 +105,7 @@ JS;
         $tpl = $this->getFacade()->getElement($widget->getCellWidget());
         // Disable using widget id as control id because this is a template for multiple controls
         $tpl->setUseWidgetId(false);
+        $tpl->setValueBoundToModel(true);
         
         $modelPrefix = $modelName ? $modelName . '>' : '';
         if ($tpl instanceof UI5Display) {

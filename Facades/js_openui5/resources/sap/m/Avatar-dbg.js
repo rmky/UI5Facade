@@ -1,18 +1,20 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 // Provides control sap.m.Avatar.
 sap.ui.define([
-    "./library",
+
     "sap/ui/core/Control",
     "sap/ui/core/IconPool",
     "./AvatarRenderer",
     "sap/ui/events/KeyCodes",
-    "sap/base/Log"
-], function(library, Control, IconPool, AvatarRenderer, KeyCodes, Log) {
+    "sap/base/Log",
+    "sap/ui/core/Icon",
+    "./library"
+], function(Control, IconPool, AvatarRenderer, KeyCodes, Log, Icon, library) {
 	"use strict";
 
 	// shortcut for sap.m.AvatarType
@@ -29,6 +31,11 @@ sap.ui.define([
 
 	// shortcut for sap.m.AvatarShape
 	var AvatarShape = library.AvatarShape;
+
+	// shortcut for Accent colors keys only (from AvatarColor enum)
+	var AccentColors = Object.keys(AvatarColor).filter(function (sCurrColor) {
+		return sCurrColor.indexOf("Accent") !== -1;
+	});
 
 	/**
 	 * Constructor for a new <code>Avatar</code>.
@@ -69,7 +76,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -135,7 +142,33 @@ sap.ui.define([
 				/**
 				 * Determines whether the control is displayed with border.
 				 */
-				showBorder: {type: "boolean", group: "Appearance", defaultValue: false}
+				showBorder: {type: "boolean", group: "Appearance", defaultValue: false},
+				/**
+				 * Defines what type of icon is displayed as visual affordance. It can be predefined or custom.
+				 *
+				 * The predefined icons are recommended for:
+				 * <ul>
+				 * <li>Suggesting a zooming action: <code>sap-icon://zoom-in</code></li>
+				 * <li>Suggesting an image change: <code>sap-icon://camera</code></li>
+				 * <li>Suggesting an editing action: <code>sap-icon://edit</code></li>
+				 * </ul>
+				 *
+				 * @since 1.77
+				 */
+				badgeIcon: {type: "sap.ui.core.URI", group: "Appearance", defaultValue: ""},
+				/**
+				 * Defines a custom tooltip for the <code>badgeIcon</code>. If set, it overrides the available default values.
+				 *
+				 * If not set, default tooltips are used as follows:
+				 * <ul>
+				 * <li>Specific default tooltips are displayed for each of the predefined <code>badgeIcons</code>.</li>
+				 * <li>For any other icons, the displayed tooltip is the same as the main control tooltip.</li>
+				 * <ul>
+				 *
+				 * @since 1.77
+				 */
+				badgeTooltip: {type: "string", group: "Data", defaultValue: null}
+
 			},
 			aggregations : {
 				/**
@@ -144,7 +177,12 @@ sap.ui.define([
 				 * The <code>press</code> event will still be fired.
 				 * @public
 				 */
-				detailBox: {type: 'sap.m.LightBox', multiple: false, bindable: "bindable"}
+				detailBox: {type: 'sap.m.LightBox', multiple: false, bindable: "bindable"},
+				/**
+				 * A <code>sap.ui.core.Icon</code> instance that shows the badge icon of the <code>Avatar</code> control.
+				 * @private
+				 */
+				_badge: {type: "sap.ui.core.Icon", multiple: false, visibility: "hidden"}
 			},
 			associations : {
 				/**
@@ -182,12 +220,30 @@ sap.ui.define([
 	 */
 	Avatar.DEFAULT_SQUARE_PLACEHOLDER = "sap-icon://product";
 
+	/**
+	 * The predefined values for tooltip, when <code>badgeIcon</code> is set.
+	 *
+	 * @type {string}
+	 */
+	Avatar.AVATAR_BADGE_TOOLTIP = {
+		"sap-icon://zoom-in" : sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("AVATAR_TOOLTIP_ZOOMIN"),
+		"sap-icon://camera": sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("AVATAR_TOOLTIP_CAMERA"),
+		"sap-icon://edit": sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("AVATAR_TOOLTIP_EDIT")
+	};
+
+
 	Avatar.prototype.init = function () {
 		// Property holding the actual display type of the avatar
 		this._sActualType = null;
 		// Property that determines if the created icon is going to be the default one
 		this._bIsDefaultIcon = true;
 		this._sImageFallbackType = null;
+
+		// Property holding the currently picked random background color of the avatar, if any
+		this._sPickedRandomColor = null;
+
+		//Reference to badge hidden aggregation
+		this._badgeRef = null;
 	};
 
 	Avatar.prototype.exit = function () {
@@ -197,6 +253,12 @@ sap.ui.define([
 		if (this._fnLightBoxOpen) {
 			this._fnLightBoxOpen = null;
 		}
+
+		if (this._badgeRef) {
+			this._badgeRef.destroy();
+		}
+
+		this._sPickedRandomColor = null;
 	};
 
 	/**
@@ -288,14 +350,40 @@ sap.ui.define([
 	};
 
 	/**
-	 * Handles the key up event for SPACE and ENTER.
+	 * @param {jQuery.Event} oEvent - the keyboard event.
+	 * @private
+	 */
+	Avatar.prototype.onkeydown = function (oEvent) {
+		if (oEvent.which === KeyCodes.SHIFT || oEvent.which === KeyCodes.ESCAPE) {
+			this._bShouldInterupt = this._bSpacePressed;
+		}
+
+		if (oEvent.which === KeyCodes.SPACE) {
+			this._bSpacePressed = true;
+
+			// To prevent the browser scrolling.
+			oEvent.preventDefault();
+		}
+
+		if (oEvent.which === KeyCodes.ENTER) {
+			this.firePress({/* no parameters */});
+		}
+	};
+
+	/**
+	 * Handles the key up event for SPACE.
 	 *
 	 * @param {jQuery.Event} oEvent - the keyboard event.
 	 * @private
 	 */
 	Avatar.prototype.onkeyup = function (oEvent) {
-		if (oEvent.which === KeyCodes.SPACE || oEvent.which === KeyCodes.ENTER) {
-			this.firePress({/* no parameters */});
+		if (oEvent.which === KeyCodes.SPACE) {
+			if (!this._bShouldInterupt) {
+				this.firePress({/* no parameters */});
+			}
+
+			this._bShouldInterupt = false;
+			this._bSpacePressed = false;
 
 			//stop the propagation, it is handled by the control
 			oEvent.stopPropagation();
@@ -346,6 +434,22 @@ sap.ui.define([
 		}
 
 		return this;
+	};
+
+
+	/**
+	 * Validates the <code>src</code> parameter, and returns sap.ui.core.Icon object.
+	 *
+	 * @param {string} sSrc
+	 * @returns {sap.m.Avatar}
+	 * @private
+	 */
+	Avatar.prototype._getDisplayIcon = function (sSrc) {
+
+	return IconPool.isIconURI(sSrc) && IconPool.getIconInfo(sSrc) ?
+		IconPool.createControlByURI({
+			src: sSrc
+		}) : null;
 	};
 
 	/**
@@ -439,6 +543,51 @@ sap.ui.define([
 		return sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("AVATAR_TOOLTIP");
 	};
 
+	Avatar.prototype._getBadgeIconSource = function() {
+		var sBadgeIconPath;
+
+		if (this.getDetailBox()) {
+			sBadgeIconPath = "sap-icon://zoom-in";
+		} else if (this.getBadgeIcon() !== "") {
+			if (this._getDisplayIcon(this.getBadgeIcon())) {
+				sBadgeIconPath = this.getBadgeIcon();
+			} else {
+				Log.warning("No valid Icon URI source for badge affordance was provided");
+			}
+		}
+
+		return sBadgeIconPath;
+	};
+
+	Avatar.prototype._getBadgeTooltip = function() {
+		var sBadgeTooltip = this._getDefaultTooltip(),
+			sBadgeIcon = this.getBadgeIcon();
+
+		if (this.getBadgeTooltip()) {
+			sBadgeTooltip = this.getBadgeTooltip();
+		} else if ( sBadgeIcon && Avatar.AVATAR_BADGE_TOOLTIP[this.getBadgeIcon()]) {
+			sBadgeTooltip = Avatar.AVATAR_BADGE_TOOLTIP[sBadgeIcon];
+		}
+		return sBadgeTooltip;
+	};
+
+
+	Avatar.prototype._getBadge = function () {
+		var sBadgeIconSrc = this._getBadgeIconSource(),
+			sBadgeTooltip = this._getBadgeTooltip();
+
+		if (!sBadgeIconSrc) {return;}
+
+		if (!this._badgeRef) {
+			this.setAggregation("_badge", new Icon({
+				src: sBadgeIconSrc,
+				tooltip: sBadgeTooltip
+			}));
+		}
+
+		this._badgeRef = this.getAggregation("_badge");
+		return this._badgeRef;
+	};
 
 	/**
 	 * We use this callback to make sure we hide fallback content if our original image source
@@ -463,6 +612,37 @@ sap.ui.define([
 				.addClass("sapFAvatar" + sFallBackType);
 
 		delete this.preloadedImage;
+	};
+
+	/**
+	 * Returns the actual background color.
+	 *
+	 * @returns {sap.m.AvatarColor} The actual background color
+	 * @private
+	 */
+	Avatar.prototype._getActualBackgroundColor = function() {
+		var sBackground = this.getBackgroundColor();
+
+		if (sBackground === AvatarColor.Random) {
+
+			// If the last time the "backgroundColor" property was "Random", we return the last rolled color.
+			// This is needed in order to prevent picking different colors on re-rendering
+			// of the control if the property keeps being "Random".
+			if (this._sPickedRandomColor) {
+				return this._sPickedRandomColor;
+			}
+
+			// Picking a random Accent property from the AvatarColor enum
+			// << 0 truncates the digits after the decimal (it's the same as Math.trunc())
+			sBackground = this._sPickedRandomColor = AvatarColor[AccentColors[AccentColors.length * Math.random() << 0]];
+		} else {
+			// In case the "backgroundColor" is different from "Random", we set the
+			// this._sPickedRandomColor to "null". This is needed in order to generate
+			// a new random color the next time "backgroundColor" is "Random".
+			this._sPickedRandomColor = null;
+		}
+
+		return sBackground;
 	};
 
 	return Avatar;

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -35,7 +35,7 @@ function(
 	 * @class
 	 * @constructor
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @experimental Since 1.27.0
 	 */
 	var PreprocessorImpl = function() {};
@@ -67,7 +67,7 @@ function(
 				return Promise.resolve([]);
 			}
 			var sFlexReference = Utils.getComponentClassName(oAppComponent);
-			var sAppVersion = Utils.getAppVersionFromManifest(oAppComponent.getManifest());
+			var sAppVersion = Utils.getAppVersionFromManifest(oAppComponent.getManifest(), sAppVersion);
 
 			var oChangePersistence = ChangePersistenceFactory.getChangePersistenceForComponent(sFlexReference, sAppVersion);
 			return oChangePersistence.getChangesForComponent().then(function(aChanges) {

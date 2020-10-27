@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 /**
@@ -24,6 +24,7 @@ sap.ui.define([
 		CompositeBinding
 	) {
 	"use strict";
+	/*eslint max-nested-callbacks: 0 */
 
 	// shortcuts
 	var Categories = SupportLib.Categories; // Accessibility, Performance, Memory, ...
@@ -47,8 +48,8 @@ sap.ui.define([
 	// Rule Definitions
 	//**********************************************************
 	/**
-	 * Checks whether there are bindings for models where the model is available but a binding has no result
-	 * It checks the path structure and checks for typos
+	 * Checks whether there are bindings for models where the model is available but a binding has no result.
+	 * It checks the path structure and checks for typos.
 	 */
 	var oBindingPathSyntaxValidation = {
 		id: "bindingPathSyntaxValidation",

@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -34,12 +34,10 @@ sap.ui.define([
 	"sap/ui/model/Context",
 	"sap/ui/model/Model",
 	"sap/ui/model/odata/OperationMode",
-	"sap/ui/thirdparty/jquery",
 	"sap/ui/thirdparty/URI"
 ], function (ODataContextBinding, ODataListBinding, ODataMetaModel, ODataPropertyBinding,
 		SubmitMode, _GroupLock, _Helper, _MetadataRequestor, _Parser, _Requestor, assert, Log,
-		SyncPromise, coreLibrary, Message, BindingMode, BaseContext, Model, OperationMode, jQuery,
-		URI) {
+		SyncPromise, coreLibrary, Message, BindingMode, BaseContext, Model, OperationMode, URI) {
 	"use strict";
 
 	var rApplicationGroupID = /^\w+$/,
@@ -67,16 +65,20 @@ sap.ui.define([
 			groupId : true,
 			groupProperties : true,
 			httpHeaders : true,
+			metadataUrlParams : true,
 			odataVersion : true,
 			operationMode : true,
 			serviceUrl : true,
+			sharedRequests : true,
 			supportReferences : true,
 			synchronizationMode : true,
 			updateGroupId : true
 		},
 		// system query options allowed in mParameters
 		aSystemQueryOptions = ["$apply", "$count", "$expand", "$filter", "$orderby", "$search",
-			"$select"];
+			"$select"],
+		// valid header values: non-empty, only US-ASCII, no control chars
+		rValidHeader = /^[ -~]+$/;
 
 	/**
 	 * Constructor for a new ODataModel.
@@ -91,18 +93,18 @@ sap.ui.define([
 	 *   Supported since 1.41.0
 	 * @param {boolean} [mParameters.autoExpandSelect=false]
 	 *   Whether the OData model's bindings automatically generate $select and $expand system query
-	 *   options from the binding hierarchy.
-	 *   Note: Dynamic changes to the binding hierarchy are not supported.
-	 *   Supported since 1.47.0
+	 *   options from the binding hierarchy. Note: Dynamic changes to the binding hierarchy are not
+	 *   supported. This parameter is supported since 1.47.0, and since 1.75.0 it also enables
+	 *   property paths containing navigation properties in <code>$select</code>.
 	 * @param {boolean} [mParameters.earlyRequests=false]
 	 *   Whether the following is requested at the earliest convenience:
 	 *   <ul>
-	 *   <li> root $metadata document and annotation files;
-	 *   <li> the security token.
+	 *     <li> root $metadata document and annotation files;
+	 *     <li> the security token.
 	 *   </ul>
 	 *   Note: The root $metadata document and annotation files are just requested but not yet
 	 *   converted from XML to JSON unless really needed.
-	 *   Supported since 1.53.0
+	 *   Supported since 1.53.0.
 	 *   <b>BEWARE:</b> The default value may change to <code>true</code> in later releases.
 	 * @param {string} [mParameters.groupId="$auto"]
 	 *   Controls the model's use of batch requests: '$auto' bundles requests from the model in a
@@ -115,13 +117,18 @@ sap.ui.define([
 	 *   Supported since 1.51.0
 	 * @param {object} [mParameters.httpHeaders]
 	 *   Map of HTTP header names to their values, see {@link #changeHttpHeaders}
+	 * @param {object} [mParameters.metadataUrlParams]
+	 *   Additional map of URL parameters used specifically for $metadata requests. Note that
+	 *   "sap-context-token" applies only to the service's root $metadata, but not to
+	 *   "cross-service references". Supported since 1.81.0
 	 * @param {string} [mParameters.odataVersion="4.0"]
 	 *   The version of the OData service. Supported values are "2.0" and "4.0".
 	 * @param {sap.ui.model.odata.OperationMode} [mParameters.operationMode]
-	 *   The operation mode for sorting and filtering with the model's operation mode as default.
-	 *   Since 1.39.0, the operation mode {@link sap.ui.model.odata.OperationMode.Server} is
-	 *   supported. All other operation modes including <code>undefined</code> lead to an error if
-	 *   'vFilters' or 'vSorters' are given or if {@link #filter} or {@link #sort} is called.
+	 *   The operation mode for filtering and sorting. Since 1.39.0, the operation mode
+	 *   {@link sap.ui.model.odata.OperationMode.Server} is supported. All other operation modes
+	 *   including <code>undefined</code> lead to an error if 'vFilters' or 'vSorters' are given or
+	 *   if {@link sap.ui.model.odata.v4.ODataListBinding#filter} or
+	 *   {@link sap.ui.model.odata.v4.ODataListBinding#sort} is called.
 	 * @param {string} mParameters.serviceUrl
 	 *   Root URL of the service to request data from. The path part of the URL must end with a
 	 *   forward slash according to OData V4 specification ABNF, rule "serviceRoot". You may append
@@ -129,6 +136,13 @@ sap.ui.define([
 	 *   "/MyService/?custom=foo".
 	 *   See specification "OData Version 4.0 Part 2: URL Conventions", "5.2 Custom Query Options".
 	 *   OData system query options and OData parameter aliases lead to an error.
+	 * @param {boolean} [mParameters.sharedRequests]
+	 *   Whether all list bindings for the same resource path share their data, so that it is
+	 *   requested only once; only the value <code>true</code> is allowed; see parameter
+	 *   "$$sharedRequest" of {@link #bindList}. Additionally,
+	 *   {@link sap.ui.model.BindingMode.OneWay} becomes the default binding mode and
+	 *   {@link sap.ui.model.BindingMode.TwoWay} is forbidden. Note: This makes all bindings
+	 *   read-only, so it may be especially useful for value list models. Supported since 1.80.0
 	 * @param {boolean} [mParameters.supportReferences=true]
 	 *   Whether <code>&lt;edmx:Reference></code> and <code>&lt;edmx:Include></code> directives are
 	 *   supported in order to load schemas on demand from other $metadata documents and include
@@ -167,27 +181,25 @@ sap.ui.define([
 	 *
 	 *   <b>Group IDs</b> control the model's use of batch requests. Valid group IDs are:
 	 *   <ul>
-	 *   <li><b>$auto</b> and <b>$auto.*</b>: Bundles requests from the model in a batch request
-	 *   which is sent automatically before rendering. You can use different '$auto.*' group IDs to
-	 *   use different batch requests. The suffix may be any non-empty string consisting of
-	 *   alphanumeric characters from the basic Latin alphabet, including the underscore. The submit
-	 *   mode for these group IDs is always {@link sap.ui.model.odata.v4.SubmitMode#Auto}.
-	 *   </li>
-	 *   <li><b>$direct</b>: Sends requests directly without batch. The submit mode for this group
-	 *   ID is always {@link sap.ui.model.odata.v4.SubmitMode#Direct}.
-	 *   </li>
-	 *   <li>An application group ID, which is a non-empty string consisting of alphanumeric
-	 *   characters from the basic Latin alphabet, including the underscore. By default, an
-	 *   application group has the submit mode {@link sap.ui.model.odata.v4.SubmitMode#API}. It is
-	 *   possible to use a different submit mode; for details see
-	 *   <code>mParameters.groupProperties</code>.
-	 *   </li>
+	 *     <li> <b>$auto</b> and <b>$auto.*</b>: Bundles requests from the model in a batch request
+	 *       which is sent automatically before rendering. You can use different '$auto.*' group IDs
+	 *       to use different batch requests. The suffix may be any non-empty string consisting of
+	 *       alphanumeric characters from the basic Latin alphabet, including the underscore. The
+	 *       submit mode for these group IDs is always
+	 *       {@link sap.ui.model.odata.v4.SubmitMode#Auto}.
+	 *     <li> <b>$direct</b>: Sends requests directly without batch. The submit mode for this
+	 *       group ID is always {@link sap.ui.model.odata.v4.SubmitMode#Direct}.
+	 *     <li> An application group ID, which is a non-empty string consisting of alphanumeric
+	 *       characters from the basic Latin alphabet, including the underscore. By default, an
+	 *       application group has the submit mode {@link sap.ui.model.odata.v4.SubmitMode#API}. It
+	 *       is possible to use a different submit mode; for details see
+	 *       <code>mParameters.groupProperties</code>.
 	 *   </ul>
 	 *
 	 * @extends sap.ui.model.Model
 	 * @public
 	 * @since 1.37.0
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 */
 	var ODataModel = Model.extend("sap.ui.model.odata.v4.ODataModel",
 			/** @lends sap.ui.model.odata.v4.ODataModel.prototype */
@@ -257,15 +269,18 @@ sap.ui.define([
 								+ oGroupProperties + "'");
 						}
 					}
-					this.mGroupProperties = jQuery.extend({
-							"$auto" : {submit : SubmitMode.Auto},
-							"$direct" : {submit : SubmitMode.Direct}
-						}, mParameters.groupProperties);
+					this.mGroupProperties = _Helper.clone(mParameters.groupProperties) || {};
+					this.mGroupProperties.$auto = {submit : SubmitMode.Auto};
+					this.mGroupProperties.$direct = {submit : SubmitMode.Direct};
 					if (mParameters.autoExpandSelect !== undefined
 							&& typeof mParameters.autoExpandSelect !== "boolean") {
 						throw new Error("Value for autoExpandSelect must be true or false");
 					}
 					this.bAutoExpandSelect = mParameters.autoExpandSelect === true;
+					if ("sharedRequests" in mParameters && mParameters.sharedRequests !== true) {
+						throw new Error("Value for sharedRequests must be true");
+					}
+					this.bSharedRequests = mParameters.sharedRequests === true;
 
 					this.mHeaders = {"Accept-Language" : sLanguageTag};
 					this.mMetadataHeaders = {"Accept-Language" : sLanguageTag};
@@ -273,26 +288,28 @@ sap.ui.define([
 					// BEWARE: do not share mHeaders between _MetadataRequestor and _Requestor!
 					this.oMetaModel = new ODataMetaModel(
 						_MetadataRequestor.create(this.mMetadataHeaders, sODataVersion,
-							this.mUriParameters),
+							Object.assign({}, this.mUriParameters, mParameters.metadataUrlParams)),
 						this.sServiceUrl + "$metadata", mParameters.annotationURI, this,
 						mParameters.supportReferences);
-					this.oRequestor = _Requestor.create(this.sServiceUrl, {
-							fetchEntityContainer :
-								this.oMetaModel.fetchEntityContainer.bind(this.oMetaModel),
-							fetchMetadata : this.oMetaModel.fetchObject.bind(this.oMetaModel),
-							fireSessionTimeout : function () {
-								that.fireEvent("sessionTimeout");
-							},
-							getGroupProperty : this.getGroupProperty.bind(this),
-							onCreateGroup : function (sGroupId) {
-								if (that.isAutoGroup(sGroupId)) {
-									sap.ui.getCore().addPrerenderingTask(
-										that._submitBatch.bind(that, sGroupId, true));
-								}
-							},
-							reportBoundMessages : this.reportBoundMessages.bind(this),
-							reportUnboundMessages : this.reportUnboundMessages.bind(this)
-						}, this.mHeaders, this.mUriParameters, sODataVersion);
+					this.oInterface = {
+						fetchEntityContainer :
+							this.oMetaModel.fetchEntityContainer.bind(this.oMetaModel),
+						fetchMetadata : this.oMetaModel.fetchObject.bind(this.oMetaModel),
+						fireSessionTimeout : function () {
+							that.fireEvent("sessionTimeout");
+						},
+						getGroupProperty : this.getGroupProperty.bind(this),
+						onCreateGroup : function (sGroupId) {
+							if (that.isAutoGroup(sGroupId)) {
+								that.addPrerenderingTask(
+									that._submitBatch.bind(that, sGroupId, true));
+							}
+						},
+						reportBoundMessages : this.reportBoundMessages.bind(this),
+						reportUnboundMessages : this.reportUnboundMessages.bind(this)
+					};
+					this.oRequestor = _Requestor.create(this.sServiceUrl, this.oInterface,
+						this.mHeaders, this.mUriParameters, sODataVersion);
 					this.changeHttpHeaders(mParameters.httpHeaders);
 					if (mParameters.earlyRequests) {
 						this.oMetaModel.fetchEntityContainer(true);
@@ -300,12 +317,17 @@ sap.ui.define([
 					}
 
 					this.aAllBindings = [];
-					this.sDefaultBindingMode = BindingMode.TwoWay;
 					this.mSupportedBindingModes = {
 						OneTime : true,
-						OneWay : true,
-						TwoWay : true
+						OneWay : true
 					};
+					if (mParameters.sharedRequests) {
+						this.sDefaultBindingMode = BindingMode.OneWay;
+					} else {
+						this.sDefaultBindingMode = BindingMode.TwoWay;
+						this.mSupportedBindingModes.TwoWay = true;
+					}
+					this.aPrerenderingTasks = null; // @see #addPrerenderingTask
 				}
 			});
 
@@ -389,6 +411,35 @@ sap.ui.define([
 	 * @since 1.66.0
 	 */
 
+	/**
+	 * Adds a task that is guaranteed to run once, just before the next rendering. Triggers a
+	 * rendering request, so that this happens as soon as possible.
+	 *
+	 * @param {function} fnPrerenderingTask
+	 *   A function that is called before the rendering
+	 * @param {boolean} [bFirst=false]
+	 *   Whether the task should become the first one, not the last one
+	 * @private
+	 */
+	ODataModel.prototype.addPrerenderingTask = function (fnPrerenderingTask, bFirst) {
+		var that = this;
+
+		if (!this.aPrerenderingTasks) {
+			this.aPrerenderingTasks = [];
+			sap.ui.getCore().addPrerenderingTask(function () {
+				while (that.aPrerenderingTasks.length) {
+					that.aPrerenderingTasks.shift()();
+				}
+				that.aPrerenderingTasks = null;
+			});
+		}
+		if (bFirst) {
+			this.aPrerenderingTasks.unshift(fnPrerenderingTask);
+		} else {
+			this.aPrerenderingTasks.push(fnPrerenderingTask);
+		}
+	};
+
 	// See class documentation
 	// @override
 	// @public
@@ -436,11 +487,11 @@ sap.ui.define([
 	 *   {@link #createBindingContext}.
 	 *   The following OData query options are allowed:
 	 *   <ul>
-	 *   <li> All "5.2 Custom Query Options" except for those with a name starting with "sap-"
-	 *   <li> The $count, $expand, $filter, $levels, $orderby, $search and $select
-	 *   "5.1 System Query Options"; OData V4 only allows $count, $filter, $levels, $orderby and
-	 *   $search inside resource paths that identify a collection. In our case here, this means you
-	 *   can only use them inside $expand.
+	 *     <li> All "5.2 Custom Query Options" except for those with a name starting with "sap-"
+	 *     <li> The $count, $expand, $filter, $levels, $orderby, $search and $select
+	 *       "5.1 System Query Options"; OData V4 only allows $count, $filter, $levels, $orderby and
+	 *       $search inside resource paths that identify a collection. In our case here, this means
+	 *       you can only use them inside $expand.
 	 *   </ul>
 	 *   All other query options lead to an error.
 	 *   Query options specified for the binding overwrite model query options.
@@ -476,7 +527,9 @@ sap.ui.define([
 	 * @returns {sap.ui.model.odata.v4.ODataContextBinding}
 	 *   The context binding
 	 * @throws {Error}
-	 *   If disallowed binding parameters are provided
+	 *   If disallowed binding parameters are provided, for example if the binding parameter
+	 *   $$inheritExpandSelect is set to <code>true</code> and the binding is no operation binding
+	 *   or the binding has one of the parameters $expand or $select.
 	 *
 	 * @public
 	 * @see sap.ui.model.Model#bindContext
@@ -525,12 +578,12 @@ sap.ui.define([
 	 *   The binding path in the model; must not be empty or end with a slash
 	 * @param {sap.ui.model.Context} [oContext]
 	 *   The context which is required as base for a relative path
-	 * @param {sap.ui.model.Sorter | sap.ui.model.Sorter[]} [vSorters]
+	 * @param {sap.ui.model.Sorter|sap.ui.model.Sorter[]} [vSorters]
 	 *   The dynamic sorters to be used initially. Call
 	 *   {@link sap.ui.model.odata.v4.ODataListBinding#sort} to replace them. Static sorters, as
 	 *   defined in the '$orderby' binding parameter, are always executed after the dynamic sorters.
 	 *   Supported since 1.39.0.
-	 * @param {sap.ui.model.Filter | sap.ui.model.Filter[]} [vFilters]
+	 * @param {sap.ui.model.Filter|sap.ui.model.Filter[]} [vFilters]
 	 *   The dynamic application filters to be used initially. Call
 	 *   {@link sap.ui.model.odata.v4.ODataListBinding#filter} to replace them. Static filters, as
 	 *   defined in the '$filter' binding parameter, are always combined with the dynamic filters
@@ -545,17 +598,12 @@ sap.ui.define([
 	 *   or if it has sorters or filters.
 	 *   The following OData query options are allowed:
 	 *   <ul>
-	 *   <li> All "5.2 Custom Query Options" except for those with a name starting with "sap-"
-	 *   <li> The $apply, $count, $expand, $filter, $levels, $orderby, $search, and $select
-	 *   "5.1 System Query Options"
+	 *     <li> All "5.2 Custom Query Options" except for those with a name starting with "sap-"
+	 *     <li> The $apply, $count, $expand, $filter, $levels, $orderby, $search, and $select
+	 *       "5.1 System Query Options"
 	 *   </ul>
 	 *   All other query options lead to an error.
 	 *   Query options specified for the binding overwrite model query options.
-	 * @param {sap.ui.model.odata.OperationMode} [mParameters.operationMode]
-	 *   The operation mode for sorting. Since 1.39.0, the operation mode
-	 *   {@link sap.ui.model.odata.OperationMode.Server} is supported. All other operation modes
-	 *   including <code>undefined</code> lead to an error if 'vSorters' are given or if
-	 *   {@link sap.ui.model.odata.v4.ODataListBinding#sort} is called.
 	 * @param {object} [mParameters.$$aggregation]
 	 *   An object holding the information needed for data aggregation, see
 	 *   {@link sap.ui.model.odata.v4.ODataListBinding#setAggregation} for details.
@@ -569,6 +617,13 @@ sap.ui.define([
 	 *   model's group ID is used, see {@link sap.ui.model.odata.v4.ODataModel#constructor}.
 	 *   Valid values are <code>undefined</code>, '$auto', '$auto.*', '$direct' or application group
 	 *   IDs as specified in {@link sap.ui.model.odata.v4.ODataModel}.
+	 * @param {sap.ui.model.odata.OperationMode} [mParameters.$$operationMode]
+	 *   The operation mode for filtering and sorting with the model's operation mode as default.
+	 *   Since 1.39.0, the operation mode {@link sap.ui.model.odata.OperationMode.Server} is
+	 *   supported. All other operation modes including <code>undefined</code> lead to an error if
+	 *   'vFilters' or 'vSorters' are given or if
+	 *   {@link sap.ui.model.odata.v4.ODataListBinding#filter} or
+	 *   {@link sap.ui.model.odata.v4.ODataListBinding#sort} is called.
 	 * @param {boolean} [mParameters.$$patchWithoutSideEffects]
 	 *   Whether implicit loading of side effects via PATCH requests is switched off; only the value
 	 *   <code>true</code> is allowed. This requires the service to return an ETag header even for
@@ -577,6 +632,35 @@ sap.ui.define([
 	 * @param {boolean} [mParameters.$$ownRequest]
 	 *   Whether the binding always uses an own service request to read its data; only the value
 	 *   <code>true</code> is allowed.
+	 * @param {boolean} [mParameters.$$sharedRequest]
+	 *   Whether multiple bindings for the same resource path share the data, so that it is
+	 *   requested only once; only the value <code>true</code> is allowed. This parameter can be
+	 *   inherited from the model's parameter "sharedRequests", see
+	 *   {@link sap.ui.model.odata.v4.ODataModel#constructor}. Supported since 1.80.0
+	 *   <b>Note:</b> These bindings are read-only, so they may be especially useful for value
+	 *   lists; the following APIs are <b>not</b> allowed
+	 *   <ul>
+	 *     <li> for the list binding itself:
+	 *       <ul>
+	 *         <li> {@link sap.ui.model.odata.v4.ODataListBinding#create}
+	 *       </ul>
+	 *     <li> for the {@link sap.ui.model.odata.v4.ODataListBinding#getHeaderContext header
+	 *       context} of a list binding:
+	 *       <ul>
+	 *         <li> {@link sap.ui.model.odata.v4.Context#requestSideEffects}
+	 *       </ul>
+	 *     <li> for the context of a list binding representing a single entity:
+	 *       <ul>
+	 *         <li> {@link sap.ui.model.odata.v4.Context#delete}
+	 *         <li> {@link sap.ui.model.odata.v4.Context#refresh}
+	 *         <li> {@link sap.ui.model.odata.v4.Context#requestSideEffects}
+	 *         <li> {@link sap.ui.model.odata.v4.Context#setProperty}
+	 *       </ul>
+	 *     <li> for a dependent property binding of the list binding:
+	 *       <ul>
+	 *         <li> {@link sap.ui.model.odata.v4.ODataPropertyBinding#setValue}
+	 *       </ul>
+	 *   </ul>
 	 * @param {string} [mParameters.$$updateGroupId]
 	 *   The group ID to be used for <b>update</b> requests triggered by this binding;
 	 *   if not specified, either the parent binding's update group ID (if the binding is relative)
@@ -637,6 +721,20 @@ sap.ui.define([
 	 *   model's group ID is used, see {@link sap.ui.model.odata.v4.ODataModel#constructor}.
 	 *   Valid values are <code>undefined</code>, '$auto', '$auto.*', '$direct' or application group
 	 *   IDs as specified in {@link sap.ui.model.odata.v4.ODataModel}.
+	 * @param {boolean} [mParameters.$$ignoreMessages]
+	 *   Whether this binding does not propagate model messages to the control; supported since
+	 *   1.82.0. Some composite types like {@link sap.ui.model.odata.type.Currency} or
+	 *   {@link sap.ui.model.odata.type.Unit} automatically ignore messages for some of their parts
+	 *   depending on their format options; setting this parameter to <code>true</code> or
+	 *   <code>false</code> overrules the automatism of the type.
+	 *
+	 *   For example, a binding for a currency code is used in a composite binding for rendering the
+	 *   proper number of decimals, but the currency code is not displayed in the attached control.
+	 *   In that case, messages for the currency code shall not be displayed at that control, only
+	 *   messages for the amount.
+	 * @param {boolean} [mParameters.$$noPatch]
+	 *   Whether changing the value of this property binding is not causing a PATCH request; only
+	 *   the value <code>true</code> is allowed.
 	 * @returns {sap.ui.model.odata.v4.ODataPropertyBinding}
 	 *   The property binding
 	 * @throws {Error}
@@ -672,10 +770,10 @@ sap.ui.define([
 	 * of a back-end query; they are ignored and not added to the map.
 	 * The following query options are disallowed:
 	 * <ul>
-	 * <li> System query options (key starts with "$"), unless
-	 * <code>bSystemQueryOptionsAllowed</code> is set
-	 * <li> Parameter aliases (key starts with "@")
-	 * <li> Custom query options starting with "sap-", unless <code>bSapAllowed</code> is set
+	 *   <li> System query options (key starts with "$"), unless
+	 *     <code>bSystemQueryOptionsAllowed</code> is set
+	 *   <li> Parameter aliases (key starts with "@")
+	 *   <li> Custom query options starting with "sap-", unless <code>bSapAllowed</code> is set
 	 * </ul>
 	 *
 	 * @param {object} [mParameters={}]
@@ -694,7 +792,7 @@ sap.ui.define([
 	ODataModel.prototype.buildQueryOptions = function (mParameters, bSystemQueryOptionsAllowed,
 			bSapAllowed) {
 		var sParameterName,
-			mTransformedOptions = jQuery.extend(true, {}, mParameters);
+			mTransformedOptions = _Helper.clone(mParameters) || {};
 
 		/**
 		 * Parses the query options for the given option name "sOptionName" in the given map of
@@ -754,7 +852,7 @@ sap.ui.define([
 
 		if (mParameters) {
 			for (sParameterName in mParameters) {
-				if (sParameterName.indexOf("$$") === 0) { // binding-specific parameter
+				if (sParameterName.startsWith("$$")) { // binding-specific parameter
 					delete mTransformedOptions[sParameterName];
 				} else if (sParameterName[0] === "@") { // OData parameter alias
 					throw new Error("Parameter " + sParameterName + " is not supported");
@@ -762,7 +860,7 @@ sap.ui.define([
 					parseAndValidateSystemQueryOption(mTransformedOptions, sParameterName,
 						aSystemQueryOptions);
 				// OData custom query option
-				} else if (!bSapAllowed && sParameterName.indexOf("sap-") === 0) {
+				} else if (!bSapAllowed && sParameterName.startsWith("sap-")) {
 					throw new Error("Custom query option " + sParameterName + " is not supported");
 				}
 			}
@@ -778,20 +876,27 @@ sap.ui.define([
 	 * headers: Headers with an <code>undefined</code> value are removed, the other headers are set,
 	 * and missing headers remain unchanged. The following headers must not be used:
 	 * <ul>
-	 * <li> OData V4 requests headers as specified in "8.1 Common Headers" and
-	 *   "8.2 Request Headers" of the specification "OData Version 4.0 Part 1: Protocol"
-	 * <li> OData V2 request headers as specified in "2.2.5 HTTP Header Fields" of the specification
-	 *   "OData Version 2 v10.1"
-	 * <li> The headers "Content-Id" and "Content-Transfer-Encoding"
-	 * <li> The header "SAP-ContextId"
+	 *   <li> OData V4 requests headers as specified in "8.1 Common Headers" and
+	 *     "8.2 Request Headers" of the specification "OData Version 4.0 Part 1: Protocol"
+	 *   <li> OData V2 request headers as specified in "2.2.5 HTTP Header Fields" of the
+	 *     specification "OData Version 2 v10.1"
+	 *   <li> The headers "Content-Id" and "Content-Transfer-Encoding"
+	 *   <li> The header "SAP-ContextId"
 	 * </ul>
 	 * Note: The "X-CSRF-Token" header will not be used for metadata requests.
+	 *
+	 * If not <code>undefined</code>, a header value must conform to the following rules:
+	 * <ul>
+	 *   <li> It must be a non-empty string.
+	 *   <li> It must be completely in the US-ASCII character set.
+	 *   <li> It must not contain control characters.
+	 * </ul>
 	 *
 	 * @param {object} [mHeaders]
 	 *   Map of HTTP header names to their values
 	 * @throws {Error}
 	 *   If <code>mHeaders</code> contains unsupported headers, the same header occurs more than
-	 *   once, the header values are not strings or undefined, or there are open requests.
+	 *   once, a header value is invalid, or there are open requests.
 	 *
 	 * @public
 	 * @since 1.71.0
@@ -809,7 +914,8 @@ sap.ui.define([
 			sHeaderValue = mHeaders[sKey];
 			if (mHeadersCopy[sHeaderName]) {
 				throw new Error("Duplicate header " + sKey);
-			} else if (!(typeof sHeaderValue === "string" || sHeaderValue === undefined)) {
+			} else if (!(typeof sHeaderValue === "string" && rValidHeader.test(sHeaderValue)
+					|| sHeaderValue === undefined)) {
 				throw new Error("Unsupported value for header '" + sKey + "': " + sHeaderValue);
 			} else {
 				if (sHeaderName === "x-csrf-token") {
@@ -909,17 +1015,17 @@ sap.ui.define([
 	 *
 	 * Examples:
 	 * <ul>
-	 * <li><code>/Products('42')/Name##@com.sap.vocabularies.Common.v1.Label</code>
-	 *   points to the "Label" annotation of the "Name" property of the entity set "Products".
-	 * <li><code>/##Products/Name@com.sap.vocabularies.Common.v1.Label</code> has no data path part
-	 *   and thus starts at the metadata root. It also points to the "Label" annotation of the
-	 *   "Name" property of the entity set "Products".
-	 * <li><code>/Products##/</code>
-	 *   points to the entity type (note the trailing '/') of the entity set "Products".
-	 * <li><code>/EMPLOYEES('1')/##com.sap.Action</code>
-	 *   points to the metadata of an action bound to the entity set "EMPLOYEES".
-	 * <li><code>/EMPLOYEES('1')/#com.sap.Action</code>
-	 *   does not point to metadata, but to the action advertisement.
+	 *   <li> <code>/Products('42')/Name##@com.sap.vocabularies.Common.v1.Label</code>
+	 *     points to the "Label" annotation of the "Name" property of the entity set "Products".
+	 *   <li> <code>/##Products/Name@com.sap.vocabularies.Common.v1.Label</code> has no data path
+	 *     part and thus starts at the metadata root. It also points to the "Label" annotation of
+	 *     the "Name" property of the entity set "Products".
+	 *   <li> <code>/Products##/</code>
+	 *     points to the entity type (note the trailing '/') of the entity set "Products".
+	 *   <li> <code>/EMPLOYEES('1')/##com.sap.Action</code>
+	 *     points to the metadata of an action bound to the entity set "EMPLOYEES".
+	 *   <li> <code>/EMPLOYEES('1')/#com.sap.Action</code>
+	 *     does not point to metadata, but to the action advertisement.
 	 * </ul>
 	 *
 	 * @param {string} sPath
@@ -1076,7 +1182,7 @@ sap.ui.define([
 
 			return oBinding.isRelative()
 				&& (oContext === oParent
-						|| oContext && oContext.getBinding && oContext.getBinding() === oParent);
+					|| oContext && oContext.getBinding && oContext.getBinding() === oParent);
 		});
 	};
 
@@ -1327,13 +1433,15 @@ sap.ui.define([
 	 *   Whether the created lock is locked
 	 * @param {boolean} [bModifying]
 	 *   Whether the reason for the group lock is a modifying request
+	 * @param {function} [fnCancel]
+	 *   Function that is called when the group lock is canceled
 	 * @returns {sap.ui.model.odata.v4.lib._GroupLock}
 	 *   The group lock
 	 *
 	 * @private
 	 */
-	ODataModel.prototype.lockGroup = function (sGroupId, oOwner, bLocked, bModifying) {
-		return this.oRequestor.lockGroup(sGroupId, oOwner, bLocked, bModifying);
+	ODataModel.prototype.lockGroup = function (sGroupId, oOwner, bLocked, bModifying, fnCancel) {
+		return this.oRequestor.lockGroup(sGroupId, oOwner, bLocked, bModifying, fnCancel);
 	};
 
 	/**
@@ -1352,7 +1460,7 @@ sap.ui.define([
 	 *   The group ID to be used for refresh; valid values are <code>undefined</code>, '$auto',
 	 *   '$auto.*', '$direct' or application group IDs as specified in
 	 *   {@link sap.ui.model.odata.v4.ODataModel}. It is ignored for suspended bindings, because
-	 *   resume uses the binding's group ID
+	 *   resume uses the binding's group ID.
 	 * @throws {Error}
 	 *   If the given group ID is invalid or if there are pending changes, see
 	 *   {@link #hasPendingChanges}
@@ -1399,8 +1507,8 @@ sap.ui.define([
 	 *     The numeric message severity (1 for "success", 2 for "info", 3 for "warning" and 4 for
 	 *     "error")
 	 *   {string} target
-	 *     The relative target for the message; the reported target path is a concatenation of the
-	 *     resource path, the cache-relative path and this property
+	 *     The target for the message; if relative the reported target path is a concatenation of
+	 *     the resource path, the cache-relative path and this property
 	 *   {boolean} [technical]
 	 *     Whether the message is reported as <code>technical</code> (supplied by #reportError)
 	 *   {boolean} [transition]
@@ -1424,7 +1532,9 @@ sap.ui.define([
 
 		Object.keys(mPathToODataMessages).forEach(function (sCachePath) {
 			mPathToODataMessages[sCachePath].forEach(function (oRawMessage) {
-				var sTarget = _Helper.buildPath(sDataBindingPath, sCachePath, oRawMessage.target);
+				var sTarget = oRawMessage.target[0] === "/"
+						? oRawMessage.target
+						: _Helper.buildPath(sDataBindingPath, sCachePath, oRawMessage.target);
 
 				aNewMessages.push(new Message({
 					code : oRawMessage.code,
@@ -1442,7 +1552,7 @@ sap.ui.define([
 		(aCachePaths || [""]).forEach(function (sCachePath) {
 			var sPath = _Helper.buildPath(sDataBindingPath, sCachePath);
 
-			Object.keys(that.mMessages || {}).forEach(function (sMessageTarget) {
+			Object.keys(that.mMessages).forEach(function (sMessageTarget) {
 				if (sMessageTarget === sPath
 						|| sMessageTarget.startsWith(sPath + "/")
 						|| sMessageTarget.startsWith(sPath + "(")) {
@@ -1528,7 +1638,8 @@ sap.ui.define([
 			if (typeof oMessage.target !== "string") {
 				aUnboundMessages.push(oReportMessage);
 			} else if (oMessage.target[0] === "$" || !sResourcePath) {
-				// target for the bound message cannot be resolved -> report as unbound message
+				// target for the bound message is a system query option or cannot be resolved
+				// -> report as unbound message
 				oReportMessage.message = oMessage.target + ": " + oReportMessage.message;
 				aUnboundMessages.push(oReportMessage);
 			} else {
@@ -1658,6 +1769,53 @@ sap.ui.define([
 	};
 
 	/**
+	 * Requests side effects for the given paths on all affected root bindings.
+	 *
+	 * @param {string} sGroupId
+	 *   The effective group ID
+	 * @param {string[]} aAbsolutePaths
+	 *   The absolute paths to request side effects for; each path must start with the fully
+	 *   qualified container name.
+	 * @returns {sap.ui.base.SyncPromise}
+	 *   A promise resolving without a defined result, or rejecting with an error if loading of side
+	 *   effects fails, or <code>undefined</code> if there is nothing to do
+	 * @throws {Error}
+	 *   If a path does not start with the entity container
+	 *
+	 * @private
+	 */
+	ODataModel.prototype.requestSideEffects = function (sGroupId, aAbsolutePaths) {
+		var sEntityContainer;
+
+		if (!aAbsolutePaths.length) {
+			return undefined; // nothing to do
+		}
+
+		sEntityContainer = this.oMetaModel.getObject("/$EntityContainer");
+		aAbsolutePaths = aAbsolutePaths.map(function (sAbsolutePath) {
+			var aSegments = sAbsolutePath.split("/");
+
+			// aSegments[0] is empty because the path starts with "/"
+			if (aSegments[1] !== sEntityContainer) {
+				throw new Error("Path must start with '/" + sEntityContainer + "': "
+					+ sAbsolutePath);
+			}
+
+			aSegments.splice(1, 1); // remove the entity container from the path
+
+			return aSegments.join("/");
+		});
+
+		return SyncPromise.all(
+			this.aAllBindings.filter(function (oBinding) {
+				return oBinding.isRoot() && oBinding.requestAbsoluteSideEffects;
+			}).map(function (oRootBinding) {
+				return oRootBinding.requestAbsoluteSideEffects(sGroupId, aAbsolutePaths);
+			})
+		);
+	};
+
+	/**
 	 * Resets all property changes and created entities associated with the given group ID which
 	 * have not been successfully submitted via {@link #submitBatch}. Resets also invalid user
 	 * input for the same group ID. This function does not reset the deletion of entities
@@ -1722,7 +1880,7 @@ sap.ui.define([
 		} else if (oContext) {
 			sResolvedPath = oContext.getPath();
 			if (sPath) {
-				if (sResolvedPath.slice(-1) !== "/") {
+				if (!sResolvedPath.endsWith("/")) {
 					sResolvedPath += "/";
 				}
 				sResolvedPath += sPath;
@@ -1785,7 +1943,7 @@ sap.ui.define([
 		}
 
 		return new Promise(function (resolve) {
-			sap.ui.getCore().addPrerenderingTask(function () {
+			that.addPrerenderingTask(function () {
 				resolve(that._submitBatch(sGroupId));
 			});
 		});
@@ -1819,7 +1977,7 @@ sap.ui.define([
 	 */
 	ODataModel.prototype.withUnresolvedBindings = function (sCallbackName, vParameter) {
 		return this.aAllBindings.filter(function (oBinding) {
-			return oBinding.isRelative() && !oBinding.getContext();
+			return !oBinding.isResolved();
 		}).some(function (oBinding) {
 			return oBinding[sCallbackName](vParameter);
 		});

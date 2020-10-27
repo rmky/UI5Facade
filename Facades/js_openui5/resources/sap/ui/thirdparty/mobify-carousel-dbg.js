@@ -169,7 +169,7 @@ Mobify.UI.Carousel = (function($, Utils) {
     Carousel.defaults = defaults;
 
     Carousel.prototype.setOptions = function(opts) {
-        var options = this.options || $.extend({}, defaults, opts);
+        var options = $.extend(this.options || {}, defaults, opts);
 
         /* classNames requires a deep copy */
         options.classNames = $.extend({}, options.classNames, opts.classNames || {});
@@ -300,7 +300,7 @@ Mobify.UI.Carousel = (function($, Utils) {
 	    		sTransitionEvents = 'transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd';
 
 	    	var fnCleanUpTransition = function(){
-				$carouselInner.unbind(sTransitionEvents, fnCleanUpTransition);
+				$carouselInner.off(sTransitionEvents, fnCleanUpTransition);
 				$carouselInner.removeClass(sTransitionClass);
 				//Exexute callback function if there is one.
 				if(fnCallback) {
@@ -309,7 +309,7 @@ Mobify.UI.Carousel = (function($, Utils) {
 			}
 
 	    	$carouselInner.addClass(sTransitionClass);
-			$carouselInner.bind(sTransitionEvents, fnCleanUpTransition);
+			$carouselInner.on(sTransitionEvents, fnCleanUpTransition);
     	}
     }
 
@@ -549,7 +549,7 @@ Mobify.UI.Carousel = (function($, Utils) {
 
     // SAP MODIFICATION BEGIN
     Carousel.prototype.onTransitionComplete = function() {
-        this.$inner.unbind(this._sTransitionEvents, this.onTransitionComplete);
+        this.$inner.off(this._sTransitionEvents, this.onTransitionComplete);
 
 		var sActiveClass = this._getClass('active'),
 			i;
@@ -697,9 +697,14 @@ Mobify.UI.Carousel = (function($, Utils) {
             var $this = $(this)
               , carousel = this._carousel;
 
-
             if (!carousel) {
                 carousel = new Mobify.UI.Carousel(this, initOptions);
+            } else {
+                carousel.setOptions(initOptions);
+                carousel.initElements(this);
+                carousel.initOffsets();
+                carousel.initAnimation();
+                carousel.bind();
             }
 
             if (action) {

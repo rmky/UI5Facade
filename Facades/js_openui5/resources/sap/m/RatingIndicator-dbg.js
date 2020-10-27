@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -51,7 +51,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -159,10 +159,6 @@ sap.ui.define([
 		designtime: "sap/m/designtime/RatingIndicator.designtime"
 	}});
 
-	///**
-	// * This file defines behavior for the control,
-	// */
-
 	/* =========================================================== */
 	/*           temporary flags for jslint syntax check           */
 	/* =========================================================== */
@@ -171,6 +167,10 @@ sap.ui.define([
 	/* =========================================================== */
 	/*           begin: API methods                                */
 	/* =========================================================== */
+
+	RatingIndicator.sizeMapppings = {};
+	RatingIndicator.iconPaddingMappings = {};
+	RatingIndicator.paddingValueMappping = {};
 
 	/**
 	 * Initializes the control.
@@ -237,9 +237,9 @@ sap.ui.define([
 	 * @private
 	 */
 	RatingIndicator.prototype.onBeforeRendering = function () {
-		var fVal = this.getValue(),
-			iMVal = this.getMaxValue(),
-			sIconSizeLessParameter;
+		var fVal = this.getValue();
+		var iMVal = this.getMaxValue();
+		var oSizes = {};
 
 		if (fVal > iMVal) {
 			this.setValue(iMVal);
@@ -249,20 +249,59 @@ sap.ui.define([
 			Log.warning("Set value to 0 because value is < 0 (" + fVal + " < 0).");
 		}
 
-		if (this.getIconSize()) {
-			this._iPxIconSize = this._toPx(this.getIconSize());
-			sIconSizeLessParameter = "sapUiRIIconPadding" + this._getIconSizeLabel(this._iPxIconSize);
-			this._iPxPaddingSize = this._toPx(Parameters.get(sIconSizeLessParameter));
+		var sIconSize = this.getIconSize();
+
+		if (sIconSize) {
+			oSizes = this._getRegularSizes(sIconSize);
+		} else if (this.getDisplayOnly()) {
+			oSizes = this._getDisplayOnlySizes();
 		} else {
-			if (this.getDisplayOnly()) {
-				this._iPxIconSize = this._toPx(Parameters.get("sapUiRIIconSizeDisplayOnly"));
-				this._iPxPaddingSize = this._toPx(Parameters.get("sapUiRIIconPaddingDisplayOnly"));
-			} else {
-				var sDensityMode = this._getDensityMode();
-				this._iPxIconSize = this._toPx(Parameters.get("sapUiRIIconSize" + sDensityMode));
-				this._iPxPaddingSize = this._toPx(Parameters.get("sapUiRIIconPadding" + sDensityMode));
-			}
+			oSizes = this._getContentDensitySizes();
 		}
+
+		this._iPxIconSize = oSizes.icon;
+		this._iPxPaddingSize = oSizes.padding;
+	};
+
+	RatingIndicator.prototype._getDisplayOnlySizes = function () {
+		RatingIndicator.sizeMapppings["displayOnly"] = RatingIndicator.sizeMapppings["displayOnly"] || this._toPx(Parameters.get("sapUiRIIconSizeDisplayOnly"));
+		RatingIndicator.paddingValueMappping["displayOnlyPadding"] = RatingIndicator.paddingValueMappping["displayOnlyPadding"] || this._toPx(Parameters.get("sapUiRIIconPaddingDisplayOnly"));
+
+		return {
+			icon: RatingIndicator.sizeMapppings["displayOnly"],
+			padding: RatingIndicator.paddingValueMappping["displayOnlyPadding"]
+		};
+	};
+
+	RatingIndicator.prototype._getContentDensitySizes = function () {
+		var sDensityMode = this._getDensityMode();
+		var sSizeKey = "sapUiRIIconSize" + sDensityMode;
+		var sPaddingKey = "sapUiRIIconPadding" + sDensityMode;
+
+		RatingIndicator.sizeMapppings[sSizeKey] = RatingIndicator.sizeMapppings[sSizeKey] || this._toPx(Parameters.get(sSizeKey));
+		RatingIndicator.paddingValueMappping[sPaddingKey] = RatingIndicator.paddingValueMappping[sPaddingKey] || this._toPx(Parameters.get(sPaddingKey));
+
+		return {
+			icon: RatingIndicator.sizeMapppings[sSizeKey],
+			padding: RatingIndicator.paddingValueMappping[sPaddingKey]
+		};
+	};
+
+	RatingIndicator.prototype._getRegularSizes = function (sIconSize) {
+		RatingIndicator.sizeMapppings[sIconSize] = RatingIndicator.sizeMapppings[sIconSize] || this._toPx(sIconSize);
+
+		var iPxIconSize = RatingIndicator.sizeMapppings[sIconSize];
+
+		RatingIndicator.iconPaddingMappings[iPxIconSize] = RatingIndicator.iconPaddingMappings[iPxIconSize] || "sapUiRIIconPadding" + this._getIconSizeLabel(iPxIconSize);
+
+		var paddingClass = RatingIndicator.iconPaddingMappings[iPxIconSize];
+
+		RatingIndicator.paddingValueMappping[paddingClass] = RatingIndicator.paddingValueMappping[paddingClass] || this._toPx(Parameters.get(paddingClass));
+
+		return {
+			icon: RatingIndicator.sizeMapppings[sIconSize],
+			padding: RatingIndicator.paddingValueMappping[paddingClass]
+		};
 	};
 
 	/**
@@ -328,11 +367,11 @@ sap.ui.define([
 		switch (true) {
 			case (iPxIconSize >= 32):
 				return "L";
-			case (this._iPxIconSize >= 22):
+			case (iPxIconSize >= 22):
 				return "M";
-			case (this._iPxIconSize >= 16):
+			case (iPxIconSize >= 16):
 				return "S";
-			case (this._iPxIconSize >= 12):
+			case (iPxIconSize >= 12):
 				return "XS";
 			default:
 				return "M";

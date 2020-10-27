@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -13,9 +13,9 @@ sap.ui.define([
 	'sap/ui/core/Component',
 	"sap/base/Log",
 	"sap/base/assert",
-	"sap/ui/thirdparty/jquery"
+	"sap/base/util/deepExtend"
 ],
-	function(EventProvider, Target, asyncRoute, syncRoute, Component, Log, assert, jQuery) {
+	function(EventProvider, Target, asyncRoute, syncRoute, Component, Log, assert, deepExtend) {
 	"use strict";
 
 		/**
@@ -58,33 +58,33 @@ sap.ui.define([
 		 *   One or multiple name of targets {@link sap.ui.core.routing.Targets}. As soon as the route matches, the
 		 *   target(s) will be displayed. All the deprecated parameters are ignored, if a target is used.
 		 * @param {string} [oConfig.view]
-		 *   @deprecated since 1.28 - use target.viewName. The name of a view that will be created, the first time this
+		 *   <b>Deprecated since 1.28, use <code>target.viewName</code> instead.</b></br> The name of a view that will be created, the first time this
 		 *   route will be matched. To place the view into a Control use the targetAggregation and targetControl.
 		 *   Views will only be created once per Router
 		 * @param {string} [oConfig.viewType]
-		 *   @deprecated since 1.28 - use target.viewType. The type of the view that is going to be created. eg: "XML", "JS"
+		 *   <b>Deprecated since 1.28, use <code>target.viewType</code> instead.</b></br> The type of the view that is going to be created. eg: "XML", "JS"
 		 * @param {string} [oConfig.viewPath]
-		 *   @deprecated since 1.28 - use target.viewPath. A prefix that will be prepended in front of the view eg: view is
+		 *   <b>Deprecated since 1.28, use <code>target.viewPath</code> instead.</b></br> A prefix that will be prepended in front of the view eg: view is
 		 *   set to "myView" and viewPath is set to "myApp" - the created view will be "myApp.myView"
 		 * @param {string} [oConfig.targetParent]
-		 *   @deprecated since 1.28 - use config.rootView (only available in the config). the id of the parent of the
+		 *   <b>Deprecated since 1.28, use <code>config.rootView</code> (only available in the router config) instead.</b></br> The id of the parent of the
 		 *   targetControl - This should be the id view your targetControl is located in. By default, this will be
 		 *   the view created by a component, or if the Route is a subroute the view of the parent route is taken.
 		 *   You only need to specify this, if you are not using a router created by a component on your top level routes
 		 * @param {string} [oConfig.targetControl]
-		 *   @deprecated since 1.28 - use target.controlId. Views will be put into a container Control, this might be a
+		 *   <b>Deprecated since 1.28, use <code>target.controlId</code> instead.</b></br> Views will be put into a container Control, this might be a
 		 *   {@link sap.ui.ux3.Shell} control or a {@link sap.m.NavContainer} if working with mobile, or any other container.
 		 *   The id of this control has to be put in here
 		 * @param {string} [oConfig.targetAggregation]
-		 *   @deprecated since 1.28 - use target.controlAggregation. The name of an aggregation of the targetControl,
+		 *   <b>Deprecated since 1.28, use <code>target.controlAggregation</code> instead.</b></br> The name of an aggregation of the targetControl,
 		 *   that contains views. Eg: a {@link sap.m.NavContainer} has an aggregation "pages", another Example is the
 		 *   {@link sap.ui.ux3.Shell} it has "content".
-		 * @param {boolean} [oConfig.clearTarget]
-		 *   @deprecated since 1.28 - use target.clearControlAggregation. Default is false. Defines a boolean that
+		 * @param {boolean} [oConfig.clearTarget=false]
+		 *   <b>Deprecated since 1.28, use <code>target.clearControlAggregation</code> instead.</b></br> Defines a boolean that
 		 *   can be passed to specify if the aggregation should be cleared before adding the View to it. When using a
 		 *   {@link sap.ui.ux3.Shell} this should be true. For a {@link sap.m.NavContainer} it should be false
 		 * @param {object} [oConfig.subroutes]
-		 *   @deprecated since 1.28 - use targets.parent. one or multiple route configs taking all of these parameters again.
+		 *   <b>Deprecated since 1.28, use <code>targets.parent</code> instead.</b> one or multiple route configs taking all of these parameters again.
 		 *   If a subroute is hit, it will fire the routeMatched event for all its parents. The routePatternMatched event
 		 *   will only be fired for the subroute not the parents. The routing will also display all the targets of the
 		 *   subroutes and its parents.
@@ -116,6 +116,8 @@ sap.ui.define([
 				var that = this,
 					vRoute = oConfig.pattern,
 					aSubRoutes,
+					sRouteName,
+					oSubRouteConfig,
 					RouteStub,
 					async = oRouter._isAsync();
 
@@ -149,7 +151,7 @@ sap.ui.define([
 					//Convert subroutes
 					aSubRoutes = oConfig.subroutes;
 					oConfig.subroutes = {};
-					jQuery.each(aSubRoutes, function(iSubrouteIndex, oSubRoute) {
+					aSubRoutes.forEach(function(oSubRoute) {
 						oConfig.subroutes[oSubRoute.name] = oSubRoute;
 					});
 				}
@@ -167,12 +169,13 @@ sap.ui.define([
 
 				// recursively add the subroutes to this route
 				if (oConfig.subroutes) {
-					jQuery.each(oConfig.subroutes, function(sRouteName, oSubRouteConfig) {
+					for (sRouteName in oConfig.subroutes) {
+						oSubRouteConfig = oConfig.subroutes[sRouteName];
 						if (oSubRouteConfig.name === undefined) {
 							oSubRouteConfig.name = sRouteName;
 						}
 						oRouter.addRoute(oSubRouteConfig, that);
-					});
+					}
 				}
 
 				if (oConfig.pattern === undefined) {
@@ -180,16 +183,17 @@ sap.ui.define([
 					return;
 				}
 
-				jQuery.each(vRoute, function(iIndex, sRoute) {
+				vRoute.forEach(function(sRoute, iIndex) {
 
 					that._aPattern[iIndex] = sRoute;
 
 					that._aRoutes[iIndex] = oRouter._oRouter.addRoute(sRoute);
+					that._checkRoute(that._aRoutes[iIndex]);
 					that._aRoutes[iIndex].greedy = oConfig.greedy;
 
 					that._aRoutes[iIndex].matched.add(function() {
 						var oArguments = {};
-						jQuery.each(arguments, function(iArgumentIndex, sArgument) {
+						Array.from(arguments).forEach(function(sArgument, iArgumentIndex) {
 							oArguments[that._aRoutes[iIndex]._paramsIds[iArgumentIndex]] = sArgument;
 						});
 						that._routeMatched(oArguments, true);
@@ -199,6 +203,22 @@ sap.ui.define([
 						that._routeSwitched();
 					});
 				});
+			},
+
+			_checkRoute: function(oRoute){
+				var aParams = oRoute._paramsIds;
+				if (Array.isArray(aParams)){
+					var aDuplicateParams = aParams.filter( function(sParam){
+						return sParam.charAt(0) === "?";
+					}).filter( function(sParam){
+						return aParams.indexOf(sParam.substring(1)) > -1;
+					}).map(function(sParam){
+						return sParam.substring(1);
+					});
+					if (aDuplicateParams.length > 0) {
+						throw Error("The config of route '" + this._oConfig.name + "' contains standard parameter and query parameter with the same name: '" + aDuplicateParams + "'. The name of the routing parameters and query parameter have to differentiate.");
+					}
+				}
 			},
 
 			_routeSwitched: function() {
@@ -249,7 +269,7 @@ sap.ui.define([
 			 * Converts the different format of targets info into the object format
 			 * which has the key of a target saved under the "name" property
 			 *
-			 * @param {string|string[]|object|object[]} vTargetsInfo The key of the target or
+			 * @param {string|string[]|object|object[]} vTarget The key of the target or
 			 *  an object which has the key of the target under property 'name' as specified
 			 *  in the {@link #constructor} or an array of keys or objects
 			 * @return {object[]} Array of objects and each of the objects contains at least
@@ -304,10 +324,12 @@ sap.ui.define([
 					aTargets = [];
 				}
 
+				var that = this;
 				aLoadedPromises = aTargets.map(function(oTarget, index) {
 					if (oTarget._oOptions.type === "Component") {
 						var pLoaded = oTarget._load({
-							prefix: aTargetsConfig[index].prefix
+							prefix: aTargetsConfig[index].prefix,
+							propagateTitle: aTargetsConfig[index].hasOwnProperty("propagateTitle") ? aTargetsConfig[index].propagateTitle : that._oRouter._oConfig.propagateTitle
 						});
 
 						return pLoaded
@@ -348,7 +370,7 @@ sap.ui.define([
 			/**
 			 * Returns whether the given hash can be matched by the Route
 			 *
-			 * @param {string} hash which will be tested by the Route
+			 * @param {string} sHash which will be tested by the Route
 			 * @return {boolean} whether the hash can be matched
 			 * @public
 			 * @since 1.58.0
@@ -604,7 +626,7 @@ sap.ui.define([
 			},
 
 			_convertToTargetOptions: function (oOptions) {
-				return jQuery.extend(true,
+				return deepExtend(
 					{},
 					oOptions,
 					{
@@ -635,6 +657,18 @@ sap.ui.define([
 					}
 					return null;
 				}
+			},
+
+			/**
+			 * Returns the arguments of the route which matches the given hash
+			 *
+			 * @param {string} sHash The hash
+			 * @returns {object} An object containing the route arguments
+			 * @private
+			 * @ui5-restricted sap.ui.core
+			 */
+			getPatternArguments : function(sHash) {
+				return this._aRoutes[0].extrapolate(sHash);
 			}
 		});
 

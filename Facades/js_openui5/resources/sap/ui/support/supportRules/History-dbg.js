@@ -1,6 +1,6 @@
 /**
 * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
 */
 sap.ui.define([
@@ -16,8 +16,8 @@ function (library, IssueManager, RuleSetLoader, StringHistoryFormatter, AbapHist
 	/**
 	 * Analysis result which is created after analysis with the SupportAssistant.
 	 *
-	 * @typedef {map} sap.ui.support.AnalysisResult
-	 * @property {Object} loadedLibraries The loaded libraries.
+	 * @typedef {object} sap.ui.support.AnalysisResult
+	 * @property {Object<string,Object>} loadedLibraries The loaded libraries.
 	 * @property {Object} analysisInfo Data for the performed analysis.
 	 * @property {Object} analysisMetadata The metadata provided in the analyze method, if any.
 	 * @property {Object[]} applicationInfo Array with information about the application.

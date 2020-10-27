@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -72,7 +72,7 @@ sap.ui.define([
 	* @extends sap.ui.core.Control
 	* @implements sap.ui.core.IFormContent
 	* @author SAP SE
-	* @version 1.73.1
+	* @version 1.82.0
 	*
 	* @constructor
 	* @public
@@ -97,7 +97,7 @@ sap.ui.define([
 			/**
 			 * Defines the CSS width of the input. If not set, width is 100%.
 			 */
-			width : {type : "sap.ui.core.CSSSize", group : "Appearance", defaultValue : null},
+			width : {type : "sap.ui.core.CSSSize", group : "Appearance", defaultValue : null },
 
 			/**
 			 * Boolean property to enable the control (default is true).
@@ -223,7 +223,20 @@ sap.ui.define([
 			},
 
 			/**
-			 * This event is fired when the value of the search field is changed by a user - e.g. at each key press. Do not invalidate or re-render a focused search field, especially during the liveChange event.
+			 * This event is fired when the user changes the value of the search field. Unlike the <code>liveChange</code> event, the <code>change</code> event is not fired for each key press.
+			 */
+			change: {
+				parameters: {
+
+					/**
+					 The new value of the control.
+					 */
+					value: { type: "string" }
+				}
+			},
+
+			/**
+			 * This event is fired each time when the value of the search field is changed by the user - e.g. at each key press. Do not invalidate or re-render a focused search field, especially during the liveChange event.
 			 * @since 1.9.1
 			 */
 			liveChange : {
@@ -258,9 +271,11 @@ sap.ui.define([
 	IconPool.insertFontFaceStyle();
 	SearchField.prototype.init = function() {
 
-		// Default placeholder: "Search"
-		this.setProperty("placeholder", oResourceBundle.getText("FACETFILTER_SEARCH"),true);
+		// last changed value
+		this._lastValue = "";
 
+		// Default placeholder: "Search"
+		this.setProperty("placeholder", oResourceBundle.getText("FACETFILTER_SEARCH"), true);
 	};
 
 	SearchField.prototype.getFocusDomRef = function() {
@@ -287,7 +302,6 @@ sap.ui.define([
 		return this;
 	};
 
-	// returns correct the width that applied by design
 	SearchField.prototype.getWidth = function() {
 		return this.getProperty("width") || "100%";
 	};
@@ -311,6 +325,9 @@ sap.ui.define([
 
 	SearchField.prototype.onAfterRendering = function() {
 
+		this._lastValue = this.getValue();
+		this._setToolTips();
+
 		// DOM element for the embedded HTML input:
 		var inputElement = this.getInputElement();
 		// DOM element for the reset button:
@@ -323,6 +340,7 @@ sap.ui.define([
 		jQuery(inputElement)
 			.on("input", this.onInput.bind(this))
 			.on("search", this.onSearch.bind(this))
+			.on("change", this.onChange.bind(this))
 			.on("focus", this.onFocus.bind(this))
 			.on("blur", this.onBlur.bind(this));
 
@@ -340,7 +358,7 @@ sap.ui.define([
 				});
 			}
 		} else if (window.PointerEvent) {
-			// IE Mobile sets active element to the reset button, save the previous reference// TODO remove after 1.62 version
+			// IE Mobile sets active element to the reset button, save the previous reference// TODO remove after the end of support for Internet Explorer
 			jQuery(this._resetElement).on("touchstart", function(){
 				this._active = document.activeElement;
 			}.bind(this));
@@ -370,9 +388,10 @@ sap.ui.define([
 			return;
 		}
 
-		this.setValue(value);
+		this._updateValue(value);
 		updateSuggestions(this);
 		this.fireLiveChange({newValue: value});
+		this._fireChangeEvent();
 		this.fireSearch({
 			query: value,
 			refreshButtonPressed: false,
@@ -438,7 +457,6 @@ sap.ui.define([
 			this._bSuggestionSuppressed = true; // never open suggestions after reset
 
 			var bEmpty = !this.getValue();
-			this.clear({ clearButton: true });
 
 			// When a user presses "x":
 			// - always focus input on desktop
@@ -448,10 +466,12 @@ sap.ui.define([
 			var active = document.activeElement;
 			if (((Device.system.desktop
 				|| bEmpty
-				|| /(INPUT|TEXTAREA)/i.test(active.tagName) || active ===  this._resetElement && this._active === oInputElement) // IE Mobile// TODO remove after 1.62 version
+				|| /(INPUT|TEXTAREA)/i.test(active.tagName) || active ===  this._resetElement && this._active === oInputElement) // IE Mobile// TODO remove after the end of support for Internet Explorer
 				) && (active !== oInputElement)) {
 				oInputElement.focus();
 			}
+
+			this.clear({ clearButton: true });
 		} else if (oSrc.id == this.getId() + "-search" && bValidTouchStartTarget) {
 
 			closeSuggestions(this);
@@ -460,6 +480,7 @@ sap.ui.define([
 			if (Device.system.desktop && !this.getShowRefreshButton() && (document.activeElement !== oInputElement)) {
 				oInputElement.focus();
 			}
+			this._fireChangeEvent();
 			this.fireSearch({
 				query: this.getValue(),
 				refreshButtonPressed: !!(this.getShowRefreshButton() && !this.$().hasClass("sapMFocus")),
@@ -500,7 +521,8 @@ sap.ui.define([
 	 */
 	SearchField.prototype.onSearch = function(event) {
 		var value = this.getInputElement().value;
-		this.setValue(value);
+		this._updateValue(value);
+		this._fireChangeEvent();
 		this.fireSearch({
 			query: value,
 			refreshButtonPressed: false,
@@ -530,12 +552,30 @@ sap.ui.define([
 	};
 
 	/**
-	 * Process the change event. Update value and do not fire any control events
-	 * because the user has focused another control on the page without intention to do a search.
+	 * Process the <code>change</code> event
 	 * @private
 	 */
 	SearchField.prototype.onChange = function(event) {
-		this.setValue(this.getInputElement().value);
+		this._fireChangeEvent();
+	};
+
+	/**
+	 * Fires the <code>change</code> event if needed
+	 * @private
+	 */
+	SearchField.prototype._fireChangeEvent = function() {
+
+		var value = this.getInputElement().value;
+
+		if (this._lastValue === value) {
+			return;
+		}
+
+		this._lastValue = value;
+
+		this.fireChange({
+			value: value
+		});
 	};
 
 	/**
@@ -546,10 +586,10 @@ sap.ui.define([
 	SearchField.prototype.onInput = function(oEvent) {
 		var value = this.getInputElement().value;
 
-		// IE fires an input event when an empty input with a placeholder is focused or loses focus.// TODO remove after 1.62 version
+		// IE fires an input event when an empty input with a placeholder is focused or loses focus.// TODO remove after the end of support for Internet Explorer
 		// Check if the value has changed, before firing the liveChange event.
 		if (value != this.getValue()) {
-			this.setValue(value);
+			this._updateValue(value);
 			this.fireLiveChange({newValue: value});
 			if (this.getEnableSuggestions()) {
 				if (this._iSuggestDelay) {
@@ -566,82 +606,83 @@ sap.ui.define([
 	};
 
 	/**
-	 * Handle the key down event for F5 on all browsers.
+	 * Handle the key down event.
 	 *
-	 * @param {jQuery.Event}
-	 *            event - the keyboard event.
+	 * @param {jQuery.Event} event The keyboard event.
 	 * @private
 	 */
 	SearchField.prototype.onkeydown = function(event) {
+		var selectedIndex;
+		var suggestionItem;
 		var value;
 
-		if (event.which === KeyCodes.F5 || event.which === KeyCodes.ENTER) {
+		switch (event.which) {
+			case KeyCodes.F5:
+			case KeyCodes.ENTER:
+				// show search button active state
+				this.$("search").toggleClass("sapMSFBA", true);
 
-			// show search button active state
-			this.$("search").toggleClass("sapMSFBA", true);
+				// do not refresh browser window
+				event.stopPropagation();
+				event.preventDefault();
 
-			// do not refresh browser window
-			event.stopPropagation();
-			event.preventDefault();
-		}
-		if (event.which === KeyCodes.ESCAPE) {
-			// Escape button:
-			//   - close suggestions ||
-			//   - restore the original value ||
-			//   - clear the value ||
-			//   - close the parent dialog
-			if (suggestionsOn(this)) {
-				closeSuggestions(this);
-				event.setMarked(); // do not close the parent dialog
-			} else {
-				value = this.getValue();
-				if (value === this._sOriginalValue) {
-					this._sOriginalValue = ""; // clear the field if the value was original
+				if (suggestionsOn(this)) {
+					// always close suggestions by Enter and F5:
+					closeSuggestions(this);
+
+					// take over the value from the selected suggestion list item, if any is selected:
+					if ((selectedIndex = this._oSuggest.getSelected()) >= 0) {
+						suggestionItem = this.getSuggestionItems()[selectedIndex];
+						this._updateValue(suggestionItem.getSuggestionText());
+					}
 				}
-				this.clear({ value: this._sOriginalValue });
-				if (value !== this.getValue()) {
-					event.setMarked(); // if changed, do not close the parent dialog because the user has not finished yet
+
+				this._fireChangeEvent();
+				this.fireSearch({
+					query: this.getValue(),
+					suggestionItem: suggestionItem,
+					refreshButtonPressed: this.getShowRefreshButton() && event.which === KeyCodes.F5,
+					clearButtonPressed: false
+				});
+				break;
+			case KeyCodes.ESCAPE:
+				// Escape button:
+				//   - close suggestions ||
+				//   - restore the original value ||
+				//   - clear the value ||
+				//   - close the parent dialog
+				if (suggestionsOn(this)) {
+					closeSuggestions(this);
+					event.setMarked(); // do not close the parent dialog
+				} else {
+					value = this.getValue();
+					if (value === this._sOriginalValue) {
+						this._sOriginalValue = ""; // clear the field if the value was original
+					}
+					this.clear({ value: this._sOriginalValue });
+					if (value !== this.getValue()) {
+						event.setMarked(); // if changed, do not close the parent dialog because the user has not finished yet
+					}
 				}
-			}
-			// Chrome fires input event on escape,
-			// prevent it to avoid doubled change/liveChange:
-			event.preventDefault();
+				// Chrome fires input event on escape,
+				// prevent it to avoid doubled change/liveChange:
+				event.preventDefault();
+				break;
 		}
 	};
 
 	/**
-	 * Handle the key up event for F5 on all browsers.
+	 * Handle the key up event.
 	 *
-	 * @param {jQuery.Event}
-	 *            event - the keyboard event.
+	 * @param {jQuery.Event} event The keyboard event.
 	 * @private
 	 */
 	SearchField.prototype.onkeyup = function(event) {
-		var selectedIndex;
-		var suggestionItem;
 
-		if (event.which === KeyCodes.F5 || event.which === KeyCodes.ENTER) {
-
+		if (event.which === KeyCodes.F5 ||
+			event.which === KeyCodes.ENTER) {
 			// hide search button active state
 			this.$("search").toggleClass("sapMSFBA", false);
-
-			if (suggestionsOn(this)) {
-				// always close suggestions by Enter and F5:
-				closeSuggestions(this);
-
-				// take over the value from the selected suggestion list item, if any is selected:
-				if ((selectedIndex = this._oSuggest.getSelected()) >= 0) {
-					suggestionItem = this.getSuggestionItems()[selectedIndex];
-					this.setValue(suggestionItem.getSuggestionText());
-				}
-			}
-
-			this.fireSearch({
-				query: this.getValue(),
-				suggestionItem: suggestionItem,
-				refreshButtonPressed: this.getShowRefreshButton() && event.which === KeyCodes.F5,
-				clearButtonPressed: false
-			});
 		}
 	};
 
@@ -652,8 +693,8 @@ sap.ui.define([
 	 */
 	SearchField.prototype.onFocus = function(oEvent) {
 
-		// IE does not really focuses inputs and does not blur them if the document itself is not focused// TODO remove after 1.62 version
-		if (Device.browser.internet_explorer && !document.hasFocus()) {// TODO remove after 1.62 version
+		// IE does not really focuses inputs and does not blur them if the document itself is not focused// TODO remove after the end of support for Internet Explorer
+		if (Device.browser.internet_explorer && !document.hasFocus()) {// TODO remove after the end of support for Internet Explorer
 			return;
 		}
 
@@ -722,7 +763,7 @@ sap.ui.define([
 		}
 	};
 
-	SearchField.prototype.setValue = function(value) {
+	SearchField.prototype._updateValue = function(value) {
 		value = value || "";
 		var inputElement = this.getInputElement();
 		if (inputElement) {
@@ -789,7 +830,7 @@ sap.ui.define([
 		if (suggestionsOn(oSF)) {
 			index = oSF._oSuggest.setSelected(iIndex, bRelative);
 			if (index >= 0) {
-				oSF.setValue(oSF.getSuggestionItems()[index].getSuggestionText());
+				oSF._updateValue(oSF.getSuggestionItems()[index].getSuggestionText());
 			}
 			oEvent.preventDefault();
 		}
@@ -863,6 +904,28 @@ sap.ui.define([
 	/* =========================================================== */
 
 	/**
+	 * Applies Suggestion Acc
+	 *
+	 * @private
+	 */
+	SearchField.prototype._applySuggestionAcc = function () {
+		var sAriaText = "",
+			iNumItems = this.getSuggestionItems().length;
+
+		// add items to list
+		if (iNumItems === 1) {
+			sAriaText = oResourceBundle.getText("INPUT_SUGGESTIONS_ONE_HIT");
+		} else if (iNumItems > 1) {
+			sAriaText = oResourceBundle.getText("INPUT_SUGGESTIONS_MORE_HITS", iNumItems);
+		} else {
+			sAriaText = oResourceBundle.getText("INPUT_SUGGESTIONS_NO_HIT");
+		}
+
+		// update Accessibility text for suggestion
+		this.$("SuggDescr").text(sAriaText);
+	};
+
+	/**
 	 * Function returns DOM element which acts as reference point for the opening suggestion menu
 	 *
 	 * @protected
@@ -908,7 +971,8 @@ sap.ui.define([
 	/**
 	 * Toggle visibility of the suggestion list.
 	 *
-	 * @param {boolean | undefined} bShow set to <code>true</code> to display suggestions and <code>false</code> to hide them. Default value is <code>true</code>.
+	 * @param {boolean | undefined} [bShow=true] If the value is <code>true</code> the suggestions are displayed.
+	 * If the value is <code>false</code> the suggestions are hidden.
 	 * An empty suggestion list is not shown on desktop and tablet devices.<br>
 	 *
 	 * This method may be called only as a response to the <code>suggest</code> event to ensure that the suggestion list is shown

@@ -29,7 +29,7 @@ class UI5Tiles extends UI5Container
                         {$tiles}
                     ],
                     {$this->buildJsProperties()}
-                })
+                }).addStyleClass("{$this->buildCssElementClass()}")
 
 JS;
                 
@@ -87,5 +87,15 @@ JS;
 JS;
         }
         return '';
+    }
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildCssElementClass()
+     */
+    public function buildCssElementClass()
+    {
+        return 'exf-tiles';
     }
 }

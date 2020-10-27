@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -65,7 +65,7 @@ sap.ui.define([
 	 * <b>Note:</b> JavaScript Date objects are used to set and return the months, mark them as selected or as a special type.
 	 * But the date part of the Date object is not used. If a Date object is returned the date will be set to the 1st of the corresponding month.
 	 * @extends sap.ui.core.Control
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @public
@@ -274,7 +274,10 @@ sap.ui.define([
 	};
 
 	CalendarMonthInterval.prototype._initilizeYearPicker = function() {
-		this.setAggregation("yearPicker", this._createYearPicker());
+		var oYearPicker =  this._createYearPicker();
+		this.setAggregation("yearPicker", oYearPicker);
+
+		oYearPicker._setSelectedDatesControlOrigin(this);
 	};
 
 	CalendarMonthInterval.prototype._createYearPicker = function() {

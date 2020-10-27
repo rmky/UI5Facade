@@ -1,11 +1,11 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 sap.ui.define(["./DragDropBase"],
-	function(DragDropBase, Log) {
+	function(DragDropBase) {
 	"use strict";
 
 	/**
@@ -22,7 +22,7 @@ sap.ui.define(["./DragDropBase"],
 	 * @extends sap.ui.core.dnd.DragDropBase
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @public
 	 * @since 1.56
@@ -136,4 +136,4 @@ sap.ui.define(["./DragDropBase"],
 
 	return DragInfo;
 
-}, /* bExport= */ true);
+});

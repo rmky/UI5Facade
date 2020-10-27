@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -18,7 +18,7 @@ sap.ui.define([
 	"sap/m/ToolbarSpacer",
 	"sap/m/Label",
 	"sap/m/MessageToast",
-	"sap/ui/support/supportRules/WindowCommunicationBus",
+	"sap/ui/support/supportRules/CommunicationBus",
 	"sap/ui/support/supportRules/WCBChannels",
 	"sap/ui/support/supportRules/ui/models/SharedModel",
 	"sap/ui/support/supportRules/RuleSerializer",
@@ -161,7 +161,7 @@ sap.ui.define([
 
 			for (var i = 0; i < libs.length; i++) {
 				if (libs[i].title == Constants.TEMP_RULESETS_NAME) {
-					return libs[i];
+					return Object.assign({}, libs[i]);
 				}
 			}
 		},
@@ -208,7 +208,6 @@ sap.ui.define([
 					this.goToRuleProperties();
 					this.model.setProperty("/selectedRule", newRule);
 					this._updateRuleList();
-					tempLib = [];
 
 					this.treeTable.updateSelectionFromModel();
 				} else {
@@ -293,7 +292,7 @@ sap.ui.define([
 				this.treeTable.setModel(this.oJsonModel, "treeModel");
 				this.oJsonModel.setData(oTreeViewModelRules);
 
-				var bPersistSettings = this.model.getProperty("/persistingSettings"),
+				var bPersistSettings = Storage.readPersistenceCookie(Constants.COOKIE_NAME),
 					bLoadingAdditionalRuleSets =  this.model.getProperty("/loadingAdditionalRuleSets");
 
 

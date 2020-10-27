@@ -1,6 +1,6 @@
 /*
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 sap.ui.define([
@@ -34,7 +34,7 @@ sap.ui.define([
 	 * @ui5-restricted sap.ui.mdc
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @ui5-metamodel This control/element also will be described in the UI5 (legacy) designtime metamodel
 	 */
 	var RowMode = Element.extend("sap.ui.table.rowmodes.RowMode", /** @lends sap.ui.table.rowmodes.RowMode.prototype */ {
@@ -63,7 +63,7 @@ sap.ui.define([
 
 	var TableDelegate = {};
 
-	RowMode.prototype.init = function(oTableDelegate) {
+	RowMode.prototype.init = function() {
 		/*
 		 * Flag indicating whether the first _rowsUpdated event after rendering was fired.
 		 *
@@ -92,13 +92,18 @@ sap.ui.define([
 	RowMode.prototype.exit = function() {
 		this.detachEvents();
 		this.cancelAsyncOperations();
+		this.deregisterHooks();
 	};
 
 	RowMode.prototype.setParent = function() {
 		this.detachEvents();
 		this.cancelAsyncOperations();
+		this.deregisterHooks();
+
 		Element.prototype.setParent.apply(this, arguments);
+
 		this.attachEvents();
+		this.registerHooks();
 	};
 
 	/**
@@ -132,6 +137,32 @@ sap.ui.define([
 		}
 
 		this.updateTableAsync.cancel();
+	};
+
+	/**
+	 * Register to table hooks.
+	 *
+	 * @private
+	 */
+	RowMode.prototype.registerHooks = function() {
+		var oTable = this.getTable();
+		var Hook = TableUtils.Hook.Keys;
+
+		TableUtils.Hook.register(oTable, Hook.Table.RowsUnbound, this._onTableRowsUnbound, this);
+		TableUtils.Hook.register(oTable, Hook.Table.UpdateRows, this._onTableUpdateRows, this);
+	};
+
+	/**
+	 * Deregister from table hooks.
+	 *
+	 * @private
+	 */
+	RowMode.prototype.deregisterHooks = function() {
+		var oTable = this.getTable();
+		var Hook = TableUtils.Hook.Keys;
+
+		TableUtils.Hook.deregister(oTable, Hook.Table.RowsUnbound, this._onTableRowsUnbound, this);
+		TableUtils.Hook.deregister(oTable, Hook.Table.UpdateRows, this._onTableUpdateRows, this);
 	};
 
 	/**
@@ -293,30 +324,14 @@ sap.ui.define([
 	};
 
 	/**
-	 * This hook is called when the table layout is updated, for example when resizing.
-	 *
-	 * @param {sap.ui.table.utils.TableUtils.RowsUpdateReason} sReason The reason for updating the table sizes.
-	 * @private
-	 */
-	RowMode.prototype.updateTableSizes = function(sReason) {};
-
-	/**
 	 * This hook is called when the rows aggregation of the table is unbound.
 	 *
 	 * @private
 	 */
-	RowMode.prototype.unbindRows = function() {
+	RowMode.prototype._onTableRowsUnbound = function() {
 		clearTimeout(this.getTable()._mTimeouts.refreshRowsCreateRows);
 		this.updateTable(TableUtils.RowsUpdateReason.Unbind);
 	};
-
-	/**
-	 * This hook is called when the rows aggregation of the table is refreshed.
-	 *
-	 * @param {string} sReason The reason for the refresh.
-	 * @private
-	 */
-	RowMode.prototype.refreshRows = function(sReason) {};
 
 	/**
 	 * This hook is called when the rows aggregation of the table is updated.
@@ -324,30 +339,10 @@ sap.ui.define([
 	 * @param {string} sReason The reason for the refresh.
 	 * @private
 	 */
-	RowMode.prototype.updateRows = function(sReason) {
+	RowMode.prototype._onTableUpdateRows = function(sReason) {
 		var oTable = this.getTable();
 
 		clearTimeout(oTable._mTimeouts.refreshRowsCreateRows);
-
-		// Special handling for the V4 AutoExpandSelect feature.
-		if (!oTable._bBindingReady) {
-			var aContexts = this.getRowContexts(null, true);
-
-			if (this.getTotalRowCountOfTable() === 0 && aContexts.length === 1) {
-				// The context might be a virtual context part of AutoExpandSelect.
-				var oVirtualContext = aContexts[0];
-				var oVirtualRow = oTable._getRowClone("Virtual");
-
-				oVirtualRow.setBindingContext(oVirtualContext);
-				oTable.addAggregation("rows", oVirtualRow, true);
-				oTable.removeAggregation("rows", oVirtualRow, true);
-				oVirtualRow.setBindingContext(null);
-				oVirtualRow.destroy();
-			}
-
-			return; // No need to update rows if the binding is not ready.
-		}
-
 		this.updateTableAsync(sReason);
 	};
 
@@ -500,13 +495,11 @@ sap.ui.define([
 				}
 
 				var aRows = createRows(oTable, iRowCount), oRow;
-				var oBindingInfo = oTable.getBindingInfo("rows");
-				var sModelName = oBindingInfo ? oBindingInfo.model : undefined;
 
 				for (var i = 0; i < aRows.length; i++) {
 					oRow = aRows[i];
 					// prevent propagation of parent binding context; else incorrect data might be requested by the model.
-					oRow.setBindingContext(null, sModelName);
+					oRow.setRowBindingContext(null, oTable);
 					oTable.addAggregation("rows", oRow, true);
 				}
 
@@ -566,10 +559,6 @@ sap.ui.define([
 
 			for (i = 0; i < aNewRows.length; i++) {
 				oTable.addAggregation("rows", aNewRows[i], true);
-
-				// As long the clone is not yet in the aggregation, setRowBindingContext will not process the following.
-				// Therefore, call it manually here.
-				aNewRows[i]._updateTableCells(aNewRows[i].getBindingContext());
 			}
 		} else {
 			// Remove rows that are not required.
@@ -603,7 +592,7 @@ sap.ui.define([
 		// make sure to call rendering event delegates even in case of DOM patching
 		var oBeforeRenderingEvent = jQuery.Event("BeforeRendering");
 		oBeforeRenderingEvent.setMarked("renderRows");
-		oBeforeRenderingEvent.srcControl = this;
+		oBeforeRenderingEvent.srcControl = oTable;
 		oTable._handleEvent(oBeforeRenderingEvent);
 
 		var oRM = sap.ui.getCore().createRenderManager();
@@ -615,7 +604,7 @@ sap.ui.define([
 		// make sure to call rendering event delegates even in case of DOM patching
 		var oAfterRenderingEvent = jQuery.Event("AfterRendering");
 		oAfterRenderingEvent.setMarked("renderRows");
-		oAfterRenderingEvent.srcControl = this;
+		oAfterRenderingEvent.srcControl = oTable;
 		oTable._handleEvent(oAfterRenderingEvent);
 	};
 
@@ -722,19 +711,15 @@ sap.ui.define([
 	 * @param {Array<sap.ui.table.Row>} [aRows] The rows for which the contexts are to be updated.
 	 */
 	function updateBindingContextsOfRows(oMode, aRows) {
-		var oTable = oMode.getParent();
+		var oTable = oMode.getTable();
 		var aContexts = oMode.getRowContexts(aRows.length);
 
 		if (!oTable || aRows.length === 0) {
 			return;
 		}
 
-		var oBinding = oTable.getBinding("rows");
-		var oBindingInfo = oTable.getBindingInfo("rows");
-		var sModelName = oBindingInfo ? oBindingInfo.model : undefined;
-
 		for (var i = 0; i < aRows.length; i++) {
-			aRows[i].setRowBindingContext(aContexts[i], sModelName, oBinding);
+			aRows[i].setRowBindingContext(aContexts[i], oTable);
 		}
 	}
 

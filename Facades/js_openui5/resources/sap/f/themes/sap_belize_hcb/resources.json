@@ -3,63 +3,91 @@
 	"resources": [
 		{
 			"name": ".theming",
+			"size": 93,
 			"theme": "sap_belize_hcb"
 		},
 		{
 			"name": "Card.less",
+			"size": 699,
 			"designtime": true,
 			"theme": "sap_belize_hcb"
 		},
 		{
 			"name": "DynamicPage.less",
+			"size": 1999,
 			"designtime": true,
 			"theme": "sap_belize_hcb"
 		},
 		{
 			"name": "DynamicPageTitle.less",
+			"size": 1855,
 			"designtime": true,
 			"theme": "sap_belize_hcb"
 		},
 		{
 			"name": "FlexibleColumnLayout.less",
+			"size": 1288,
 			"designtime": true,
 			"theme": "sap_belize_hcb"
 		},
 		{
 			"name": "ShellBar.less",
+			"size": 693,
 			"designtime": true,
 			"theme": "sap_belize_hcb"
 		},
 		{
-			"name": "library-RTL-dbg.css",
-			"isDebug": true,
+			"name": "css_variables.css",
+			"size": 2970,
+			"theme": "sap_belize_hcb"
+		},
+		{
+			"name": "css_variables.less",
+			"size": 84642,
+			"designtime": true,
+			"theme": "sap_belize_hcb"
+		},
+		{
+			"name": "css_variables.source.less",
+			"size": 84274,
+			"designtime": true,
 			"theme": "sap_belize_hcb"
 		},
 		{
 			"name": "library-RTL.css",
-			"theme": "sap_belize_hcb"
-		},
-		{
-			"name": "library-dbg.css",
-			"isDebug": true,
+			"size": 69454,
 			"theme": "sap_belize_hcb"
 		},
 		{
 			"name": "library-parameters.json",
+			"size": 1185,
 			"theme": "sap_belize_hcb"
 		},
 		{
 			"name": "library.css",
+			"size": 69449,
 			"theme": "sap_belize_hcb"
 		},
 		{
 			"name": "library.less",
+			"size": 7366,
 			"designtime": true,
 			"theme": "sap_belize_hcb"
 		},
 		{
 			"name": "library.source.less",
+			"size": 471,
 			"designtime": true,
+			"theme": "sap_belize_hcb"
+		},
+		{
+			"name": "library_skeleton-RTL.css",
+			"size": 71703,
+			"theme": "sap_belize_hcb"
+		},
+		{
+			"name": "library_skeleton.css",
+			"size": 71696,
 			"theme": "sap_belize_hcb"
 		}
 	]

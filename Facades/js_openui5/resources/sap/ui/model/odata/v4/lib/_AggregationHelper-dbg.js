@@ -1,11 +1,14 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
 //Provides class sap.ui.model.odata.v4.lib._AggregationHelper
-sap.ui.define(["sap/ui/thirdparty/jquery"], function (jQuery) {
+sap.ui.define([
+	"./_Helper",
+	"sap/ui/model/Filter"
+], function (_Helper, Filter) {
 	"use strict";
 
 	var mAllowedAggregateDetails2Type =  {
@@ -113,28 +116,27 @@ sap.ui.define(["sap/ui/thirdparty/jquery"], function (jQuery) {
 		 *   A map from aggregatable property names or aliases to objects containing the following
 		 *   details:
 		 *   <ul>
-		 *   <li><code>grandTotal</code>: An optional boolean that tells whether a grand total for
-		 *     this aggregatable property is needed (since 1.59.0)
-		 *   <li><code>min</code>: An optional boolean that tells whether the minimum value
-		 *     (ignoring currencies or units of measure) for this aggregatable property is needed
-		 *   <li><code>max</code>: An optional boolean that tells whether the maximum value
-		 *     (ignoring currencies or units of measure) for this aggregatable property is needed
-		 *   <li><code>subtotals</code>: An optional boolean that tells whether subtotals for this
-		 *     aggregatable property are needed
-		 *   <li><code>with</code>: An optional string that provides the name of the method (for
-		 *     example "sum") used for aggregation of this aggregatable property; see
-		 *     "3.1.2 Keyword with". Both, "average" and "countdistinct" are not supported for
-		 *     subtotals or grand totals.
-		 *   <li><code>name</code>: An optional string that provides the original aggregatable
-		 *     property name in case a different alias is chosen as the name of the dynamic property
-		 *     used for aggregation of this aggregatable property; see "3.1.1 Keyword as"
+		 *     <li> <code>grandTotal</code>: An optional boolean that tells whether a grand total
+		 *       for this aggregatable property is needed (since 1.59.0)
+		 *     <li> <code>min</code>: An optional boolean that tells whether the minimum value
+		 *       (ignoring currencies or units of measure) for this aggregatable property is needed
+		 *     <li> <code>max</code>: An optional boolean that tells whether the maximum value
+		 *       (ignoring currencies or units of measure) for this aggregatable property is needed
+		 *     <li> <code>subtotals</code>: An optional boolean that tells whether subtotals for
+		 *       this aggregatable property are needed
+		 *     <li> <code>with</code>: An optional string that provides the name of the method (for
+		 *       example "sum") used for aggregation of this aggregatable property; see
+		 *       "3.1.2 Keyword with". Both, "average" and "countdistinct" are not supported for
+		 *       subtotals or grand totals.
+		 *     <li> <code>name</code>: An optional string that provides the original aggregatable
+		 *       property name in case a different alias is chosen as the name of the dynamic
+		 *       property used for aggregation of this aggregatable property; see "3.1.1 Keyword as"
 		 *   </ul>
 		 * @param {object} [oAggregation.group]
 		 *   A map from groupable property names to empty objects
 		 * @param {string[]} [oAggregation.groupLevels]
 		 *   A list of groupable property names (which may, but don't need to be repeated in
-		 *   <code>oAggregation.group</code>) used to determine group levels; only a single group
-		 *   level is supported
+		 *   <code>oAggregation.group</code>) used to determine group levels
 		 * @param {object} [mQueryOptions={}]
 		 *   A map of key-value pairs representing the query string
 		 * @param {boolean} [mQueryOptions.$count]
@@ -144,6 +146,9 @@ sap.ui.define(["sap/ui/thirdparty/jquery"], function (jQuery) {
 		 * @param {string} [mQueryOptions.$filter]
 		 *   The value for a "$filter" system query option; it is removed from the returned map, but
 		 *   not from <code>mQueryOptions</code> itself
+		 * @param {string} [mQueryOptions.$$filterBeforeAggregate]
+		 *   The value for a filter which is applied before the aggregation; it is removed from the
+		 *   returned map, but not from <code>mQueryOptions</code> itself
 		 * @param {string} [mQueryOptions.$orderby]
 		 *   The value for a "$orderby" system query option; it is removed from the returned map,
 		 *   but not from <code>mQueryOptions</code> itself
@@ -166,7 +171,8 @@ sap.ui.define(["sap/ui/thirdparty/jquery"], function (jQuery) {
 		 *   <code>mAlias2MeasureAndMethod</code> is ignored
 		 * @returns {object}
 		 *   A map of key-value pairs representing the query string, including a value for the
-		 *   "$apply" system query option; it is a modified copy of <code>mQueryOptions</code>
+		 *   "$apply" system query option if needed; it is a modified copy of
+		 *   <code>mQueryOptions</code>
 		 * @throws {Error}
 		 *   If the given data aggregation object is unsupported
 		 *
@@ -280,13 +286,10 @@ sap.ui.define(["sap/ui/thirdparty/jquery"], function (jQuery) {
 				return sTransformation;
 			}
 
-			mQueryOptions = jQuery.extend({}, mQueryOptions);
+			mQueryOptions = Object.assign({}, mQueryOptions);
 
 			checkKeys(oAggregation, mAllowedAggregationKeys2Type);
 			oAggregation.groupLevels = oAggregation.groupLevels || [];
-			if (oAggregation.groupLevels.length > 1) {
-				throw new Error("More than one group level: " + oAggregation.groupLevels);
-			}
 
 			oAggregation.aggregate = oAggregation.aggregate || {};
 			checkKeys4AllDetails(oAggregation.aggregate, mAllowedAggregateDetails2Type);
@@ -312,6 +315,11 @@ sap.ui.define(["sap/ui/thirdparty/jquery"], function (jQuery) {
 				aConcatAggregate.push("$count as UI5__count");
 				delete mQueryOptions.$count;
 			}
+
+			if (mQueryOptions.$$filterBeforeAggregate) {
+				sApply = "filter(" + mQueryOptions.$$filterBeforeAggregate + ")/" + sApply;
+				delete mQueryOptions.$$filterBeforeAggregate;
+			}
 			if (mQueryOptions.$filter) {
 				sApply += "/filter(" + mQueryOptions.$filter + ")";
 				delete mQueryOptions.$filter;
@@ -335,7 +343,9 @@ sap.ui.define(["sap/ui/thirdparty/jquery"], function (jQuery) {
 			} else if (sSkipTop) {
 				sApply += "/" + sSkipTop;
 			}
-			mQueryOptions.$apply = sApply;
+			if (sApply) {
+				mQueryOptions.$apply = sApply;
+			}
 
 			return mQueryOptions;
 		},
@@ -374,6 +384,126 @@ sap.ui.define(["sap/ui/thirdparty/jquery"], function (jQuery) {
 
 				return oDetails.min || oDetails.max;
 			});
+		},
+
+		/**
+		 * Tells whether the binding with the given aggregation data and filters is affected when
+		 * requesting side effects for the given paths.
+		 *
+		 * @param {object} oAggregation
+		 *   An object holding the information needed for data aggregation;
+		 *   (see {@link .buildApply}).
+		 * @param {sap.ui.model.Filter[]} aFilters
+		 *   The binding's current filters
+		 * @param {string[]} aSideEffectPaths
+		 *   The paths to request side effects for
+		 * @returns {boolean}
+		 *   <code>true</code> if the binding is affected
+		 */
+		isAffected : function (oAggregation, aFilters, aSideEffectPaths) {
+			// returns true if the side effect path affects the property path
+			function affects(sSideEffectPath, sPropertyPath) {
+				if (sSideEffectPath.endsWith("/*")) {
+					// To avoid metadata access, we do not distinguish between properties and
+					// navigation properties, so there is no need to look at "/*".
+					sSideEffectPath = sSideEffectPath.slice(0, -2);
+				}
+				return _Helper.hasPathPrefix(sPropertyPath, sSideEffectPath)
+					|| _Helper.hasPathPrefix(sSideEffectPath, sPropertyPath);
+			}
+
+			// returns true if the array contains a filter affected by the side effect path
+			function hasAffectedFilter(sSideEffectPath, aFilters0) {
+				return aFilters0.some(function (oFilter) {
+					return oFilter.aFilters
+						? hasAffectedFilter(sSideEffectPath, oFilter.aFilters)
+					    : affects(sSideEffectPath, oFilter.sPath);
+				});
+			}
+
+			return aSideEffectPaths.some(function (sSideEffectPath) {
+				var fnAffects = affects.bind(null, sSideEffectPath);
+
+				return sSideEffectPath === "" || sSideEffectPath === "*"
+					|| Object.keys(oAggregation.aggregate).some(function (sAlias) {
+							var oDetails = oAggregation.aggregate[sAlias];
+
+							return affects(sSideEffectPath, oDetails.name || sAlias);
+						})
+					|| Object.keys(oAggregation.group).some(fnAffects)
+					|| oAggregation.groupLevels.some(fnAffects)
+					|| hasAffectedFilter(sSideEffectPath, aFilters);
+			});
+		},
+
+		/**
+		 * Splits a filter depending on the aggregation information into an array that consists of
+		 * two filters, one that must be applied after and one that must be applied before
+		 * aggregating the data.
+		 *
+		 * @param {sap.ui.model.Filter} oFilter
+		 *   The filter object that is split
+		 * @param {object} [oAggregation]
+		 *   An object holding the information needed for data aggregation;
+		 *   (see {@link .buildApply}).
+		 * @returns {sap.ui.model.Filter[]}
+		 *   An array that consists of two filters, the first one has to be applied after and the
+		 *   second one has to be applied before aggregating the data. Both can be
+		 *   <code>undefined</code>.
+		 */
+		splitFilter : function (oFilter, oAggregation) {
+			var aFiltersAfterAggregate = [],
+				aFiltersBeforeAggregate = [];
+
+			/*
+			 * Tells whether the given filter must be applied after aggregating data
+			 *
+			 * @param {sap.ui.model.Filter} oFilter
+			 *   A filter
+			 * @returns {boolean}
+			 *   Whether the filter must be applied after aggregating
+			 */
+			function isAfter(oFilter) {
+				return oFilter.aFilters
+					? oFilter.aFilters.some(isAfter)
+					: oFilter.sPath in oAggregation.aggregate;
+			}
+
+			/*
+			 * Splits the given filter tree along AND operations into filters that must be applied
+			 * after and filters that must be applied before aggregating the data.
+			 *
+			 * @param {sap.ui.model.Filter} oFilter
+			 *   A filter
+			 */
+			function split(oFilter) {
+				if (oFilter.aFilters && oFilter.bAnd) {
+					oFilter.aFilters.forEach(split);
+				} else {
+					(isAfter(oFilter) ? aFiltersAfterAggregate : aFiltersBeforeAggregate)
+						.push(oFilter);
+				}
+			}
+
+			/*
+			 * Wraps the given filters into a multi-filter concatenated with AND, if needed.
+			 *
+			 * @param {sap.ui.model.Filter[]} aFilters
+			 *   Some filters
+			 * @returns {sap.ui.model.Filter}
+			 *   A multi-filter, a single filter, or <code>undefined</code>
+			 */
+			function wrap(aFilters) {
+				return aFilters.length > 1 ? new Filter(aFilters, true) : aFilters[0];
+			}
+
+			if (!oAggregation || !oAggregation.aggregate) {
+				return [oFilter];
+			}
+
+			split(oFilter);
+
+			return [wrap(aFiltersAfterAggregate), wrap(aFiltersBeforeAggregate)];
 		}
 	};
 

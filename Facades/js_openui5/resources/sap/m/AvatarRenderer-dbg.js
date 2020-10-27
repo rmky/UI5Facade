@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -14,14 +14,6 @@ sap.ui.define(["sap/m/library", "sap/base/security/encodeCSS"],
 
 		// shortcut for sap.m.AvatarType
 		var AvatarType = library.AvatarType;
-
-		// shortcut for sap.m.AvatarColor
-		var AvatarColor = library.AvatarColor;
-
-		// shortcut for Accent colors keys only (from AvatarColor enum)
-		var AccentColors = Object.keys(AvatarColor).filter(function (sCurrColor) {
-			return sCurrColor.indexOf("Accent") !== -1;
-		});
 
 		/**
 		 * <code>Avatar</code> renderer.
@@ -50,15 +42,14 @@ sap.ui.define(["sap/m/library", "sap/base/security/encodeCSS"],
 				sSrc = oAvatar.getSrc(),
 				sAvatarClass = "sapFAvatar",
 				sTooltip = oAvatar.getTooltip_AsString(),
-				sDefaultTooltip = oAvatar._getDefaultTooltip(),
 				aLabelledBy = oAvatar.getAriaLabelledBy(),
 				aDescribedBy = oAvatar.getAriaDescribedBy(),
-				sAriaLabelTooltip = sTooltip && sInitials ? sDefaultTooltip + " " + sTooltip : sDefaultTooltip,
-				sAriaLabelInitials = sInitials ? sDefaultTooltip + " " + sInitials : sDefaultTooltip;
+				oBadge = oAvatar.hasListeners("press") ?  oAvatar._getBadge() : null,
+				sAriaRoledescription = sap.ui.getCore().getLibraryResourceBundle("sap.m").getText("AVATAR_ROLE_DESCRIPTION");
 
 			oRm.openStart("span", oAvatar);
 			oRm.class(sAvatarClass);
-			AvatarRenderer.addBackgroundColorClass(oRm, oAvatar);
+			oRm.class("sapFAvatarColor" + oAvatar._getActualBackgroundColor());
 			oRm.class(sAvatarClass + sDisplaySize);
 			oRm.class(sAvatarClass + sActualDisplayType);
 			oRm.class(sAvatarClass + sDisplayShape);
@@ -70,6 +61,7 @@ sap.ui.define(["sap/m/library", "sap/base/security/encodeCSS"],
 			} else {
 				oRm.attr("role", "img");
 			}
+			oRm.attr("aria-roledescription", sAriaRoledescription);
 			if (oAvatar.getShowBorder()) {
 				oRm.class("sapFAvatarBorder");
 			}
@@ -80,9 +72,9 @@ sap.ui.define(["sap/m/library", "sap/base/security/encodeCSS"],
 			}
 			if (sTooltip) {
 				oRm.attr("title", sTooltip);
-				oRm.attr("aria-label",sAriaLabelTooltip);
-			} else {
-				oRm.attr("aria-label",sAriaLabelInitials);
+				oRm.attr("aria-label", sTooltip);
+			} else if (sInitials) { // if tooltip is set the initials should be overwritten
+				oRm.attr("aria-label", sInitials);
 			}
 			// aria-labelledby references
 			if (aLabelledBy && aLabelledBy.length > 0) {
@@ -94,7 +86,7 @@ sap.ui.define(["sap/m/library", "sap/base/security/encodeCSS"],
 			}
 			oRm.openEnd();
 			if (sActualDisplayType === AvatarType.Icon || sImageFallbackType === AvatarType.Icon) {
-				oRm.renderControl(oAvatar._getIcon());
+				oRm.renderControl(oAvatar._getIcon().addStyleClass(sAvatarClass + "TypeIcon"));
 			} else if (sActualDisplayType === AvatarType.Initials || sImageFallbackType === AvatarType.Initials){
 				oRm.openStart("span");
 				oRm.class(sAvatarClass + "InitialsHolder");
@@ -110,24 +102,24 @@ sap.ui.define(["sap/m/library", "sap/base/security/encodeCSS"],
 				oRm.openEnd();
 				oRm.close("span");
 			}
-			// HTML element for the LightBox magnifying glass icon
-			if (oAvatar._fnLightBoxOpen) {
-				oRm.openStart("span").class(sAvatarClass + "MagnifyingGlass").openEnd().close("span");
+			// HTML element for the badge icon
+			if (oBadge) {
+				oRm.openStart("div");
+				oRm.class(sAvatarClass + "BadgeIconActiveArea");
+				// we want to make sure icon, used for badge, scales proportionally with the custom size
+				if (sCustomDisplaySize) {
+					oRm.style("font-size", sCustomDisplaySize);
+				}
+				oRm.openEnd();
+					oRm.openStart("span");
+					oRm.class(sAvatarClass + "BadgeIcon");
+					oRm.openEnd();
+					oRm.renderControl(oBadge);
+					oRm.close("span");
+				oRm.close("div");
 			}
+
 			oRm.close("span");
-		};
-
-		AvatarRenderer.addBackgroundColorClass = function (oRm, oAvatar) {
-			var sBackground = oAvatar.getBackgroundColor();
-
-			if (oAvatar.getBackgroundColor() === AvatarColor.Random) {
-
-				// Picking a random Accent property from the AvatarColor enum
-				// << 0 truncates the digits after the decimal (it's the same as Math.trunc())
-				sBackground = AvatarColor[AccentColors[AccentColors.length * Math.random() << 0]];
-			}
-
-			oRm.class("sapFAvatarColor" + sBackground);
 		};
 
 		return AvatarRenderer;

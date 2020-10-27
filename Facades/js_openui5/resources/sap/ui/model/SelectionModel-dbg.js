@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -16,10 +16,11 @@ sap.ui.define(['sap/ui/base/EventProvider', "sap/base/assert"],
 	 * Constructs an instance of an sap.ui.model.SelectionModel.
 	 *
 	 * @class
+	 * This artefact is used by the table controls for handling selections. It is not associated with the model layer of UI5.
 	 * @extends sap.ui.base.EventProvider
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @param {int} iSelectionMode <code>sap.ui.model.SelectionModel.SINGLE_SELECTION</code> or <code>sap.ui.model.SelectionModel.MULTI_SELECTION</code>
 	 *

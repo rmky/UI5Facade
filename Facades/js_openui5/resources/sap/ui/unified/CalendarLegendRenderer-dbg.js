@@ -1,6 +1,6 @@
 /*
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -26,6 +26,7 @@ sap.ui.define(['sap/ui/core/InvisibleText'],
 
 		var aStandardItems = oLeg.getAggregation("_standardItems"),
 			aCustomItems = oLeg.getItems(),
+			iCustomItemsLength = this.defineItemsLength(oLeg, aCustomItems.length),
 			i,
 			iIdLength,
 			sColumnWidth;
@@ -56,11 +57,11 @@ sap.ui.define(['sap/ui/core/InvisibleText'],
 
 			if (aCustomItems) {
 				// rendering special day and colors
-				for (i = 0; i < aCustomItems.length; i++) {
+				for (i = 0; i < iCustomItemsLength; i++) {
 					this.renderLegendItem(oRm, "sapUiCalLegDayType" + oLeg._getItemType(aCustomItems[i], aCustomItems).slice(4), aCustomItems[i], ["sapUiUnifiedLegendSquareColor"]);
 				}
 			}
-
+			this.renderAdditionalItems(oRm, oLeg); //like more sections with items
 			oRm.close("div");
 		}
 
@@ -129,6 +130,21 @@ sap.ui.define(['sap/ui/core/InvisibleText'],
 	CalendarLegendRenderer.renderAdditionalContent = function(oRm, oLeg) {
 		//to be used to render additional content after the items section
 		//for example more sections with items
+	};
+
+	/**
+	 * Determines how many custom items will be rendered.
+	 * @param {sap.ui.unified.CalendarLegend} oLeg an object representation of the legend that should be rendered
+	 * @param {integer} iCustomItemsLength the length of the custom items
+	 * @returns {integer} the length of the custom items to be rendered
+	 * @since 1.74
+	 */
+	CalendarLegendRenderer.defineItemsLength = function(oLeg, iCustomItemsLength) {
+		return iCustomItemsLength;
+	};
+
+	CalendarLegendRenderer.renderAdditionalItems = function(oRm, oLeg) {
+		//to be used to render additional items after the existing items
 	};
 
 	/**

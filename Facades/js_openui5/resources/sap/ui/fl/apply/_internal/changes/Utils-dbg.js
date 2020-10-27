@@ -1,6 +1,6 @@
 /*
  * ! OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -20,9 +20,9 @@ sap.ui.define([
 	/**
 	 * Util class for Applier/ChangeReverter.
 	 *
-	 * @namespace sap.ui.fl.apply._internal.connectors.Utils
+	 * @namespace sap.ui.fl.apply._internal.connectors.changes.Utils
 	 * @since 1.70
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 * @private
 	 * @ui5-restricted sap.ui.fl.apply._internal, sap.ui.fl.write._internal
 	 */

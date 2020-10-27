@@ -2,7 +2,7 @@
 
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -64,7 +64,7 @@
 }
 
 .sapUiFormContainerToolbar > .sapMTB-Transparent-CTX.sapMTB{
-	padding: 0 0.25rem;
+	padding: 0 0.25rem 0 0;
 }
 
 /* END "FormLayout.less" */
@@ -80,6 +80,13 @@
 	height: 2.75rem; /* to have always 3rem on Form header */
 	line-height: 2.75rem;
 	padding: 0 1rem;
+}
+
+/* edit mode */
+/* labels next to field */
+.sapUiFormEdit > .sapUiFormCLSmallColumns .sapUiFormElementLbl:not(.sapUiFormCLCellsS12),
+.sapUiFormEdit > .sapUiFormCLWideColumns .sapUiFormElementLbl:not(.sapUiFormCLCellsL12){
+	padding-top: 0.875rem;
 }
 /* END "ColumnLayout.less" */
 
@@ -119,6 +126,21 @@
 .sapUiGridHeader.sapUiFormContainerToolbar > .sapMTB {
 	padding: 0;
 }
+
+/* alignment of Labels */
+.sapUiFormEdit.sapUiFormM > .sapUiGrid > tbody > tr > td.sapUiFormElementLbl {
+	padding-top: 0.875rem;
+}
+
+.sapUiFormEdit.sapUiFormM > .sapUiGrid > tbody > tr.sapUiGridConteinerFirstRow > td.sapUiFormElementLbl {
+	padding-top: 2.875rem;
+}
+
+.sapUiFormEdit.sapUiFormM >.sapUiGrid > tbody > tr:first-child > td.sapUiFormElementLbl, /* if no Form title */
+.sapUiFormEdit[aria-labelledby].sapUiFormM > .sapUiGrid > tbody > tr:nth-child(2) > td.sapUiFormElementLbl {
+	padding-top: 1.875rem;
+}
+
 /* END "GridLayout.less" */
 
 /* START "ResponsiveGridLayout.less" */
@@ -132,7 +154,7 @@
 	background-color: transparent;
 	height: 2.75rem;
 	line-height: 2.75rem;
-	padding: 0 1rem;
+	padding-right: 1rem;
 }
 
 /* Grid */
@@ -143,6 +165,15 @@
 .sapUiFormResGrid.sapUiFormBackgrSolid > div {
 	background-color: @sapUiGroupContentBackground;
 }
+
+/* alignment of Labels */
+.sapUiFormEdit.sapUiFormM .sapUiRespGridMedia-Std-Phone.sapUiFormResGridCont > .sapUiFormElementLbl:not(.sapUiRespGridSpanS12),
+.sapUiFormEdit.sapUiFormM .sapUiRespGridMedia-Std-Tablet.sapUiFormResGridCont > .sapUiFormElementLbl:not(.sapUiRespGridSpanM12),
+.sapUiFormEdit.sapUiFormM .sapUiRespGridMedia-Std-Desktop.sapUiFormResGridCont > .sapUiFormElementLbl:not(.sapUiRespGridSpanL12),
+.sapUiFormEdit.sapUiFormM .sapUiRespGridMedia-Std-LargeDesktop.sapUiFormResGridCont > .sapUiFormElementLbl:not(.sapUiRespGridSpanXL12){
+	padding-top: 0.875rem;
+}
+
 /* END "ResponsiveGridLayout.less" */
 
 /* START "ResponsiveLayout.less" */
@@ -173,6 +204,16 @@
 .sapUiRLContainer.sapUiFormContainerToolbar > .sapMTB {
 	padding: 0;
 }
+
+/* alignment of Label */
+.sapUiFormEdit.sapUiFormM .sapUiRLElementWithLabel > .sapUiRFLRow:not(.sapUiRFLCompleteRow) > .sapUiRFLContainer:first-child > .sapUiRFLContainerContent{
+	padding-top: 0.875rem;
+}
+
+html[data-sap-ui-browser^="ff"] .sapUiFormEdit.sapUiFormM .sapUiRLElementWithLabel > .sapUiRFLRow:not(.sapUiRFLCompleteRow) > .sapUiRFLContainer:first-child > .sapUiRFLContainerContent{
+	padding-top: 0.8125rem;
+}
+
 /* END "ResponsiveLayout.less" */
 
 /* START "ResponsiveSplitter.less" */
@@ -181,88 +222,9 @@
 /* Fiori 3 theme                                     */
 /* ================================================= */
 
-// ==========================================================================
-// Variables overriding
-// ==========================================================================
-
 @_sap_ui_layout_ResponsiveSplitter_PaginatorHeight: 2.75rem;
 @_sap_ui_layout_ResponsiveSplitter_PaginatorButtonWidth: 2.25rem;
 @_sap_ui_layout_ResponsiveSplitter_PaginatorButtonHeight: 2.25rem;
-@_sap_ui_layout_ResponsiveSplitter_PaginatorButtonFocusWidth: 1.875rem;
-@_sap_ui_layout_ResponsiveSplitter_PaginatorButtonFocusHeight: 2rem;
-
-// ==========================================================================
-// Variables
-// ==========================================================================
-
-@_sap_ui_layout_ResponsiveSplitter_PaginatorButtonColor: darken(@sapUiContentForegroundColor, 36);
-@_sap_ui_layout_ResponsiveSplitter_CircleColor: darken(@sapUiBaseBG, 5);
-@_sap_ui_layout_ResponsiveSplitter_CircleBorderColor: darken(@sapUiBaseBG, 40);
-
-.sapUiResponsiveSplitterPaginatorButton {
-	background-color: transparent;
-	position: relative;
-	top: 0.1875rem;
-
-	&:after {
-		background-color: @_sap_ui_layout_ResponsiveSplitter_PaginatorButtonColor;
-	}
-
-	&:hover {
-		background-color: @sapUiButtonLiteHoverBackground;
-
-		&:after {
-			background-color: @_sap_ui_layout_ResponsiveSplitter_PaginatorButtonColor;
-		}
-	}
-
-	&:active {
-		background-color: @sapUiButtonLiteActiveBackground;
-
-		&:after {
-			background-color: @sapUiContentContrastIconColor;
-		}
-	}
-
-	&:focus {
-		&:before {
-			border: 1px dotted @sapUiContentFocusColor;
-		}
-	}
-}
-
-.sapUiResponsiveSplitterPaginatorSelectedButton {
-	&:after {
-		background-color: @sapUiSelected;
-	}
-
-	&:hover {
-		background-color: @sapUiButtonLiteHoverBackground;
-
-		&:after {
-			background-color: @sapUiSelected;
-		}
-	}
-}
-
-
-
-html.sap-phone .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage > .sapUiLoSplitter .sapUiLoSplitterBar,
-html.sap-tablet .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage > .sapUiLoSplitter .sapUiLoSplitterBar,
-html.sap-phone .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage > .sapUiLoSplitter .sapUiLoSplitterOverlayBar,
-html.sap-tablet .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage > .sapUiLoSplitter .sapUiLoSplitterOverlayBar {
-	& .sapUiLoSplitterBarIcon:after {
-		background-color: @_sap_ui_layout_ResponsiveSplitter_CircleColor;
-		border-color: @_sap_ui_layout_ResponsiveSplitter_CircleBorderColor;
-	}
-}
-
-html.sap-phone .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage > .sapUiLoSplitter .sapUiLoSplitterOverlayBar,
-html.sap-tablet .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage > .sapUiLoSplitter .sapUiLoSplitterOverlayBar {
-	& .sapUiLoSplitterBarIcon:after {
-		border-color: @sapUiHighlight;
-	}
-}
 /* END "ResponsiveSplitter.less" */
 
 /* START "SimpleForm.less" */
@@ -279,50 +241,6 @@ html.sap-tablet .sapUiResponsiveSplitter > .sapUiResponsiveSplitterPage > .sapUi
 	right: -0.0312rem;
 }
 /* END "SimpleForm.less" */
-
-/* START "Splitter.less" */
-/* ======================================= */
-/* CSS for control sap.ui.layout/Splitter  */
-/* Fiori 3 theme                           */
-/* ======================================= */
-
-@_sap_ui_layout_Splitter_BarColor: darken(@sapUiBaseBG, 40);
-@_sap_ui_layout_Splitter_BarHoverColor: darken(@sapUiBaseBG, 50);
-
-html.sap-desktop .sapUiLoSplitterH.sapUiLoSplitter > .sapUiLoSplitterBar,
-html.sap-desktop .sapUiLoSplitterH > .sapUiLoSplitterOverlay > .sapUiLoSplitterOverlayBar {
-	height: 100%;
-	width: 0.25rem;
-}
-
-html.sap-desktop .sapUiLoSplitterV.sapUiLoSplitter > .sapUiLoSplitterBar,
-html.sap-desktop .sapUiLoSplitterV > .sapUiLoSplitterOverlay > .sapUiLoSplitterOverlayBar {
-	width: 100%;
-	height: 0.25rem;
-}
-
-.sapUiLoSplitter > .sapUiLoSplitterBar {
-	background-color: @_sap_ui_layout_Splitter_BarColor;
-	&:hover {
-		background-color: @_sap_ui_layout_Splitter_BarHoverColor;
-	}
-}
-
-.sapUiLoSplitterOverlay > .sapUiLoSplitterOverlayBar {
-	background-color: @sapUiHighlight;
-}
-
-.sapUiLoSplitterBarIcon {
-	display: none;
-}
-
-/*********************************** IE Focus outline workaround **********************************/// TODO remove after 1.62 version
-
-html[data-sap-ui-browser^=ie] .sapUiLoSplitterH > .sapUiLoSplitterBar:focus::after {
-	top: 0;
-}
-
-/* END "Splitter.less" */
 
 /* START "BlockLayout.less" */
 /* ========================================== */
@@ -410,6 +328,14 @@ html[data-sap-ui-browser^=ie] .sapUiLoSplitterH > .sapUiLoSplitterBar:focus::aft
 @_sap_ui_layout_BlockLayout_BlockColorAccentType11E: lighten(@sapUiHighlight, 7);
 @_sap_ui_layout_BlockLayout_BlockColorAccentType11F: darken(@sapUiHighlight, 2);
 
+@_sap_ui_layout_BlockLayout_BackgroundDashboardMargin: 0.5rem;
+@_sap_ui_layout_BlockLayout_BackgroundDashboardEdgeChildMargin: 1rem;
+@_sap_ui_layout_BlockLayout_BackgroundDashboardAfterScrollbarMargin: 0.75rem;
+
+@_sap_ui_layout_BlockLayout_LinkTextShadow: none;
+
+@_sap_ui_layout_BlockLayout_BackgroundDashboardColor: @sapUiTileBackground;
+@_sap_ui_layout_BlockLayout_BackgroundDashboardBorderRadius: 0.25rem;
 
 // Create classes which would just set background color of the BlockLayout cells
 .generateCellColorSets (@backgroundColorSet, @backgroundColorShade) {

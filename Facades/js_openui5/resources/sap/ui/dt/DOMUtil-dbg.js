@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -24,7 +24,7 @@ function(
 	 * Utility functionality for DOM
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @private
 	 * @static
@@ -79,7 +79,7 @@ function(
 		}
 
 		if (sap.ui.getCore().getConfiguration().getRTL()) {
-			var iParentWidth = $Parent ? $Parent.width() : jQuery(window).width();
+			var iParentWidth = $Parent ? $Parent.outerWidth() : jQuery(window).outerWidth();
 			//TODO: Workaround - remove when bug in Safari (issue 336512063) is solved
 			if (Device.browser.safari && !Device.browser.mobile && DOMUtil.hasVerticalScrollBar($Parent)) {
 				mOffset.left -= DOMUtil.getScrollbarWidth();
@@ -137,27 +137,54 @@ function(
 	};
 
 	/**
+	 * @private
+	 */
+	DOMUtil._getElementDimensions = function (oDomRef, sMeasure, aDirection) {
+		var oRelevantDomRef = oDomRef[0] || oDomRef;
+		var iOffsetWidth = oRelevantDomRef["offset" + sMeasure];
+		var iValue = 0;
+		for (var i = 0; i < 2; i++) {
+			// remove border
+			var sBorderMeasure = window.getComputedStyle(oRelevantDomRef, null)["border" + aDirection[ i ] + sMeasure];
+			iValue -= sBorderMeasure ? parseInt(sBorderMeasure.slice(0, -2)) : 0;
+		}
+		return iOffsetWidth + iValue;
+	};
+
+	/**
+	 * @private
+	 */
+	DOMUtil._getElementWidth = function (oDomRef) {
+		return DOMUtil._getElementDimensions(oDomRef, "Width", ["Right", "Left"]);
+	};
+
+	/**
+	 * @private
+	 */
+	DOMUtil._getElementHeight = function (oDomRef) {
+		return DOMUtil._getElementDimensions(oDomRef, "Height", ["Top", "Bottom"]);
+	};
+
+	/**
 	 * Checks whether DOM Element has vertical scrollbar
-	 * @param oDomRef {HTMLElement} - DOM Element
-	 * @return {boolean}
+	 * @param {HTMLElement} oDomRef - DOM Element
+	 * @return {boolean} <code>true</code> if vertical scrollbar is available on DOM Element.
 	 */
 	DOMUtil.hasVerticalScrollBar = function(oDomRef) {
 		var $DomRef = jQuery(oDomRef);
 		var bOverflowYScroll = $DomRef.css("overflow-y") === "auto" || $DomRef.css("overflow-y") === "scroll";
-
-		return bOverflowYScroll && $DomRef.get(0).scrollHeight > $DomRef.height();
+		return bOverflowYScroll && $DomRef.get(0).scrollHeight > DOMUtil._getElementHeight(oDomRef);
 	};
 
 	/**
 	 * Checks whether DOM Element has horizontal scrollbar
-	 * @param oDomRef {HTMLElement} - DOM Element
-	 * @return {boolean}
+	 * @param {HTMLElement} oDomRef - DOM Element
+	 * @return {boolean} <code>true</code> if horizontal scrollbar is available on DOM Element
 	 */
 	DOMUtil.hasHorizontalScrollBar = function (oDomRef) {
 		var $DomRef = jQuery(oDomRef);
 		var bOverflowXScroll = $DomRef.css("overflow-x") === "auto" || $DomRef.css("overflow-x") === "scroll";
-
-		return bOverflowXScroll && $DomRef.get(0).scrollWidth > $DomRef.width();
+		return bOverflowXScroll && $DomRef.get(0).scrollWidth > DOMUtil._getElementWidth(oDomRef);
 	};
 
 	/**
@@ -176,7 +203,7 @@ function(
 	DOMUtil.getScrollbarWidth = function() {
 		if (typeof DOMUtil.getScrollbarWidth._cache === 'undefined') {
 			// add outer div
-			var oOuter = jQuery('<div/>')
+			var oOuter = jQuery('<div></div>')
 				.css({
 					position: 'absolute',
 					top: '-9999px',
@@ -189,7 +216,7 @@ function(
 			oOuter.css('overflow', 'scroll');
 
 			// add inner div
-			var oInner = jQuery('<div/>')
+			var oInner = jQuery('<div></div>')
 				.css('width', '100%')
 				.appendTo(oOuter);
 
@@ -419,9 +446,9 @@ function(
 	};
 
 	/**
-	 * Inserts <style/> tag width specified styles into #overlay-container
+	 * Inserts a &lt;style> tag with specified styles into #overlay-container
 	 * @param {string} sStyles - Plain CSS as a string to be added into the page
-	 * @param {HTMLElement} oTarget - Target DOM Node where to add <style> tag with CSS
+	 * @param {HTMLElement} oTarget - Target DOM Node where to add &lt;style> tag with CSS
 	 */
 	DOMUtil.insertStyles = function (sStyles, oTarget) {
 		var oStyle = document.createElement('style');

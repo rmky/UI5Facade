@@ -1,6 +1,6 @@
 /*!
  * OpenUI5
- * (c) Copyright 2009-2019 SAP SE or an SAP affiliate company.
+ * (c) Copyright 2009-2020 SAP SE or an SAP affiliate company.
  * Licensed under the Apache License, Version 2.0 - see LICENSE.txt.
  */
 
@@ -8,39 +8,30 @@
 sap.ui.define([
 	"../library",
 	"sap/ui/core/Control",
-	"sap/ui/fl/Utils",
 	"sap/ui/model/json/JSONModel",
+	"./getContainerUserInfo",
+	"sap/base/util/extend",
 	"sap/ui/core/library",
 	"./IFrameRenderer"
 ], function(
 	library,
 	Control,
-	Utils,
-	JSONModel
+	JSONModel,
+	getContainerUserInfo,
+	extend
 ) {
 	"use strict";
 
-	function getContainerUserInfo () {
-		var oShellContainer = Utils.getUshellContainer();
-		if (oShellContainer) {
-			var oUserInfoService = oShellContainer.getService("UserInfo");
-			if (!oUserInfoService) {
-				return;
-			}
-			var oUserInfo = oUserInfoService.getUser();
-			if (!oUserInfo) {
-				return;
-			}
-			var sEmail = oUserInfo.getEmail();
-			var sDomain = /@(.*)/.exec(sEmail)[1];
-			return {
-				fullName: oUserInfo.getFullName(),
-				firstName: oUserInfo.getFirstName(),
-				lastName: oUserInfo.getLastName(),
-				email: sEmail,
-				domain: sDomain
-			};
+	function unbind (vValue) {
+		if (vValue.parts && vValue.formatter) {
+			return vValue.formatter.apply(null, vValue.parts.map(function (oPart) {
+				if (oPart.model) {
+					return "{" + oPart.model + ">" + oPart.path + "}";
+				}
+				return "{" + oPart.path + "}";
+			}));
 		}
+		return vValue;
 	}
 
 	/**
@@ -55,7 +46,7 @@ sap.ui.define([
 	 * @extends sap.ui.core.Control
 	 *
 	 * @author SAP SE
-	 * @version 1.73.1
+	 * @version 1.82.0
 	 *
 	 * @constructor
 	 * @private
@@ -80,19 +71,49 @@ sap.ui.define([
 				/**
 				 * Defines the <code>IFrame</code> height.
 				 */
-				height : {type : "sap.ui.core.CSSSize", group : "Misc", defaultValue : "100%"}
-			}
+				height : {type : "sap.ui.core.CSSSize", group : "Misc", defaultValue : "100%"},
 
-			// designtime: "sap/ui/fl/util/IFrame.designtime"
+				/**
+				 * Defines the title of the item.
+				 */
+				title : {type : "string", group : "Misc", defaultValue : undefined},
+
+				/**
+				 * Backup of the initial settings for the dialogs
+				 *
+				 * @ui5-restricted sap.ui.fl
+				 */
+				_settings : {type : "object", group : "Data", defaultValue : null}
+			},
+
+			designtime: "sap/ui/fl/designtime/util/IFrame.designtime"
 		},
 
 		init: function () {
 			if (Control.prototype.init) {
 				Control.prototype.init.apply(this, arguments);
 			}
-			var oUserData = getContainerUserInfo() || {};
-			this._oUserModel = new JSONModel(oUserData);
+			this._oUserModel = new JSONModel(getContainerUserInfo());
 			this.setModel(this._oUserModel, "$user");
+		},
+
+		applySettings: function (mSettings) {
+			Control.prototype.applySettings.apply(this, arguments);
+			if (mSettings) {
+				var mMergedSettings = this.getProperty("_settings") || {};
+				if (mSettings._settings) {
+					extend(mMergedSettings, mSettings._settings);
+				} else {
+					Object.keys(mSettings)
+						.filter(function (sPropertyName) {
+							return !!mSettings[sPropertyName];
+						})
+						.forEach(function (sPropertyName) {
+							mMergedSettings[sPropertyName] = unbind(mSettings[sPropertyName]);
+						});
+				}
+				this.setProperty("_settings", mMergedSettings);
+			}
 		},
 
 		exit: function () {

@@ -94,7 +94,7 @@ const exfLauncher = {};
 		                new sap.m.ToolbarSpacer(),
 		                new sap.m.Button("exf-network-indicator", {
 		                    icon: function(){return navigator.onLine ? "sap-icon://connected" : "sap-icon://disconnected"}(),
-		                    text: "{/_network/queueCnt}/{/_network/syncErrorCnt}",
+		                    text: "{/_network/queueCnt}",
 		                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"}),
 		                    press: function(oEvent){
 		                    	_oLauncher.contextBar.getComponent().getPreloader().updateQueueCount();
@@ -310,7 +310,7 @@ const exfLauncher = {};
 														},
 													}),
 													new sap.m.StandardListItem({
-														title: "{i18n>WEBAPP.SHELL.NETWORK.SYNC_MENU_ERRORS} ({/_network/syncErrorCnt})",
+														title: "{i18n>WEBAPP.SHELL.NETWORK.SYNC_MENU_ERRORS}",
 														type: "{= ${/_network/online} > 0 ? 'Active' : 'Inactive' }",
 														//blocked: "{= ${/_network/online} > 0 ? false : true }", //Deprecated as of version 1.69.
 														press: function(){

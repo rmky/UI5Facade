@@ -100,6 +100,7 @@ class UI5DataTable extends UI5AbstractElement
     		items: [
                 new sap.m.Table("{$this->getId()}", {
             		fixedLayout: false,
+                    contextualWidth: "Auto",
                     sticky: [sap.m.Sticky.ColumnHeaders, sap.m.Sticky.HeaderToolbar],
                     alternateRowColors: {$striped},
                     noDataText: "{$this->getWidget()->getEmptyText()}",

@@ -398,7 +398,7 @@ JS;
                 {$this->buildJsPageHeaderContent($oControllerJs)}
             ],
             footer: {$this->buildJsFloatingToolbar()}
-        })
+        }).addStyleClass('exf-dialog-page')
         {$this->buildJsPseudoEventHandlers()}
 
 JS;
@@ -546,39 +546,57 @@ JS;
     {
         $widget = $this->getWidget();
         $js = '';
-        $non_tab_children_constructors = '';
-        $non_tab_hidden_constructors = '';
+        $non_tab_children_constructors = [];
+        $non_tab_hidden_constructors = [];
+        $hasSingleVisibleChild = false;
         
         foreach ($widget->getWidgets() as $child) {
-            // Tabs are transformed to PageSections and all other widgets are collected and put into a separate page section
-            // lager on.
-            if ($child instanceof Tabs) {
-                foreach ($child->getTabs() as $tab) {
-                    $js .= $this->buildJsObjectPageSectionFromTab($tab);
-                }
-            } else {
+            switch (true) {
+                // Tabs are transformed to PageSections and all other widgets are collected and put into a separate page section
+                // lager on.
+                case $child instanceof Tabs:
+                    foreach ($child->getTabs() as $tab) {
+                        $js .= $this->buildJsObjectPageSectionFromTab($tab);
+                    }
+                    continue 2;
                 // Most dialogs will have hidden system fields at top level. They need to be placed at the very end - otherwise
                 // they break the SimpleForm generated for the non-tab PageSection. If they come first, the SimpleForm will allocate
                 // space for them (even though not visible) and put the actual content way in the back.
-                if ($child->isHidden() === true) {
-                    $non_tab_hidden_constructors .= ($non_tab_hidden_constructors ? ',' : '') . $this->getFacade()->getElement($child)->buildJsConstructor();
-                } else {
-                    if ((($child instanceof iFillEntireContainer) || $child->getWidth()->isMax()) && $widget->countWidgetsVisible() !== 1) {
-                        $non_tab_children_constructors .= ($non_tab_children_constructors ? ',' : '') . $this->buildJsFormRowDelimiter();
+                case $child->isHidden() === true:
+                    $non_tab_hidden_constructors[] = $this->getFacade()->getElement($child)->buildJsConstructor();
+                    break;
+                // Large widgets need to be handled differently if the fill the entire dialog (i.e. being
+                // the only visible widget). In this case, we don't need any layout - just the big filling
+                // widget.
+                case (($child instanceof iFillEntireContainer) || $child->getWidth()->isMax()):
+                    if ($widget->countWidgetsVisible() === 1) {
+                        $hasSingleVisibleChild = true;
+                    } else {
+                        // If a large widget is not the only child, prepend a delimiter for the SimpleForm
+                        $non_tab_children_constructors[] = $this->buildJsFormRowDelimiter();
                     }
-                    $non_tab_children_constructors .= ($non_tab_children_constructors ? ',' : '') . $this->getFacade()->getElement($child)->buildJsConstructor();
-                }
+                    $non_tab_children_constructors[] = $this->getFacade()->getElement($child)->buildJsConstructor();
+                    break;
+                default:
+                    $non_tab_children_constructors[] = $this->getFacade()->getElement($child)->buildJsConstructor();
             }
         }
         
         // Append hidden non-tab elements after the visible ones
-        if ($non_tab_hidden_constructors) {
-            $non_tab_children_constructors .= ($non_tab_children_constructors ? ',' : '') . $non_tab_hidden_constructors;
+        if (! empty($non_tab_hidden_constructors)) {
+            $non_tab_children_constructors[] = implode(",", $non_tab_hidden_constructors);
         }
         
         // Build an ObjectPageSection for the non-tab elements
-        if ($non_tab_children_constructors) {
-            $js .= $this->buildJsObjectPageSection($this->buildJsLayoutConstructor($non_tab_children_constructors), 'sapUiTinyMarginTop');
+        if (! empty($non_tab_children_constructors)) {
+            if ($hasSingleVisibleChild) {
+                $sectionContent = implode(",", $non_tab_children_constructors);
+                $sectionCssClass = 'sapUiNoContentPadding';
+            } else {
+                $sectionContent = $this->buildJsLayoutConstructor(implode(",", $non_tab_children_constructors));
+                $sectionCssClass = 'sapUiTinyMarginTop';
+            }
+            $js .= $this->buildJsObjectPageSection($sectionContent, $sectionCssClass);
         }
         
         return $js;

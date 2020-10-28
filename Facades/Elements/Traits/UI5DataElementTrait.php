@@ -712,8 +712,9 @@ JS;
             oTable.getModel("{$this->getModelNameForConfigurator()}").setProperty('/filterDescription', {$this->getController()->buildJsMethodCallFromController('onUpdateFilterSummary', $this, '', 'oController')});
             {$dynamicPageFixes}
             {$this->buildJsDataLoaderOnLoadedHandleWidgetLinks($oModelJs)}
-            {$editableTableWatchChanges}
-			
+            {$editableTableWatchChanges}          
+            {$this->buildJsMarkRowsAsDirty($oModelJs)}
+		
 JS;
     }
     
@@ -1355,6 +1356,54 @@ JS;
             })();
             
 JS;
+    }
+    
+    /**
+     * 
+     * @param string $oModelJs
+     * @return string
+     */
+    protected function buildJsMarkRowsAsDirty(string $oModelJs) : string
+    {
+        $widget = $this->getWidget();
+        $uidAttributeAlias = $widget->getMetaObject()->getUidAttributeAlias();
+        return <<<JS
+
+        (function(){
+            var oData = $oModelJs.getData();
+            var aRows = oData.rows;
+            var rowsMarked = false;
+            exfPreloader.getActionObjectData('{$widget->getMetaObject()->getId()}')
+            .then(function(actionRows) {
+                for (var i = 0; i < actionRows.length; i++) {
+                    for (var j = 0; j < aRows.length; j++) {
+                        var actionId = actionRows[i]['{$uidAttributeAlias}'];
+                        var rowId = aRows[j]['{$uidAttributeAlias}'];
+                        if (actionRows[i]['{$uidAttributeAlias}'] == aRows[j]['{$uidAttributeAlias}']) {
+                            aRows[j]['{$this->getDirtyFlagAlias()}'] = true;
+                            rowsMarked = true;
+                            break;
+                        }
+                    }
+                }
+                var element = sap.ui.getCore().byId('{$this->getDirtyFlagAlias()}')
+                element.setVisible(rowsMarked);
+                oData.rows = aRows;
+                $oModelJs.setData(oData);                
+            })
+        })();
+
+JS;
+        
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    protected function getDirtyFlagAlias() : string
+    {
+        return "{$this->getWidget()->getId()}" . "DirtyFlag";
     }
     
     /**

@@ -28,6 +28,9 @@ pre.sf-dump .sf-dump-private, pre.sf-dump .sf-dump-public, pre.sf-dump .sf-dump-
 .sapMList.sapMListBGTranslucent.sapMListTblCnt {overflow-x: scroll}
 .sapMTB-Info-CTX .sapMBtnTransparent>.sapMBtnIcon {color: #fff}
 
+/* Panels */
+.exf-panel-no-border > .sapMPanelContent {border-bottom: none;}
+
 /* sap.m.List */
 .sapMLIB.sapMSLIIcon {padding-left: 0;}
 
@@ -114,3 +117,7 @@ html.sap-tablet .sapMDialog, html.sap-desktop .sapMDialog {min-width: 25rem !imp
 .sapMDialog .sapMVBox > .sapMFlexItemAlignAuto {height: 100%}
 .exf-datalookup-tokenizer .sapMInputBaseIconContainer {display: none !important;}
 .exf-datalookup .sapMPanelWrappingDivTb, .exf-datalookup .sapMPanelContent:not(.sapMPanelBGTransparent) {border: none !important;}
+
+/* Textual busy overlays */
+.exf-busy-text .sapUiLocalBusyIndicatorAnimation {display: none}
+.exf-busy-text-content {position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);}

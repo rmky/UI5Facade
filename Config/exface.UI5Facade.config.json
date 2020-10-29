@@ -33,7 +33,7 @@
     	"GET data": {
 			"description": "Cache data from the UI5 API (e.g. GET `/api/ui5?action=...`)",
 			"matcher": "/.*\\/api\\/ui5\\?(?!.*context).*/i",
-			"strategy": "workbox.strategies.networkFirst",
+			"strategy": "workbox.strategies.NetworkFirst",
 			"cacheName": "data-cache",
     		"maxEntries": 50,
     		"maxAgeSeconds": 86400
@@ -56,14 +56,15 @@
     	"GET i18n, config": {
 			"description": "Cache UI5 specific files in addition to regular JS and CSS cache rules from Core",
 			"matcher": "/(.*\\.properties|.*\\/cldr\\/.*\\.json)/",
-			"strategy": "workbox.strategies.staleWhileRevalidate",
+			"strategy": "workbox.strategies.StaleWhileRevalidate",
 			"cacheName": "ui5-cache",
     		"maxAgeSeconds": 604800
 		}
     },
     "INSTALLER.SERVICEWORKER.IMPORTS": [
     	"npm-asset/dexie/dist/dexie.min.js",
-    	"exface/Core/Facades/AbstractPWAFacade/sw_tools.js"
+    	"exface/Core/Facades/AbstractPWAFacade/sw_tools.js",
+    	"exface/Core/Facades/AbstractPWAFacade/exf_preloader.js"
     ],
 	
 	"LIBS.FACADE.CSS": "exface/UI5Facade/Facades/js/openui5.template.css",

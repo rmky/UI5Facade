@@ -1,13 +1,47 @@
 // Toggle online/offlie icon
 window.addEventListener('online', function(){
 	exfLauncher.toggleOnlineIndicator();
+	if(!navigator.serviceWorker){
+		console.log('Syncing offline Queue');
+		exfPreloader.getActionQueueIds('offline')
+		.then(function(ids) {
+			var count = ids.length;
+			if (count > 0){
+				var shell = exfLauncher.getShell();
+				shell.setBusy(true);				
+				exfPreloader.syncActionAll(ids)
+				.then(function(){
+					return exfLauncher.contextBar.getComponent().getPreloader().updateQueueCount();
+				})
+				.then(function(){
+					shell.setBusy(false);
+					exfLauncher.showMessageToast("Sync completed");
+				})
+			}
+		})
+		.catch(function(error){
+			shell.setBusy(false);
+			exfLauncher.showMessageToast("Sync failed. " + error);
+		})
+	}
 });
 window.addEventListener('offline', function(){
 	exfLauncher.toggleOnlineIndicator();
 });
 
+if (navigator.serviceWorker) {
+	navigator.serviceWorker.addEventListener('message', function(event) {
+		exfLauncher.contextBar.getComponent().getPreloader().updateQueueCount()
+		.then(function(){
+			exfLauncher.showMessageToast(event.data);
+		})
+	});
+}
+
 const exfLauncher = {};
 (function() {
+	
+	exfPreloader.setTopics(['offlineTask', 'ui5', 'test']);
 	
 	var _oShell = {};
 	var _oAppMenu;
@@ -60,9 +94,10 @@ const exfLauncher = {};
 		                new sap.m.ToolbarSpacer(),
 		                new sap.m.Button("exf-network-indicator", {
 		                    icon: function(){return navigator.onLine ? "sap-icon://connected" : "sap-icon://disconnected"}(),
-		                    text: "0/0",
+		                    text: "{/_network/queueCnt}",
 		                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"}),
 		                    press: function(oEvent){
+		                    	_oLauncher.contextBar.getComponent().getPreloader().updateQueueCount();
 								var oButton = oEvent.getSource();
 								var oPopover = sap.ui.getCore().byId('exf-network-menu');
 								if (oPopover === undefined) {
@@ -79,33 +114,7 @@ const exfLauncher = {};
 													new sap.m.StandardListItem({
 														title: "{i18n>WEBAPP.SHELL.NETWORK.SYNC_MENU_QUEUE} ({/_network/queueCnt})",
 														type: "Active",
-														press: function(){
-															var oData = {
-																	data: [
-																		/*{
-																			"action_alias": "exface.Core.CreateData",
-																			"caption": "Speichern",
-																			"object_alias": "alexa.RMS-demo.BBD_ALERT",
-																			"object_name": "MHD-Alarm",
-																			"triggered": "2017-02-05 13:55:37"
-																		},
-																		{
-																			"action_alias": "exface.Core.UpdateData",
-																			"caption": "Speichern",
-																			"object_alias": "axenox.WMS.picking_order_pos",
-																			"object_name": "Pickauftragsposition",
-																			"triggered": "2018-04-12 14:48:06"
-																		},
-																		{
-																			"action_alias": "exface.Core.UpdateData",
-																			"caption": "Speichern",
-																			"object_alias": "axenox.WMS.picking_order_pos",
-																			"object_name": "Pickauftragsposition",
-																			"triggered": "2018-04-12 16:38:22"
-																		}*/
-																	]
-															};
-															
+														press: function(oEvent){
 															var oTable = new sap.m.Table({
 																fixedLayout: false,
 																mode: sap.m.ListMode.MultiSelect,
@@ -117,18 +126,107 @@ const exfLauncher = {};
 																				text: "Wartende Online-Aktionen"
 																			}),
 																			new sap.m.ToolbarSpacer(),
+																			new sap.m.Button('exf-queue-sync', {
+																				text: "Sync",
+																				icon: "sap-icon://synchronize",
+																				enabled: "{= ${/_network/online} > 0 ? true : false }",
+																				press: function(oEvent){
+																					var oButton = oEvent.getSource();
+																					var table = oButton.getParent().getParent()
+																					var selectedItems = table.getSelectedItems();
+																					if (selectedItems.length ===0) {
+																						_oLauncher.showMessageToast("No actions selected!");
+																						return;
+																					}
+																					oButton.setBusyIndicatorDelay(0).setBusy(true);
+																					var selectedIds = [];
+																					selectedItems.forEach(function(item){
+																						var bindingObj = item.getBindingContext('queueModel').getObject()
+																						selectedIds.push(bindingObj.id);
+																					})																					
+																					exfPreloader.syncActionAll(selectedIds)
+																					.then(function(){
+																						_oLauncher.contextBar.getComponent().getPreloader().updateQueueCount()
+																					})
+																					.then(function(){
+																						oButton.setBusy(false);
+																						_oLauncher.showMessageToast("Sync completed");
+																						return exfPreloader.getActionQueueData('offline')
+																					})
+																					.then(function(data){
+																						var oData = {};
+																						oData.data = data;
+																						oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}(), 'queueModel');
+																						return;
+																					})
+																					.catch(function(error){
+																						console.error('Sync Error: ', error);
+																						_oLauncher.contextBar.getComponent().getPreloader().updateQueueCount()
+																						.then(function(){
+																							oButton.setBusy(false);
+																							_oLauncher.contextBar.getComponent().showDialog('Offline Queue', error, 'Error');
+																							return exfPreloader.getActionQueueData('offline')
+																						})
+																						.then(function(data){
+																							var oData = {};
+																							oData.data = data;
+																							oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}(), 'queueModel');
+																							return;
+																						})
+																						return;
+																					})
+																				},
+																			}),
 																			new sap.m.Button({
 																				text: "Abbrechen",
-																				icon: "sap-icon://cancel"
+																				icon: "sap-icon://cancel",
+																				press: function(oEvent){
+																					var oButton = oEvent.getSource();																					
+																					var table = oButton.getParent().getParent()
+																					var selectedItems = table.getSelectedItems();																					
+																					if (selectedItems.length ===0) {
+																						_oLauncher.showMessageToast("No actions selected!");
+																						return;
+																					}
+																					oButton.setBusyIndicatorDelay(0).setBusy(true);
+																					var selectedIds = [];
+																					selectedItems.forEach(function(item){
+																						var bindingObj = item.getBindingContext('queueModel').getObject()
+																						selectedIds.push(bindingObj.id);
+																					})
+																					exfPreloader.deleteActionAll(selectedIds)
+																					.then(function(){
+																						_oLauncher.contextBar.getComponent().getPreloader().updateQueueCount()
+																					})
+																					.then(function(){
+																						oButton.setBusy(false);
+																						_oLauncher.showMessageToast("Actions deleted!");
+																						return exfPreloader.getActionQueueData('offline')
+																					})
+																					.then(function(data){
+																						var oData = {};
+																						oData.data = data;
+																						oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}(), 'queueModel');
+																						return;
+																					})
+																				}
 																			}),
 																			new sap.m.Button({
 																				text: "Exportieren",
 																				icon: "sap-icon://download"
-																			})
+																			})																			
 																		]
 																	})
 																],
+																footerText: 'Geräte ID: {/_network/deviceId}',
 																columns: [
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
+																				text: 'ID'
+																			})
+																		]
+																	}),
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
@@ -146,38 +244,179 @@ const exfLauncher = {};
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				text: "Alias"
+																				text: 'Triggered'
 																			})
-																		],
-																		minScreenWidth: "Tablet",
-																		demandPopin: true
+																		]
 																	}),
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
+																				text: 'Status'
+																			})
+																		]
+																	}),
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
+																				text: 'Sync Versuche'
+																			})
+																		]
+																	})
 																],
 																items: {
-																	path: "/data",
+																	path: "queueModel>/data",
 																	template: new sap.m.ColumnListItem({
 																		cells: [
 																			new sap.m.Text({
-																				text: "{object_name}"
+																				text: "{queueModel>id}"
 																			}),
 																			new sap.m.Text({
-																				text: "{caption}"
+																				text: "{queueModel>object}"
 																			}),
 																			new sap.m.Text({
-																				text: "{action_alias}"
+																				text: "{queueModel>action_alias}"
+																			}),
+																			new sap.m.Text({
+																				text: "{queueModel>triggered}"
+																			}),
+																			new sap.m.Text({
+																				text: "{queueModel>status}"
+																			}),
+																			new sap.m.Text({
+																				text: "{queueModel>tries}"
 																			})
 																		]
 																	})
 																}
-															}).setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
+															})
+															.setModel(oButton.getModel())
+															.setModel(oButton.getModel('i18n'), 'i18n');
 															
-															_oLauncher.contextBar.getComponent().showDialog('Sync-Puffer', oTable, undefined, undefined, true);
+															exfPreloader.getActionQueueData('offline')
+															.then(function(data){
+																var oData = {};
+																oData.data = data;
+																oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}(), 'queueModel');
+																_oLauncher.contextBar.getComponent().showDialog('Offline action queue', oTable, undefined, undefined, true);
+															})
+															.catch(function(data){
+																var oData = {};
+																oData.data = data;
+																oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
+																_oLauncher.contextBar.getComponent().showDialog('Offline action queue', oTable, undefined, undefined, true);
+															})
+															
+															
 														},
 													}),
 													new sap.m.StandardListItem({
-														title: "{i18n>WEBAPP.SHELL.NETWORK.SYNC_MENU_ERRORS} ({/_network/syncErrorCnt})",
-														type: "Active",
-														press: function(){},
+														title: "{i18n>WEBAPP.SHELL.NETWORK.SYNC_MENU_ERRORS}",
+														type: "{= ${/_network/online} > 0 ? 'Active' : 'Inactive' }",
+														//blocked: "{= ${/_network/online} > 0 ? false : true }", //Deprecated as of version 1.69.
+														press: function(){
+															var oTable = new sap.m.Table({
+																fixedLayout: false,
+																headerToolbar: [
+																	new sap.m.OverflowToolbar({
+																		design: "Transparent",
+																		content: [
+																			new sap.m.Label({
+																				text: "Fehlerhafte Offline-Aktionen"
+																			})
+																		]
+																	})
+																],
+																footerText: 'Geräte ID: {/_network/deviceId}',
+																columns: [
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
+																				text: 'Message ID'
+																			})
+																		]
+																	}),
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
+																				text: "Objekt"
+																			})
+																		]
+																	}),
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
+																				text: "Aktion"
+																			})
+																		]
+																	}),
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
+																				text: 'Triggered'
+																			})
+																		]
+																	}),
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
+																				text: 'Error LogId'
+																			})
+																		]
+																	}),
+																	new sap.m.Column({
+																		header: [
+																			new sap.m.Label({
+																				text: 'Queue name'
+																			})
+																		]
+																	})
+																],
+																items: {
+																	path: "errorModel>/data",
+																	template: new sap.m.ColumnListItem({
+																		cells: [
+																			new sap.m.Text({
+																				text: "{errorModel>MESSAGE_ID}"
+																			}),
+																			new sap.m.Text({
+																				text: "{errorModel>OBJECT_ALIAS}"
+																			}),
+																			new sap.m.Text({
+																				text: "{errorModel>ACTION_ALIAS}"
+																			}),
+																			new sap.m.Text({
+																				text: "{errorModel>TASK_ASSIGNED_ON}"
+																			}),
+																			new sap.m.Text({
+																				text: "{errorModel>ERROR_LOGID}"
+																			}),
+																			new sap.m.Text({
+																				text: "{errorModel>QUEUE__NAME}"
+																			})
+																		]
+																	})
+																}
+															})
+															.setModel(oButton.getModel())
+															.setModel(oButton.getModel('i18n'), 'i18n');
+															
+															_oLauncher.loadErrorData()
+															.then(function(data){
+																console.log('Loaded Error Data');
+																var oData = {};
+																if (data.rows !== undefined) {
+																	var rows = data.rows;
+																	for (var i = 0; i < rows.length; i++) {
+																		if (rows[i].TASK_ASSIGNED_ON !== undefined) {
+																			rows[i].TASK_ASSIGNED_ON = new Date(rows[i].TASK_ASSIGNED_ON).toLocaleString();
+																		}
+																	}
+																	oData.data = rows;
+																}
+																oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}(), 'errorModel');
+																_oLauncher.contextBar.getComponent().showDialog('Offline action queue', oTable, undefined, undefined, true);
+															})
+														}
 													}),
 													new sap.m.GroupHeaderListItem({
 														title: '{i18n>WEBAPP.SHELL.PRELOAD.MENU}',
@@ -191,18 +430,25 @@ const exfLauncher = {};
 														press: function(oEvent){
 															oButton = oEvent.getSource();
 															oButton.setBusyIndicatorDelay(0).setBusy(true);
-															exfPreloader.syncAll().then(function(){
+															exfPreloader.syncAll()
+															.then(function(){
+																oButton.setBusy(false)
+															})
+															.catch(error => {
+																console.error(error.message);
+																_oLauncher.contextBar.getComponent().showErrorDialog('See console for details.', 'Preload sync failed!');
 																oButton.setBusy(false)
 															});
 														},
-													}),/*
+													}),
 													new sap.m.StandardListItem({
 														title: "Storage quota",
 														icon: "sap-icon://unwired",
 														type: "Active",
 														press: function(oEvent){
+															_oLauncher.showStorage();
 														},
-													}),*/
+													}),
 													new sap.m.StandardListItem({
 														title: "{i18n>WEBAPP.SHELL.PRELOAD.MENU_RESET}",
 														tooltip: "{i18n>WEBAPP.SHELL.PRELOAD.MENU_RESET_TOOLTIP}",
@@ -246,7 +492,8 @@ const exfLauncher = {};
 			_network: {
 				online: navigator.onLine,
 				queueCnt: 0,
-				syncErrorCnt: 0
+				syncErrorCnt: 0,
+				deviceId: exfPreloader.getDeviceId()
 			}
 		}));
 		
@@ -285,6 +532,7 @@ const exfLauncher = {};
 						_oContextBar.refresh(extras.ContextBar);
 					}
 				});
+				oComponent.getPreloader().updateQueueCount()
 			},
 		
 			getComponent : function() {
@@ -347,6 +595,7 @@ const exfLauncher = {};
 							}).data('widget', data[id].bar_widget_id, true), 
 							iItemsIndex);
 				}
+				_oLauncher.contextBar.getComponent().getPreloader().updateQueueCount();
 			},
 
 			showMenu : function (oButton){
@@ -435,153 +684,205 @@ const exfLauncher = {};
 		if (navigator.onLine) {
 			_oLauncher.contextBar.load();
 		}
+	};
+	
+	this.showMessageToast = function(message){
+			sap.m.MessageToast.show(message);
+			return;
+	};
+	
+	this.showStorage = async function() {
+		var dialog = new sap.m.Dialog({title: "Storage quota", icon: "sap-icon://unwired"});
+		var button = new sap.m.Button({
+			icon: 'sap-icon://font-awesome/close',
+            text: "Close",
+            press: function() {dialog.close();},
+        });
+		dialog.addButton(button);
+		list = new sap.m.List({});
+		//check if possible to acces storage (means https connection)
+		if (navigator.storage) {
+			var promise = navigator.storage.estimate()
+			.then(function(estimate) {				
+				list = new sap.m.List({
+					items: [
+						new sap.m.GroupHeaderListItem({
+							title: 'Overview',
+							upperCase: false
+						}),
+						new sap.m.DisplayListItem({
+							label: "Total Space",
+							value: Number.parseFloat(estimate.quota/1024/1024).toFixed(2) + ' MB'
+						}),
+						new sap.m.DisplayListItem({
+							label: "Used Space",
+							value: Number.parseFloat(estimate.usage/1024/1024).toFixed(2) + ' MB'
+						}),
+						new sap.m.DisplayListItem({
+							label: "Percentage Used",
+							value: Number.parseFloat(100/estimate.quota*estimate.usage).toFixed(2) + ' %'
+						})
+					]
+				});
+				if (estimate.usageDetails) {
+					list.addItem(new sap.m.GroupHeaderListItem({
+							title: 'Details',
+							upperCase: false
+					}));
+					Object.keys(estimate.usageDetails).forEach(function(key) {
+						list.addItem(new sap.m.DisplayListItem({
+								label: key,
+								value: Number.parseFloat(estimate.usageDetails[key]/1024/1024).toFixed(2) + ' MB'
+							})
+						);
+					});
+				}				
+			})
+			.catch(function(error) {
+				console.error(error);
+				list.addItem(new sap.m.GroupHeaderListItem({
+					title: 'Storage quota failed! See console for details.',
+					upperCase: false
+				}))
+			});
+			//wait for the promise to resolve
+			await promise;
+		} else {
+			list.addItem(new sap.m.GroupHeaderListItem({
+				title: 'Overview showing used storage space not possible!',
+				upperCase: false
+			}))
+		}
+		promise = exfPreloader.getPreloadTable().toArray()
+		.then(function(dbContent){
+			list.addItem(new sap.m.GroupHeaderListItem({
+				title: 'Synced content',
+				upperCase: false
+			}));
+			var oTable = new sap.m.Table({
+				fixedLayout: false,
+				columns: [
+		            new sap.m.Column({
+		                header: new sap.m.Label({
+		                    text: 'ID'
+		                })
+		            }),
+		            new sap.m.Column({
+		                header: new sap.m.Label({
+		                    text: 'Object'
+		                })
+		            }),
+		            new sap.m.Column({
+		                header: new sap.m.Label({
+		                    text: 'WidgetID'
+		                })
+		            }),
+		            new sap.m.Column({
+		                header: new sap.m.Label({
+		                    text: 'Datasets'
+		                })
+		            }),
+		            ,
+		            new sap.m.Column({
+		                header: new sap.m.Label({
+		                    text: 'Last synced'
+		                })
+		            })
+		        ]
+			});
+			dbContent.forEach(function(element) {
+				oRow = new sap.m.ColumnListItem();
+				oRow.addCell(new sap.m.Text({text: element.id}));
+				oRow.addCell(new sap.m.Text({text: element.object}));
+				oRow.addCell(new sap.m.Text({text: element.widget}));
+				if (element.response && element.response.rows) {
+					oRow.addCell(new sap.m.Text({text: element.response.rows.length}));
+					oRow.addCell(new sap.m.Text({text: new Date(element.lastSync).toLocaleString()}));
+				} else {
+					oRow.addCell(new sap.m.Text({text: '0'}));
+
+					oRow.addCell(new sap.m.Text({text: 'not synced'}));
+				}
+				oTable.addItem(oRow);						
+			});
+			dialog.addContent(list);
+			dialog.addContent(oTable);	
+		})
+		.catch(function(error) {
+			console.error(error);
+			list.addItem(new sap.m.GroupHeaderListItem({
+				title: 'Overview showing db content not possbile! See console for details.',
+				upperCase: false
+			}))
+			dialog.addContent(list);				
+		})
+		//wait for the promise to resolve
+		await promise;
+		dialog.open();
+		return;
+	};
+	
+	this.loadErrorData = function() {
+		console.log('Load Error Data');
+		var body = {
+				action: "exface.Core.ReadData",
+				resource: "exface.core.user-failed-tasks",
+				element: "TaskQueue_table",
+				object: "0x11ea8f3c9ff2c5e68f3c8c04ba002958",
+				sort: "TASK_ASSIGNED_ON",
+				order: "asc",
+				webapp: "exface.core.user-failed-tasks"
+		};
+		var data = {
+				oId: "0x11ea8f3c9ff2c5e68f3c8c04ba002958"				
+		};
+		var conditions = [];
+		var cond = {
+				expression: "STATUS",
+				comparator: "==",
+				value: "70",
+				object_alias: "exface.Core.QUEUED_TASK"
+		};
+		conditions.push(cond);
+		
+		cond = {
+				expression: "OWNER",
+				comparator: "==",
+				value: "",
+				object_alias: "exface.Core.QUEUED_TASK"
+		};
+		conditions.push(cond);
+		
+		cond = {
+				expression: "PRODUCER",
+				comparator: "==",
+				value: exfPreloader.getDeviceId(),
+				object_alias: "exface.Core.QUEUED_TASK"
+		};
+		conditions.push(cond);
+		
+		var filters = {
+				operator: "AND",
+				conditions: conditions
+		};
+		data.filters = filters;
+		body.data = data;
+		var params = $.param(body);
+		
+		return fetch('/powerui/api/ui5?' + params, {
+			method: 'GET'
+		})
+		.then(function(response){
+			if (response.ok) {
+				return response.json();
+			}
+			else {
+				return {};
+			}
+		})
+		.catch(function(error){
+			console.error(error);
+			return {};
+		})
 	}
 }).apply(exfLauncher);
-
-const exfPreloader = {};
-(function(){
-	
-	var _preloader = this;
-		
-	var _db = function() {
-		var dexie = new Dexie('exf-preload');
-		dexie.version(1).stores({
-			'preloads': 'id, object'
-		});
-		dexie.open();
-		return dexie;
-	}();
-	
-	var _preloadTable = _db.table('preloads');
-	
-	this.addPreload = function(sAlias, aDataCols, aImageCols, sPageAlias, sWidgetId){		
-		_preloadTable
-		.get(sAlias)
-		.then(item => {
-			var data = {
-				id: sAlias,
-				object: sAlias
-			};
-			
-			if (aDataCols) { data.dataCols = aDataCols; }
-			if (aImageCols) { data.imageCols = aImageCols; }
-			if (sPageAlias) { data.page = sPageAlias; }
-			if (sWidgetId) { data.widget = sWidgetId; }
-			
-			if (item === undefined) {
-				_preloadTable.put(data);
-			} else {
-				_preloadTable.update(sAlias, data);
-			}
-		})
-		return _preloader;
-	};
-	
-	this.getPreload = function(sAlias, sPageAlias, sWidgetId) {
-		return _preloadTable.get(sAlias);
-	};
-	
-	this.syncAll = function(fnCallback) {
-		var deferreds = [];
-		return _preloadTable.toArray()
-		.then(data => {
-			$.each(data, function(idx, item){
-				deferreds.push(
-			    	_preloader
-			    	.sync(item.object, item.page, item.widget, item.imageCols)
-			    );
-			});
-			// Can't pass a literal array, so use apply.
-			return $.when.apply($, deferreds)
-		})
-		.catch(error => {
-			exfLauncher.contextBar.getComponent().showErrorDialog('See console for details.', 'Preload sync failed!');
-		});
-	};
-	
-	/**
-	 * @return jqXHR
-	 */
-	this.sync = function(sObjectAlias, sPageAlias, sWidgetId, aImageCols) {
-		console.log('Syncing preload for object "' + sObjectAlias + '", widget "' + sWidgetId + '" on page "' + sPageAlias + '"');
-		if (! sPageAlias || ! sWidgetId) {
-			throw {"message": "Cannot sync preload for object " + sObjectAlias + ": incomplete preload configuration!"};
-		}
-		return $.ajax({
-			type: 'POST',
-			url: 'api/ui5',
-			dataType: 'json',
-			data: {
-				action: 'exface.Core.ReadPreload',
-				resource: sPageAlias,
-				element: sWidgetId
-			}
-		})
-		.then(
-			function(data, textStatus, jqXHR) {
-				var promises = [];
-				promises.push(
-					_preloadTable.update(sObjectAlias, {
-						response: data/*,
-						lastSync: (+ new Date())*/
-					})
-				);
-				if (aImageCols && aImageCols.length > 0) {
-					for (i in aImageCols) {
-						var urls = data.rows.map(function(value,index) { return value[aImageCols[i]]; });
-						promises.push(_preloader.syncImages(urls));
-					}
-				}
-				return Promise.all(promises);
-			},
-			function(jqXHR, textStatus, errorThrown){
-				exfLauncher.contextBar.getComponent().showAjaxErrorDialog(jqXHR);
-				return textStatus;
-			}
-		);
-	};
-	
-	this.syncImages = function (aUrls, sCacheName = 'image-cache') {
-		if (window.caches === undefined) {
-			console.error('Cannot preload images: Cache API not supported by browser!');
-			return;
-		}
-		
-		return window.caches
-		.open(sCacheName)
-		.then(cache => {
-			// Remove duplicates
-			aUrls = aUrls.filter((value, index, self) => { 
-			    return self.indexOf(value) === index;
-			});
-			// Fetch and cache images
-			var requests = [];
-			for (var i in aUrls) {
-				if (! aUrls[i]) continue;
-				var request = new Request(aUrls[i]);
-				requests.push(
-					fetch(request.clone())
-					.then(response => {
-						// Check if we received a valid response
-						if(! response || response.status !== 200 || response.type !== 'basic') {
-						  return response;
-						}
-						
-						// IMPORTANT: Clone the response. A response is a stream
-						// and because we want the browser to consume the response
-						// as well as the cache consuming the response, we need
-						// to clone it so we have two streams.
-						var responseToCache = response.clone();
-						
-						return cache.put(request, responseToCache);
-					})
-				);
-			}
-			return Promise.all(requests);
-		});
-	};
-	
-	this.reset = function() {
-		return _db.delete();
-	};
-}).apply(exfPreloader);

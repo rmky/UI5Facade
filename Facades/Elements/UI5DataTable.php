@@ -248,7 +248,19 @@ JS;
         foreach ($this->getWidget()->getColumns() as $column) {
             $column_defs .= ($column_defs ? ", " : '') . $this->getFacade()->getElement($column)->buildJsConstructorForUiColumn();
         }
-        
+        $column_defs .= <<<JS
+    ,new sap.ui.table.Column('{$this->getDirtyFlagAlias()}',{
+        hAlign: "Center",
+        autoResizable: true,
+        width: "48px",
+        minWidth: 48,
+        visible: true,
+        template: new sap.ui.core.Icon({
+            src: "sap-icon://user-edit",
+            visible: "{= \$\{{$this->getDirtyFlagAlias()}\}  === true}"
+        })
+    })
+JS;
         return $column_defs;
     }
     
@@ -258,7 +270,12 @@ JS;
         foreach ($this->getWidget()->getColumns() as $column) {
             $cells .= ($cells ? ", " : '') . $this->getFacade()->getElement($column)->buildJsConstructorForCell();
         }
-        
+        $cells .= <<<JS
+    ,new sap.ui.core.Icon({
+        src: "sap-icon://user-edit",
+        visible: "{= \$\{{$this->getDirtyFlagAlias()}\}  === true}"
+    }),
+JS;
         return $cells;
     }
     
@@ -293,6 +310,13 @@ JS;
         foreach ($this->getWidget()->getColumns() as $column) {
             $column_defs .= ($column_defs ? ", " : '') . $this->getFacade()->getElement($column)->buildJsConstructorForMColumn();
         }
+        $column_defs .= <<<JS
+    ,new sap.m.Column('{$this->getDirtyFlagAlias()}',{
+        hAlign: "Center",
+        importance: "High",
+        visible: false
+    })
+JS;
         
         return $column_defs;
     }

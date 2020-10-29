@@ -46,45 +46,75 @@ class UI5FacadeServerAdapter implements UI5ServerAdapterInterface
     
     protected function buildJsClickCallServerAction(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
-        $headers = ! empty($this->getElement()->getAjaxHeaders()) ? 'headers: ' . json_encode($this->getElement()->getAjaxHeaders()) . ',' : '';
-        
+        $headers = ! empty($this->getElement()->getAjaxHeaders()) ? 'headers: ' . json_encode($this->getElement()->getAjaxHeaders()) . ',' : '';        
+        $controller = $this->getElement()->getController();
         return <<<JS
 
-							$oParamsJs.webapp = '{$this->getElement()->getFacade()->getWebapp()->getRootPage()->getAliasWithNamespace()}';                
-
-                            $.ajax({
-								type: 'POST',
-								url: '{$this->getElement()->getAjaxUrl()}',
-                                {$headers}
-								data: {$oParamsJs},
-								success: function(data, textStatus, jqXHR) {
-                                    if (typeof data === 'object') {
-                                        response = data;
-                                    } else {
-                                        var response = {};
-    									try {
-    										response = $.parseJSON(data);
-    									} catch (e) {
-    										response.error = data;
-    									}
-                                    }
-				                   	if (response.success){
+							$oParamsJs.webapp = '{$this->getElement()->getFacade()->getWebapp()->getRootPage()->getAliasWithNamespace()}';
+                            var oComponent = {$controller->buildJsComponentGetter()};                
+                            if (!navigator.onLine) {
+                                if (exfPreloader) {
+                                    console.log('Save offline action');
+                                    var actionParams = {
+                                        type: 'POST',
+        								url: '{$this->getElement()->getAjaxUrl()}',
+                                        {$headers}
+        								data: {$oParamsJs}
+                                    }                                
+                                    exfPreloader.addAction(actionParams, '{$action->getMetaObject()->getAliasWithNamespace()}')
+                                    .then(function(key) {
+                                        var response = {success: 'Action saved in offline queue!'};
                                         $oModelJs.setData(response);
-										{$onModelLoadedJs}
-				                    } else {
-										{$this->getElement()->buildJsShowMessageError('response.error', '"Server error"')}
+                                        $onModelLoadedJs
+                                    })
+                                    .catch(function(error) {
+                                        console.error(error);
+                                        var response = {error: 'Action could not be saved in offline queue!'}
+                                        {$this->getElement()->buildJsShowMessageError('response.error', '"Server error"')}
                                         {$onErrorJs}
-				                    }
-								},
-								error: function(jqXHR, textStatus, errorThrown){
-                                    {$onErrorJs}
-                                    if (navigator.onLine === false) {
-                                        {$onOfflineJs}
-                                    } else {
-                                        {$this->getElement()->getController()->buildJsComponentGetter()}.showAjaxErrorDialog(jqXHR)
-                                    }
-								}
-							});
+                                    })
+                                    oComponent.getPreloader().updateQueueCount();
+                                } else {
+                                    {$onOfflineJs}
+                                }
+                            } else {
+                                $.ajax({
+    								type: 'POST',
+    								url: '{$this->getElement()->getAjaxUrl()}',
+                                    {$headers}
+    								data: {$oParamsJs},
+    								success: function(data, textStatus, jqXHR) {
+                                        console.log('Data', data);
+                                        console.log('TextStatus', textStatus);
+                                        console.log('jqXHR', jqXHR);
+                                        if (typeof data === 'object') {
+                                            response = data;
+                                        } else {
+                                            var response = {};
+        									try {
+        										response = $.parseJSON(data);
+        									} catch (e) {
+        										response.error = data;
+        									}
+                                        }
+    				                   	if (response.success){
+                                            $oModelJs.setData(response);
+    										{$onModelLoadedJs}
+    				                    } else {
+    										{$this->getElement()->buildJsShowMessageError('response.error', '"Server error"')}
+                                            {$onErrorJs}
+    				                    }
+    								},
+    								error: function(jqXHR, textStatus, errorThrown){
+                                        {$onErrorJs}
+                                        if (navigator.onLine === false) {
+                                            {$onOfflineJs}
+                                        } else {
+                                            {$this->getElement()->getController()->buildJsComponentGetter()}.showAjaxErrorDialog(jqXHR)
+                                        }
+    								}
+    							});
+                            }
                                         
 JS;
     }
@@ -150,7 +180,7 @@ JS;
             
             $.ajax({
                 url: "{$this->getElement()->getAjaxUrl()}",
-                type: "POST",
+                type: "GET",
 				data: {$oParamsJs},
                 success: function(response, textStatus, jqXHR) {
                     if (Object.keys({$oModelJs}.getData()).length !== 0) {

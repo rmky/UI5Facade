@@ -41,7 +41,7 @@ if (navigator.serviceWorker) {
 const exfLauncher = {};
 (function() {
 	
-	exfPreloader.setTopics(['offlineTask', 'ui5', 'test']);
+	exfPreloader.setTopics(['offlineTask', 'ui5']);
 	
 	var _oShell = {};
 	var _oAppMenu;

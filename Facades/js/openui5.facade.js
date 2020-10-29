@@ -823,53 +823,34 @@ const exfLauncher = {};
 	};
 	
 	this.loadErrorData = function() {
-		console.log('Load Error Data');
 		var body = {
-				action: "exface.Core.ReadData",
-				resource: "exface.core.user-failed-tasks",
-				element: "TaskQueue_table",
-				object: "0x11ea8f3c9ff2c5e68f3c8c04ba002958",
-				sort: "TASK_ASSIGNED_ON",
-				order: "asc",
-				webapp: "exface.core.user-failed-tasks"
+			action: "exface.Core.ReadData",
+			resource: "0x11ebaf708ef99298af708c04ba002958",
+			object: "0x11ea8f3c9ff2c5e68f3c8c04ba002958",
+			sort: "TASK_ASSIGNED_ON",
+			order: "asc",
+			data: {
+				oId: "0x11ea8f3c9ff2c5e68f3c8c04ba002958",
+				filters: {
+					operator: "AND",
+					conditions:  [
+						{
+							expression: "STATUS",
+							comparator: "==",
+							value: "70",
+							object_alias: "exface.Core.QUEUED_TASK"
+						},{
+							expression: "PRODUCER",
+							comparator: "==",
+							value: exfPreloader.getDeviceId(),
+							object_alias: "exface.Core.QUEUED_TASK"
+						}
+					]
+				}
+			}
 		};
-		var data = {
-				oId: "0x11ea8f3c9ff2c5e68f3c8c04ba002958"				
-		};
-		var conditions = [];
-		var cond = {
-				expression: "STATUS",
-				comparator: "==",
-				value: "70",
-				object_alias: "exface.Core.QUEUED_TASK"
-		};
-		conditions.push(cond);
 		
-		cond = {
-				expression: "OWNER",
-				comparator: "==",
-				value: "",
-				object_alias: "exface.Core.QUEUED_TASK"
-		};
-		conditions.push(cond);
-		
-		cond = {
-				expression: "PRODUCER",
-				comparator: "==",
-				value: exfPreloader.getDeviceId(),
-				object_alias: "exface.Core.QUEUED_TASK"
-		};
-		conditions.push(cond);
-		
-		var filters = {
-				operator: "AND",
-				conditions: conditions
-		};
-		data.filters = filters;
-		body.data = data;
-		var params = $.param(body);
-		
-		return fetch('/powerui/api/ui5?' + params, {
+		return fetch('api/ui5?' + $.param(body), {
 			method: 'GET'
 		})
 		.then(function(response){
@@ -881,7 +862,7 @@ const exfLauncher = {};
 			}
 		})
 		.catch(function(error){
-			console.error(error);
+			console.error('Cannot read sync errors from server:', error);
 			return {};
 		})
 	}

@@ -38,6 +38,9 @@
 	"WEBAPP.SHELL.PRELOAD.MENU_RESET_TOOLTIP": "Remove all offline data from this client",
 	"WEBAPP.SHELL.USER.TITLE": "Current User",
 	
+	"WIDGET.DATACAROUSEL.DETAILS_HIDE": "Hide details",
+	"WIDGET.DATACAROUSEL.DETAILS_EMPTY_HINT": "Please select an item!",
+	
 	"WIDGET.DATATPAGINATOR.SHOWING": "Showing %from% - %to% of %total%",
 	
 	"WIDGET.DATATABLE.FILTERED_BY": "Filtered by",

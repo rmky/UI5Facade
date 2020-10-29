@@ -28,6 +28,9 @@ pre.sf-dump .sf-dump-private, pre.sf-dump .sf-dump-public, pre.sf-dump .sf-dump-
 .sapMList.sapMListBGTranslucent.sapMListTblCnt {overflow-x: scroll}
 .sapMTB-Info-CTX .sapMBtnTransparent>.sapMBtnIcon {color: #fff}
 
+/* Panels */
+.exf-panel-no-border > .sapMPanelContent {border-bottom: none;}
+
 /* sap.m.List */
 .sapMLIB.sapMSLIIcon {padding-left: 0;}
 
@@ -104,9 +107,17 @@ table.jexcel {width: 100%}
 /* Dialog */
 html.sap-phone .sapMDialog {min-width: 20rem !important}
 html.sap-tablet .sapMDialog, html.sap-desktop .sapMDialog {min-width: 25rem !important}
+.sapUxAPObjectPageSection.sapUiNoContentPadding > .sapUxAPObjectPageSectionContainer > .sapUxAPObjectPageSubSection > .sapUxAPBlockContainer {padding: 0;}
+.sapUxAPObjectPageSection.sapUiNoContentPadding .sapUiRespGridMedia-Std-Phone.sapUiRespGridHSpace1>.sapUiRespGridSpanS12:first-of-type {width: 100%}
+.sapUxAPObjectPageSection.sapUiNoContentPadding .sapUiRespGrid:first-of-type {padding: 0;}
+.sapUxAPObjectPageSection.sapUiNoContentPadding .sapUiRespGrid.sapUiRespGridHSpace1>div:first-of-type {margin: 0; width: 100%}
 
 /* DataLookupDialog */
 .sapMDialog > .sapMDialogSection > .sapMDialogScroll {height: 100%}
 .sapMDialog .sapMVBox > .sapMFlexItemAlignAuto {height: 100%}
 .exf-datalookup-tokenizer .sapMInputBaseIconContainer {display: none !important;}
 .exf-datalookup .sapMPanelWrappingDivTb, .exf-datalookup .sapMPanelContent:not(.sapMPanelBGTransparent) {border: none !important;}
+
+/* Textual busy overlays */
+.exf-busy-text .sapUiLocalBusyIndicatorAnimation {display: none}
+.exf-busy-text-content {position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);}

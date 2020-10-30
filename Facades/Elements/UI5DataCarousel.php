@@ -127,9 +127,13 @@ JS;
     {
         $dataIsEditable = $this->getDataElement()->isEditable();
         foreach ($this->getWidget()->getDetailsWidget()->getChildrenRecursive() as $child) {
-            if (! ($child instanceof iShowSingleAttribute) || ! $child->isBoundToAttribute()) {
+            if (! ($child instanceof iShowSingleAttribute)) {
                 continue;
             }
+            if(! $child->isBoundToAttribute() && ! $child->getDataColumnName()) {
+                continue;
+            }
+            
             if (! $dataIsEditable) {
                 $this->getDataElement()->setEditable(true);
             }

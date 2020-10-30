@@ -38,7 +38,7 @@ class UI5DataCarousel extends UI5Split
     {
         $this->registerSyncOnMaster();
         
-        $initSplitter = $this->buildJsSetSizesInitial("sap.ui.getCore().byId('{$this->getId()}')") . $this->buildJsEmptyHintShow();
+        $initSplitter = $this->buildJsSetSizesInitial("sap.ui.getCore().byId('{$this->getId()}')") . "setTimeout(function(){ {$this->buildJsEmptyHintShow()} }, 100);";
         $this->getController()->addOnInitScript($initSplitter);
         
         $splitter = <<<JS

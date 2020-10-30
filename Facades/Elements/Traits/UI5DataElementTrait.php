@@ -896,7 +896,9 @@ JS;
         // Build the top toolbar with title, actions, etc.
         $titleAreaShrinkRatio = '';
         if ($this->getDynamicPageShowToolbar() === true) {
-            $this->getQuickSearchElement()->setWidthCollapsed('200px');
+            if ($qsEl = $this->getQuickSearchElement()) {
+                $qsEl->setWidthCollapsed('200px');
+            }
             $titleCollapsed  = $this->buildJsQuickSearchConstructor($oControllerJs);
             $toolbar = $this->buildJsToolbar($oControllerJs, $titleCollapsed, $top_buttons);
 

@@ -40,6 +40,8 @@
 	"WEBAPP.SHELL.USER.TITLE": "Aktueller Nutzer",
 	
 	"WIDGET.DATACAROUSEL.DETAILS_HIDE": "Details verbergen",
+	"WIDGET.DATACAROUSEL.DETAILS_PREV": "Vorheriger Eintrag",
+	"WIDGET.DATACAROUSEL.DETAILS_NEXT": "Nächster Eintrag",
 	"WIDGET.DATACAROUSEL.DETAILS_EMPTY_HINT": "Bitte wählen Sie einen Eintrag!",
 	
 	"WIDGET.DATATPAGINATOR.SHOWING": "Zeige %from% - %to% aus %total%",

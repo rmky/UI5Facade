@@ -899,14 +899,15 @@ JS;
      * @param bool $deSelect
      * @return string
      */
-    protected function buildJsSelectRowByIndex(string $oTableJs = 'oTable', string $iRowIdxJs = 'iRowIdx', bool $deSelect = false) : string
+    public function buildJsSelectRowByIndex(string $oTableJs = 'oTable', string $iRowIdxJs = 'iRowIdx', bool $deSelect = false) : string
     {
         if ($this->isMList() === true) {
-                $deSelectJs = ($deSelect === true) ? ', false' : '';
+                $setSelectJs = ($deSelect === true) ? 'false' : 'true';
                 return <<<JS
 
                     var oItem = {$oTableJs}.getItems()[{$iRowIdxJs}];
-                    {$oTableJs}.setSelectedItem(oItem {$deSelectJs});
+                    {$oTableJs}.setSelectedItem(oItem, {$setSelectJs});
+                    {$oTableJs}.fireSelectionChange({listItem: oItem, selected: $setSelectJs});
                     oItem.focus();
 
 JS;

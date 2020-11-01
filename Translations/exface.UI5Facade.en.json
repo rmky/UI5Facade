@@ -39,6 +39,8 @@
 	"WEBAPP.SHELL.USER.TITLE": "Current User",
 	
 	"WIDGET.DATACAROUSEL.DETAILS_HIDE": "Hide details",
+	"WIDGET.DATACAROUSEL.DETAILS_PREV": "Previous item",
+	"WIDGET.DATACAROUSEL.DETAILS_NEXT": "Next item",
 	"WIDGET.DATACAROUSEL.DETAILS_EMPTY_HINT": "Please select an item!",
 	
 	"WIDGET.DATATPAGINATOR.SHOWING": "Showing %from% - %to% of %total%",

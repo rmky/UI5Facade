@@ -19,6 +19,9 @@ use exface\Core\Actions\ShowDialog;
  * 
  * The current expand/collapse state is stored in a special model attached to the Splitter,
  * so it can easily be accessed from any code.
+ * 
+ * **NOTE**: The previous/next buttons in the details panel will only show if the data
+ * widget's UI5 implementation has the method `buildJsSelectRowByIndex()`!
  *
  * @author Andrej Kabachnik
  * 
@@ -78,6 +81,34 @@ JS;
             $headerText = '""';
         }
         
+        if (method_exists($dataElem, 'buildJsSelectRowByIndex')) {
+            $prevNextButtonsJs = <<<JS
+
+                            new sap.m.Button('{$this->getId()}-details-btn-prev', {
+                                icon: "sap-icon://navigation-left-arrow",
+                                tooltip: "{i18n>WIDGET.DATACAROUSEL.DETAILS_PREV}",
+                                press: function(oEvent) {
+                                    var oSplitter = sap.ui.getCore().byId('{$this->getId()}');
+                                    var oTable = sap.ui.getCore().byId('{$dataElem->getId()}');
+                                    var iRowIdx = oSplitter.getModel('_innerState').getProperty('/currentRowIdx');
+                                    iRowIdx = iRowIdx - 1;
+                                    {$dataElem->buildJsSelectRowByIndex('oTable', 'iRowIdx')}
+                                }
+                            }),
+                            new sap.m.Button('{$this->getId()}-details-btn-next', {
+                                icon: "sap-icon://navigation-right-arrow",
+                                tooltip: "{i18n>WIDGET.DATACAROUSEL.DETAILS_NEXT}",
+                                press: function(oEvent) {
+                                    var oSplitter = sap.ui.getCore().byId('{$this->getId()}');
+                                    var oTable = sap.ui.getCore().byId('{$dataElem->getId()}');
+                                    var iRowIdx = oSplitter.getModel('_innerState').getProperty('/currentRowIdx');
+                                    iRowIdx = iRowIdx + 1;
+                                    {$dataElem->buildJsSelectRowByIndex('oTable', 'iRowIdx')}
+                                }
+                            }),
+JS;
+        }
+        
         return <<<JS
 
             {$dataElem->buildJsConstructor()},
@@ -87,6 +118,7 @@ JS;
                     new sap.m.OverflowToolbar({
                         content: [
                             new sap.m.ToolbarSpacer(),
+                            {$prevNextButtonsJs}
                             new sap.m.Button({
                                 icon: "{= \${_innerState>/detailsExpanded} === true ? 'sap-icon://exit-full-screen' : 'sap-icon://full-screen'}",
                                 press: function(oEvent) {
@@ -172,11 +204,23 @@ JS;
             var iRowIdx = oModel.getData().rows.indexOf(oRowSelected);
             var sPath = '/rows/' + iRowIdx;
             var oControl, oBindingInfo;
+            var oBtnPrev = sap.ui.getCore().byId('{$this->getId()}-details-btn-prev');
+            var oBtnNext = sap.ui.getCore().byId('{$this->getId()}-details-btn-next');
 
             if (iRowIdx >= 0) {
                 {$this->buildJsEmptyHintHide()}
+                oSplit.getModel('_innerState').setProperty('/currentRowIdx', iRowIdx);
             } else {
                 {$this->buildJsEmptyHintShow()}
+                oSplit.getModel('_innerState').setProperty('/currentRowIdx', -1);
+            }
+
+            if (oBtnPrev) {
+                oBtnPrev.setEnabled(iRowIdx !== 0);
+            }
+
+            if (oBtnNext) {
+                oBtnNext.setEnabled(iRowIdx !== oModel.getData().rows.length - 1);
             }
 
             {$bindings}

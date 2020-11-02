@@ -641,6 +641,9 @@ JS;
      */
     protected function buildJsObjectPageSectionFromTab(Tab $tab) 
     {
+        if ($tab->isFilledBySingleWidget()) {
+            $cssClass = 'sapUiNoContentPadding';
+        }
         $tabElement = $this->getFacade()->getElement($tab);
         return <<<JS
 
@@ -653,7 +656,7 @@ JS;
                             {$tabElement->buildJsLayoutConstructor()}
                         ]
 					})
-				}),
+				}).addStyleClass('{$cssClass}'),
                 // EOF ObjectPageSection
                 
 JS;

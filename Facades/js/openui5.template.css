@@ -111,6 +111,7 @@ html.sap-tablet .sapMDialog, html.sap-desktop .sapMDialog {min-width: 25rem !imp
 .sapUxAPObjectPageSection.sapUiNoContentPadding .sapUiRespGridMedia-Std-Phone.sapUiRespGridHSpace1>.sapUiRespGridSpanS12:first-of-type {width: 100%}
 .sapUxAPObjectPageSection.sapUiNoContentPadding .sapUiRespGrid:first-of-type {padding: 0;}
 .sapUxAPObjectPageSection.sapUiNoContentPadding .sapUiRespGrid.sapUiRespGridHSpace1>div:first-of-type {margin: 0; width: 100%}
+.sapUxAPObjectPageSection.sapUiNoContentPadding {margin-bottom: 1.5rem;}
 
 /* DataLookupDialog */
 .sapMDialog > .sapMDialogSection > .sapMDialogScroll {height: 100%}

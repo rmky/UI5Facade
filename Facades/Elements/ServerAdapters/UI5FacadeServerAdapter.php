@@ -186,9 +186,12 @@ JS;
                     if (Object.keys({$oModelJs}.getData()).length !== 0) {
                         {$oModelJs}.setData({});
                     }
-                    if (Array.isArray(response.rows) && response.rows.length === 1) {
+                    if (Array.isArray(response.rows) && response.rows.length > 0) {
                         sap.ui.getCore().byId('{$this->getElement()->getId()}').getModel('view').setProperty('/_prefill/data', response);
                         {$oModelJs}.setData(response.rows[0]);
+                        if (response.rows.length > 1) {
+                            {$this->getElement()->buildJsShowMessageError('"Error prefilling view with data: received " + response.rows.length + " rows instead of 0 or 1! Only the first data row is visible."')};
+                        }
                     }
                     {$onModelLoadedJs}
                 },

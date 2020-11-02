@@ -6,6 +6,8 @@ use exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryDataCarouselTrait;
 use exface\Core\Factories\ActionFactory;
 use exface\Core\Actions\ShowDialog;
+use exface\Core\Interfaces\Widgets\iFillEntireContainer;
+use exface\Core\Widgets\WidgetGrid;
 
 /**
  * Generates a sap.ui.layout.Splitter with logic similar to the FlexibleColumnLayout.
@@ -81,6 +83,10 @@ JS;
             $headerText = '""';
         }
         
+        if (($detailElem->getWidget() instanceof iFillEntireContainer) && ! ($widget->getDetailsWidget() instanceof WidgetGrid)) {
+            $detailClasses = 'sapUiNoContentPadding';
+        }
+        
         if (method_exists($dataElem, 'buildJsSelectRowByIndex')) {
             $prevNextButtonsJs = <<<JS
 
@@ -146,7 +152,7 @@ JS;
                     {$detailElem->buildJsConstructor()}
                 ]
             })
-            .addStyleClass("{$this->buildCssElementClass()} exf-panel-no-border")
+            .addStyleClass("{$this->buildCssElementClass()} {$detailClasses} exf-panel-no-border")
 
 JS;
     }
@@ -222,6 +228,8 @@ JS;
             if (oBtnNext) {
                 oBtnNext.setEnabled(iRowIdx !== oModel.getData().rows.length - 1);
             }
+
+            {$this->getDetailsElement()->buildJsResetter()};
 
             {$bindings}
             
@@ -334,6 +342,15 @@ JS;
         .setBusy(false)
         .removeStyleClass('exf-busy-text');
 JS;
+    }
+    
+    /**
+     * 
+     * @return UI5AbstractElement
+     */
+    protected function getDetailsElement() : UI5AbstractElement
+    {
+        return $this->getFacade()->getElement($this->getWidget()->getDetailsWidget());
     }
 }
 ?>

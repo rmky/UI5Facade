@@ -124,7 +124,7 @@ class UI5Model implements UI5ModelInterface
                         continue;
                     }
                     // If both are bound to an attribute, but the attributes are different, it's a conflict!
-                    if (! $bindingWidget->getAttribute()->is($widget->getAttribute())) {
+                    if ($bindingWidget->isBoundToAttribute() && $widget->isBoundToAttribute() && ! $bindingWidget->getAttribute()->is($widget->getAttribute())) {
                         return true;
                     }
                 }

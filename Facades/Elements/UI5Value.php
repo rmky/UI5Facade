@@ -6,6 +6,7 @@ use exface\UI5Facade\Facades\Interfaces\UI5CompoundControlInterface;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryLiveReferenceTrait;
 use exface\Core\Interfaces\Widgets\iTakeInput;
 use exface\Core\Widgets\Input;
+use exface\Core\Interfaces\Widgets\iShowDataColumn;
 
 /**
  * Generates sap.m.Text controls for Value widgets
@@ -158,6 +159,11 @@ JS;
         
         $widget = $this->getWidget();
         $model = $this->getView()->getModel();
+        
+        // If the widget can be bound to a data column, but has no column name really
+        if ($widget instanceof iShowDataColumn && ! $widget->isBoundToDataColumn()) {
+            return false;
+        }
         
         // If there is a model binding, obviously return true
         if ($model->hasBinding($widget, $this->getValueBindingWidgetPropertyName())) {

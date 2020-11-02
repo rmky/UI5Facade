@@ -121,3 +121,7 @@ html.sap-tablet .sapMDialog, html.sap-desktop .sapMDialog {min-width: 25rem !imp
 /* Textual busy overlays */
 .exf-busy-text .sapUiLocalBusyIndicatorAnimation {display: none}
 .exf-busy-text-content {position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);}
+
+/* Wizard */
+/* FIX next-button of mobile wizzards floating in the upper part of the screen - even if the wizard itself is not visible! */
+html.sap-phone .sapMWizard .sapMWizardNextButtonVisible {position: relative !important; left: inherit !important; bottom: inherit !important;}

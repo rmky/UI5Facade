@@ -294,9 +294,9 @@ JS;
     }
     
     /**
-     *
+     * 
      * {@inheritDoc}
-     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsResetter()
+     * @see \exface\UI5Facade\Facades\Elements\UI5Value::buildJsResetter()
      */
     public function buildJsResetter() : string
     {
@@ -306,10 +306,14 @@ JS;
             return '';
         }
         
-        // TODO reset properly if value is bound to model
-        $staticDefault = $widget->getValueWithDefaults();
-        $initialValueJs = json_encode($staticDefault);
-        $js = $this->buildJsValueSetter($initialValueJs);
+        if (! $this->isValueBoundToModel()) {
+            $staticDefault = $widget->getValueWithDefaults();
+            $initialValueJs = json_encode($staticDefault);
+            $js = $this->buildJsValueSetter($initialValueJs);
+        } else {
+            $js = "sap.ui.getCore().byId('{$this->getId()}')";
+            // FIXME #ui5-resetter reset properly if value is bound to model
+        }
         
         // The value-setter automatically performs validation. We don't need this unless the new value
         // is actually not empty.

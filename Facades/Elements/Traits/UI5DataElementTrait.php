@@ -1405,7 +1405,7 @@ JS;
      */
     protected function getDirtyFlagAlias() : string
     {
-        return "{$this->getWidget()->getId()}" . "DirtyFlag";
+        return "{$this->getId()}" . "DirtyFlag";
     }
     
     /**

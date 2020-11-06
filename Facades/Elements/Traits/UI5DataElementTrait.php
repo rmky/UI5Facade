@@ -1388,8 +1388,10 @@ JS;
                         }
                     }
                 }
-                var element = sap.ui.getCore().byId('{$this->getDirtyFlagAlias()}')
-                element.setVisible(rowsMarked);
+                var element = sap.ui.getCore().byId('{$this->getDirtyFlagAlias()}');
+                if (element) {
+                    element.setVisible(rowsMarked);
+                }
                 oData.rows = aRows;
                 $oModelJs.setData(oData);                
             })

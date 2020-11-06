@@ -48,7 +48,7 @@ new sap.m.PlanningCalendar("{$this->getId()}", {
         template: {$this->buildJsRowsConstructors()}
 	}
 })
-{$this->buildJsClickListeners($oControllerJs)}
+{$this->buildJsClickHandlers($oControllerJs)}
 
 JS;
     }
@@ -248,53 +248,25 @@ JS;
     }()
 JS;
     }
-        
-    protected function buildJsClickListeners($oControllerJsVar = 'oController')
+    
+    /**
+     *
+     * {@inheritdoc}
+     * @see UI5DataElementTrait::buildJsClickHandlerLeftClick()
+     */
+    protected function buildJsClickHandlerLeftClick($oControllerJsVar = 'oController') : string
     {
-        $widget = $this->getWidget();
-        
-        $js = '';
-        $rightclick_script = '';
-        
-        // Double click. Currently only supports one double click action - the first one in the list of buttons
-        if ($dblclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_DOUBLE_CLICK)[0]) {
-            $js .= <<<JS
-            
-            .attachBrowserEvent("dblclick", function(oEvent) {
-        		{$this->getFacade()->getElement($dblclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
-            })
-JS;
-        }
-        
-        // Right click. Currently only supports one double click action - the first one in the list of buttons
-        if ($rightclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_RIGHT_CLICK)[0]) {
-            $rightclick_script = $this->getFacade()->getElement($rightclick_button)->buildJsClickEventHandlerCall($oControllerJsVar);
-        } else {
-            //$rightclick_script = $this->buildJsContextMenuTrigger();
-        }
-        
-        if ($rightclick_script) {
-            $js .= <<<JS
-            
-            .attachBrowserEvent("contextmenu", function(oEvent) {
-                oEvent.preventDefault();
-                {$rightclick_script}
-        	})
-        	
-JS;
-        }
-        
         // Single click. Currently only supports one click action - the first one in the list of buttons
-        if ($leftclick_button = $widget->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_LEFT_CLICK)[0]) {
-            $js .= <<<JS
-                
+        if ($leftclick_button = $this->getWidget()->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_LEFT_CLICK)[0]) {
+            return <<<JS
+            
             .attachAppointmentSelect(function(oEvent) {
                 {$this->getFacade()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
             })
 JS;
         }
         
-        return $js;
+        return '';
     }
     
     /**

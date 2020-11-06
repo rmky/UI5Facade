@@ -66,6 +66,7 @@
 	"WIDGET.FILELIST.ERROR_FILE_TOO_BIG": "File too big: max. %mb% MB allowed!",
 	"WIDGET.FILELIST.ERROR_FILENAME_TOO_LONG": "File name too long: max. %length% characters allowed!",
 	"WIDGET.FILELIST.ERROR_DELETE": "Delete failed: unknown error in UI5.",
+	"WIDGET.FILELIST.BROWSE": "Browse",
 	
 	"WIDGET.FORM.MESSAGE_VALIDATION_FAILED": "Please check all marked fields: it seems, they were not filled correctly!",
 	

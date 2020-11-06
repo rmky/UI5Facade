@@ -1,22 +1,20 @@
 <?php
 namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Widgets\FileList;
 use exface\UI5Facade\Facades\Elements\Traits\UI5DataElementTrait;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryDataTableTrait;
 use exface\Core\Factories\ActionFactory;
-use exface\Core\Actions\SaveData;
-use exface\Core\Widgets\DataColumn;
 use exface\Core\DataTypes\BinaryDataType;
 use exface\Core\DataTypes\WidgetVisibilityDataType;
 use exface\Core\Actions\DeleteObject;
 use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\Core\Interfaces\Actions\iReadData;
+use exface\Core\Interfaces\DataTypes\DataTypeInterface;
 
 /**
  * Generates sap.m.upload.UploadSet for a FileList widget.
  * 
- * @method FileList getWidget()
+ * @method \exface\Core\Widgets\FileList getWidget()
  * 
  * @author Andrej Kabachnik
  *
@@ -42,13 +40,19 @@ class UI5FileList extends UI5AbstractElement
         $widget = $this->getWidget();
         
         $controller = $this->getController();
+        
         $controller->addOnEventScript($this, self::EVENT_NAME_AFTER_ITEM_ADDED, $this->buildJsEventHandlerUpload('oEvent'));
         $controller->addOnEventScript($this, self::EVENT_NAME_BEFORE_ITEM_REMOVED, $this->buildJsEventHandlerDelete('oEvent'));
         
+        $controller->addOnInitScript($this->buildJsCustomizeUploaderButton());
+        $controller->addOnInitScript("sap.ui.getCore().byId('{$this->getId()}').getList().setMode(sap.m.ListMode.SingleSelectMaster);");
+        
+        $toobarJs = $this->buildJsToolbar($oControllerJs);
+        $controller->addOnInitScript("sap.ui.getCore().byId('{$this->getId()}').getList()" . $this->buildJsClickHandlers($oControllerJs));
+        
         $specialCols = [
             $widget->getFilenameColumn(),
-            $widget->getMimeTypeColumn(),
-            $widget->getFileContentColumn(),
+            $widget->getMimeTypeColumn()
         ];
         if ($widget->hasDownloadUrlColumn()) {
             $specialCols[] = $widget->getDownloadUrlColumn();
@@ -101,7 +105,7 @@ class UI5FileList extends UI5AbstractElement
 					]
                 })
     		},
-            toolbar: {$this->buildJsToolbar($oControllerJs)}
+            toolbar: {$toobarJs}
         })
 
 JS;
@@ -128,21 +132,39 @@ JS;
     protected function buildJsEventHandlerUpload(string $oEventJs) : string
     {
         $widget = $this->getWidget();
-        $uploadAction = ActionFactory::createFromString($this->getWorkbench(), SaveData::class, $widget);
+        $uploadAction = $widget->getUploadAction();
         
         $fileModificationColumnJs = '';
         if ($widget->hasFileModificationTimeColumn()) {
             $fileModificationColumnJs = "{$widget->getMimeTypeColumn()->getDataColumnName()}: file.lastModified,";
         }
         
+        // When the upload action succeeds, we need to refresh the list to ensure, that
+        // additional columns are filled correctly - e.g. uploading user, etc.
+        // While uploading the list shows an "incomplete" item, which needs to be removed
+        // after the real item is loaded from the server. Make sure to remove the incomplete
+        // item AFTER the refresh-request completes because otherwise it would disapear for
+        // a second, which look really weired!
         $onUploadCompleteJs = <<<JS
         
+            var oUploadSetModel = oUploadSet.getModel();
+            var oRowsBinding = new sap.ui.model.Binding(oUploadSetModel, '/rows', oUploadSetModel.getContext('/rows'));
+            oRowsBinding.attachChange(function(oEvent) {
+                try {
+                    oUploadSet.removeIncompleteItem(oItem);
+                    oItem.destroy();
+                } catch (e) {
+                    // silence errors - the data will be refreshed anyway.
+                }
+                oRowsBinding.destroy();
+            });
+
+            if (oResponseModel.getProperty('/success') !== undefined){
+           		{$this->buildJsShowMessageSuccess("oResponseModel.getProperty('/success')")}
+			}
+
             {$this->buildJsRefresh()};
-            try {
-                oUploadSet.removeIncompleteItem(oItem);
-            } catch (e) {
-                // silence errors - the data will be refreshed anyway.
-            }
+
 JS;
             
         return <<<JS
@@ -185,20 +207,25 @@ JS;
                 }
                 if (sError !== undefined) {
                     {$this->buildJsShowError('sError')}
-                    oUploadSet.removeIncompleteItem(oItem);
+                    try {
+                        oUploadSet.removeIncompleteItem(oItem);
+                        oItem.destroy();
+                    } catch (e) {
+                        // silence errors - the data will be refreshed anyway.
+                        throw e;
+                    }
                     return;
                 }
 
                 fileReader.onload = function () { 
-                    var sContent = {$this->buildJsFileContentEncoder($widget->getFileContentColumn(), 'fileReader.result')};
-
+                    var sContent = {$this->buildJsFileContentEncoder($widget->getFileContentAttribute()->getDataType(), 'fileReader.result')};
                     var oResponseModel = new sap.ui.model.json.JSONModel({
                         oId: "{$widget->getMetaObject()->getId()}",
                         rows: [
                             {
                                 {$widget->getFilenameColumn()->getDataColumnName()}: file.name,
                                 {$widget->getMimeTypeColumn()->getDataColumnName()}: file.type,
-                                {$widget->getFileContentColumn()->getDataColumnName()}: sContent,
+                                {$widget->getFileContentColumnName()}: sContent,
                                 {$fileModificationColumnJs}
                             }
                         ] 
@@ -211,6 +238,7 @@ JS;
     					object: "{$widget->getMetaObject()->getId()}",
                         data: oResponseModel.getData()
                     };
+                    {$this->buildJsBusyIconShow()}
                     {$this->getServerAdapter()->buildJsServerRequest($uploadAction, 'oResponseModel', 'oUploadParams', $onUploadCompleteJs, $onUploadCompleteJs)}
                 };
                 fileReader.readAsBinaryString(file);
@@ -221,9 +249,19 @@ JS;
     {
         $widget = $this->getWidget();
         
-        $this->getController()->addOnInitScript("sap.ui.getCore().byId('{$this->getId()}').getList().setMode(sap.m.ListMode.SingleSelectMaster);");
-        
         $deleteAction = ActionFactory::createFromString($this->getWorkbench(), DeleteObject::class, $widget);
+        
+        // Need to destroy the deleted list item manually for some reason - otherwise
+        // the next uploaded item will cause a duplicate-event error!
+        $onSuccessJs = <<<JS
+                
+                oItem.destroy();
+                {$this->buildJsBusyIconHide()};
+                if (oResponseModel.getProperty('/success') !== undefined){
+               		{$this->buildJsShowMessageSuccess("oResponseModel.getProperty('/success')")}
+				}
+
+JS;
         
         return <<<JS
 
@@ -262,19 +300,19 @@ JS;
                                 ] 
                             }
                         }
-                        {$this->getServerAdapter()->buildJsServerRequest($deleteAction, 'oResponseModel', 'oParams', $this->buildJsRefresh())}
+                        {$this->buildJsBusyIconShow()};
+                        {$this->getServerAdapter()->buildJsServerRequest($deleteAction, 'oResponseModel', 'oParams', $onSuccessJs)}
                     });
                 },0);
 JS;
     }
     
-    protected function buildJsFileContentEncoder(DataColumn $contentCol, string $fileContentJs) : string
+    protected function buildJsFileContentEncoder(DataTypeInterface $contentDataType, string $fileContentJs) : string
     {
-        $type = $contentCol->getDataType();
         switch (true) {
-            case $type instanceof BinaryDataType && $type->getEncoding() === BinaryDataType::ENCODING_BASE64:
+            case $contentDataType instanceof BinaryDataType && $contentDataType->getEncoding() === BinaryDataType::ENCODING_BASE64:
                 return "btoa($fileContentJs)";
-            case $type instanceof BinaryDataType && $type->getEncoding() === BinaryDataType::ENCODING_HEX:
+            case $contentDataType instanceof BinaryDataType && $contentDataType->getEncoding() === BinaryDataType::ENCODING_HEX:
                 return <<<JS
 
                     function (s){
@@ -335,7 +373,15 @@ JS;
         }
         
         return $this->buildJsDataLoaderOnLoadedViaTrait($oModelJs)
-                . $checkMaxFilesJs;
+        . $checkMaxFilesJs . <<<JS
+        
+            setTimeout(function(){
+                sap.ui.getCore().byId('{$this->getId()}').getList().getItems().forEach(function(oItem){
+                    oItem.setType('Active');
+                });
+            },0);
+            
+JS;
     }
     
     public function buildJsDataGetter(ActionInterface $action = null)
@@ -367,5 +413,70 @@ JS;
         };
     }()
 JS;
+    }
+    
+    protected function getButtonUploadElement() : ?UI5Button
+    {
+        if ($btn = $this->getWidget()->getButtonUpload()) {
+            return $this->getFacade()->getElement($btn);
+        }
+        return null;
+    }
+    
+    /**
+     * Changes the default "Upload" button to a more typical "Browse" button visually.
+     * 
+     * @return string
+     */
+    protected function buildJsCustomizeUploaderButton() : string
+    {
+        $btnText = $this->escapeJsTextValue($this->translate('WIDGET.FILELIST.BROWSE'));
+        return <<<JS
+
+            (function(){
+                var oUploader = sap.ui.getCore().byId('{$this->getId()}-uploader');
+                if (oUploader) {
+                    oUploader.setIcon('sap-icon://open-folder');
+                    oUploader.setButtonText("{$btnText}");
+                }
+            })();
+
+JS;
+    }
+    
+    /**
+     *
+     * {@inheritdoc}
+     * @see UI5DataElementTrait::buildJsClickHandlerLeftClick()
+     */
+    protected function buildJsClickHandlerLeftClick($oControllerJsVar = 'oController') : string
+    {        
+        // Single click. Currently only supports one click action - the first one in the list of buttons
+        if ($leftclick_button = $this->getWidget()->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_LEFT_CLICK)[0]) {
+            return <<<JS
+            
+            .attachItemPress(function(oEvent) {
+                {$this->getFacade()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
+            })
+JS;
+        }
+        
+        return '';
+    }
+    
+    /**
+     * Returns an inline JS-condition, that evaluates to TRUE if the given oTargetDom JS expression
+     * is a DOM element inside a list item or table row.
+     *
+     * This is important for handling browser events like dblclick. They can only be attached to
+     * the entire control via attachBrowserEvent, while we actually only need to react to events
+     * on the items, not on headers, footers, etc.
+     *
+     * @param string $oTargetDomJs
+     * @return string
+     */
+    protected function buildJsClickIsTargetRowCheck(string $oTargetDomJs = 'oTargetDom') : string
+    {
+        return "{$oTargetDomJs} !== undefined && $({$oTargetDomJs}).parents('li.sapMLIB').length > 0";
     }
 }

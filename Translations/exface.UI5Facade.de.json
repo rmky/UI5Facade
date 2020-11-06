@@ -67,6 +67,7 @@
 	"WIDGET.FILELIST.ERROR_FILE_TOO_BIG": "Datei zu groß: max. %mb% MB erlaubt!",
 	"WIDGET.FILELIST.ERROR_FILENAME_TOO_LONG": "Dateiname zu lang: max. %length% Zeichen erlaubt!",
 	"WIDGET.FILELIST.ERROR_DELETE": "Löschen fehlgeschlagen: unbekannter Fehler.",
+	"WIDGET.FILELIST.BROWSE": "Durchsuchen",
 	
 	"WIDGET.FORM.MESSAGE_VALIDATION_FAILED": "Bitte alle markierten Felder kontrollieren: die Eingaben scheinen nicht korrekt zu sein!",
 	

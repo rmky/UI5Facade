@@ -556,7 +556,7 @@ JS;
         // above will recognize this and use merge this object with the request parameters, so
         // we can directly tell it to use our input as a value column filter instead of a regular
         // suggest string.
-        return "(function(){console.log('value setter');
+        return "(function(){
             var oInput = sap.ui.getCore().byId('{$this->getId()}');
             var val = {$valueJs};
             if (val == undefined || val === null || val === '') {
@@ -691,7 +691,7 @@ JS;
         // resulting in a "SyntaxError: Function statements require a function name" instead.
         return <<<JS
 
-!function() {console.log('data setter');
+!function() {
     var oData = {$jsData};
     if (oData !== undefined && Array.isArray(oData.rows) && oData.rows.length > 0) {
         if (oData.oId == "{$this->getWidget()->getTable()->getMetaObject()->getId()}") {

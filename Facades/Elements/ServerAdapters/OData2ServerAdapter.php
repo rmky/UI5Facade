@@ -522,7 +522,7 @@ JS;
                         oRowData.recordsFiltered = oData.__count;
                         oRowData.recordsTotal = oData.__count;
                     }
-                    console.log('ResultData:', oRowData);
+
                     {$oModelJs}.setData(oRowData);
                     {$onModelLoadedJs}
                 },

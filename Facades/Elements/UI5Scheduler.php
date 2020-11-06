@@ -225,7 +225,7 @@ JS;
             sUid,
             rows = [],
             data = sap.ui.getCore().byId('{$this->getId()}').getModel().getData().rows;
-console.log(aApts);
+
         for (var i in aApts) {
             var sUid = sap.ui.getCore().byId(aApts[i]).getKey();
             for (var j in data) {

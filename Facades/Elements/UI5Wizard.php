@@ -136,7 +136,7 @@ JS;
             setTimeout(function(){
                 var jqWizardNav = $('#{$this->getId()}-progressNavigator');
                 var jqFirstStep = $('#{$this->getFacade()->getElement($this->getWidget()->getStep(0))->getId()}');
-                $('#{$this->getId()}-page').css('height', 'calc(' + jqWizardNav.outerHeight() + 'px + ' + jqFirstStep.outerHeight() + 'px + 32px)'); console.log('here');
+                $('#{$this->getId()}-page').css('height', 'calc(' + jqWizardNav.outerHeight() + 'px + ' + jqFirstStep.outerHeight() + 'px + 32px)');
             }, 0);
             
 JS;

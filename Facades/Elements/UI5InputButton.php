@@ -35,7 +35,7 @@ JS;
         $this->getController()->addOnInitScript("sap.ui.getCore().byId('{$this->getId()}').onsapenter = (function(oEvent){{$btnElement->buildJsClickEventHandlerCall()}});");
         // Press the button initially
         if ($this->getWidget()->getButtonPressOnStart() === true) {
-            $this->getController()->addOnInitScript("console.log('autopress!'); sap.ui.getCore().byId('{$btnElement->getId()}').firePress();");
+            $this->getController()->addOnInitScript("sap.ui.getCore().byId('{$btnElement->getId()}').firePress();");
         }
         return <<<JS
 

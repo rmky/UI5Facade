@@ -54,7 +54,6 @@ class UI5FacadeServerAdapter implements UI5ServerAdapterInterface
                             var oComponent = {$controller->buildJsComponentGetter()};                
                             if (!navigator.onLine) {
                                 if (exfPreloader) {
-                                    console.log('Save offline action');
                                     var actionParams = {
                                         type: 'POST',
         								url: '{$this->getElement()->getAjaxUrl()}',
@@ -84,9 +83,6 @@ class UI5FacadeServerAdapter implements UI5ServerAdapterInterface
                                     {$headers}
     								data: {$oParamsJs},
     								success: function(data, textStatus, jqXHR) {
-                                        console.log('Data', data);
-                                        console.log('TextStatus', textStatus);
-                                        console.log('jqXHR', jqXHR);
                                         if (typeof data === 'object') {
                                             response = data;
                                         } else {

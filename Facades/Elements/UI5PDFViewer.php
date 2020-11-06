@@ -4,7 +4,7 @@ namespace exface\UI5Facade\Facades\Elements;
 use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
 
 /**
- * Generates a modified ui5lab.wl.pdf.PDFViewer for a PDFViewer widget
+ * Generates custom PDFViewer using the popular PDF.js library
  * 
  * @method \exface\Core\Widgets\PDFViewer getWidget()
  *
@@ -23,7 +23,7 @@ class UI5PDFViewer extends UI5Display
         $this->registerExternalModules($this->getController());
         return <<<JS
 
-        new ui5lab.wl.pdf.PdfViewer("{$this->getid()}", {
+        new exface.ui5Custom.PdfViewer("{$this->getid()}", {
             pdfSource: {$this->buildJsValue()},
             {$this->buildJsPropertyHeight()}
             {$this->buildJsPropertyWidth()}
@@ -39,9 +39,8 @@ JS;
      */
     public function registerExternalModules(UI5ControllerInterface $controller) : UI5AbstractElement
     {
-        $controller->addExternalModule('ui5lab.wl.pdf.PDFViewer', $this->getFacade()->buildUrlToSource('LIBS.PDFVIEWER.DIST') . 'PDFViewer');
-        $controller->addExternalModule('ui5lab.wl.pdf.utils.ControlUtils', $this->getFacade()->buildUrlToSource('LIBS.PDFVIEWER.DIST') . 'utils/ControlUtils');
-        $controller->addExternalModule('ui5lab.wl.pdf.libs.pdf', $this->getFacade()->buildUrlToSource('LIBS.PDFVIEWER.DIST') . 'libs/pdf');
+        $controller->addExternalModule('libs.exface.ui5Custom.PdfViewer', 'vendor/exface/UI5Facade/Facades/js/ui5Custom/PDFViewer');
+        $controller->addExternalModule('libs.exface.ui5Custom.libs.pdf', 'vendor/exface/UI5Facade/Facades/js/ui5Custom/libs/pdf');
         return $this;
     }
     

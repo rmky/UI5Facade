@@ -30,9 +30,7 @@ sap.ui.define([
 				pdfSourceType: {type : "string", group : "Data", defaultValue : 'Hex'},
 				pdfName: {type: "string", group: "Data", defaultValue: null},
 				height: {type: "sap.ui.core.CSSSize", group: "Dimension", defaultValue: null},
-				downloadEnabled: {type: "boolean", group: "Behavior", defaultValue: true},
-				currentPage: {type: "integer", group: "Behavior", defaultValue: 1},
-				totalPages: {type: "integer", group: "Behavior", defaultValue: null}
+				downloadEnabled: {type: "boolean", group: "Behavior", defaultValue: true}
 			},
 			events: {
 				pdfError : {
@@ -54,12 +52,12 @@ sap.ui.define([
 		init: function () {
 			this.count = 1;
 			this.firstTime = true;
-			this._toolbar = new sap.m.OverflowToolbar({
+			this._toolbar = new sap.m.Toolbar({
 				content: [
 					new sap.m.ToolbarSpacer(),
 					this._createButton(false, 'sap-icon://zoom-in', this.zoomin.bind(this)),
 					this._createButton(false, 'sap-icon://zoom-out', this.zoomout.bind(this)),
-					new sap.m.Text({text: "{pdf>/currentpage} / {pdf>/pages}", textAlign: "Center"}),
+					new sap.m.Input({value: "{pdf>/currentpage} / {pdf>/pages}", editable: false, width: "5rem", textAlign: "Center", enabled: false}),
 					this._createButton(false, 'sap-icon://sys-prev-page', this.prevPage.bind(this)),
 					this._createButton(false, 'sap-icon://sys-next-page', this.nextPage.bind(this)),
 					new sap.m.ToolbarSpacer()
@@ -143,7 +141,7 @@ sap.ui.define([
 			return "data:application/pdf;base64," + this.getPdfSourceBase64();
 		},
 		setPdfSourceType: function (sType) {
-			this.setProperty("pdfSourceType", type, true);
+			this.setProperty("pdfSourceType", sType, true);
 			this.updatePDF();
 		},
 		getPdfSourceType: function () {

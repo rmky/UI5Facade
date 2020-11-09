@@ -52,7 +52,7 @@ JS;
             case BinaryDataType::ENCODING_HEX:
             case BinaryDataType::ENCODING_BASE64:
             case BinaryDataType::ENCODING_BINARY:
-                $pdfSourceType = 'pdfSrouceType: "' . ucfirst($valueType) . '",';
+                $pdfSourceType = 'pdfSourceType: "' . ucfirst($valueType) . '",';
                 break;
             default:
                 $pdfSourceType = '';

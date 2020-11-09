@@ -91,6 +91,8 @@ class ExportFioriWebapp extends AbstractActionDeferred implements iModifyData, i
             $facadeConfig->setOption('DEFAULT_SERVER_ADAPTER_CLASS', $facade->getConfig()->getOption('WEBAPP_EXPORT.SERVER_ADAPTER_CLASS'));
         }
         // OData options
+        $facadeConfig->setOption('WEBAPP_EXPORT.ODATA.EXPORT_CONNECTION_CREDENTIALS', BooleanDataType::cast($row['odata_export_credentials']));
+        $facadeConfig->setOption('WEBAPP_EXPORT.ODATA.EXPORT_CONNECTION_SAP_CLIENT', BooleanDataType::cast($row['odata_export_sap_client']));
         $facadeConfig->setOption('WEBAPP_EXPORT.ODATA.USE_BATCH_DELETES', BooleanDataType::cast($row['odata_use_batch_deletes']));
         $facadeConfig->setOption('WEBAPP_EXPORT.ODATA.USE_BATCH_WRITES', BooleanDataType::cast($row['odata_use_batch_writes']));
         $facadeConfig->setOption('WEBAPP_EXPORT.ODATA.USE_BATCH_FUNCTION_IMPORTS', BooleanDataType::cast($row['odata_use_batch_function_imports']));

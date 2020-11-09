@@ -194,6 +194,12 @@ JS;
         return $controller->buildJsMethodName($controller->buildJsEventHandlerMethodName('press'), $this);
     }
 
+    /**
+     * 
+     * @param ActionInterface $action
+     * @param AbstractJqueryElement $input_element
+     * @return string
+     */
     protected function buildJsClickShowDialog(ActionInterface $action, AbstractJqueryElement $input_element)
     {
         $widget = $this->getWidget();
@@ -245,6 +251,9 @@ JS;
             // it was not actually handled by a router. This is importat as all kinds of on-show
             // handler will use route parameters (e.g. data, prefill, etc.) for their own needs.
             
+            // All the onShow/Hide events need to be triggered manually too.
+            // Basic idea taken from here: https://stackoverflow.com/questions/36792358/access-model-in-js-view-to-render-programmatically
+
             // TODO add {$this->buildJsRefreshCascade($widget)} right after {$this->buildJsInputRefresh($widget)}
             // below. However, this produces controller-not-initialized errors in nested dialogs like
             // BDE(DRS) in the MES demo.
@@ -255,13 +264,44 @@ JS;
                         
                         var jqXHR = this._loadView(sViewName, function(){ 
                             var oView = sap.ui.getCore().byId(sViewId);
+                            var oParentView = {$this->getController()->getView()->buildJsViewGetter($this)};
+                            var oApp = sap.ui.getCore().byId('{$this->getController()->getWebapp()->getName()}');
+                            var oNavInfoOpen = {
+                				from: oParentView || null,
+                				fromId: (oParentView !== undefined ? oParentView.getId() : null),
+                				to: oView || null,
+                				toId: (oView ? oView.getId() : null),
+                				firstTime: true,
+                				isTo: false,
+                				isBack: false,
+                				isBackToTop: false,
+                				isBackToPage: false,
+                				direction: "initial"
+                			};
+                            var oNavInfoClose = {
+                				from: oView || null,
+                				fromId: (oView ? oView.getId() : null),
+                				to: oParentView || null,
+                				toId: (oParentView !== undefined ? oParentView.getId() : null),
+                				firstTime: true,
+                				isTo: false,
+                				isBack: false,
+                				isBackToTop: false,
+                				isBackToPage: false,
+                				direction: "initial"
+                			};
+                     
                             if (oView === undefined) {
                                 oComponent.runAsOwner(function(){
                                     return sap.ui.core.mvc.JSView.create({
                                         id: sViewId,
                                         viewName: "{$this->getController()->getWebapp()->getViewName($targetWidget)}"
                                     }).then(function(oView){
-                                        var oParentView = {$this->getController()->getView()->buildJsViewGetter($this)};
+                                        oNavInfoOpen.to = oView;
+                                        oNavInfoOpen.toId = oView.getId();
+                                        oNavInfoClose.from = oView;
+                                        oNavInfoClose.fromId = oView.getId();
+
                                         if (oParentView !== undefined) {
                                             oParentView.addDependent(oView);
                                         }
@@ -270,16 +310,49 @@ JS;
                                             oView.setModel(new sap.ui.model.json.JSONModel(), 'view');    
                                         }
                                         oView.getModel('view').setProperty("/_route", {params: xhrSettings.data});
-                                        
-                                        {$this->buildJsOpenDialogFixMissingEvents('oView', 'oParentView')};
-                                        
+
                                         setTimeout(function() {
                                             var oDialog = oView.getContent()[0];
                                             if (oDialog instanceof sap.m.Dialog) {
-                                                oDialog.attachAfterClose(function() {
+                                                // Attach replacements for navigation events
+                                                oDialog
+                                                .attachBeforeOpen(function() {
+                                        			var oEvent = jQuery.Event("BeforeShow", oNavInfoOpen);
+                                        			oEvent.srcControl = oApp;
+                                        			oEvent.data = {};
+                                        			oEvent.backData = {};
+                                        			oView._handleEvent(oEvent);  
+                                                })
+                                                .attachAfterOpen(function() {
+                                        			var oEvent = jQuery.Event("AfterShow", oNavInfoOpen);
+                                        			oEvent.srcControl = oApp;
+                                        			oEvent.data = {};
+                                        			oEvent.backData = {};
+                                        			oView._handleEvent(oEvent);
+                                                })
+                                                .attachBeforeClose(function() {
+                                        			var oEvent = jQuery.Event("BeforeHide", oNavInfoClose);
+                                        			oEvent.srcControl = oApp;
+                                        			oEvent.data = {};
+                                        			oEvent.backData = {};
+                                        			oView._handleEvent(oEvent);
+                                                })
+                                                .attachAfterClose(function() {
                                                     {$this->buildJsInputRefresh($widget)}
-                                                    {$this->buildJsCloseDialogFixMissingEvents('oView', 'oParentView')}
-                                                });
+                                                    var oEvent = jQuery.Event("AfterHide", oNavInfoClose);
+                                        			oEvent.srcControl = oApp;
+                                        			oEvent.data = {};
+                                        			oEvent.backData = {};
+                                        			oView._handleEvent(oEvent);
+                                                })
+                                                .addEventDelegate({
+                                                    "onBeforeRendering": function () {
+                                                        oView.fireBeforeRendering();
+                                                    },
+                                                    "onAfterRendering": function () {
+                                                        oView.fireAfterRendering();
+                                                    }
+                                                }, this);
                                                 oDialog.open();
                                             } else {
                                                 if (oDialog instanceof sap.m.Page || oDialog instanceof sap.m.MessagePage) {
@@ -292,6 +365,7 @@ JS;
                                 });
                             } else {
                                 oView.getModel('view').setProperty("/_route", {params: xhrSettings.data});
+                                        
                                 var oDialog = oView.getContent()[0];
                                 if (oDialog instanceof sap.m.Dialog) {
                                     oDialog.open();
@@ -305,86 +379,6 @@ JS;
         }
         
         return $output;
-    }
-    
-    /**
-     * Views that are never explicitly navigated to are also never rendered/shown by UI5 - this method generates
-     * JS code to fire corresponding events manually.
-     * 
-     * If not used, tables and other data controls are rendered empty in sap.m.Dialog. Strangely they are
-     * filled when opening the dialog the second time. Don't know why.
-     * 
-     * @link https://stackoverflow.com/questions/36792358/access-model-in-js-view-to-render-programmatically
-     * 
-     * @param string $oViewJs
-     * @param string $oParentViewJs
-     * @return string
-     */
-    protected function buildJsOpenDialogFixMissingEvents(string $oViewJs, string $oParentViewJs) : string
-    {
-        return <<<JS
-
-                                        $oViewJs.fireBeforeRendering();
-                                        $oViewJs.fireAfterRendering();
-
-                                        var oNavInfo = {
-                            				from: $oParentViewJs || null,
-                            				fromId: ($oParentViewJs !== undefined ? $oParentViewJs.getId() : null),
-                            				to: $oViewJs,
-                            				toId: $oViewJs.getId(),
-                            				firstTime: true,
-                            				isTo: false,
-                            				isBack: false,
-                            				isBackToTop: false,
-                            				isBackToPage: false,
-                            				direction: "initial"
-                            			};
-                            
-                            			oEvent = jQuery.Event("BeforeShow", oNavInfo);
-                            			oEvent.srcControl = this;
-                            			oEvent.data = {};
-                            			oEvent.backData = {};
-                            			$oViewJs._handleEvent(oEvent);
-
-                                        oEvent = jQuery.Event("AfterShow", oNavInfo);
-                            			oEvent.srcControl = this;
-                            			oEvent.data = {};
-                            			oEvent.backData = {};
-                            			$oViewJs._handleEvent(oEvent);
-
-JS;
-    }
-    
-    protected function buildJsCloseDialogFixMissingEvents(string $oViewJs, string $oParentViewJs) : string
-    {
-        return <<<JS
-        
-                                        var oNavInfo = {
-                            				from: $oViewJs,
-                            				fromId: $oViewJs,
-                            				to: $oParentViewJs || null,
-                            				toId: ($oParentViewJs !== undefined ? $oParentViewJs.getId() : null),
-                            				firstTime: true,
-                            				isTo: false,
-                            				isBack: false,
-                            				isBackToTop: false,
-                            				isBackToPage: false,
-                            				direction: "initial"
-                            			};
-                            			
-                            			oEvent = jQuery.Event("BeforeHide", oNavInfo);
-                            			oEvent.srcControl = this;
-                            			oEvent.data = {};
-                            			oEvent.backData = {};
-                            			$oViewJs._handleEvent(oEvent);
-                            			
-                                        oEvent = jQuery.Event("AfterHide", oNavInfo);
-                            			oEvent.srcControl = this;
-                            			oEvent.data = {};
-                            			oEvent.backData = {};
-                            			$oViewJs._handleEvent(oEvent);
-                            			
-JS;
     }
     
     protected function buildJsOpenDialogForUnexpectedView(string $oViewContent) : string

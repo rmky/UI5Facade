@@ -2,6 +2,7 @@
 namespace exface\UI5Facade\Facades\Elements;
 
 use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
+use exface\Core\DataTypes\BinaryDataType;
 
 /**
  * Generates custom PDFViewer using the popular PDF.js library
@@ -11,7 +12,7 @@ use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
  * @author Andrej Kabachnik
  *        
  */
-class UI5PDFViewer extends UI5Display
+class UI5PDFViewer extends UI5Value
 {
     /**
      * 
@@ -21,15 +22,78 @@ class UI5PDFViewer extends UI5Display
     public function buildJsConstructorForMainControl($oControllerJs = 'oController')
     {        
         $this->registerExternalModules($this->getController());
+        
         return <<<JS
 
         new exface.ui5Custom.PdfViewer("{$this->getid()}", {
-            pdfSource: {$this->buildJsValue()},
-            {$this->buildJsPropertyHeight()}
+            pdfError: function(oEvent) {
+                {$this->buildJsShowMessageError('oEvent.getParameters().message')};
+            },
+            {$this->buildJsPropertyValue()}
+            {$this->buildJsPropertyDownloadEnabled()}
             {$this->buildJsPropertyWidth()}
+            {$this->buildJsPropertyHeight()}
+            {$this->buildJsProperties()}
     	})
 
 JS;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5Value::buildJsPropertyValue()
+     */
+    protected function buildJsPropertyValue()
+    {
+        $widget = $this->getWidget();
+        $valueType = $widget->getValueType();
+        switch ($valueType) {
+            case BinaryDataType::ENCODING_HEX:
+            case BinaryDataType::ENCODING_BASE64:
+            case BinaryDataType::ENCODING_BINARY:
+                $pdfSourceType = 'pdfSrouceType: "' . ucfirst($valueType) . '",';
+                break;
+            default:
+                $pdfSourceType = '';
+        }
+        
+        if ($widget->isFilenameBoundToAttribute()) {
+            $filenameAttr = $widget->getFilenameAttribute();
+            $pdfName = <<<JS
+            pdfName: {
+                path: "{$this->getFilenameBindingPath()}",
+                {$this->getFacade()->getDataTypeFormatterForUI5Bindings($filenameAttr->getDataType())->buildJsBindingProperties()}
+            },
+
+JS;
+        } else {
+            $caption = parent::getCaption();
+            if ($caption) {
+                $pdfName = 'pdfName: "' . $this->escapeJsTextValue($caption) . '",';
+            } else {
+                $pdfName = '';
+            }
+        }
+        
+        return <<<JS
+
+            pdfSource: {$this->buildJsValue()},
+            {$pdfName}
+            {$pdfSourceType}
+JS;
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    protected function buildJsPropertyDownloadEnabled() : string
+    {
+        if ($this->getWidget()->getDownloadEnabled() === false) {
+            return 'downloadEnabled: false,';
+        }
+        return '';
     }
     
     /**
@@ -92,5 +156,23 @@ JS;
     public function getCaption() : string
     {
         return '';
+    }
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface::getValueBindingPath()
+     */
+    public function getFilenameBindingPath() : string
+    {
+        if ($this->textBindingPath === null) {
+            $widget = $this->getWidget();
+            $model = $this->getView()->getModel();
+            if ($model->hasBinding($widget, 'text')) {
+                return $model->getBindingPath($widget, 'text');
+            }
+            return $this->getValueBindingPrefix() . $this->getWidget()->getFilenameDataColumnName();
+        }
+        return $this->textBindingPath;
     }
 }

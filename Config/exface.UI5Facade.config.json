@@ -30,6 +30,11 @@
 	"ICON_CLASSES.INFO": "fa fa-info-circle",
 	
 	"INSTALLER.SERVICEWORKER.ROUTES": {
+		"GET preload data": {
+			"description": "Dont cache preload data from the UI5 API (e.g. GET `/api/ui5?action=exface.Core.ReadPreload....`)",
+			"matcher": "/.*\\/api\\/ui5\\?action=exface\\.Core\\.ReadPreload&(?!.*context).*/i",
+			"strategy": "workbox.strategies.NetworkOnly"
+		},
     	"GET data": {
 			"description": "Cache data from the UI5 API (e.g. GET `/api/ui5?action=...`)",
 			"matcher": "/.*\\/api\\/ui5\\?(?!.*context).*/i",

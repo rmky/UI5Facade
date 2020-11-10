@@ -10,6 +10,7 @@ use exface\Core\Actions\DeleteObject;
 use exface\Core\Interfaces\Actions\ActionInterface;
 use exface\Core\Interfaces\Actions\iReadData;
 use exface\Core\Interfaces\DataTypes\DataTypeInterface;
+use exface\Core\DataTypes\HexadecimalNumberDataType;
 
 /**
  * Generates sap.m.upload.UploadSet for a FileList widget.
@@ -256,7 +257,7 @@ JS;
         $onSuccessJs = <<<JS
                 
                 oItem.destroy();
-                {$this->buildJsBusyIconHide()};
+                {$this->buildJsRefresh()};
                 if (oResponseModel.getProperty('/success') !== undefined){
                		{$this->buildJsShowMessageSuccess("oResponseModel.getProperty('/success')")}
 				}
@@ -313,6 +314,7 @@ JS;
             case $contentDataType instanceof BinaryDataType && $contentDataType->getEncoding() === BinaryDataType::ENCODING_BASE64:
                 return "btoa($fileContentJs)";
             case $contentDataType instanceof BinaryDataType && $contentDataType->getEncoding() === BinaryDataType::ENCODING_HEX:
+                $prefix0x = HexadecimalNumberDataType::HEX_PREFIX;
                 return <<<JS
 
                     function (s){
@@ -324,7 +326,7 @@ JS;
                             a[i] = s.charCodeAt(i).toString(16).replace(/^([\da-f])$/,"0$1");  
                         }  
                           
-                        return 'x' + a.join('');  
+                        return '{$prefix0x}' + a.join('');  
                     }($fileContentJs); 
 JS;
         }

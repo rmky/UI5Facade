@@ -514,7 +514,7 @@ const exfLauncher = {};
 																oButton.setBusy(false)
 															})
 															.catch(error => {
-																console.error(error.message);
+																console.error(error);
 																_oLauncher.contextBar.getComponent().showErrorDialog('{i18n>WEBAPP.SHELL.NETWORK.CONSOLE}', '{i18n>WEBAPP.SHELL.NETWORK.SYNC_FAILED}');
 																oButton.setBusy(false)
 															});

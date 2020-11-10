@@ -241,7 +241,7 @@ const exfLauncher = {};
 																						}),
 																						endButton: new sap.m.Button({
 																							text: "{i18n>WEBAPP.SHELL.NETWORK.CONFIRM_NO}",
-																							type: sap.m.ButtonType.Emphasized,
+																							type: sap.m.ButtonType.Default,
 																							press: function(oEvent){
 																								oButton.setBusy(false);
 																								confirmDialog.close();

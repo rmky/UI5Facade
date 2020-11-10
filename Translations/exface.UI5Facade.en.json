@@ -73,6 +73,9 @@
 	"WIDGET.INPUTPASSWORD.CONFIRM": "Confirm password",	
 	"WIDGET.INPUTPASSWORD.DONT_MATCH": "Passwords do not match",
 	
+	"WIDGET.INPUTCOMPBOTABLE.ERROR_INVALID_KEY": "is not a valid value! Please select an existing value from the list!",
+	"WIDGET.INPUTCOMPBOTABLE.ERROR_KEYS_VALUES_MISMATCH": "includes one or more invalid values: please select existing values from the list only!",
+	
 	"WIDGET.PAGINATOR.NEXT_PAGE": "Next Page",
 	"WIDGET.PAGINATOR.PREVIOUS_PAGE": "Previous Page"
 }

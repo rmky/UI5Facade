@@ -1657,7 +1657,8 @@ JS;
                             icon: "{$btn_element->buildCssIconClass($button->getIcon())}",
                             text: "{$button->getCaption()}",
                             enabled: function(){
-                                return sap.ui.getCore().byId('{$btn_element->getId()}').getEnabled();
+                                var oBtn = sap.ui.getCore().byId('{$btn_element->getId()}');
+                                return oBtn ? oBtn.getEnabled() : false;
                             }(),
                             {$select}
                             {$startsSectionProperty}

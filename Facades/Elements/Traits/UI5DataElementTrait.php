@@ -14,6 +14,9 @@ use exface\Core\Interfaces\Widgets\iShowData;
 use exface\Core\Widgets\Dialog;
 use exface\Core\DataTypes\WidgetVisibilityDataType;
 use exface\UI5Facade\Facades\Elements\UI5DataPaginator;
+use exface\Core\Widgets\Button;
+use exface\Core\Widgets\MenuButton;
+use exface\Core\Widgets\ButtonGroup;
 
 /**
  * This trait helps wrap thrid-party data widgets (like charts, image galleries, etc.) in 
@@ -896,7 +899,9 @@ JS;
         // Build the top toolbar with title, actions, etc.
         $titleAreaShrinkRatio = '';
         if ($this->getDynamicPageShowToolbar() === true) {
-            $this->getQuickSearchElement()->setWidthCollapsed('200px');
+            if ($qsEl = $this->getQuickSearchElement()) {
+                $qsEl->setWidthCollapsed('200px');
+            }
             $titleCollapsed  = $this->buildJsQuickSearchConstructor($oControllerJs);
             $toolbar = $this->buildJsToolbar($oControllerJs, $titleCollapsed, $top_buttons);
 
@@ -1386,8 +1391,10 @@ JS;
                         }
                     }
                 }
-                var element = sap.ui.getCore().byId('{$this->getDirtyFlagAlias()}')
-                element.setVisible(rowsMarked);
+                var element = sap.ui.getCore().byId('{$this->getDirtyFlagAlias()}');
+                if (element) {
+                    element.setVisible(rowsMarked);
+                }
                 oData.rows = aRows;
                 $oModelJs.setData(oData);                
             })
@@ -1403,7 +1410,7 @@ JS;
      */
     protected function getDirtyFlagAlias() : string
     {
-        return "{$this->getWidget()->getId()}" . "DirtyFlag";
+        return "{$this->getId()}" . "DirtyFlag";
     }
     
     /**
@@ -1422,5 +1429,242 @@ JS;
     protected function getPaginatorElement() : UI5DataPaginator
     {
         return $this->getFacade()->getElement($this->getDataWidget()->getPaginator());
+    }
+    
+    
+    
+    protected function buildJsContextMenuTrigger($eventJsVar = 'oEvent') {
+        return <<<JS
+        
+                var oMenu = {$this->buildJsContextMenu($this->getWidget()->getButtons())};
+                var eFocused = $(':focus');
+                var eDock = sap.ui.core.Popup.Dock;
+                oMenu.open(true, eFocused, eDock.CenterCenter, eDock.CenterBottom,  {$eventJsVar}.target);
+                
+JS;
+    }
+    
+    /**
+     * Returns a chainable method call to attach left/right/double click handlers to the control.
+     * 
+     * This method should be called on the control constructor when it is bein initialized. The
+     * result will look like this:
+     * 
+     * ```
+     * new sap.m.Table()
+     * .attachLeftClick(function(){})
+     * .attachRightClick(function(){})
+     * .attachDoubleClick(function(){})
+     * 
+     * ```
+     * 
+     * To override click handlers for a specific click event, override the corresponding methods
+     * in the class, that uses the trait. See UI5DataTable or UI5Scheduler for examples.
+     * 
+     * @see buildJsClickHandlerDoubleClick()
+     * @see buildJsClickHandlerRightClick()
+     * @see buildJsClickHandlerSingleClick()
+     * 
+     * @param string $oControllerJsVar
+     * @return string
+     */
+    protected function buildJsClickHandlers($oControllerJsVar = 'oController') : string
+    {
+        return $this->buildJsClickHandlerDoubleClick($oControllerJsVar)
+        . $this->buildJsClickHandlerRightClick($oControllerJsVar)
+        . $this->buildJsClickHandlerLeftClick($oControllerJsVar);
+    }
+    
+    /**
+     * 
+     * @param string $oControllerJsVar
+     * @return string
+     */
+    protected function buildJsClickHandlerDoubleClick($oControllerJsVar = 'oController') : string
+    {        
+        // Double click. Currently only supports one double click action - the first one in the list of buttons
+        if ($dblclick_button = $this->getWidget()->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_DOUBLE_CLICK)[0]) {
+            return <<<JS
+            
+            .attachBrowserEvent("dblclick", function(oEvent) {
+                var oTargetDom = oEvent.target;
+                if(! ({$this->buildJsClickIsTargetRowCheck('oTargetDom')})) return;
+                
+        		{$this->getFacade()->getElement($dblclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
+            })
+JS;
+        }
+        return '';
+    }
+    
+    /**
+     * 
+     * @param string $oControllerJsVar
+     * @return string
+     */
+    protected function buildJsClickHandlerRightClick($oControllerJsVar = 'oController') : string
+    {
+        // Double click. Currently only supports one double click action - the first one in the list of buttons
+        $rightclick_script = '';
+        if ($rightclick_button = $this->getWidget()->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_RIGHT_CLICK)[0]) {
+            $rightclick_script = $this->getFacade()->getElement($rightclick_button)->buildJsClickEventHandlerCall($oControllerJsVar);
+        } else {
+            $rightclick_script = $this->buildJsContextMenuTrigger();
+        }
+        
+        if ($rightclick_script) {
+            return <<<JS
+            
+            .attachBrowserEvent("contextmenu", function(oEvent) {
+                var oTargetDom = oEvent.target;
+                if(! ({$this->buildJsClickIsTargetRowCheck('oTargetDom')})) return;
+                
+                oEvent.preventDefault();
+                {$rightclick_script}
+        	})
+        	
+JS;
+        }
+        return '';
+    }
+    
+    /**
+     * 
+     * @param string $oControllerJsVar
+     * @return string
+     */
+    protected function buildJsClickHandlerLeftClick($oControllerJsVar = 'oController') : string
+    {
+        // Single click. Currently only supports one click action - the first one in the list of buttons
+        if ($leftclick_button = $this->getWidget()->getButtonsBoundToMouseAction(EXF_MOUSE_ACTION_LEFT_CLICK)[0]) {
+            return <<<JS
+            
+            .attachBrowserEvent("click", function(oEvent) {
+        		var oTargetDom = oEvent.target;
+                if(! ({$this->buildJsClickIsTargetRowCheck('oTargetDom')})) return;
+                
+                {$this->getFacade()->getElement($leftclick_button)->buildJsClickEventHandlerCall($oControllerJsVar)};
+            })
+JS;
+        }
+        return '';
+    }
+    
+    /**
+     * Returns an inline JS-condition, that evaluates to TRUE if the given oTargetDom JS expression
+     * is a DOM element inside a list item or table row.
+     *
+     * This is important for handling browser events like dblclick. They can only be attached to
+     * the entire control via attachBrowserEvent, while we actually only need to react to events
+     * on the items, not on headers, footers, etc.
+     *
+     * @param string $oTargetDomJs
+     * @return string
+     */
+    protected function buildJsClickIsTargetRowCheck(string $oTargetDomJs = 'oTargetDom') : string
+    {
+        return "{$oTargetDomJs} !== undefined";
+    }
+    
+    /**
+     *
+     * @param Button[]
+     * @return string
+     */
+    protected function buildJsContextMenu(array $buttons)
+    {
+        return <<<JS
+        
+                new sap.ui.unified.Menu({
+                    items: [
+                        {$this->buildJsContextMenuButtons($buttons)}
+                    ],
+                    itemSelect: function(oEvent) {
+                        var oMenu = oEvent.getSource();
+                        var oItem = oEvent.getParameters().item;
+                        if (! oItem.getSubmenu()) {
+                            oMenu.destroy();
+                        }
+                    }
+                })
+JS;
+    }
+    
+    /**
+     *
+     * @param Button[] $buttons
+     * @return string
+     */
+    protected function buildJsContextMenuButtons(array $buttons)
+    {
+        $context_menu_js = '';
+        
+        $last_parent = null;
+        foreach ($buttons as $button) {
+            if ($button->isHidden()) {
+                continue;
+            }
+            if ($button->getParent() == $this->getWidget()->getToolbarMain()->getButtonGroupForSearchActions()) {
+                continue;
+            }
+            if (! is_null($last_parent) && $button->getParent() !== $last_parent) {
+                $startSection = true;
+            }
+            $last_parent = $button->getParent();
+            
+            $context_menu_js .= ($context_menu_js ? ',' : '') . $this->buildJsContextMenuItem($button, $startSection);
+        }
+        
+        return $context_menu_js;
+    }
+    
+    /**
+     *
+     * @param Button $button
+     * @param boolean $startSection
+     * @return string
+     */
+    protected function buildJsContextMenuItem(Button $button, $startSection = false)
+    {
+        $menu_item = '';
+        
+        $startsSectionProperty = $startSection ? 'startsSection: true,' : '';
+        
+        /* @var $btn_element \exface\UI5Facade\Facades\Elements\UI5Button */
+        $btn_element = $this->getFacade()->getElement($button);
+        
+        if ($button instanceof MenuButton){
+            if ($button->getParent() instanceof ButtonGroup && $button === $this->getFacade()->getElement($button->getParent())->getMoreButtonsMenu()){
+                $caption = $button->getCaption() ? $button->getCaption() : '...';
+            } else {
+                $caption = $button->getCaption();
+            }
+            $menu_item = <<<JS
+            
+                        new sap.ui.unified.MenuItem({
+                            icon: "{$btn_element->buildCssIconClass($button->getIcon())}",
+                            text: "{$caption}",
+                            {$startsSectionProperty}
+                            submenu: {$this->buildJsContextMenu($button->getButtons())}
+                        })
+JS;
+        } else {
+            $handler = $btn_element->buildJsClickViewEventHandlerCall();
+            $select = $handler !== '' ? 'select: ' . $handler . ',' : '';
+            $menu_item = <<<JS
+            
+                        new sap.ui.unified.MenuItem({
+                            icon: "{$btn_element->buildCssIconClass($button->getIcon())}",
+                            text: "{$button->getCaption()}",
+                            enabled: function(){
+                                var oBtn = sap.ui.getCore().byId('{$btn_element->getId()}');
+                                return oBtn ? oBtn.getEnabled() : false;
+                            }(),
+                            {$select}
+                            {$startsSectionProperty}
+                        })
+JS;
+        }
+        return $menu_item;
     }
 }

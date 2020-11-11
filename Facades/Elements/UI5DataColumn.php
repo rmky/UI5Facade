@@ -1,18 +1,15 @@
 <?php
 namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Widgets\DataColumn;
-use exface\UI5Facade\Facades\Interfaces\UI5BindingFormatterInterface;
 use exface\UI5Facade\Facades\Interfaces\UI5ValueBindingInterface;
 use exface\UI5Facade\Facades\Interfaces\UI5CompoundControlInterface;
-use exface\Core\DataTypes\WidgetVisibilityDataType;
 use exface\Core\Widgets\DataTable;
 use exface\Core\Interfaces\DataTypes\EnumDataTypeInterface;
 use exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface;
 
 /**
  *
- * @method DataColumn getWidget()
+ * @method \exface\Core\Widgets\DataColumn getWidget()
  *        
  * @author Andrej Kabachnik
  *        
@@ -102,10 +99,14 @@ JS;
     public function buildJsConstructorForCell(string $modelName = null, bool $hideCaptions = true)
     {
         $widget = $this->getWidget();
-        $tpl = $this->getFacade()->getElement($widget->getCellWidget());
+        $cellWidget = $widget->getCellWidget();
+        $tpl = $this->getFacade()->getElement($cellWidget);
         // Disable using widget id as control id because this is a template for multiple controls
         $tpl->setUseWidgetId(false);
-        $tpl->setValueBoundToModel(true);
+        // Force element to use model binding if the widget "knows" it's column
+        if ($cellWidget->getDataColumnName() !== '' && $cellWidget->getDataColumnName() !== null) {
+            $tpl->setValueBoundToModel(true);
+        }
         
         $modelPrefix = $modelName ? $modelName . '>' : '';
         if ($tpl instanceof UI5Display) {

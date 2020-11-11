@@ -6,6 +6,7 @@ use exface\UI5Facade\Facades\Interfaces\UI5CompoundControlInterface;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryLiveReferenceTrait;
 use exface\Core\Interfaces\Widgets\iTakeInput;
 use exface\Core\Widgets\Input;
+use exface\Core\Interfaces\Widgets\iShowDataColumn;
 
 /**
  * Generates sap.m.Text controls for Value widgets
@@ -158,6 +159,11 @@ JS;
         
         $widget = $this->getWidget();
         $model = $this->getView()->getModel();
+        
+        // If the widget can be bound to a data column, but has no column name really
+        if ($widget instanceof iShowDataColumn && ! $widget->isBoundToDataColumn()) {
+            return false;
+        }
         
         // If there is a model binding, obviously return true
         if ($model->hasBinding($widget, $this->getValueBindingWidgetPropertyName())) {
@@ -399,5 +405,30 @@ JS;
     {
         $this->registerLiveReferenceAtLinkedElement();
         return;
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::buildJsResetter()
+     */
+    public function buildJsResetter() : string
+    {
+        $widget = $this->getWidget();
+        $js = '';
+        
+        if ($widget->getValueWidgetLink() !== null) {
+            return '';
+        }
+        
+        if (! $this->isValueBoundToModel()) {
+            $staticDefault = $widget->getValueWithDefaults();
+            $initialValueJs = json_encode($staticDefault);
+            $js = $this->buildJsValueSetter($initialValueJs);
+        } else {
+            // FIXME #ui5-resetter reset properly if value is bound to model
+        }
+        
+        return $js;
     }
 }

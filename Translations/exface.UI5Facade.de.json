@@ -84,6 +84,8 @@
 	
 	
 	"WIDGET.DATACAROUSEL.DETAILS_HIDE": "Details verbergen",
+	"WIDGET.DATACAROUSEL.DETAILS_PREV": "Vorheriger Eintrag",
+	"WIDGET.DATACAROUSEL.DETAILS_NEXT": "Nächster Eintrag",
 	"WIDGET.DATACAROUSEL.DETAILS_EMPTY_HINT": "Bitte wählen Sie einen Eintrag!",
 	
 	"WIDGET.DATATPAGINATOR.SHOWING": "Zeige %from% - %to% aus %total%",
@@ -109,11 +111,15 @@
 	"WIDGET.FILELIST.ERROR_FILE_TOO_BIG": "Datei zu groß: max. %mb% MB erlaubt!",
 	"WIDGET.FILELIST.ERROR_FILENAME_TOO_LONG": "Dateiname zu lang: max. %length% Zeichen erlaubt!",
 	"WIDGET.FILELIST.ERROR_DELETE": "Löschen fehlgeschlagen: unbekannter Fehler.",
+	"WIDGET.FILELIST.BROWSE": "Durchsuchen",
 	
 	"WIDGET.FORM.MESSAGE_VALIDATION_FAILED": "Bitte alle markierten Felder kontrollieren: die Eingaben scheinen nicht korrekt zu sein!",
 	
 	"WIDGET.INPUTPASSWORD.CONFIRM": "Passwort bestätigen",
 	"WIDGET.INPUTPASSWORD.DONT_MATCH": "Passwörter stimmen nicht überein",
+	
+	"WIDGET.INPUTCOMPBOTABLE.ERROR_INVALID_KEY": "ist kein valider Wert! Bitte einen existierenden Wert aus der Liste wählen!",
+	"WIDGET.INPUTCOMPBOTABLE.ERROR_KEYS_VALUES_MISMATCH": "enthält einen oder mehrere unbekannte Werte: bitte nur existierende Wert aus der Liste wählen!",
 	
 	"WIDGET.PAGINATOR.NEXT_PAGE": "Nächste Seite",
 	"WIDGET.PAGINATOR.PREVIOUS_PAGE": "Vorherige Seite"

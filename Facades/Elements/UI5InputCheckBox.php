@@ -105,7 +105,7 @@ JS;
      */
     public function buildJsValueSetterMethod($value)
     {
-        return "setSelected({$value} ? true : false).fireSelect({selected: (){$value} ? true : false)})";
+        return "setSelected({$value} ? true : false).fireSelect({selected: ({$value} ? true : false)})";
     }
     
     /**

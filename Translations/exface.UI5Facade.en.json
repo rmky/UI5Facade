@@ -82,6 +82,8 @@
 	"WEBAPP.SHELL.USER.TITLE": "Current User",
 	
 	"WIDGET.DATACAROUSEL.DETAILS_HIDE": "Hide details",
+	"WIDGET.DATACAROUSEL.DETAILS_PREV": "Previous item",
+	"WIDGET.DATACAROUSEL.DETAILS_NEXT": "Next item",
 	"WIDGET.DATACAROUSEL.DETAILS_EMPTY_HINT": "Please select an item!",
 	
 	"WIDGET.DATATPAGINATOR.SHOWING": "Showing %from% - %to% of %total%",
@@ -107,11 +109,15 @@
 	"WIDGET.FILELIST.ERROR_FILE_TOO_BIG": "File too big: max. %mb% MB allowed!",
 	"WIDGET.FILELIST.ERROR_FILENAME_TOO_LONG": "File name too long: max. %length% characters allowed!",
 	"WIDGET.FILELIST.ERROR_DELETE": "Delete failed: unknown error in UI5.",
+	"WIDGET.FILELIST.BROWSE": "Browse",
 	
 	"WIDGET.FORM.MESSAGE_VALIDATION_FAILED": "Please check all marked fields: it seems, they were not filled correctly!",
 	
 	"WIDGET.INPUTPASSWORD.CONFIRM": "Confirm password",	
 	"WIDGET.INPUTPASSWORD.DONT_MATCH": "Passwords do not match",
+	
+	"WIDGET.INPUTCOMPBOTABLE.ERROR_INVALID_KEY": "is not a valid value! Please select an existing value from the list!",
+	"WIDGET.INPUTCOMPBOTABLE.ERROR_KEYS_VALUES_MISMATCH": "includes one or more invalid values: please select existing values from the list only!",
 	
 	"WIDGET.PAGINATOR.NEXT_PAGE": "Next Page",
 	"WIDGET.PAGINATOR.PREVIOUS_PAGE": "Previous Page"

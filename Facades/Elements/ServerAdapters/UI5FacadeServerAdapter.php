@@ -54,7 +54,6 @@ class UI5FacadeServerAdapter implements UI5ServerAdapterInterface
                             var oComponent = {$controller->buildJsComponentGetter()};                
                             if (!navigator.onLine) {
                                 if (exfPreloader) {
-                                    console.log('Save offline action');
                                     var actionParams = {
                                         type: 'POST',
         								url: '{$this->getElement()->getAjaxUrl()}',
@@ -84,9 +83,6 @@ class UI5FacadeServerAdapter implements UI5ServerAdapterInterface
                                     {$headers}
     								data: {$oParamsJs},
     								success: function(data, textStatus, jqXHR) {
-                                        console.log('Data', data);
-                                        console.log('TextStatus', textStatus);
-                                        console.log('jqXHR', jqXHR);
                                         if (typeof data === 'object') {
                                             response = data;
                                         } else {
@@ -186,9 +182,12 @@ JS;
                     if (Object.keys({$oModelJs}.getData()).length !== 0) {
                         {$oModelJs}.setData({});
                     }
-                    if (Array.isArray(response.rows) && response.rows.length === 1) {
+                    if (Array.isArray(response.rows) && response.rows.length > 0) {
                         sap.ui.getCore().byId('{$this->getElement()->getId()}').getModel('view').setProperty('/_prefill/data', response);
                         {$oModelJs}.setData(response.rows[0]);
+                        if (response.rows.length > 1) {
+                            {$this->getElement()->buildJsShowMessageError('"Error prefilling view with data: received " + response.rows.length + " rows instead of 0 or 1! Only the first data row is visible."')};
+                        }
                     }
                     {$onModelLoadedJs}
                 },

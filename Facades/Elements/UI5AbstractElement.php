@@ -13,6 +13,7 @@ use exface\UI5Facade\Facades\Elements\ServerAdapters\PreloadServerAdapter;
 use exface\UI5Facade\Facades\Interfaces\UI5ViewInterface;
 use exface\Core\Interfaces\Widgets\iHaveIcon;
 use exface\UI5Facade\Facades\Interfaces\UI5ModelInterface;
+use exface\Core\Interfaces\Widgets\iTakeInput;
 
 /**
  *
@@ -558,6 +559,16 @@ JS;
     public function registerExternalModules(UI5ControllerInterface $controller) : UI5AbstractElement
     {
         return $this;
+    }
+    
+    /**
+     * Don't use default logic from AbstractJqueryElement as it will empty bound models!!!
+     * 
+     * @see \exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement::buildJsResetter()
+     */
+    public function buildJsResetter() : string
+    {
+        return '';
     }
 }
 ?>

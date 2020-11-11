@@ -34,7 +34,7 @@ class UI5DataCards extends UI5DataTable
             		}
                 })
                 .setModel(new sap.ui.model.json.JSONModel())
-                {$this->buildJsClickListeners('oController')}
+                {$this->buildJsClickHandlers('oController')}
                 {$this->buildJsPseudoEventHandlers()}
                 ,
                 {$this->buildJsConstructorForMTableFooter()}

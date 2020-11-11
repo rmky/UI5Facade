@@ -81,6 +81,8 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
     
     private $useConnectionCredentials = false;
     
+    private $useConnectionClient = false;
+    
     private $useBatchWrites = false;
     
     private $useBatchDeletes = false;
@@ -96,8 +98,11 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
         $this->element = $element; 
         
         $facadeConfig = $element->getFacade()->getConfig();
-        if ($facadeConfig->hasOption('WEBAPP_EXPORT.ODATA.USE_CONNECTION_CREDENTIALS')) {
-            $this->useConnectionCredentials = $facadeConfig->getOption('WEBAPP_EXPORT.ODATA.USE_CONNECTION_CREDENTIALS');
+        if ($facadeConfig->hasOption('WEBAPP_EXPORT.ODATA.EXPORT_CONNECTION_CREDENTIALS')) {
+            $this->useConnectionCredentials = $facadeConfig->getOption('WEBAPP_EXPORT.ODATA.EXPORT_CONNECTION_CREDENTIALS');
+        }
+        if ($facadeConfig->hasOption('WEBAPP_EXPORT.ODATA.EXPORT_CONNECTION_SAP_CLIENT')) {
+            $this->useConnectionClient = $facadeConfig->getOption('WEBAPP_EXPORT.ODATA.EXPORT_CONNECTION_SAP_CLIENT');
         }
         if ($facadeConfig->hasOption('WEBAPP_EXPORT.ODATA.USE_BATCH_DELETES')) {
             $this->setUseBatchDeletes($facadeConfig->getOption('WEBAPP_EXPORT.ODATA.USE_BATCH_DELETES'));
@@ -154,6 +159,15 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
     }
     
     /**
+     *
+     * @return bool
+     */
+    protected function getUseConnectionClient() : bool
+    {
+        return $this->useConnectionClient;
+    }
+    
+    /**
      * 
      * @return UI5AbstractElement
      */
@@ -175,7 +189,6 @@ class OData2ServerAdapter implements UI5ServerAdapterInterface
      */
     public function buildJsServerRequest(ActionInterface $action, string $oModelJs, string $oParamsJs, string $onModelLoadedJs, string $onErrorJs = '', string $onOfflineJs = '') : string
     {
-        $test = '';
         switch (true) {
             case get_class($action) === ReadPrefill::class:
                 return $this->buildJsPrefillLoader($oModelJs, $oParamsJs, $onModelLoadedJs, $onErrorJs, $onOfflineJs);
@@ -522,7 +535,7 @@ JS;
                         oRowData.recordsFiltered = oData.__count;
                         oRowData.recordsTotal = oData.__count;
                     }
-                    console.log('ResultData:', oRowData);
+
                     {$oModelJs}.setData(oRowData);
                     {$onModelLoadedJs}
                 },
@@ -831,48 +844,61 @@ JS;
         
         $dataSourceAlias = $object->getDataSource()->getId();
         $config = $this->getElement()->getFacade()->getConfig();
+        
         /* @var $sourcesUxon \exface\Core\CommonLogic\UxonObject */
         $sourcesUxon = $config->getOption('WEBAPP_EXPORT.MANIFEST.DATASOURCES');
-        $url = rtrim($connection->getUrl(), "/") . '/';
-        if ($config->getOption('WEBAPP_EXPORT.MANIFEST.DATASOURCES_USE_RELATIVE_URLS')) {
-            $url = parse_url($url, PHP_URL_PATH);
-        }
-        $sourcesUxon->setProperty($dataSourceAlias, new UxonObject([
-            'uri' => $url
-        ]));
-        $config->setOption('WEBAPP_EXPORT.MANIFEST.DATASOURCES', $sourcesUxon);
-        $user = '';
-        $password = '';
-        $fixedParamsJson = '{}';
-        if ($fixedParams = $connection->getFixedUrlParams()) {
-         $fixedParamsArr = [];
-         parse_str($fixedParams, $fixedParamsArr);
-         $fixedParamsJson = json_encode($fixedParamsArr);
-         }
+        $connUxon = ! $sourcesUxon->hasProperty($dataSourceAlias) ? new UxonObject() : $sourcesUxon->getProperty($dataSourceAlias);
         
-        if ($connection->getUser()) {
-            if ($this->getUseConnectionCredentials() === true) {
-                $user = $connection->getUser();
-                $password = $connection->getPassword();
+        if (! $connUxon->hasProperty('uri')) {
+            $url = rtrim($connection->getUrl(), "/") . '/';
+            if ($config->getOption('WEBAPP_EXPORT.MANIFEST.DATASOURCES_USE_RELATIVE_URLS')) {
+                $url = parse_url($url, PHP_URL_PATH);
+            }
+            $connUxon->setProperty('uri', $url);
+        }
+        
+        if ($fixedParams = $connection->getFixedUrlParams()) {
+            $fixedParamsArr = [];
+            parse_str($fixedParams, $fixedParamsArr);
+            if ($fixedParamsArr['sap-client']) {
+                $sapClient = $fixedParamsArr['sap-client'];
+                unset($fixedParamsArr['sap-client']);
+                if (! $connUxon->hasProperty('sap-client') && $this->getUseConnectionClient()) {
+                    $connUxon->setProperty('sap-client', $sapClient);
+                }
+            }
+            if (! empty($fixedParamsArr)) {
+                $connUxon->setProperty('serviceUrlParams', new UxonObject($fixedParamsArr));
             }
         }
+        
+        if ($this->getUseConnectionCredentials() === true) {
+            if ($connection->getUser()) {
+                $connUxon->setProperty('user', $connection->getUser());
+                $connUxon->setProperty('password', $connection->getPassword());
+            }
+        }
+        
+        $sourcesUxon->setProperty($dataSourceAlias, $connUxon);
+        $config->setOption('WEBAPP_EXPORT.MANIFEST.DATASOURCES', $sourcesUxon);
         
         return <<<JS
 
             function(){
                 var dataSource = {$this->getElement()->getController()->buildJsComponentGetter()}.getManifestEntry("/sap.app/dataSources/{$dataSourceAlias}");
-                var url = dataSource.uri || '{$url}';
-                var user = dataSource.user || '{$user}';
-                var password = dataSource.password || '{$password}';
-                var client = dataSource['sap-client'] || jQuery.sap.getUriParameters().get("sap-client") || {$fixedParamsJson}['sap-client'] || null;
-                var params = {serviceUrl: url};
+                var user = dataSource.user;
+                var client = dataSource['sap-client'] || jQuery.sap.getUriParameters().get("sap-client") || null;
+                var params = {
+                    serviceUrl: dataSource.uri,
+                    serviceUrlParams: dataSource.serviceUrlParams || {}
+                };
                 if (user !== null && user !== undefined && user !== '') {
-                    params['user'] = user;
-                    params['password'] = password;
-                    params['withCredentials'] = true;
+                    params.user = user;
+                    params.password = dataSource.password;
+                    params.withCredentials = true;
                 }
                 if (client !== null && client !== undefined && client !== '') {
-                    params['serviceUrlParams'] = {'sap-client': client};
+                    params.serviceUrlParams['sap-client'] = client;
                     params['metadataUrlParams'] = {'sap-client': client};
                 }
 

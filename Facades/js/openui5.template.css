@@ -46,7 +46,7 @@ body:not(.sapUiSizeCompact) .sapFDynamicPageTitleMainHeadingInner .sapMTitle > s
 /* LoginPrompt */
 .exf-loginprompt-flexbox > div {max-width: 95%}
 .sapMDialog .exf-loginprompt-flexbox > div {max-width: 100%;}
-.exf-loginprompt-panel > h2 {text-align: center; height: 6rem; line-height: 6rem; font-size: 2rem;}
+.exf-loginprompt-panel > h2 {text-align: center; height: 4rem !important; line-height: 4rem !important; font-size: 1.2rem;}
 .exf-loginprompt-panel > .sapMPanelContent {border-left: 1px solid #cccccc; border-right: 1px solid #cccccc;}
 
 /* sap.m.P13nDialog */
@@ -111,6 +111,7 @@ html.sap-tablet .sapMDialog, html.sap-desktop .sapMDialog {min-width: 25rem !imp
 .sapUxAPObjectPageSection.sapUiNoContentPadding .sapUiRespGridMedia-Std-Phone.sapUiRespGridHSpace1>.sapUiRespGridSpanS12:first-of-type {width: 100%}
 .sapUxAPObjectPageSection.sapUiNoContentPadding .sapUiRespGrid:first-of-type {padding: 0;}
 .sapUxAPObjectPageSection.sapUiNoContentPadding .sapUiRespGrid.sapUiRespGridHSpace1>div:first-of-type {margin: 0; width: 100%}
+.sapUxAPObjectPageSection.sapUiNoContentPadding {margin-bottom: 1.5rem;}
 
 /* DataLookupDialog */
 .sapMDialog > .sapMDialogSection > .sapMDialogScroll {height: 100%}
@@ -121,3 +122,7 @@ html.sap-tablet .sapMDialog, html.sap-desktop .sapMDialog {min-width: 25rem !imp
 /* Textual busy overlays */
 .exf-busy-text .sapUiLocalBusyIndicatorAnimation {display: none}
 .exf-busy-text-content {position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);}
+
+/* Wizard */
+/* FIX next-button of mobile wizzards floating in the upper part of the screen - even if the wizard itself is not visible! */
+html.sap-phone .sapMWizard .sapMWizardNextButtonVisible {position: relative !important; left: inherit !important; bottom: inherit !important;}

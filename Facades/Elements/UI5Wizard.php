@@ -1,13 +1,19 @@
 <?php
 namespace exface\UI5Facade\Facades\Elements;
 
-use exface\Core\Widgets\Wizard;
-
 /**
  * Creates a sap.m.Wizard for a Wizard widget. 
  * 
- * @method Wizard getWidget()
+ * The wizard control is wrapped in a sap.m.Page to allow a global toolbar at the bottom.
+ * 
+ * If the wizard is placed inside another control, the wrapper page becomes invisible
+ * (height=0) for some reason. In this case, the height is set explicitly to the height
+ * of the first step (see `registerHeightFix()`) to make sure the first step does not
+ * need scrolling, while the scroll-behavior of the next/previous buttons still works.
+ * 
+ * @method \exface\Core\Widgets\WizardWizard getWidget()
  * @author tmc
+ * @author Andrej Kabachnik
  *
  */
 class UI5Wizard extends UI5Container
@@ -19,13 +25,14 @@ class UI5Wizard extends UI5Container
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {   
-        $wizard = $this->buildJsConstructorForWizard($oControllerJs);
+        $this->registerHeightFix();
+        $wizardConstructorJs = $this->buildJsConstructorForWizard($oControllerJs);
         
         if ($this->hasPageWrapper() === true) {
-            return $this->buildJsPageWrapper($wizard);
+            return $this->buildJsPageWrapper($wizardConstructorJs);
         }
         
-        return $wizard;
+        return $wizardConstructorJs;
     }
     
     /**
@@ -51,7 +58,7 @@ class UI5Wizard extends UI5Container
         
         return <<<JS
 
-        new sap.m.Page({
+        new sap.m.Page('{$this->getId()}-page', {
             {$title}
             content: [
                 new sap.m.Wizard("{$this->getId()}", {
@@ -110,5 +117,30 @@ JS;
         }());
 
 JS;
+    }
+
+    /**
+     * Fixes height=0 problems with the wrapping page if the widget is placed inside a parent.
+     * 
+     * Sets the height of the wrapper page every time the view is shown according
+     * to the following calculation: `page height` = `progress bar height` + `first step height`.
+     * All summands include paddings and margins!
+     * 
+     * @return void
+     */
+    protected function registerHeightFix()
+    {
+        if ($this->getWidget()->hasParent()) {
+            $fixHeightJs = <<<JS
+            
+            setTimeout(function(){
+                var jqWizardNav = $('#{$this->getId()}-progressNavigator');
+                var jqFirstStep = $('#{$this->getFacade()->getElement($this->getWidget()->getStep(0))->getId()}');
+                $('#{$this->getId()}-page').css('height', 'calc(' + jqWizardNav.outerHeight() + 'px + ' + jqFirstStep.outerHeight() + 'px + 32px)');
+            }, 0);
+            
+JS;
+            $this->getController()->addOnShowViewScript($fixHeightJs, false);
+        }
     }
 }

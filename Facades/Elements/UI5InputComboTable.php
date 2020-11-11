@@ -112,11 +112,14 @@ JS;
             // NOTE: in sap.m.MultiInput there are no tokens yet, so we tell the getter
             // method not to rely on the explicitly!!!
             $missingValueJs = <<<JS
-            var sKey = oInput.{$this->buildJsValueGetterMethod(false)};
-            var sVal = oInput.getValue();
-            if (sKey !== '' && sVal === '') {
-                {$this->buildJsValueSetter('sKey')};
-            }
+
+                var sKey = oInput.{$this->buildJsValueGetterMethod(false)};
+                var sVal = oInput.getValue();
+                if (sKey !== '' && sVal === '') {
+                    {$this->buildJsValueSetter('sKey')};
+                } else {
+                    oInput.setValueState(sap.ui.core.ValueState.None);
+                }
 JS;
             // Do the missing-text-check every time the model of the sap.m.Input changes
             $value_init_js = <<<JS
@@ -128,7 +131,11 @@ JS;
 JS;
             // Also do the check with every prefill (the model-change-trigger for some reason does not
             // work on non-maximized dialogs, but this check does)
-            $this->getController()->addOnViewPrefilledScript("setTimeout(function(){var oInput = sap.ui.getCore().byId('{$this->getId()}'); {$missingValueJs} }, 0);");
+            $this->getController()->addOnViewPrefilledScript("
+            setTimeout(function(){
+                var oInput = sap.ui.getCore().byId('{$this->getId()}'); 
+                {$missingValueJs} 
+            }, 0);");
             
             // Finally, if the value is bound to model, but the text is not, all the above logic will only
             // work once, because after that one time, there will be a text (value) and it won't change
@@ -357,6 +364,7 @@ JS;
         $configuratorElement = $this->getFacade()->getElement($widget->getTable()->getConfiguratorWidget());
         $serverAdapter = $this->getFacade()->getElement($widget->getTable())->getServerAdapter();
         $delim = json_encode($widget->getMultiSelectValueDelimiter());
+        $allowNewValues = $widget->getAllowNewValues() ? 'true' : 'false';
         
         // NOTE: in sap.m.MultiInput there are no tokens yet, so we tell the getter
         // method not to rely on the explicitly!!!
@@ -368,6 +376,8 @@ JS;
                     var curKeys = curKey.split({$delim});
                     var iRowsCnt = parseInt(oModel.getProperty("/recordsTotal"));
                     var aFoundKeys = [];
+                    var bNewKeysAllowed = {$allowNewValues};
+                    var aNewKeys = [];
                     if (iRowsCnt === 1 && (curKey === '' || data[0]['{$widget->getValueColumn()->getDataColumnName()}'] == curKey)) {
                         oInput.{$this->buildJsSetSelectedKeyMethod("data[0]['{$widget->getValueColumn()->getDataColumnName()}']", "data[0]['{$widget->getTextColumn()->getDataColumnName()}']")}
                         oInput.closeSuggestions();
@@ -387,11 +397,28 @@ JS;
                         if (aFoundKeys.length === curKeys.length) {
                             oInput.setValueState(sap.ui.core.ValueState.None);
                         } else {
-                            oInput.setValueState(sap.ui.core.ValueState.Error);
+                            aNewKeys = curKeys.filter(function(x) {return !aFoundKeys.includes(x)});
+                            if (bNewKeysAllowed && aNewKeys.length > 0) {
+                                aNewKeys.forEach(function(sVal) {
+                                    oInput.{$this->buildJsSetSelectedKeyMethod('sVal', 'sVal', false)};
+                                });
+                                oInput.setValueState(sap.ui.core.ValueState.None);
+                            } else {
+                                oInput
+                                .setValueStateText("'" + curKey + "' {$this->translate('WIDGET.INPUTCOMPBOTABLE.ERROR_KEYS_VALUES_MISMATCH')}")
+                                .setValueState(sap.ui.core.ValueState.Error);
+                            }
                         }
                     } else {
-                        oInput.setSelectedKey("");
-                        oInput.setValueState(sap.ui.core.ValueState.Error);
+                        if (bNewKeysAllowed) {
+                            oInput.setValueState(sap.ui.core.ValueState.None);
+                            oInput.{$this->buildJsSetSelectedKeyMethod('curKey', 'curKey', false)};
+                        } else {
+                            oInput
+                            .{$this->buildJsEmptyMethod()}
+                            .setValueStateText("'" + curKey + "' {$this->translate('WIDGET.INPUTCOMPBOTABLE.ERROR_INVALID_KEY')}")
+                            .setValueState(sap.ui.core.ValueState.Error);
+                        }
                     }
                 }
                 {$this->buildJsBusyIconHide()}
@@ -556,10 +583,10 @@ JS;
         // above will recognize this and use merge this object with the request parameters, so
         // we can directly tell it to use our input as a value column filter instead of a regular
         // suggest string.
-        return "(function(){console.log('value setter');
+        return "(function(){
             var oInput = sap.ui.getCore().byId('{$this->getId()}');
             var val = {$valueJs};
-            if (val == undefined || val === null || val === '') {
+            if (val === undefined || val === null || val === '') {
                 oInput.{$this->buildJsEmptyMethod('val', '""')};
             } else {
                 if (oInput.destroyTokens !== undefined) {
@@ -691,7 +718,7 @@ JS;
         // resulting in a "SyntaxError: Function statements require a function name" instead.
         return <<<JS
 
-!function() {console.log('data setter');
+!function() {
     var oData = {$jsData};
     if (oData !== undefined && Array.isArray(oData.rows) && oData.rows.length > 0) {
         if (oData.oId == "{$this->getWidget()->getTable()->getMetaObject()->getId()}") {

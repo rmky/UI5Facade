@@ -526,8 +526,12 @@ JS;
                     if (Object.keys(oDataModel.getData()).length !== 0) {
                         oDataModel.setData({});
                     }
-                    if (Array.isArray({$responseJs}.rows) && {$responseJs}.rows.length === 1) {
-                        oDataModel.setData({$responseJs}.rows[0]);
+                    if (Array.isArray({$responseJs}.rows)) {
+                        if ({$responseJs}.rows.length === 1) {
+                            oDataModel.setData({$responseJs}.rows[0]);
+                        } else if ({$responseJs}.rows.length > 1) {
+                            {$this->buildJsShowMessageError('"Error prefilling view with data: received " + {$responseJs}.rows.length + " rows instead of 0 or 1! Only the first data row is visible!"')};
+                        }
                     }
                     {$this->buildJsBusyIconHide()}
 
@@ -637,6 +641,9 @@ JS;
      */
     protected function buildJsObjectPageSectionFromTab(Tab $tab) 
     {
+        if ($tab->isFilledBySingleWidget()) {
+            $cssClass = 'sapUiNoContentPadding';
+        }
         $tabElement = $this->getFacade()->getElement($tab);
         return <<<JS
 
@@ -649,7 +656,7 @@ JS;
                             {$tabElement->buildJsLayoutConstructor()}
                         ]
 					})
-				}),
+				}).addStyleClass('{$cssClass}'),
                 // EOF ObjectPageSection
                 
 JS;

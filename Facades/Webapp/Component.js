@@ -410,6 +410,21 @@ sap.ui.define([
 						return count;
 					})
 				}
+				
+				this.updateErrorCount = function(){
+					return exfPreloader.loadErrorData()
+					.then(function(data){
+						var count = "-";
+						if (data.rows) {
+							count = data.rows.length;
+						}						
+						if (!exfLauncher){
+							return;
+						}
+						exfLauncher.getShell().getModel().setProperty("/_network/syncErrorCnt", count);
+						return count;
+					})
+				}
 			}).apply(exfPreloaderUI5);
 			return exfPreloaderUI5;
 		}(),

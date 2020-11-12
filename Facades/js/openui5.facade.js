@@ -1,8 +1,8 @@
 // Toggle online/offlie icon
 window.addEventListener('online', function(){
 	exfLauncher.toggleOnlineIndicator();
+	exfLauncher.contextBar.getComponent().getPreloader().updateErrorCount();
 	if(!navigator.serviceWorker){
-		console.log('Syncing offline Queue');
 		exfPreloader.getActionQueueIds('offline')
 		.then(function(ids) {
 			var count = ids.length;
@@ -11,11 +11,15 @@ window.addEventListener('online', function(){
 				shell.setBusy(true);				
 				exfPreloader.syncActionAll(ids)
 				.then(function(){
-					return exfLauncher.contextBar.getComponent().getPreloader().updateQueueCount();
+					exfLauncher.contextBar.getComponent().getPreloader().updateQueueCount();
+					exfLauncher.contextBar.getComponent().getPreloader().updateErrorCount();
+					return;
 				})
 				.then(function(){
 					shell.setBusy(false);
-					exfLauncher.showMessageToast("Sync completed");
+					var text = exfLauncher.contextBar.getComponent().getModel('i18n').getProperty("WEBAPP.SHELL.NETWORK.SYNC_COMPLETE");
+					exfLauncher.showMessageToast(text);
+					return;
 				})
 			}
 		})
@@ -33,6 +37,7 @@ if (navigator.serviceWorker) {
 	navigator.serviceWorker.addEventListener('message', function(event) {
 		exfLauncher.contextBar.getComponent().getPreloader().updateQueueCount()
 		.then(function(){
+			exfLauncher.contextBar.getComponent().getPreloader().updateErrorCount();
 			exfLauncher.showMessageToast(event.data);
 		})
 	});
@@ -94,10 +99,11 @@ const exfLauncher = {};
 		                new sap.m.ToolbarSpacer(),
 		                new sap.m.Button("exf-network-indicator", {
 		                    icon: function(){return navigator.onLine ? "sap-icon://connected" : "sap-icon://disconnected"}(),
-		                    text: "{/_network/queueCnt}",
+		                    text: "{/_network/queueCnt} / {/_network/syncErrorCnt}",
 		                    layoutData: new sap.m.OverflowToolbarLayoutData({priority: "NeverOverflow"}),
 		                    press: function(oEvent){
 		                    	_oLauncher.contextBar.getComponent().getPreloader().updateQueueCount();
+		                    	_oLauncher.contextBar.getComponent().getPreloader().updateErrorCount();
 								var oButton = oEvent.getSource();
 								var oPopover = sap.ui.getCore().byId('exf-network-menu');
 								if (oPopover === undefined) {
@@ -114,6 +120,7 @@ const exfLauncher = {};
 													new sap.m.StandardListItem({
 														title: "{i18n>WEBAPP.SHELL.NETWORK.SYNC_MENU_QUEUE} ({/_network/queueCnt})",
 														type: "Active",
+														icon: "sap-icon://activity-items",
 														press: function(oEvent){
 															var oTable = new sap.m.Table({
 																fixedLayout: false,
@@ -123,11 +130,11 @@ const exfLauncher = {};
 																		design: "Transparent",
 																		content: [
 																			new sap.m.Label({
-																				text: "Wartende Online-Aktionen"
+																				text: "{i18n>WEBAPP.SHELL.NETWORK.QUEUE_TABLE_WAITING_ACTIONS}"
 																			}),
 																			new sap.m.ToolbarSpacer(),
 																			new sap.m.Button('exf-queue-sync', {
-																				text: "Sync",
+																				text: "{i18n>WEBAPP.SHELL.NETWORK.QUEUE_TABLE_SYNC}",
 																				icon: "sap-icon://synchronize",
 																				enabled: "{= ${/_network/online} > 0 ? true : false }",
 																				press: function(oEvent){
@@ -135,7 +142,8 @@ const exfLauncher = {};
 																					var table = oButton.getParent().getParent()
 																					var selectedItems = table.getSelectedItems();
 																					if (selectedItems.length ===0) {
-																						_oLauncher.showMessageToast("No actions selected!");
+																						var text = exfLauncher.contextBar.getComponent().getModel('i18n').getProperty("WEBAPP.SHELL.NETWORK.NO_SELECTION");
+																						_oLauncher.showMessageToast(text);
 																						return;
 																					}
 																					oButton.setBusyIndicatorDelay(0).setBusy(true);
@@ -146,11 +154,13 @@ const exfLauncher = {};
 																					})																					
 																					exfPreloader.syncActionAll(selectedIds)
 																					.then(function(){
-																						_oLauncher.contextBar.getComponent().getPreloader().updateQueueCount()
+																						_oLauncher.contextBar.getComponent().getPreloader().updateQueueCount();
+																						_oLauncher.contextBar.getComponent().getPreloader().updateErrorCount();
 																					})
 																					.then(function(){
 																						oButton.setBusy(false);
-																						_oLauncher.showMessageToast("Sync completed");
+																						var text = exfLauncher.contextBar.getComponent().getModel('i18n').getProperty("WEBAPP.SHELL.NETWORK.SYNC_COMPLETE");
+																						_oLauncher.showMessageToast(text);
 																						return exfPreloader.getActionQueueData('offline')
 																					})
 																					.then(function(data){
@@ -163,8 +173,9 @@ const exfLauncher = {};
 																						console.error('Sync Error: ', error);
 																						_oLauncher.contextBar.getComponent().getPreloader().updateQueueCount()
 																						.then(function(){
+																							_oLauncher.contextBar.getComponent().getPreloader().updateErrorCount();
 																							oButton.setBusy(false);
-																							_oLauncher.contextBar.getComponent().showDialog('Offline Queue', error, 'Error');
+																							_oLauncher.contextBar.getComponent().showErrorDialog(error, '{i18n>WEBAPP.SHELL.NETWORK.QUEUE_TABLE_HEADER}');
 																							return exfPreloader.getActionQueueData('offline')
 																						})
 																						.then(function(data){
@@ -178,14 +189,15 @@ const exfLauncher = {};
 																				},
 																			}),
 																			new sap.m.Button({
-																				text: "Abbrechen",
+																				text: "{i18n>WEBAPP.SHELL.NETWORK.QUEUE_TABLE_DELETE}",
 																				icon: "sap-icon://cancel",
 																				press: function(oEvent){
 																					var oButton = oEvent.getSource();																					
 																					var table = oButton.getParent().getParent()
 																					var selectedItems = table.getSelectedItems();																					
 																					if (selectedItems.length ===0) {
-																						_oLauncher.showMessageToast("No actions selected!");
+																						var text = exfLauncher.contextBar.getComponent().getModel('i18n').getProperty("WEBAPP.SHELL.NETWORK.NO_SELECTION");
+																						_oLauncher.showMessageToast(text);
 																						return;
 																					}
 																					oButton.setBusyIndicatorDelay(0).setBusy(true);
@@ -194,71 +206,138 @@ const exfLauncher = {};
 																						var bindingObj = item.getBindingContext('queueModel').getObject()
 																						selectedIds.push(bindingObj.id);
 																					})
-																					exfPreloader.deleteActionAll(selectedIds)
-																					.then(function(){
-																						_oLauncher.contextBar.getComponent().getPreloader().updateQueueCount()
+																					
+																					var confirmDialog = new sap.m.Dialog({
+																						title: "{i18n>WEBAPP.SHELL.NETWORK.CONFIRM_HEADER}",
+																						stretch: false,
+																						type: sap.m.DialogType.Message,
+																						content: [
+																							new sap.m.Text({
+																								text: '{i18n>WEBAPP.SHELL.NETWORK.CONFIRM_TEXT}'
+																							})
+																						],
+																						beginButton: new sap.m.Button({
+																							text: "{i18n>WEBAPP.SHELL.NETWORK.CONFIRM_YES}",
+																							type: sap.m.ButtonType.Emphasized,
+																							press: function(oEvent){
+																								exfPreloader.deleteActionAll(selectedIds)
+																								.then(function(){
+																									_oLauncher.contextBar.getComponent().getPreloader().updateQueueCount()
+																								})
+																								.then(function(){
+																									confirmDialog.close();
+																									oButton.setBusy(false);
+																									var text = exfLauncher.contextBar.getComponent().getModel('i18n').getProperty("WEBAPP.SHELL.NETWORK.ENTRIES_DELETED");
+																									_oLauncher.showMessageToast(text);
+																									return exfPreloader.getActionQueueData('offline')
+																								})
+																								.then(function(data){
+																									var oData = {};
+																									oData.data = data;
+																									oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}(), 'queueModel');
+																									return;
+																								})
+																							}
+																						}),
+																						endButton: new sap.m.Button({
+																							text: "{i18n>WEBAPP.SHELL.NETWORK.CONFIRM_NO}",
+																							type: sap.m.ButtonType.Default,
+																							press: function(oEvent){
+																								oButton.setBusy(false);
+																								confirmDialog.close();
+																							}
+																						})
 																					})
-																					.then(function(){
-																						oButton.setBusy(false);
-																						_oLauncher.showMessageToast("Actions deleted!");
-																						return exfPreloader.getActionQueueData('offline')
-																					})
-																					.then(function(data){
-																						var oData = {};
-																						oData.data = data;
-																						oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}(), 'queueModel');
-																						return;
-																					})
+																					.setModel(oButton.getModel('i18n'), 'i18n');
+																					
+																					confirmDialog.open();
 																				}
 																			}),
 																			new sap.m.Button({
-																				text: "Exportieren",
-																				icon: "sap-icon://download"
+																				text: "{i18n>WEBAPP.SHELL.NETWORK.QUEUE_TABLE_EXPORT}",
+																				icon: "sap-icon://download",
+																				press: function(oEvent){
+																					var oButton = oEvent.getSource();																					
+																					var table = oButton.getParent().getParent()
+																					var selectedItems = table.getSelectedItems();																					
+																					if (selectedItems.length ===0) {
+																						var text = exfLauncher.contextBar.getComponent().getModel('i18n').getProperty("WEBAPP.SHELL.NETWORK.NO_SELECTION");
+																						_oLauncher.showMessageToast(text);
+																						return;
+																					}
+																					oButton.setBusyIndicatorDelay(0).setBusy(true);
+																					var selectedIds = [];
+																					selectedItems.forEach(function(item){
+																						var bindingObj = item.getBindingContext('queueModel').getObject()
+																						selectedIds.push(bindingObj.id);
+																					})
+																					exfPreloader.getActionsData(selectedIds)
+																					.then(function(data) {
+																						data = JSON.stringify(data);
+																						var date = new Date();
+																						var dateString = date.toISOString();
+																						dateString = dateString.substr(0,16);
+																						dateString = dateString.replace(/-/gi,"");
+																						dateString = dateString.replace("T","_");
+																						dateString = dateString.replace(":","");
+																						oButton.setBusyIndicatorDelay(0).setBusy(false);
+																						exfPreloader.download(data,'offlineActions_'+ dateString, 'application/json')
+																						var text = exfLauncher.contextBar.getComponent().getModel('i18n').getProperty("WEBAPP.SHELL.NETWORK.ENTRIES_EXPORTED");
+																						_oLauncher.showMessageToast(text);
+																						return;
+																					})
+																					.catch(function(error) {
+																						console.error(error);
+																						oButton.setBusyIndicatorDelay(0).setBusy(false);
+																						_oLauncher.contextBar.getComponent().showErrorDialog('{i18n>WEBAPP.SHELL.NETWORK.CONSOLE}', '{i18n>WEBAPP.SHELL.NETWORK.ENTRIES_EXPORTED_FAILED}');
+																						return;
+																					})
+																				}
 																			})																			
 																		]
 																	})
 																],
-																footerText: 'Geräte ID: {/_network/deviceId}',
+																footerText: '{i18n>WEBAPP.SHELL.NETWORK.QUEUE_TABLE_DEVICE}: {/_network/deviceId}',
 																columns: [
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				text: 'ID'
+																				text: '{i18n>WEBAPP.SHELL.NETWORK.QUEUE_TABLE_ID}'
 																			})
 																		]
 																	}),
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				text: "Objekt"
+																				text: "{i18n>WEBAPP.SHELL.NETWORK.QUEUE_TABLE_OBJECT}"
 																			})
 																		]
 																	}),
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				text: "Aktion"
+																				text: "{i18n>WEBAPP.SHELL.NETWORK.QUEUE_TABLE_ACTION}"
 																			})
 																		]
 																	}),
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				text: 'Triggered'
+																				text: '{i18n>WEBAPP.SHELL.NETWORK.QUEUE_TABLE_TRIGGERED}'
 																			})
 																		]
 																	}),
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				text: 'Status'
+																				text: '{i18n>WEBAPP.SHELL.NETWORK.QUEUE_TABLE_STATUS}'
 																			})
 																		]
 																	}),
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				text: 'Sync Versuche'
+																				text: '{i18n>WEBAPP.SHELL.NETWORK.QUEUE_TABLE_TRIES}'
 																			})
 																		]
 																	})
@@ -297,76 +376,77 @@ const exfLauncher = {};
 																var oData = {};
 																oData.data = data;
 																oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}(), 'queueModel');
-																_oLauncher.contextBar.getComponent().showDialog('Offline action queue', oTable, undefined, undefined, true);
+																_oLauncher.contextBar.getComponent().showDialog('{i18n>WEBAPP.SHELL.NETWORK.QUEUE_TABLE_HEADER}', oTable, undefined, undefined, true);
 															})
 															.catch(function(data){
 																var oData = {};
 																oData.data = data;
 																oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}());
-																_oLauncher.contextBar.getComponent().showDialog('Offline action queue', oTable, undefined, undefined, true);
+																_oLauncher.contextBar.getComponent().showDialog('{i18n>WEBAPP.SHELL.NETWORK.QUEUE_TABLE_HEADER}', oTable, undefined, undefined, true);
 															})
 															
 															
 														},
 													}),
 													new sap.m.StandardListItem({
-														title: "{i18n>WEBAPP.SHELL.NETWORK.SYNC_MENU_ERRORS}",
+														title: "{i18n>WEBAPP.SHELL.NETWORK.SYNC_MENU_ERRORS} ({/_network/syncErrorCnt})",
 														type: "{= ${/_network/online} > 0 ? 'Active' : 'Inactive' }",
+														icon: "sap-icon://negative",
 														//blocked: "{= ${/_network/online} > 0 ? false : true }", //Deprecated as of version 1.69.
 														press: function(){
 															var oTable = new sap.m.Table({
 																fixedLayout: false,
-																headerToolbar: [
+																/*headerToolbar: [
 																	new sap.m.OverflowToolbar({
 																		design: "Transparent",
 																		content: [
 																			new sap.m.Label({
-																				text: "Fehlerhafte Offline-Aktionen"
+																				text: "{i18n>WEBAPP.SHELL.NETWORK.ERROR_TABLE_ERRORS}"
 																			})
 																		]
 																	})
-																],
-																footerText: 'Geräte ID: {/_network/deviceId}',
+																],*/
+																footerText: '{i18n>WEBAPP.SHELL.NETWORK.QUEUE_TABLE_DEVICE}: {/_network/deviceId}',
 																columns: [
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				text: 'Message ID'
+																				text: '{i18n>WEBAPP.SHELL.NETWORK.QUEUE_TABLE_ID}'
 																			})
 																		]
 																	}),
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				text: "Objekt"
+																				text: "{i18n>WEBAPP.SHELL.NETWORK.QUEUE_TABLE_OBJECT}"
 																			})
 																		]
 																	}),
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				text: "Aktion"
+																				text: "{i18n>WEBAPP.SHELL.NETWORK.QUEUE_TABLE_ACTION}"
 																			})
 																		]
 																	}),
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				text: 'Triggered'
+																				text: '{i18n>WEBAPP.SHELL.NETWORK.QUEUE_TABLE_TRIGGERED}'
 																			})
 																		]
 																	}),
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				text: 'Error LogId'
+																				text: '{i18n>WEBAPP.SHELL.NETWORK.ERROR_TABLE_LOGID}'
 																			})
 																		]
 																	}),
 																	new sap.m.Column({
 																		header: [
 																			new sap.m.Label({
-																				text: 'Queue name'
+																				text: '{i18n>WEBAPP.SHELL.NETWORK.ERROR_TABLE_QUEUE}'
 																			})
 																		]
 																	})
@@ -400,9 +480,8 @@ const exfLauncher = {};
 															.setModel(oButton.getModel())
 															.setModel(oButton.getModel('i18n'), 'i18n');
 															
-															_oLauncher.loadErrorData()
+															exfPreloader.loadErrorData()
 															.then(function(data){
-																console.log('Loaded Error Data');
 																var oData = {};
 																if (data.rows !== undefined) {
 																	var rows = data.rows;
@@ -414,7 +493,7 @@ const exfLauncher = {};
 																	oData.data = rows;
 																}
 																oTable.setModel(function(){return new sap.ui.model.json.JSONModel(oData)}(), 'errorModel');
-																_oLauncher.contextBar.getComponent().showDialog('Offline action queue', oTable, undefined, undefined, true);
+																_oLauncher.contextBar.getComponent().showDialog('{i18n>WEBAPP.SHELL.NETWORK.ERROR_TABLE_ERRORS}', oTable, undefined, undefined, true);
 															})
 														}
 													}),
@@ -426,7 +505,7 @@ const exfLauncher = {};
 														title: "{i18n>WEBAPP.SHELL.PRELOAD.MENU_SYNC}",
 														tooltip: "{i18n>WEBAPP.SHELL.PRELOAD.MENU_SYNC_TOOLTIP}",
 														icon: "sap-icon://synchronize",
-														type: "Active",
+														type: "{= ${/_network/online} > 0 ? 'Active' : 'Inactive' }",
 														press: function(oEvent){
 															oButton = oEvent.getSource();
 															oButton.setBusyIndicatorDelay(0).setBusy(true);
@@ -435,18 +514,18 @@ const exfLauncher = {};
 																oButton.setBusy(false)
 															})
 															.catch(error => {
-																console.error(error.message);
-																_oLauncher.contextBar.getComponent().showErrorDialog('See console for details.', 'Preload sync failed!');
+																console.error(error);
+																_oLauncher.contextBar.getComponent().showErrorDialog('{i18n>WEBAPP.SHELL.NETWORK.CONSOLE}', '{i18n>WEBAPP.SHELL.NETWORK.SYNC_FAILED}');
 																oButton.setBusy(false)
 															});
 														},
 													}),
 													new sap.m.StandardListItem({
-														title: "Storage quota",
+														title: "{i18n>WEBAPP.SHELL.NETWORK.STORAGE_HEADER}",
 														icon: "sap-icon://unwired",
 														type: "Active",
 														press: function(oEvent){
-															_oLauncher.showStorage();
+															_oLauncher.showStorage(oEvent);
 														},
 													}),
 													new sap.m.StandardListItem({
@@ -461,10 +540,10 @@ const exfLauncher = {};
 															.reset()
 															.then(() => {
 																oButton.setBusy(false);
-																_oLauncher.contextBar.getComponent().showDialog('Offline Storage', 'All preload data cleared!', 'Success');
+																_oLauncher.contextBar.getComponent().showDialog('{i18n>WEBAPP.SHELL.PRELOAD.MENU}', '{i18n>WEBAPP.SHELL.PRELOAD.CLEARED}', 'Success');
 															}).catch(() => {
 																oButton.setBusy(false);
-																_oLauncher.contextBar.getComponent().showDialog('Error!', 'Failed to clear preload data!', 'Error');
+																_oLauncher.contextBar.getComponent().showErrorDialog('{i18n>WEBAPP.SHELL.PRELOAD.CLEARED_ERROR}', '{i18n>WEBAPP.SHELL.PRELOAD.MENU}');
 															})
 														},
 													})
@@ -532,7 +611,8 @@ const exfLauncher = {};
 						_oContextBar.refresh(extras.ContextBar);
 					}
 				});
-				oComponent.getPreloader().updateQueueCount()
+				oComponent.getPreloader().updateQueueCount();
+				oComponent.getPreloader().updateErrorCount();
 			},
 		
 			getComponent : function() {
@@ -596,6 +676,7 @@ const exfLauncher = {};
 							iItemsIndex);
 				}
 				_oLauncher.contextBar.getComponent().getPreloader().updateQueueCount();
+				_oLauncher.contextBar.getComponent().getPreloader().updateErrorCount();
 			},
 
 			showMenu : function (oButton){
@@ -691,8 +772,10 @@ const exfLauncher = {};
 			return;
 	};
 	
-	this.showStorage = async function() {
-		var dialog = new sap.m.Dialog({title: "Storage quota", icon: "sap-icon://unwired"});
+	this.showStorage = async function(oEvent) {
+		
+		var dialog = new sap.m.Dialog({title: "{i18n>WEBAPP.SHELL.NETWORK.STORAGE_HEADER}", icon: "sap-icon://unwired"});
+		var oButton = oEvent.getSource();
 		var button = new sap.m.Button({
 			icon: 'sap-icon://font-awesome/close',
             text: "Close",
@@ -703,30 +786,30 @@ const exfLauncher = {};
 		//check if possible to acces storage (means https connection)
 		if (navigator.storage) {
 			var promise = navigator.storage.estimate()
-			.then(function(estimate) {				
+			.then(function(estimate) {
 				list = new sap.m.List({
 					items: [
 						new sap.m.GroupHeaderListItem({
-							title: 'Overview',
+							title: "{i18n>WEBAPP.SHELL.NETWORK.STORAGE_OVERVIEW}",
 							upperCase: false
 						}),
 						new sap.m.DisplayListItem({
-							label: "Total Space",
+							label: "{i18n>WEBAPP.SHELL.NETWORK.STORAGE_TOTAL}",
 							value: Number.parseFloat(estimate.quota/1024/1024).toFixed(2) + ' MB'
 						}),
 						new sap.m.DisplayListItem({
-							label: "Used Space",
+							label: "{i18n>WEBAPP.SHELL.NETWORK.STORAGE_USED}",
 							value: Number.parseFloat(estimate.usage/1024/1024).toFixed(2) + ' MB'
 						}),
 						new sap.m.DisplayListItem({
-							label: "Percentage Used",
+							label: "{i18n>WEBAPP.SHELL.NETWORK.STORAGE_PERCENTAGE}",
 							value: Number.parseFloat(100/estimate.quota*estimate.usage).toFixed(2) + ' %'
 						})
 					]
 				});
 				if (estimate.usageDetails) {
 					list.addItem(new sap.m.GroupHeaderListItem({
-							title: 'Details',
+							title: "{i18n>WEBAPP.SHELL.NETWORK.STORAGE_DETAILS}",
 							upperCase: false
 					}));
 					Object.keys(estimate.usageDetails).forEach(function(key) {
@@ -741,7 +824,7 @@ const exfLauncher = {};
 			.catch(function(error) {
 				console.error(error);
 				list.addItem(new sap.m.GroupHeaderListItem({
-					title: 'Storage quota failed! See console for details.',
+					title: "{i18n>WEBAPP.SHELL.NETWORK.STORAGE_ERROR}",
 					upperCase: false
 				}))
 			});
@@ -749,14 +832,14 @@ const exfLauncher = {};
 			await promise;
 		} else {
 			list.addItem(new sap.m.GroupHeaderListItem({
-				title: 'Overview showing used storage space not possible!',
+				title: "{i18n>WEBAPP.SHELL.NETWORK.STORAGE_OVERVIEW_ERROR}",
 				upperCase: false
 			}))
 		}
 		promise = exfPreloader.getPreloadTable().toArray()
 		.then(function(dbContent){
 			list.addItem(new sap.m.GroupHeaderListItem({
-				title: 'Synced content',
+				title: "{i18n>WEBAPP.SHELL.NETWORK.STORAGE_SYNCED}",
 				upperCase: false
 			}));
 			var oTable = new sap.m.Table({
@@ -764,28 +847,28 @@ const exfLauncher = {};
 				columns: [
 		            new sap.m.Column({
 		                header: new sap.m.Label({
-		                    text: 'ID'
+		                    text: "{i18n>WEBAPP.SHELL.NETWORK.STORAGE_ID}"
 		                })
 		            }),
 		            new sap.m.Column({
 		                header: new sap.m.Label({
-		                    text: 'Object'
+		                    text: "{i18n>WEBAPP.SHELL.NETWORK.STORAGE_OBJECT}"
 		                })
 		            }),
 		            new sap.m.Column({
 		                header: new sap.m.Label({
-		                    text: 'WidgetID'
+		                    text: "{i18n>WEBAPP.SHELL.NETWORK.STORAGE_WIDGET}"
 		                })
 		            }),
 		            new sap.m.Column({
 		                header: new sap.m.Label({
-		                    text: 'Datasets'
+		                    text: "{i18n>WEBAPP.SHELL.NETWORK.STORAGE_DATASETS}"
 		                })
 		            }),
 		            ,
 		            new sap.m.Column({
 		                header: new sap.m.Label({
-		                    text: 'Last synced'
+		                    text: "{i18n>WEBAPP.SHELL.NETWORK.STORAGE_LAST_SYNC}"
 		                })
 		            })
 		        ]
@@ -811,59 +894,16 @@ const exfLauncher = {};
 		.catch(function(error) {
 			console.error(error);
 			list.addItem(new sap.m.GroupHeaderListItem({
-				title: 'Overview showing db content not possbile! See console for details.',
+				title: "{i18n>WEBAPP.SHELL.NETWORK.STORAGE_ERROR}",
 				upperCase: false
 			}))
 			dialog.addContent(list);				
 		})
 		//wait for the promise to resolve
 		await promise;
+		dialog.setModel(oButton.getModel())
+		dialog.setModel(oButton.getModel('i18n'), 'i18n');
 		dialog.open();
 		return;
-	};
-	
-	this.loadErrorData = function() {
-		var body = {
-			action: "exface.Core.ReadData",
-			resource: "0x11ebaf708ef99298af708c04ba002958",
-			object: "0x11ea8f3c9ff2c5e68f3c8c04ba002958",
-			sort: "TASK_ASSIGNED_ON",
-			order: "asc",
-			data: {
-				oId: "0x11ea8f3c9ff2c5e68f3c8c04ba002958",
-				filters: {
-					operator: "AND",
-					conditions:  [
-						{
-							expression: "STATUS",
-							comparator: "==",
-							value: "70",
-							object_alias: "exface.Core.QUEUED_TASK"
-						},{
-							expression: "PRODUCER",
-							comparator: "==",
-							value: exfPreloader.getDeviceId(),
-							object_alias: "exface.Core.QUEUED_TASK"
-						}
-					]
-				}
-			}
-		};
-		
-		return fetch('api/ui5?' + $.param(body), {
-			method: 'GET'
-		})
-		.then(function(response){
-			if (response.ok) {
-				return response.json();
-			}
-			else {
-				return {};
-			}
-		})
-		.catch(function(error){
-			console.error('Cannot read sync errors from server:', error);
-			return {};
-		})
-	}
+	}	
 }).apply(exfLauncher);

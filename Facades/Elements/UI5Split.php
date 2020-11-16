@@ -18,7 +18,7 @@ class UI5Split extends UI5Container
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
-        $this->getController()->addOnInitScript($this->buildJsSetSizesInitial($this->buildJsSetSizesInitial("sap.ui.getCore().byId('{$this->getId()}')")));
+        $this->getController()->addOnInitScript($this->buildJsSetSizesInitial("sap.ui.getCore().byId('{$this->getId()}')"));
         $splitter = <<<JS
 
     new sap.ui.layout.Splitter("{$this->getId()}", {

@@ -480,7 +480,7 @@ JS;
     }
     
     /**
-     * Returns the definition of a javascript function to fill the table with data: onLoadDataTableId(oControlEvent).
+     * Returns the definition of a controller function to fill the table with data: onLoadDataTableId(oControlEvent).
      *
      * @return string
      */
@@ -504,21 +504,36 @@ JS;
         // running right now, we listen for changes on the property. Once it is not
         // set to true anymore, we can do the refresh. The setTimeout() wrapper is
         // needed to make sure all filters bound to the prefill model got their values!
+        // Also need to check, if the control is already busy. If so, set a queue flag,
+        // that will force the data to reload once the busy state is removed. This
+        // makes sure, that no data requests are sent in parallel, which would
+        // mostly result in the least filtered (slower) result to come in last instead
+        // of the last requested.
         $js = <<<JS
         
+                if ({$this->buildJsBusyCheck()}) {
+                    sap.ui.getCore().byId('{$this->getId()}')._exfRefreshQueued = true;
+                    return;
+                } else {
+                    sap.ui.getCore().byId('{$this->getId()}')._exfRefreshQueued = false;
+                }
+
                 var oViewModel = sap.ui.getCore().byId("{$this->getId()}").getModel("view");
                 var sPendingPropery = "/_prefill/pending";
                 if (oViewModel.getProperty(sPendingPropery) === true) {
+                    {$this->buildJsBusyIconShow()}
                     var oPrefillBinding = new sap.ui.model.Binding(oViewModel, sPendingPropery, oViewModel.getContext(sPendingPropery));
                     var fnPrefillHandler = function(oEvent) {
                         oPrefillBinding.detachChange(fnPrefillHandler);
-                        setTimeout(function() {
+                        setTimeout(function() {console.log('afterPrefill');
+                            {$this->buildJsBusyIconHide()};
                             {$this->buildJsRefresh()};
                         }, 0);
                     };
                     oPrefillBinding.attachChange(fnPrefillHandler);
                     return;
                 }
+                
                 {$disableEditableChangesWatcher}
                 {$this->buildJsDataLoaderPrepare()}
 
@@ -572,7 +587,7 @@ JS;
     {
         $widget = $this->getWidget();
         
-        $doLoad = $this->getServerAdapter()->buildJsServerRequest(
+        $loadViaServerAdapterJs = $this->getServerAdapter()->buildJsServerRequest(
             $widget->getLazyLoadingAction(),
             'oModel',
             'params',
@@ -619,7 +634,7 @@ JS;
                 
                 {$this->buildJsDataLoaderParams($oControlEventJsVar, 'params', $keepPagePosJsVar)}
                 
-                {$doLoad}
+                {$loadViaServerAdapterJs}
                 
 JS;
     }
@@ -676,6 +691,11 @@ JS;
 JS;
     }
     
+    /**
+     * 
+     * @param string $oModelJs
+     * @return string
+     */
     protected function buildJsDataLoaderOnLoaded(string $oModelJs = 'oModel') : string
     {
         $widget = $this->getWidget();
@@ -711,7 +731,11 @@ JS;
         }
         
         return <<<JS
-        
+            
+            if (sap.ui.getCore().byId('{$this->getId()}')._exfRefreshQueued === true) {
+                {$this->buildJsRefresh()}
+            }
+
             oTable.getModel("{$this->getModelNameForConfigurator()}").setProperty('/filterDescription', {$this->getController()->buildJsMethodCallFromController('onUpdateFilterSummary', $this, '', 'oController')});
             {$dynamicPageFixes}
             {$this->buildJsDataLoaderOnLoadedHandleWidgetLinks($oModelJs)}
@@ -1666,5 +1690,15 @@ JS;
 JS;
         }
         return $menu_item;
+    }
+    
+    /**
+     * Returns an inline JS-script that evaluates to true if the control is busy and false otherwise.
+     * 
+     * @return string
+     */
+    public function buildJsBusyCheck() : string
+    {
+        return "sap.ui.getCore().byId('{$this->getId()}').getBusy()";
     }
 }

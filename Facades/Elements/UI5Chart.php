@@ -367,6 +367,16 @@ JS;
     }
     
     /**
+     * 
+     * {@inheritdoc}
+     * @see UI5DataElementTrait::buildJsBusyCheck()
+     */
+    public function buildJsBusyCheck() : string
+    {
+        return 'sap.ui.getCore().byId("' . $this->getId() . '").getParent().getBusy();';
+    }
+    
+    /**
      * {@inheritdoc}
      * @see \exface\UI5Facade\Facades\Elements\Traits\UI5DataElementTrait::buildJsShowMessageOverlay()
      */

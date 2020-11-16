@@ -400,6 +400,9 @@ sap.ui.define([
 			const exfPreloaderUI5 = {};
 			(function(){
 				this.updateQueueCount = function(){
+					if (exfPreloader.getActionQueueData === undefined) {
+						return;
+					}
 					return exfPreloader.getActionQueueData('offline')
 					.then(function(data){
 						var count = data.length;
@@ -412,6 +415,9 @@ sap.ui.define([
 				}
 				
 				this.updateErrorCount = function(){
+					if (exfPreloader.loadErrorData === undefined) {
+						return;
+					}
 					return exfPreloader.loadErrorData()
 					.then(function(data){
 						var count = "-";

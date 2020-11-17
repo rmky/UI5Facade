@@ -1701,4 +1701,19 @@ JS;
     {
         return "sap.ui.getCore().byId('{$this->getId()}').getBusy()";
     }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::registerExternalModules()
+     */
+    public function registerExternalModules(UI5ControllerInterface $controller) : UI5AbstractElement
+    {
+        $f = $this->getFacade();
+        
+        foreach ($this->getDataWidget()->getColumns() as $col) {
+            $f->getElement($col)->registerExternalModules($controller);
+        }
+        return $this;
+    }
 }

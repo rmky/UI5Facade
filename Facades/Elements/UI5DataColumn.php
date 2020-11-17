@@ -37,8 +37,6 @@ class UI5DataColumn extends UI5AbstractElement
      */
     public function buildJsConstructorForUiColumn()
     {
-        $this->registerExternalModules($this->getController());
-        
         $col = $this->getWidget();
         
         return <<<JS
@@ -132,8 +130,6 @@ JS;
      */
     public function buildJsConstructorForMColumn()
     {
-        $this->registerExternalModules($this->getController());
-        
         $col = $this->getWidget();
         $alignment = 'hAlign: ' . $this->buildJsAlignment() . ',';
         $popinDisplay = $col->getHideCaption() || $col->getCellWidget()->getHideCaption() ? 'sap.m.PopinDisplay.WithoutHeader' : 'sap.m.PopinDisplay.Inline';

@@ -120,7 +120,7 @@ const exfLauncher = {};
 													new sap.m.StandardListItem({
 														title: "{i18n>WEBAPP.SHELL.NETWORK.SYNC_MENU_QUEUE} ({/_network/queueCnt})",
 														type: "Active",
-														icon: "sap-icon://activity-items",
+														icon: "sap-icon://time-entry-request",
 														press: function(oEvent){
 															var oTable = new sap.m.Table({
 																fixedLayout: false,
@@ -391,7 +391,7 @@ const exfLauncher = {};
 													new sap.m.StandardListItem({
 														title: "{i18n>WEBAPP.SHELL.NETWORK.SYNC_MENU_ERRORS} ({/_network/syncErrorCnt})",
 														type: "{= ${/_network/online} > 0 ? 'Active' : 'Inactive' }",
-														icon: "sap-icon://negative",
+														icon: "sap-icon://alert",
 														//blocked: "{= ${/_network/online} > 0 ? false : true }", //Deprecated as of version 1.69.
 														press: function(){
 															var oTable = new sap.m.Table({

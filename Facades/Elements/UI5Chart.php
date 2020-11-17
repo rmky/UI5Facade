@@ -373,7 +373,7 @@ JS;
      */
     public function buildJsBusyCheck() : string
     {
-        return 'sap.ui.getCore().byId("' . $this->getId() . '").getParent().getBusy();';
+        return 'sap.ui.getCore().byId("' . $this->getId() . '").getParent().getBusy()';
     }
     
     /**

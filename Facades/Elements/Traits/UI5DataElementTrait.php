@@ -511,27 +511,27 @@ JS;
         // of the last requested.
         $js = <<<JS
         
-                if ({$this->buildJsBusyCheck()}) {
-                    sap.ui.getCore().byId('{$this->getId()}')._exfRefreshQueued = true;
-                    return;
-                } else {
-                    sap.ui.getCore().byId('{$this->getId()}')._exfRefreshQueued = false;
-                }
-
                 var oViewModel = sap.ui.getCore().byId("{$this->getId()}").getModel("view");
                 var sPendingPropery = "/_prefill/pending";
-                if (oViewModel.getProperty(sPendingPropery) === true) {
+                if (oViewModel.getProperty(sPendingPropery) === true && ! sap.ui.getCore().byId('{$this->getId()}')._exfRefreshQueued) {console.log('is prefill');
                     {$this->buildJsBusyIconShow()}
                     var oPrefillBinding = new sap.ui.model.Binding(oViewModel, sPendingPropery, oViewModel.getContext(sPendingPropery));
                     var fnPrefillHandler = function(oEvent) {
                         oPrefillBinding.detachChange(fnPrefillHandler);
+                        {$this->buildJsBusyIconHide()};
                         setTimeout(function() {console.log('afterPrefill');
-                            {$this->buildJsBusyIconHide()};
                             {$this->buildJsRefresh()};
                         }, 0);
                     };
                     oPrefillBinding.attachChange(fnPrefillHandler);
                     return;
+                }
+
+                if ({$this->buildJsBusyCheck()}) {console.log('isBusy');
+                    sap.ui.getCore().byId('{$this->getId()}')._exfRefreshQueued = true;
+                    return;
+                } else {
+                    sap.ui.getCore().byId('{$this->getId()}')._exfRefreshQueued = false;
                 }
                 
                 {$disableEditableChangesWatcher}

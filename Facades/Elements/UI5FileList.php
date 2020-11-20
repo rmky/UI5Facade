@@ -164,6 +164,7 @@ JS;
            		{$this->buildJsShowMessageSuccess("oResponseModel.getProperty('/success')")}
 			}
 
+            {$this->buildJsBusyIconHide()}
             {$this->buildJsRefresh()};
 
 JS;
@@ -257,6 +258,7 @@ JS;
         $onSuccessJs = <<<JS
                 
                 oItem.destroy();
+                {$this->buildJsBusyIconHide()}
                 {$this->buildJsRefresh()};
                 if (oResponseModel.getProperty('/success') !== undefined){
                		{$this->buildJsShowMessageSuccess("oResponseModel.getProperty('/success')")}

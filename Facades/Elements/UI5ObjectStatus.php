@@ -30,6 +30,7 @@ class UI5ObjectStatus extends UI5Display
      */
     public function buildJsConstructor($oControllerJs = 'oController') : string
     {
+        $this->registerExternalModules($this->getController());
         return $this->buildJsConstructorForMainControl($oControllerJs);
     }
     

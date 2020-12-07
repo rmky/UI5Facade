@@ -662,7 +662,13 @@ JS;
      */
     protected function buildJsDataLoaderParams(string $oControlEventJsVar = 'oControlEvent', string $oParamsJs = 'params', $keepPagePosJsVar = 'bKeepPagingPos') : string
     {
-        return $this->buildJsDataLoaderParamsPaging($oParamsJs, $keepPagePosJsVar);
+        $js = '';
+        
+        if ($this->hasPaginator()) {
+            $js = $this->buildJsDataLoaderParamsPaging($oParamsJs, $keepPagePosJsVar);
+        }
+        
+        return $js;
     }
     
     /**

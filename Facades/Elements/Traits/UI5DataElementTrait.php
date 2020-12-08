@@ -988,6 +988,7 @@ JS;
 				content: [
                     new sap.ui.layout.Grid({
                         defaultSpan: "XL2 L3 M4 S12",
+                        containerQuery: true,
                         content: [
 							{$this->getConfiguratorElement()->buildJsFilters()}
 						]

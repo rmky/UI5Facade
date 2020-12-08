@@ -27,6 +27,7 @@ class UI5KPI extends UI5Display
     {
         if ($this->isLazyLoading() === true) {
             $controller = $this->getController();
+            $this->setValueBoundToModel(true);
             
             // TODO take the data from the linked widget if configured
             //if ($this->getWidget()->hasDataWidgetLink() === false) {
@@ -156,6 +157,20 @@ JS;
         
                 {$this->buildJsBusyIconShow()}
                 var oControl = sap.ui.getCore().byId("{$this->getId()}");
+
+                var oViewModel = oControl.getModel("view");
+                var sPendingPropery = "/_prefill/pending";
+                if (oViewModel.getProperty(sPendingPropery) === true) {
+                    var oPrefillBinding = new sap.ui.model.Binding(oViewModel, sPendingPropery, oViewModel.getContext(sPendingPropery));
+                    var fnPrefillHandler = function(oEvent) {
+                        oPrefillBinding.detachChange(fnPrefillHandler);
+                        setTimeout(function() {
+                            {$this->getController()->buildJsMethodCallFromController('onLoadData', $this, '')};
+                        }, 0);
+                    };
+                    oPrefillBinding.attachChange(fnPrefillHandler);
+                    return;
+                }
 
                 var oParams = {
                     action: "{$dataWidget->getLazyLoadingActionAlias()}",

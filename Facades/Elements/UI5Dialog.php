@@ -265,7 +265,7 @@ JS;
         $visibleChildren = $widget->getWidgets(function(WidgetInterface $widget){
             return $widget->isHidden() === false;
         });
-        if (count($visibleChildren) === 1 && $visibleChildren[0] instanceof iFillEntireContainer) {
+            if (count($visibleChildren) === 1 && ! $this->getFacade()->getElement($visibleChildren[0])->getNeedsContainerContentPadding()) {
             $content = $this->buildJsChildrenConstructors(false);
         } else {
             $content = $this->buildJsLayoutForm($this->buildJsChildrenConstructors(true)); 
@@ -572,7 +572,7 @@ JS;
                 // Large widgets need to be handled differently if the fill the entire dialog (i.e. being
                 // the only visible widget). In this case, we don't need any layout - just the big filling
                 // widget.
-                case (($child instanceof iFillEntireContainer) || $child->getWidth()->isMax()):
+                case (! $this->getFacade()->getElement($child)->getNeedsContainerContentPadding()):
                     if ($widget->countWidgetsVisible() === 1) {
                         $hasSingleVisibleChild = true;
                     } else {

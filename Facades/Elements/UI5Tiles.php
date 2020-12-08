@@ -98,4 +98,14 @@ JS;
     {
         return 'exf-tiles';
     }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5AbstractElement::getNeedsContainerContentPadding()
+     */
+    public function getNeedsContainerContentPadding() : bool
+    {
+        return false;
+    }
 }

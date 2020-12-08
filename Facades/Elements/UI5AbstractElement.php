@@ -14,6 +14,7 @@ use exface\UI5Facade\Facades\Interfaces\UI5ViewInterface;
 use exface\Core\Interfaces\Widgets\iHaveIcon;
 use exface\UI5Facade\Facades\Interfaces\UI5ModelInterface;
 use exface\Core\Interfaces\Widgets\iTakeInput;
+use exface\Core\Interfaces\Widgets\iFillEntireContainer;
 
 /**
  *
@@ -569,6 +570,20 @@ JS;
     public function buildJsResetter() : string
     {
         return '';
+    }
+    
+    /**
+     * Returns FALSE if this widget should not have padding if placed inside a container like
+     * sap.m.Panel or similar.
+     * 
+     * By default this depends on the iFillEntireContainer interface of widgets, but each
+     * facade element can override this logic.
+     * 
+     * @return bool
+     */
+    public function getNeedsContainerContentPadding() : bool
+    {
+        return ! (($this->getWidget() instanceof iFillEntireContainer) || $this->getWidget()->getWidth()->isMax());
     }
 }
 ?>

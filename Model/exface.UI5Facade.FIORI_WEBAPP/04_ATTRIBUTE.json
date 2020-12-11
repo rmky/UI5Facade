@@ -767,7 +767,13 @@
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "'sap.m.App'",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{\"show_values\":false,\"values\":{\"sap.m.App\":\"sap.m.App (stand-alone)\",\"sap.m.NavContainer\":\"sap.m.NavContainer (plattform)\"}}"
+            "CUSTOM_DATA_TYPE": {
+                "show_values": false,
+                "values": {
+                    "sap.m.App": "sap.m.App (stand-alone)",
+                    "sap.m.NavContainer": "sap.m.NavContainer (plattform)"
+                }
+            }
         },
         {
             "CREATED_ON": "2018-07-31 10:28:56",
@@ -1025,7 +1031,13 @@
             "DATA_ADDRESS_PROPS": null,
             "DEFAULT_VALUE": "'\\exface\\UI5Facade\\Facades\\Elements\\ServerAdapters\\OData2ServerAdapter'",
             "FIXED_VALUE": "",
-            "CUSTOM_DATA_TYPE": "{\"show_values\":false,\"values\":{\"\\\\exface\\\\UI5Facade\\\\Facades\\\\Elements\\\\ServerAdapters\\\\OData2ServerAdapter\":\"OData v2\",\"\\\\exface\\\\UI5Facade\\\\Facades\\\\Elements\\\\ServerAdapters\\\\UI5FacadeServerAdapter\":\"Facade API (Workbench as data proxy)\"}}"
+            "CUSTOM_DATA_TYPE": {
+                "show_values": false,
+                "values": {
+                    "\\exface\\UI5Facade\\Facades\\Elements\\ServerAdapters\\OData2ServerAdapter": "OData v2",
+                    "\\exface\\UI5Facade\\Facades\\Elements\\ServerAdapters\\UI5FacadeServerAdapter": "Facade API (Workbench as data proxy)"
+                }
+            }
         },
         {
             "CREATED_ON": "2020-05-27 12:18:47",

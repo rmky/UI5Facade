@@ -57,7 +57,14 @@
             "APP": "0x11e837e87a640bfd91380205857feb80",
             "ALIAS": "UI5_OFFLINE_TASKS",
             "ALLOW_MULTI_QUEUE_HANDLING": "0",
-            "CONFIG_UXON": "{\"topics\":{\"all_of\":[\"ui5\",\"offlineTask\"]}}",
+            "CONFIG_UXON": {
+                "topics": {
+                    "all_of": [
+                        "ui5",
+                        "offlineTask"
+                    ]
+                }
+            },
             "NAME": "UI5 Offline Tasks"
         }
     ],

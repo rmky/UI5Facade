@@ -70,7 +70,25 @@
             "ALIAS": "ShowFioriExportConsole",
             "NAME": "Export",
             "SHORT_DESCRIPTION": "",
-            "CONFIG_UXON": "{\"prefill_with_input_data\":true,\"input_rows_min\":1,\"input_rows_max\":1,\"icon\":\"hdd-o\",\"widget\":{\"widgets\":[{\"disabled\":true,\"widget_type\":\"Console\",\"command_placeholder_value_list_delimiter\":\",\",\"start_commands\":[\"action exface.UI5Facade:ExportFioriWebapp [#app_id#]\"],\"working_directory_path\":\"vendor\\\/bin\"}]}}",
+            "CONFIG_UXON": {
+                "prefill_with_input_data": true,
+                "input_rows_min": 1,
+                "input_rows_max": 1,
+                "icon": "hdd-o",
+                "widget": {
+                    "widgets": [
+                        {
+                            "disabled": true,
+                            "widget_type": "Console",
+                            "command_placeholder_value_list_delimiter": ",",
+                            "start_commands": [
+                                "action exface.UI5Facade:ExportFioriWebapp [#app_id#]"
+                            ],
+                            "working_directory_path": "vendor\/bin"
+                        }
+                    ]
+                }
+            },
             "APP": "0x11e837e87a640bfd91380205857feb80",
             "USE_IN_OBJECT_BASKET_FLAG": "0",
             "DOCS": ""

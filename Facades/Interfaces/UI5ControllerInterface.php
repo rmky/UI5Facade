@@ -125,12 +125,37 @@ interface UI5ControllerInterface {
     public function addOnRouteMatchedScript(string $js, string $id) : UI5ControllerInterface;
     
     /**
-     * Executes the provided script every time the route's prefill data is loaded
+     * Executes the provided JS script every time the view's prefill data changes.
+     * 
+     * The script is executed in the following cases:
+     * - a prefill request was made using the server adapter and a response was saved as prefill data
+     * - the view is initialized and no prefill is required
+     * - the view is initialized and prefill is required, but the request was not sent because
+     * it was empty.
+     * 
+     * The script is not executed if the prefill hash did not change or any other condition 
+     * except from the listed above prevented the server request.
+     * 
+     * Each script is executed once - even if it was added multiple times.
      * 
      * @param string $js
      * @return UI5ControllerInterface
      */
-    public function addOnViewPrefilledScript(string $js) : UI5ControllerInterface;
+    public function addOnPrefillDataChangedScript(string $js) : UI5ControllerInterface;
+    
+    /**
+     * Executes the provided JS script right before the prefill request is passed to the server adapter.
+     * 
+     * The script is only executed if the prefill data is about to change (e.g a request is made 
+     * using the server adapter). It is not executed if the prefill hash did not change or 
+     * any other condition prevented fetching new prefill data.
+     * 
+     * Each script is executed once - even if it was added multiple times.
+     * 
+     * @param string $js
+     * @return UI5ControllerInterface
+     */
+    public function addOnPrefillBeforeLoadScript(string $js) : UI5ControllerInterface;
     
     /**
      * Executes a script before the controller is initialized: before it's define()

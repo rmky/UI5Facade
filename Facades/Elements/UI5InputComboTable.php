@@ -131,7 +131,7 @@ JS;
 JS;
             // Also do the check with every prefill (the model-change-trigger for some reason does not
             // work on non-maximized dialogs, but this check does)
-            $this->getController()->addOnViewPrefilledScript("
+            $this->getController()->addOnPrefillDataChangedScript("
             setTimeout(function(){
                 var oInput = sap.ui.getCore().byId('{$this->getId()}'); 
                 {$missingValueJs} 

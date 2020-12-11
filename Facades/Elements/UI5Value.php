@@ -395,7 +395,7 @@ JS;
     {
         $this->registerLiveReferenceAtLinkedElementViaTrait();
         // Also refresh the live reference each time the view is prefilled!
-        $this->getController()->addOnViewPrefilledScript($this->buildJsLiveReference());
+        $this->getController()->addOnPrefillDataChangedScript($this->buildJsLiveReference());
     }
     
     /**

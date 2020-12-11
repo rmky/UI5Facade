@@ -31,9 +31,17 @@ class UI5KPI extends UI5Display
             
             // TODO take the data from the linked widget if configured
             //if ($this->getWidget()->hasDataWidgetLink() === false) {
-                $controller->addMethod('onLoadData', $this, 'oEvent', $this->buildJsDataLoderFromServer('oEvent'));
-                $controller->addOnShowViewScript($oControllerJs . '.' . $controller->buildJsMethodName('onLoadData', $this) . '();');
+                // Make sure the control gets a special model to store the lazy loaded data
                 $modelInit = ".setModel(new sap.ui.model.json.JSONModel(), '{$this->getModelNameForLazyData()}')";
+                // Add the load-data method to the controller
+                $controller->addMethod('onLoadData', $this, 'oEvent', $this->buildJsDataLoderFromServer('oEvent'));
+                // Call that metho every time the view is prefilled
+                $controller->addOnPrefillDataChangedScript($controller->buildJsMethodCallFromController('onLoadData', $this, '', $oControllerJs));
+                // Make sure the lazy-model is empty before the view is prefilled. If not done so,
+                // the KPI will show old data while the new prefill is being loaded because the
+                // KPI's data is not explicitly connected with the prefill data and will not get
+                // reset with it.
+                $controller->addOnPrefillBeforeLoadScript("sap.ui.getCore().byId('{$this->getId()}').getModel('{$this->getModelNameForLazyData()}').setData({});");
             //}
         }
         return <<<JS
@@ -157,21 +165,6 @@ JS;
         
                 {$this->buildJsBusyIconShow()}
                 var oControl = sap.ui.getCore().byId("{$this->getId()}");
-
-                var oViewModel = oControl.getModel("view");
-                var sPendingPropery = "/_prefill/pending";
-                if (oViewModel.getProperty(sPendingPropery) === true) {
-                    var oPrefillBinding = new sap.ui.model.Binding(oViewModel, sPendingPropery, oViewModel.getContext(sPendingPropery));
-                    var fnPrefillHandler = function(oEvent) {
-                        oPrefillBinding.detachChange(fnPrefillHandler);
-                        setTimeout(function() {
-                            {$this->getController()->buildJsMethodCallFromController('onLoadData', $this, '')};
-                        }, 0);
-                    };
-                    oPrefillBinding.attachChange(fnPrefillHandler);
-                    return;
-                }
-
                 var oParams = {
                     action: "{$dataWidget->getLazyLoadingActionAlias()}",
                     resource: "{$this->getPageId()}",
@@ -181,6 +174,7 @@ JS;
                 };
                 
                 var oModel = oControl.getModel('{$this->getModelNameForLazyData()}');
+                oModel.setData({});
                 oModel.loadData("{$this->getAjaxUrl()}", oParams);
                 {$this->buildJsBusyIconHide()}
                 

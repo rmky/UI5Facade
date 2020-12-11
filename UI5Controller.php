@@ -33,7 +33,9 @@ class UI5Controller implements UI5ControllerInterface
     
     private $onRouteMatchedScripts = [];
     
-    private $onViewPrefilledScripts = [];
+    private $OnPrefillDataChangedScripts = [];
+    
+    private $onPrefillBeforeLoadScripts = [];
     
     private $onDefineScripts = [];
     
@@ -317,8 +319,13 @@ JS;
     {
         // See if the view requires a prefill request
         // FIXME UI5Dialog has it's own prefill logic - need to unify both approaches!
-        if ($this->needsPrefill() && ! ($this->getView()->getRootElement() instanceof UI5Dialog)) {
-            $this->addOnRouteMatchedScript($this->buildJsPrefillLoader('oView', $this->getView()->getRootElement()), 'loadPrefill');
+        if (! ($this->getView()->getRootElement() instanceof UI5Dialog)) {
+            if ($this->needsPrefill()) {
+                $prefillJs = $this->buildJsPrefillLoader('oView', $this->getView()->getRootElement());
+            } else {
+                $prefillJs = 'this._onPrefill();';
+            }
+            $this->addOnRouteMatchedScript($prefillJs, 'loadPrefill');
         }
         
         // Build the view first to ensure, all view elements have contributed to the controller!
@@ -357,15 +364,27 @@ sap.ui.define([
             // Init model for view settings
             var oViewModel = new sap.ui.model.json.JSONModel({
                 _prefill: {
+                    started: false,
                     pending: false, 
                     data: {}
                 } 
             });
-            oView.setModel(oViewModel, "view");
             var oPrefillPendingBinding = new sap.ui.model.Binding(oViewModel, '/_prefill/pending', oViewModel.getContext('/_prefill/pending'));
+            var oPrefillStartedBinding = new sap.ui.model.Binding(oViewModel, '/_prefill/started', oViewModel.getContext('/_prefill/started'));
+            
+            oView.setModel(oViewModel, "view");
+            
             oPrefillPendingBinding.attachChange(function(oEvent){
-                if (oViewModel.getProperty('/_prefill/pending') === false) {
-                        oController._onViewPrefilled();
+                // Call prefill scripts only if a data-fetch started and pending is now off!
+                if (oViewModel.getProperty('/_prefill/pending') === false && oViewModel.getProperty('/_prefill/started') === true) {
+                    oViewModel.setProperty('/_prefill/started', false);
+                    oController._OnPrefill();
+                }
+            });
+            oPrefillStartedBinding.attachChange(function(oEvent){
+                // Call on-before-prefill scripts if the started-flag switches to TRUE
+                if (oViewModel.getProperty('/_prefill/started') === true) {
+                    oController._OnPrefillBeforeLoad();
                 }
             });
             
@@ -395,6 +414,7 @@ sap.ui.define([
 		 * @return void
 		 */
 		_onRouteMatched : function (oEvent) {
+            var oController = this;
 			var oView = this.getView();
 			var oArgs = oEvent.getParameter("arguments");
 			var oParams = (oArgs.params === undefined ? {} : this._decodeRouteParams(oArgs.params));
@@ -404,8 +424,28 @@ sap.ui.define([
             {$this->buildJsOnRouteMatched()}
 		},
 
-        _onViewPrefilled : function () {
-            {$this->buildJsOnViewPrefilledScript()}
+        /**
+		 * This method is executed every time the prefill data for the view of this controller is loaded.
+		 * 
+		 * @private
+		 * 
+		 * @return void
+		 */
+        _OnPrefill : function () {
+            var oController = this;
+            {$this->buildJsOnPrefillDataChangedScript()}
+        },
+
+        /**
+		 * This method is executed before prefill data is requested from the server adapter.
+		 * 
+		 * @private
+		 * 
+		 * @return void
+		 */
+        _OnPrefillBeforeLoad : function () {
+            var oController = this;
+            {$this->buildJsOnPrefillBeforeLoadScript()}
         },
 
         {$this->buildJsProperties()}
@@ -583,9 +623,14 @@ JS;
         return implode($this->onRouteMatchedScripts);
     }
     
-    public function addOnViewPrefilledScript(string $js) : UI5ControllerInterface
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::addOnPrefillDataChangedScript()
+     */
+    public function addOnPrefillDataChangedScript(string $js) : UI5ControllerInterface
     {
-        $this->onViewPrefilledScripts[] = $js;
+        $this->OnPrefillDataChangedScripts[] = $js . ';';
         return $this;
     }
     
@@ -593,9 +638,29 @@ JS;
      *
      * @return string
      */
-    protected function buildJsOnViewPrefilledScript() : string
+    protected function buildJsOnPrefillDataChangedScript() : string
     {
-        return implode(array_unique($this->onViewPrefilledScripts));
+        return implode(array_unique($this->OnPrefillDataChangedScripts));
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Interfaces\UI5ControllerInterface::addOnPrefillBeforeLoadScript()
+     */
+    public function addOnPrefillBeforeLoadScript(string $js) : UI5ControllerInterface
+    {
+        $this->onPrefillBeforeLoadScripts[] = $js . ';';
+        return $this;
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    protected function buildJsOnPrefillBeforeLoadScript() : string
+    {
+        return implode(array_unique($this->onPrefillBeforeLoadScripts));
     }
     
     /**
@@ -832,8 +897,12 @@ JS;
         if (! ($callerWidget instanceof Dialog)) {
             $oRouteParamsCheckJs = <<<JS
 
+            // Just pretend loading data if there are no rout params to save a request doomed
+            // to get an empty response.
             if (oRouteParams.constructor !== Object || Object.keys(oRouteParams).length === 0) {
-                $stopJs
+                oViewModel.setProperty('/_prefill/started', true);
+                oResultModel.setData({});
+                {$onModelLoadedJs}
                 return;
             }
 JS;
@@ -845,12 +914,10 @@ JS;
         (function(){
             {$callerElement->buildJsBusyIconShow()}
             var oViewModel = {$oViewJs}.getModel('view');
-            oViewModel.setProperty('/_prefill/pending', true);
+            //var oResultModel = {$oViewJs}.getModel();
+            var oResultModel = sap.ui.getCore().byId("{$callerElement->getId()}").getModel();
             
             var oRouteParams = oViewModel.getProperty('/_route/params');
-            
-            $oRouteParamsCheckJs;
-
             var data = $.extend({}, {
                 action: "{$action->getAliasWithNamespace()}",
 				resource: "{$callerWidget->getPage()->getAliasWithNamespace()}",
@@ -859,6 +926,9 @@ JS;
             
             var oLastRouteString = oViewModel.getProperty('/_prefill/current_data_hash');
             var oCurrentRouteString = JSON.stringify(data);
+            
+            oViewModel.setProperty('/_prefill/pending', true);
+ 
             if (oLastRouteString === oCurrentRouteString) {
                 $stopJs
                 return;
@@ -866,9 +936,11 @@ JS;
                 {$oViewJs}.getModel().setData({});
                 oViewModel.setProperty('/_prefill/current_data_hash', oCurrentRouteString);
             }
-            
-            //var oResultModel = {$oViewJs}.getModel();
-            var oResultModel = sap.ui.getCore().byId("{$callerElement->getId()}").getModel();
+
+            $oRouteParamsCheckJs;
+           
+            oViewModel.setProperty('/_prefill/started', true);
+            oResultModel.setData({});
             
             {$callerElement->getServerAdapter()->buildJsServerRequest(
                 $action,

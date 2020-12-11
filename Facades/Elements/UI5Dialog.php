@@ -273,17 +273,9 @@ JS;
         
         // If the dialog requires a prefill, we need to load the data once the dialog is opened.
         if ($this->needsPrefill()) {
-            $prefill = <<<JS
-
-            beforeOpen: function(oEvent) {
-                var oDialog = oEvent.getSource();
-                var oView = {$this->getController()->getView()->buildJsViewGetter($this)};
-                {$this->buildJsPrefillLoader('oView')}
-            },
-
-JS;
+            $prefill = $this->buildJsPrefillLoader('oView');
         } else {
-            $prefill = '';
+            $prefill = 'this._onPrefill();';
         }
         
         // Finally, instantiate the dialog
@@ -297,7 +289,11 @@ JS;
             title: "{$this->getCaption()}",
 			buttons : [ {$this->buildJsDialogButtons()} ],
 			content : [ {$content} ],
-            {$prefill}
+            beforeOpen: function(oEvent) {
+                var oDialog = oEvent.getSource();
+                var oView = {$this->getController()->getView()->buildJsViewGetter($this)};
+                {$prefill}
+            }
 		})
         {$this->buildJsPseudoEventHandlers()}
 JS;
@@ -382,8 +378,11 @@ JS;
     protected function buildJsPage($content_js, string $oControllerJs = 'oController')
     {
         if ($this->needsPrefill()) {
-            $this->getController()->addOnRouteMatchedScript($this->buildJsPrefillLoader('oView'), 'loadPrefill');
+            $prefillJs = $this->buildJsPrefillLoader('oView');
+        } else {
+            $prefillJs = 'this._onPrefill();';
         }
+        $this->getController()->addOnRouteMatchedScript($prefillJs, 'loadPrefill');
         
         return <<<JS
         
@@ -474,22 +473,26 @@ JS;
         // FIXME use buildJsPrefillLoaderSuccess here somewere?
         
         return <<<JS
+
         (function(){
             {$this->buildJsBusyIconShow()}
             var oViewModel = {$oViewJs}.getModel('view');
-            oViewModel.setProperty('/_prefill/pending', true);
-
+            var oResultModel = {$oViewJs}.getModel();
+            
             var oRouteParams = oViewModel.getProperty('/_route');
             var data = $.extend({}, {
                 action: "exface.Core.ReadPrefill",
 				resource: "{$widget->getPage()->getAliasWithNamespace()}",
 				element: "{$triggerWidget->getId()}",
             }, oRouteParams.params);
-
-            {$filterRequestParams}
             
             var oLastRouteString = oViewModel.getProperty('/_prefill/current_data_hash');
             var oCurrentRouteString = JSON.stringify(data);
+            
+            oViewModel.setProperty('/_prefill/pending', true);
+            
+            {$filterRequestParams}
+            
             if (oLastRouteString === oCurrentRouteString) {
                 {$this->buildJsBusyIconHide()}
                 oViewModel.setProperty('/_prefill/pending', false);
@@ -499,13 +502,14 @@ JS;
                 oViewModel.setProperty('/_prefill/current_data_hash', oCurrentRouteString);    
             }
 
-            var oResultModel = {$oViewJs}.getModel();
-
+            oViewModel.setProperty('/_prefill/started', true);
+            oResultModel.setData({});
+            
             {$this->getServerAdapter()->buildJsServerRequest(
                 $action,
                 'oResultModel',
                 'data',
-                "{$this->buildJsBusyIconHide()}; oViewModel.setProperty('/_prefill/pending', false);",
+                "{$this->buildJsBusyIconHide()}; oViewModel.setProperty('/_prefill/pending', false); ",
                 "console.error('Error loading prefill data!'); {$this->buildJsBusyIconHide()}; oViewModel.setProperty('/_prefill/pending', false);",
                 $offlineError
             )}

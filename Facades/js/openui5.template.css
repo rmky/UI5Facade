@@ -65,6 +65,8 @@ body:not(.sapUiSizeCompact) .sapFDynamicPageTitleMainHeadingInner .sapMTitle > s
 .exf-icon-tile .sapMGTContent {margin-top: -40px}
 .exf-tiles > h2 {margin-top: 1rem;}
 .exf-tiles > .sapMPanelContent {border-bottom: none;}
+/* Fix remove grayish background on busy-indicator in tile content */
+.sapMTileCntContent > .sapMNC  > .sapUiLocalBusyIndicator {background-color: transparent;}
 
 /* Forms */
 .sapUiFormTitle:empty {display: none;}

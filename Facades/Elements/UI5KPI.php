@@ -175,8 +175,15 @@ JS;
                 
                 var oModel = oControl.getModel('{$this->getModelNameForLazyData()}');
                 oModel.setData({});
-                oModel.loadData("{$this->getAjaxUrl()}", oParams);
-                {$this->buildJsBusyIconHide()}
+
+                {$this->getServerAdapter()->buildJsServerRequest(
+                    $dataWidget->getLazyLoadingAction(),
+                    'oModel',
+                    'oParams',
+                    "{$this->buildJsBusyIconHide()};",
+                    "{$this->buildJsBusyIconHide()};",
+                    "{$this->buildJsBusyIconHide()};"
+                )}
                 
 JS;
     }

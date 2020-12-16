@@ -24,7 +24,38 @@ class UI5NavTiles extends UI5Container
         if ($widget->hasParent() === false && $widget->hasWidgets()) {
             $widget->getWidgetFirst()->setHideCaption(true);
         }
+        if ($widget->isEmpty() && $widget->isHiddenIfEmpty()) {
+            return '';
+        }
         return parent::buildJsConstructor($oControllerJs);
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\UI5Facade\Facades\Elements\UI5Container::buildJsChildrenConstructors()
+     */
+    public function buildJsChildrenConstructors() : string
+    {
+        if ($this->getWidget()->isEmpty()) {
+            return <<<JS
+
+            new sap.m.FlexBox({
+                height: "100%",
+                width: "100%",
+                justifyContent: "Center",
+                alignItems: "Center",
+                items: [
+                    new sap.m.Text({
+                        text: "{$this->getWidget()->getEmptyText()}"
+                    })
+                ]
+            })
+
+JS;
+        }
+        
+        return parent::buildJsChildrenConstructors();
     }
     
     /**
